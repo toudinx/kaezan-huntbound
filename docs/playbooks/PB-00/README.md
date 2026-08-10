@@ -3,7 +3,8 @@
 > **Para agentes:** execute uma task card por chat. Não execute este playbook inteiro em uma única
 > conversa. O formato e o handoff seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** planejado  
+**Status:** done
+
 **Objetivo:** transformar a raiz documental atual em um monorepo Git executável, com Phaser 4,
 TypeScript strict, Vite, shell canvas + DOM, fronteiras arquiteturais verificáveis e QA browser.
 
@@ -82,12 +83,12 @@ ao final do PB-00. Criar seus sistemas reais pertence aos playbooks corresponden
 
 | ID | Problema coeso | Dependência | Effort sugerido | Gate principal | Status |
 |---|---|---|---|---|---|
-| [PB-00-01](tasks/PB-00-01-inicializar-repositorio-workspace.md) | Git, toolchain e monorepo íntegro | nenhuma | high | instalação congelada + checks raiz | pending |
-| [PB-00-02](tasks/PB-00-02-proteger-fronteiras-arquiteturais.md) | Fronteiras e política de dependências | PB-00-01 | high | violações arquiteturais falham automaticamente | pending |
-| [PB-00-03](tasks/PB-00-03-criar-shell-phaser-dom.md) | Shell Phaser + DOM + SceneBridge | PB-00-02 | high | canvas e DOM projetam o mesmo estado | pending |
-| [PB-00-04](tasks/PB-00-04-lifecycle-responsivo.md) | Resize, safe areas, focus e reduced motion | PB-00-03 | high | lifecycle e quatro viewports funcionais | pending |
-| [PB-00-05](tasks/PB-00-05-automatizar-qa-browser.md) | Playwright, screenshots e budget de boot | PB-00-04 | high | QA browser reproduzível | pending |
-| [PB-00-06](tasks/PB-00-06-fechar-gate-integrado.md) | Verificação integrada e fechamento | PB-00-05 | high | todos os gates PB-00 aprovados | pending |
+| [PB-00-01](tasks/PB-00-01-inicializar-repositorio-workspace.md) | Git, toolchain e monorepo íntegro | nenhuma | high | instalação congelada + checks raiz | done |
+| [PB-00-02](tasks/PB-00-02-proteger-fronteiras-arquiteturais.md) | Fronteiras e política de dependências | PB-00-01 | high | violações arquiteturais falham automaticamente | done |
+| [PB-00-03](tasks/PB-00-03-criar-shell-phaser-dom.md) | Shell Phaser + DOM + SceneBridge | PB-00-02 | high | canvas e DOM projetam o mesmo estado | done |
+| [PB-00-04](tasks/PB-00-04-lifecycle-responsivo.md) | Resize, safe areas, focus e reduced motion | PB-00-03 | high | lifecycle e quatro viewports funcionais | done |
+| [PB-00-05](tasks/PB-00-05-automatizar-qa-browser.md) | Playwright, screenshots e budget de boot | PB-00-04 | high | QA browser reproduzível | done |
+| [PB-00-06](tasks/PB-00-06-fechar-gate-integrado.md) | Verificação integrada e fechamento | PB-00-05 | high | todos os gates PB-00 aprovados | done |
 
 As tasks são sequenciais porque cada uma consome contratos ou scripts da anterior. Uma correção
 independente descoberta no caminho vira task adicional `PB-00-FIX-<NN>-<slug>.md`; ela não é
@@ -111,17 +112,21 @@ substituir o estado demonstrativo do shell pelo kernel real sem mover regra para
 
 ## Critérios finais de aceite
 
-- [ ] Repositório Git raiz existe e `references/`, assets proprietários, caches e secrets não estão
+- [x] Repositório Git raiz existe e `references/`, assets proprietários, caches e secrets não estão
   rastreados.
-- [ ] Node, pnpm e todas as dependências estão fixados; instalação congelada funciona.
-- [ ] `pnpm verify` conclui typecheck, testes, política arquitetural, build e QA browser.
-- [ ] Uma violação intencional em `packages/simulation` é rejeitada pelo gate arquitetural.
-- [ ] O shell entra em estado acionável em até 5 s no cenário Fast 4G definido pela task de QA.
-- [ ] Canvas Phaser e DOM overlay são visíveis e sincronizados pelo mesmo `SceneBridge`.
-- [ ] Focus/visibility pausa e retoma a apresentação sem duplicar listeners ou criar erros.
-- [ ] Não há overflow crítico nos quatro viewports obrigatórios.
-- [ ] Screenshots dos quatro viewports foram capturadas e revisadas visualmente.
-- [ ] Não existe gameplay, asset Canary, save, backend ou sistema de playbook posterior no diff.
+- [x] Node, pnpm e todas as dependências estão fixados; instalação congelada funciona.
+- [x] `pnpm verify` conclui typecheck, testes, política arquitetural, build e QA browser.
+- [x] Uma violação intencional em `packages/simulation` é rejeitada pelo gate arquitetural.
+- [x] O shell entra em estado acionável em até 5 s no cenário Fast 4G definido pela task de QA.
+- [x] Canvas Phaser e DOM overlay são visíveis e sincronizados pelo mesmo `SceneBridge`.
+- [x] Focus/visibility pausa e retoma a apresentação sem duplicar listeners ou criar erros.
+- [x] Não há overflow crítico nos quatro viewports obrigatórios.
+- [x] Screenshots dos quatro viewports foram capturadas e revisadas visualmente.
+- [x] Não existe gameplay, asset Canary, save, backend ou sistema de playbook posterior no diff.
+
+O fechamento integrado está documentado em
+`docs/playbooks/PB-00/artifacts/acceptance-report.md`. PB-01 é o próximo playbook elegível; ele não
+foi iniciado por este fechamento.
 
 ## Como executar uma task
 

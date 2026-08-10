@@ -1,9 +1,9 @@
 # PB-00 — Estado operacional
 
 **Playbook:** `docs/playbooks/PB-00/README.md`
-**Estado geral:** in_progress
+**Estado geral:** done
 **Última atualização:** 2026-08-10
-**Próxima task elegível:** `PB-00-06`
+**Próximo playbook elegível:** `PB-01`
 
 ## Tasks
 
@@ -14,7 +14,7 @@
 | PB-00-03 | done | `feat: add Phaser DOM browser shell` | bridge, testes DOM e inspeção local aprovados | shell Phaser + DOM; PB-00-04 elegível |
 | PB-00-04 | done | `feat: add responsive browser lifecycle` | lifecycle/viewport controllers, shell responsivo e inspeção local | foco e visibilidade são estado de apresentação; PB-00-05 elegível |
 | PB-00-05 | done | `test: add browser shell quality gate` | Chromium em quatro viewports, lifecycle, baselines e budget Fast 4G | build de produção local; PB-00-06 elegível |
-| PB-00-06 | pending | — | — | gate integrado final |
+| PB-00-06 | done | `docs: close PB-00 foundation gate` | `artifacts/acceptance-report.md` e gates frescos aprovados | PB-00 fechado; PB-01 elegível |
 
 ## Toolchain congelada
 
@@ -121,9 +121,24 @@ PB-00-05 em 2026-08-10:
   falhar o gate;
 - `git diff --check` e `git status --short` — aprovados antes do commit.
 
+PB-00-06 em 2026-08-10:
+
+- `corepack pnpm install --frozen-lockfile` — aprovado em 2,7 s; lockfile preservou o SHA-256
+  `0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651`;
+- `corepack pnpm verify` — aprovado em 54,9 s: formato, arquitetura, typecheck, testes, build e seis
+  testes Chromium;
+- `corepack pnpm architecture:check` e a prova controlada `simulation -> phaser` — aprovados; a
+  fixture foi rejeitada com exit code 1 e diagnóstico acionável;
+- `corepack pnpm --filter @huntbound/game test` — aprovado: 21 testes em cinco arquivos;
+- Chromium 151.0.7922.34 em Fast 4G — boot acionável em 2.412,6 ms; blur/focus,
+  hidden/visible, resize e recarga Vite mantiveram um canvas, um overlay e zero erros;
+- quatro screenshots baseline abertas no tamanho original e aprovadas visualmente;
+- tracking, versões, boundaries e buscas de conteúdo posterior aprovados; detalhes e mapeamento de
+  cada critério estão em `artifacts/acceptance-report.md`.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-06`.
+Nenhum bloqueio conhecido. PB-00 está concluído e PB-01 é o próximo playbook elegível.
 
 ## Regra de atualização
 
