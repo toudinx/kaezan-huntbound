@@ -1,0 +1,22 @@
+{
+  "@huntbound/contracts": [],
+  "@huntbound/simulation": ["@huntbound/contracts"],
+  "@huntbound/content": ["@huntbound/contracts"],
+  "@huntbound/assets": ["@huntbound/contracts"],
+  "@huntbound/save": ["@huntbound/contracts", "@huntbound/simulation"],
+  "@huntbound/test-fixtures": ["@huntbound/contracts", "@huntbound/simulation"],
+  "@huntbound/game": [
+    "@huntbound/contracts",
+    "@huntbound/simulation",
+    "@huntbound/content",
+    "@huntbound/assets",
+    "@huntbound/save"
+  ],
+  "external": {
+    "@huntbound/simulation": {
+      "allowedDependencies": [],
+      "forbidDomLibraries": ["phaser"],
+      "forbidNodeBuiltins": true
+    }
+  }
+}
