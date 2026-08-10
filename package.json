@@ -16,7 +16,8 @@
     "build": "pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
     "check": "biome check . && pnpm typecheck && pnpm test && pnpm architecture:check",
-    "verify": "pnpm check && pnpm architecture:check && pnpm build"
+    "qa:browser": "pnpm build && playwright test",
+    "verify": "pnpm format:check && pnpm architecture:check && pnpm typecheck && pnpm test && pnpm build && pnpm qa:browser"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",

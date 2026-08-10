@@ -8,6 +8,7 @@ dist/
 coverage/
 test-results/
 playwright-report/
+blob-report/
 
 # Environment and local assets
 .env*

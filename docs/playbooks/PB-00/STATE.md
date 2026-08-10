@@ -3,7 +3,7 @@
 **Playbook:** `docs/playbooks/PB-00/README.md`
 **Estado geral:** in_progress
 **Última atualização:** 2026-08-10
-**Próxima task elegível:** `PB-00-05`
+**Próxima task elegível:** `PB-00-06`
 
 ## Tasks
 
@@ -13,7 +13,7 @@
 | PB-00-02 | done | `build: enforce package boundaries` | policy versionada, checker TypeScript/manifests e prova controlada | simulation sem DOM, Node ou Phaser; PB-00-03 elegível |
 | PB-00-03 | done | `feat: add Phaser DOM browser shell` | bridge, testes DOM e inspeção local aprovados | shell Phaser + DOM; PB-00-04 elegível |
 | PB-00-04 | done | `feat: add responsive browser lifecycle` | lifecycle/viewport controllers, shell responsivo e inspeção local | foco e visibilidade são estado de apresentação; PB-00-05 elegível |
-| PB-00-05 | pending | — | — | depende do lifecycle responsivo |
+| PB-00-05 | done | `test: add browser shell quality gate` | Chromium em quatro viewports, lifecycle, baselines e budget Fast 4G | build de produção local; PB-00-06 elegível |
 | PB-00-06 | pending | — | — | gate integrado final |
 
 ## Toolchain congelada
@@ -43,6 +43,10 @@ listener da marca de performance durante HMR.
 suspende e restaura a apresentação anterior. `ViewportController` mede o container real com
 `ResizeObserver`, acompanha DPR por `matchMedia` e republica somente a projeção de viewport preservando
 os demais campos do `SceneBridge`.
+
+O gate browser executa Chromium Playwright com um worker, build de produção local e baselines
+versionados. O mark `huntbound:shell-actionable` é lido por um módulo isolado e o cenário CDP Fast 4G
+usa um contexto novo e cache desabilitado para preservar a medição fria.
 
 ## Verificações executadas
 
@@ -101,9 +105,25 @@ PB-00-04 em 2026-08-10:
   integrado não expõe alteração de visibilidade de aba;
 - `git diff --check` e `git status --short` — aprovados antes do commit.
 
+PB-00-05 em 2026-08-10:
+
+- `NODE_OPTIONS=--use-system-ca corepack pnpm exec playwright install chromium` — aprovado;
+  Chromium 151.0.7922.34 (Playwright v1234) instalado;
+- `corepack pnpm --filter @huntbound/game test -- src/runtime/performance.test.ts` — aprovado
+  (três cenários: mark ausente, duplicado e duração válida; 21 testes do game no total);
+- `NODE_OPTIONS=--use-system-ca corepack pnpm qa:browser` — aprovado (seis testes: Fast 4G,
+  quatro viewports e lifecycle; baselines em `tests/e2e/shell.spec.ts-snapshots/` revisados no tamanho
+  original);
+- boot Fast 4G com cache frio — `huntbound:shell-actionable` observado em 2.368,4 ms, abaixo do
+  budget de 5.000 ms;
+- `NODE_OPTIONS=--use-system-ca corepack pnpm verify` — aprovado: formato, arquitetura, typecheck,
+  testes, build e QA browser; o aviso preexistente do chunk Phaser acima de 500 kB permanece sem
+  falhar o gate;
+- `git diff --check` e `git status --short` — aprovados antes do commit.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-05`.
+Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-06`.
 
 ## Regra de atualização
 
