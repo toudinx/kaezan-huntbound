@@ -4,6 +4,8 @@ import Phaser from 'phaser';
 
 import { createSceneBridge } from './bridge/SceneBridge';
 import { createGame } from './phaser/createGame';
+import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
+import { createViewportController } from './runtime/ViewportController';
 import { mountAppShell } from './ui/AppShell';
 
 interface ShellHmrData {
@@ -26,14 +28,41 @@ const bridge = createSceneBridge({
   phase: 'booting',
   renderer: 'unavailable',
   viewport: {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    devicePixelRatio: window.devicePixelRatio,
+    width: 0,
+    height: 0,
+    devicePixelRatio: 1,
   },
   message: 'Preparing shell',
 });
 const appShell = mountAppShell(uiRoot, bridge);
-const game = createGame(gameRoot, bridge);
+const runtime = createGame(gameRoot, bridge);
+const disposeViewport = createViewportController(gameRoot, bridge, {
+  getDevicePixelRatio: () => window.devicePixelRatio,
+  createResizeObserver: (callback) => new ResizeObserver(callback),
+  observeDevicePixelRatio: (callback) => {
+    let mediaQuery = window.matchMedia(
+      `(resolution: ${window.devicePixelRatio}dppx)`,
+    );
+    const onDevicePixelRatioChange = () => {
+      mediaQuery.removeEventListener('change', onDevicePixelRatioChange);
+      callback();
+      mediaQuery = window.matchMedia(
+        `(resolution: ${window.devicePixelRatio}dppx)`,
+      );
+      mediaQuery.addEventListener('change', onDevicePixelRatioChange);
+    };
+
+    mediaQuery.addEventListener('change', onDevicePixelRatioChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', onDevicePixelRatioChange);
+    };
+  },
+}).start();
+const disposeLifecycle = createRuntimeLifecycle(runtime.lifecycle, {
+  window,
+  document,
+}).start();
 
 let markedActionable = false;
 const unsubscribePerformanceMark = bridge.subscribe((snapshot) => {
@@ -45,13 +74,15 @@ const unsubscribePerformanceMark = bridge.subscribe((snapshot) => {
 
 function destroyGame() {
   return new Promise<void>((resolve) => {
-    game.events.once(Phaser.Core.Events.DESTROY, resolve);
-    game.destroy(true);
+    runtime.game.events.once(Phaser.Core.Events.DESTROY, resolve);
+    runtime.game.destroy(true);
   });
 }
 
 function disposeShell(data: ShellHmrData) {
   unsubscribePerformanceMark();
+  disposeLifecycle();
+  disposeViewport();
   appShell.destroy();
   data.phaserDestroyed = destroyGame();
 }

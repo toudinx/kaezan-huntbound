@@ -24,6 +24,8 @@ body {
 
 #shell-root {
   position: relative;
+  height: 100dvh;
+  min-height: 100dvh;
   overflow: hidden;
   background: #060b16;
 }
@@ -34,8 +36,15 @@ body {
   inset: 0;
 }
 
+#game-root {
+  overflow: hidden;
+  pointer-events: auto;
+}
+
 #game-root canvas {
   display: block;
+  width: 100%;
+  height: 100%;
 }
 
 #ui-root {
@@ -61,17 +70,45 @@ body {
 }
 
 [data-testid="app-shell"] header {
-  top: clamp(0.75rem, 2vw, 1.5rem);
-  left: clamp(0.75rem, 2vw, 1.5rem);
+  top: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-top));
+  left: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-left));
 }
 
 [data-testid="app-shell"] aside {
-  right: clamp(0.75rem, 2vw, 1.5rem);
-  bottom: clamp(0.75rem, 2vw, 1.5rem);
+  right: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-right));
+  bottom: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-bottom));
 }
 
 [data-testid="shell-status"],
 [data-testid="shell-viewport"] {
   margin: 0;
   padding: 0.55rem 0.7rem;
+}
+
+[data-testid="app-shell"] header,
+[data-testid="app-shell"] aside {
+  max-inline-size: min(15rem, calc(100% - 2rem));
+  pointer-events: auto;
+}
+
+@media (max-width: 30rem), (max-height: 31.25rem) {
+  [data-testid="app-shell"] {
+    font-size: 0.65rem;
+  }
+
+  [data-testid="shell-status"],
+  [data-testid="shell-viewport"] {
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s;
+    animation-iteration-count: 1;
+    scroll-behavior: auto;
+    transition-duration: 0s;
+  }
 }

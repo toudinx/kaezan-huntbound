@@ -3,7 +3,7 @@
 **Playbook:** `docs/playbooks/PB-00/README.md`
 **Estado geral:** in_progress
 **Última atualização:** 2026-08-10
-**Próxima task elegível:** `PB-00-04`
+**Próxima task elegível:** `PB-00-05`
 
 ## Tasks
 
@@ -12,7 +12,7 @@
 | PB-00-01 | done | `chore: initialize Phaser TypeScript workspace` | instalação congelada e checks raiz aprovados | Git `main`, workspace pnpm e baseline criados |
 | PB-00-02 | done | `build: enforce package boundaries` | policy versionada, checker TypeScript/manifests e prova controlada | simulation sem DOM, Node ou Phaser; PB-00-03 elegível |
 | PB-00-03 | done | `feat: add Phaser DOM browser shell` | bridge, testes DOM e inspeção local aprovados | shell Phaser + DOM; PB-00-04 elegível |
-| PB-00-04 | pending | — | — | depende do shell |
+| PB-00-04 | done | `feat: add responsive browser lifecycle` | lifecycle/viewport controllers, shell responsivo e inspeção local | foco e visibilidade são estado de apresentação; PB-00-05 elegível |
 | PB-00-05 | pending | — | — | depende do lifecycle responsivo |
 | PB-00-06 | pending | — | — | gate integrado final |
 
@@ -38,6 +38,11 @@ O `SceneBridge` de `apps/game` conserva o snapshot de apresentação e os listen
 Shell scenes apenas publicam transições. `AppShell` assina essa projeção e não acessa objetos Phaser.
 O runtime usa `Phaser.Scale.RESIZE`, canvas e overlay DOM no mesmo container, e descarta game, UI e
 listener da marca de performance durante HMR.
+
+`RuntimeLifecycle` concentra blur/focus e visibility em um `Set<PauseReason>` injetável; Phaser apenas
+suspende e restaura a apresentação anterior. `ViewportController` mede o container real com
+`ResizeObserver`, acompanha DPR por `matchMedia` e republica somente a projeção de viewport preservando
+os demais campos do `SceneBridge`.
 
 ## Verificações executadas
 
@@ -79,9 +84,26 @@ PB-00-03 em 2026-08-10:
   preservou um único canvas/overlay após aguardar a destruição Phaser;
 - `git diff --check` e `git status --short` — aprovados antes do commit.
 
+PB-00-04 em 2026-08-10:
+
+- `corepack pnpm --filter @huntbound/game test` — aprovado (dezoito testes: bridge/AppShell,
+  lifecycle com blur/focus, hidden/visible, causas simultâneas, duplicidade e teardown; viewport com
+  primeira medição, resize, DPR sem resize, supressão e teardown);
+- `corepack pnpm architecture:check` — aprovado;
+- `corepack pnpm typecheck` — aprovado nos sete packages;
+- `corepack pnpm build` — aprovado; o aviso preexistente de chunk Phaser acima de 500 kB permanece
+  fora do escopo desta task;
+- `corepack pnpm check` — aprovado; Biome reporta apenas o bundle gerado ignorado acima de 1 MiB;
+- inspeção local em `http://127.0.0.1:4173` — 390×844, 768×1024, 1366×768 e 1920×1080 exibiram
+  um canvas e overlay alinhados ao container, viewport projetado corretamente e sem overflow; layout
+  de bordas e regra CSS de reduced motion confirmados, console sem warnings ou erros; os cenários de
+  foco/visibilidade foram exercitados pelos testes determinísticos do lifecycle porque o navegador
+  integrado não expõe alteração de visibilidade de aba;
+- `git diff --check` e `git status --short` — aprovados antes do commit.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-04`.
+Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-05`.
 
 ## Regra de atualização
 
