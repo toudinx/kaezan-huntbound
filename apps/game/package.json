@@ -4,10 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "test": "vitest run",
     "typecheck": "tsc --project tsconfig.json",
-    "build": "tsc --project tsconfig.json"
+    "build": "vite build"
   },
   "dependencies": {
     "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "vitest": "4.1.10"
   }
 }

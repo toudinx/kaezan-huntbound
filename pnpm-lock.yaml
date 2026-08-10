@@ -29,6 +29,10 @@ importers:
       phaser:
         specifier: 4.2.1
         version: 4.2.1
+    devDependencies:
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(vite@8.2.1)
 
   packages/assets: {}
 

@@ -3,7 +3,7 @@
 **Playbook:** `docs/playbooks/PB-00/README.md`
 **Estado geral:** in_progress
 **Última atualização:** 2026-08-10
-**Próxima task elegível:** `PB-00-03`
+**Próxima task elegível:** `PB-00-04`
 
 ## Tasks
 
@@ -11,7 +11,7 @@
 |---|---|---|---|---|
 | PB-00-01 | done | `chore: initialize Phaser TypeScript workspace` | instalação congelada e checks raiz aprovados | Git `main`, workspace pnpm e baseline criados |
 | PB-00-02 | done | `build: enforce package boundaries` | policy versionada, checker TypeScript/manifests e prova controlada | simulation sem DOM, Node ou Phaser; PB-00-03 elegível |
-| PB-00-03 | pending | — | — | depende das fronteiras |
+| PB-00-03 | done | `feat: add Phaser DOM browser shell` | bridge, testes DOM e inspeção local aprovados | shell Phaser + DOM; PB-00-04 elegível |
 | PB-00-04 | pending | — | — | depende do shell |
 | PB-00-05 | pending | — | — | depende do lifecycle responsivo |
 | PB-00-06 | pending | — | — | gate integrado final |
@@ -33,6 +33,11 @@ As fronteiras de package são executadas por `tools/architecture/check-boundarie
 reexports e imports dinâmicos literais são analisados com o scanner oficial do TypeScript 7 fixado,
 e cada manifest é validado contra `dependency-policy.json`. `simulation` declara `lib: ["ES2022"]`
 e o gate rejeita DOM, Node built-ins e Phaser.
+
+O `SceneBridge` de `apps/game` conserva o snapshot de apresentação e os listeners do shell; Boot e
+Shell scenes apenas publicam transições. `AppShell` assina essa projeção e não acessa objetos Phaser.
+O runtime usa `Phaser.Scale.RESIZE`, canvas e overlay DOM no mesmo container, e descarta game, UI e
+listener da marca de performance durante HMR.
 
 ## Verificações executadas
 
@@ -61,9 +66,22 @@ PB-00-02 em 2026-08-10:
 - `corepack pnpm verify` — aprovado;
 - `git diff --check` e `git status --short` — aprovados antes do commit.
 
+PB-00-03 em 2026-08-10:
+
+- `corepack pnpm --filter @huntbound/game test` — aprovado (oito testes: contrato do bridge e
+  projeção/cleanup do AppShell);
+- `corepack pnpm architecture:check` — aprovado;
+- `corepack pnpm typecheck` — aprovado nos sete packages;
+- `corepack pnpm build` — aprovado, incluindo bundle Vite do game;
+- `corepack pnpm check` — aprovado;
+- inspeção manual em `http://127.0.0.1:4173` — um canvas, um overlay DOM, `ready`,
+  `data-shell-ready="true"`, centro livre e console sem warnings ou erros; atualização HMR também
+  preservou um único canvas/overlay após aguardar a destruição Phaser;
+- `git diff --check` e `git status --short` — aprovados antes do commit.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-03`.
+Nenhum bloqueio conhecido. A próxima task elegível é `PB-00-04`.
 
 ## Regra de atualização
 

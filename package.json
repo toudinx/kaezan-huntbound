@@ -8,6 +8,7 @@
     "node": ">=24.14.0 <25"
   },
   "scripts": {
+    "dev": "pnpm --filter @huntbound/game dev",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "typecheck": "pnpm --recursive run typecheck",
