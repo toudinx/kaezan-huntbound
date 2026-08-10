@@ -1,0 +1,10 @@
+{
+  "name": "@huntbound/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.json"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@huntbound/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24.14.0 <25"
+  },
+  "scripts": {
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "typecheck": "pnpm --recursive run typecheck",
+    "test": "vitest run",
+    "build": "pnpm --recursive run build",
+    "check": "biome check . && pnpm typecheck && pnpm test",
+    "verify": "pnpm check && pnpm build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7",
+    "@playwright/test": "1.62.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}

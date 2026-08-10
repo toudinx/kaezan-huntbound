@@ -1,0 +1,27 @@
+# Local reference archives and editor state
+references/
+.obsidian/
+
+# Dependencies and build artifacts
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+
+# Environment and local assets
+.env*
+!.env.example
+assets/personal/
+personal-assets/
+
+# Logs and tool caches
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+.vite/
+.turbo/
+*.tsbuildinfo
