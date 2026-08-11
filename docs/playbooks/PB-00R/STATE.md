@@ -19,7 +19,7 @@ acima de 30.000 ms ou ausência do shell acionável volta a bloquear.
 | PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
 | PB-00R-06 | done | `codex/pb00r-06-diag-harness` | `b3978ff` | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
 | PB-00R-05 | done — `APPROVED_WITH_WARNINGS` | `codex/pb00r-06-diag-harness` (integração) | commit de fechamento | auditoria integrada completa em `artifacts/acceptance-report.md` |
-| PB-00R-FIX-01 | pending | a definir | — | follow-up do warning W1; não bloqueia PB-01 |
+| PB-00R-FIX-01 | done | `codex/pb00r-fix-01-line-endings` | commit de integração | `.gitattributes`, `format:check` e `verify` verdes em checkout novo; W1/W2 resolvidos |
 
 PB-00R-01 e PB-00R-03 foram rebaseados da worktree para a branch de integração, então seus hashes
 mudaram. PB-00R-05 comparou os dois lados e confirmou diff de código idêntico em ambos os pares; a
@@ -306,12 +306,26 @@ para refinamento futuro e volta a bloquear se ultrapassar 30.000 ms ou impedir o
   pelos 4 testes de `bootMetrics` (PB-00R-02) e 1 de `vite-build-config` (PB-00R-04).
 - Limpeza: sentinela interna removida pelo build, sentinela irmã em `dist/` preservada e depois
   removida especificamente. Warning de output externo não aparece mais.
-- Warnings registrados no `acceptance-report.md`: W1 `format:check` vermelho por CRLF de working
-  tree com conteúdo commitado em LF e correto; W2 saída obsoleta em `apps/game/dist`; W3 stall de
-  boot conhecido; W4 validação cruzada parcial e imprecisões documentais corrigidas.
+- Warnings registrados no `acceptance-report.md`: W1 `format:check` por CRLF e W2 saída obsoleta em
+  `apps/game/dist` foram resolvidos por PB-00R-FIX-01; W3 stall de boot conhecido; W4 validação
+  cruzada parcial e imprecisões documentais corrigidas.
 - Correções documentais deste fechamento: hashes integrados de PB-00R-01/03 passaram a constar na
   tabela acima ao lado dos hashes de worktree, e a referência a `boot-stall-session.json` virou
   `boot-stall-session.jsonl`, que é o arquivo real em disco.
+
+## Handoff PB-00R-FIX-01
+
+- Implementação: `.gitattributes` fixa `* text=auto eol=lf` e declara `*.png binary`; nenhuma regra
+  do Biome, `files.maxSize`, runtime, teste, budget, retry, worker, cache ou throttling foi alterada.
+- RED: no checkout Windows anterior à política, `corepack pnpm format:check` terminou em exit 1 por
+  diferenças CRLF na working tree; `core.autocrlf=true` e não havia `.gitattributes`.
+- GREEN: em worktree nova derivada do commit da task, `git ls-files --eol` reportou **0** entradas
+  `w/crlf`/`w/mixed`; `corepack pnpm format:check` terminou em exit 0 e verificou **59 arquivos**.
+- Gate completo: `corepack pnpm verify` terminou em exit 0; `architecture:check` passou com 11 testes,
+  a suíte Vitest passou com 6 testes raiz + 21 testes do app (**38 testes unitários/arquiteturais** no
+  total) e `qa:browser` passou com **7/7 E2E**. O build só emitiu o warning conhecido de chunk Phaser.
+- W2: `apps/game/dist` estava ausente no checkout novo; o build gerou somente `dist/game`, sem warning
+  `maxSize`. O lockfile permaneceu inalterado e nenhum artefato novo foi rastreado.
 
 ## Regra de atualização
 

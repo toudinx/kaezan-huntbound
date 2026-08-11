@@ -722,12 +722,29 @@ manifests, testes e o harness de diagnóstico.
 O `testIgnore` adicionado ao Playwright cobre apenas `**/support/**/*.test.ts` e não exclui nenhum
 `*.spec.ts` — confirmado pelos 7 testes coletados em `qa:browser`.
 
+## Revalidação PB-00R-FIX-01 — 2026-08-11
+
+| Gate | Exit | Evidência fresca |
+|---|---:|---|
+| `git ls-files --eol` em checkout novo | 0 | **0** arquivos `w/crlf` ou `w/mixed`; arquivos de texto `w/lf` |
+| `corepack pnpm format:check` | 0 | Biome verificou **59 arquivos**, sem erros e sem warning `maxSize` |
+| `corepack pnpm verify` | 0 | seis gates em sequência; 11 testes de arquitetura, 6 testes raiz + 21 do app, **38 unitários/arquiteturais**, build e **7/7 E2E** |
+| lockfile / rastreio | 0 | `pnpm-lock.yaml` inalterado; nenhum artefato novo rastreado |
+
+O build emitiu apenas o warning conhecido de chunk Phaser. `biome.json` não foi alterado e
+`files.maxSize` não foi aumentado. `apps/game/dist` estava ausente no checkout novo; a saída atual
+foi gerada em `dist/game`.
+
 ## Warnings
 
 Nenhum warning abaixo atinge a barra de bloqueio congelada. Todos têm evidência fresca, impacto,
 gatilho de reabertura e follow-up.
 
-### W1 — `pnpm verify` reprova em `format:check` por fim de linha da working tree
+### W1 — RESOLVIDO: `pnpm verify` reprova em `format:check` por fim de linha da working tree
+
+- **Resolução (PB-00R-FIX-01).** `.gitattributes` com `* text=auto eol=lf` foi versionado. Em checkout
+  novo com `core.autocrlf=true`, `git ls-files --eol` reportou 0 arquivos `w/crlf`/`w/mixed`,
+  `corepack pnpm format:check` terminou em exit 0 e o `verify` completo terminou em exit 0.
 
 - **Evidência.** `corepack pnpm format:check` exit 1: `Found 12 errors. Found 1 warning.` Os 12
   arquivos com erro são **exatamente** os 12 arquivos rastreados que `git ls-files --eol` reporta
@@ -748,12 +765,13 @@ gatilho de reabertura e follow-up.
   executados isoladamente e o conteúdo commitado está correto.
 - **Gatilho de reabertura.** Passa a bloquear se algum arquivo aparecer com defeito real de
   formatação no conteúdo commitado — isto é, se a reprodução com LF deixar de terminar em exit 0.
-- **Follow-up (prioridade alta).**
-  [PB-00R-FIX-01](../tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md) — adicionar
-  `.gitattributes` com `* text=auto eol=lf`, renormalizar e provar `verify` verde ponta a ponta.
-  Exige red-green e task própria porque toca a raiz do repositório, fora do escopo de PB-00R-05.
+- **Follow-up.** Encerrado por [PB-00R-FIX-01](../tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md).
 
-### W2 — saída de build obsoleta em `apps/game/dist` é varrida pelo Biome
+### W2 — RESOLVIDO: saída de build obsoleta em `apps/game/dist` é varrida pelo Biome
+
+- **Resolução (PB-00R-FIX-01).** `apps/game/dist` estava ausente no checkout novo e o `verify` não
+  emitiu warning `maxSize`; o build gerou `dist/game`, conforme o output corrente. `biome.json` ficou
+  inalterado e `files.maxSize` não foi aumentado.
 
 - **Evidência.** `apps/game/dist/` contém `index.html`, `assets/index-1Ku5mUUX.css` e
   `assets/index-BAWoqgt4.js` (1.378.104 B), todos com data de 2026-08-10 — anteriores a PB-00R-04,
@@ -762,8 +780,8 @@ gatilho de reabertura e follow-up.
   rastreado e não existe em clone novo. Não afeta build, testes nem o exit code do gate.
 - **Gatilho de reabertura.** Passa a importar se algum gate começar a ler esse diretório obsoleto
   como se fosse a saída corrente.
-- **Follow-up (prioridade baixa).** Apagar o diretório localmente e, se o ruído voltar, incluir
-  `**/dist/**` em `files.includes` do `biome.json`. Dobrar com PB-00R-FIX-01.
+- **Follow-up.** Encerrado; se um output obsoleto voltar a ser gerado fora de `dist/game`, abrir task
+  própria para avaliar o padrão de inclusão sem alterar `files.maxSize`.
 
 ### W3 — congelamento intermitente de boot continua conhecido e não descartado
 
