@@ -82,6 +82,19 @@ describe('workspace configuration', () => {
 
       expect(manifest.name).toMatch(/^@huntbound\/[a-z-]+$/);
       expect(manifest.private).toBe(true);
+      const testScript = manifest.scripts?.test;
+      expect(testScript, `missing test script: ${packagePath}`).toBeTypeOf(
+        'string',
+      );
+      expect(testScript?.trim(), `empty test script: ${packagePath}`).not.toBe(
+        '',
+      );
+      expect(testScript, `masked test script: ${packagePath}`).not.toContain(
+        '|| true',
+      );
+      expect(testScript, `masked test script: ${packagePath}`).not.toContain(
+        'exit 0',
+      );
       expect(manifest.scripts?.typecheck?.trim()).not.toBe('');
       expect(manifest.scripts?.build?.trim()).not.toBe('');
       expect(tsconfig.extends).toBe('../../tsconfig.base.json');

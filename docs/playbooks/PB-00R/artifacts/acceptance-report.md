@@ -492,6 +492,23 @@ regressão do tempo de boot.
 Esta aceitação remove PB-00R-02 da lista de bloqueios do gate final. PB-00R-05 continua aguardando
 somente a integração e validação das tasks restantes, inclusive PB-00R-01 e PB-00R-03.
 
+### Evidência da task PB-00R-03 (2026-08-11)
+
+- Implementador: GPT-5 (runtime atual), effort configurado pela task: `xhigh`.
+- RED: o contrato de `scripts.test` falhou em `packages/contracts` antes dos manifests.
+- GREEN: os sete packages de workspace passaram a declarar scripts `test` não mascarados; os seis
+  packages vazios usam `vitest run --passWithNoTests`.
+- Descoberta: `corepack pnpm test` observou `33→34→33` com o probe temporário em
+  `packages/contracts/src/gate-probe.test.ts`; o probe foi removido antes do commit.
+- Gates: `corepack pnpm typecheck`, `corepack pnpm test`, `corepack pnpm architecture:check` e
+  `corepack pnpm build` concluíram com exit code 0.
+- O runner unitário não coletou `tests/e2e/*.spec.ts`; Playwright permanece restrito a
+  `qa:browser`.
+- Desvio controlado: `vitest.config.ts` passou a incluir `src/**/*.test.ts`, pois os packages sem
+  configuração local herdavam apenas `tests/**/*.test.ts`.
+- `pnpm-lock.yaml` e dependências não mudaram; o blob Git permaneceu
+  `8ee8585af1fc6cb04accc56b4c90870d026f1060`.
+
 PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
-exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. O estado
-geral permanece `BLOCKED` até a integração e validação das demais tasks.
+exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. Todos os
+pré-requisitos estão integrados nesta branch; o estado permanece `PENDING` até a validação final.

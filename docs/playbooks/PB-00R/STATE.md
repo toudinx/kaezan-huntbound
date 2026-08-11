@@ -2,10 +2,10 @@
 
 **Status geral:** pending (não bloqueante até o gate integrado)
 
-**Próxima onda elegível:** integrar PB-00R-03. PB-00R-02 está `done (risco aceito)` por
-decisão de produto: 5.000 ms permanece alvo saudável e métrica de warning, enquanto somente boot
-acima de 30.000 ms ou ausência do shell acionável volta a bloquear. PB-00R-01 já está integrada
-nesta branch. PB-00R-05 fica elegível assim que PB-00R-03 também estiver integrada.
+**Próxima task elegível:** PB-00R-05. PB-00R-01, PB-00R-02, PB-00R-03 e PB-00R-04 estão integradas
+nesta branch. PB-00R-02 está `done (risco aceito)` por decisão de produto: 5.000 ms permanece alvo
+saudável e métrica de warning, enquanto somente boot acima de 30.000 ms ou ausência do shell
+acionável volta a bloquear.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -14,7 +14,7 @@ nesta branch. PB-00R-05 fica elegível assim que PB-00R-03 também estiver integ
 | Task | Status | Branch sugerida | Commit | Evidência |
 |---|---|---|---|---|
 | PB-00R-01 | done | `codex/pb00r-01-resize` | `911df51` | E2E pós-resize, screenshot, 6 E2E, 21 testes do app, typecheck e build |
-| PB-00R-03 | ready to integrate | `codex/pb00r-03-package-tests` | `809383e` | scripts de teste e prova de descoberta versionados na branch; integração pendente |
+| PB-00R-03 | done | `codex/pb00r-03-package-tests` | `809383e` | RED/GREEN nos manifests; probe `33→34→33`; Playwright fora do runner unitário |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
 | PB-00R-06 | done | `codex/pb00r-06-diag-harness` | `b3978ff` | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
@@ -241,6 +241,34 @@ continuam hipóteses — os `0/N` da matriz nova limitam a taxa a ~4% (B) e ~10%
 exclui a taxa observada em A′ — e o host permanece não descartado por falta de um segundo host
 autorizado. O risco foi aceito para a fase atual e não bloqueia mais PB-00R-02; permanece registrado
 para refinamento futuro e volta a bloquear se ultrapassar 30.000 ms ou impedir o shell acionável.
+
+### PB-00R-03 — bloqueio reproduzido em 2026-08-11
+
+- Implementador: GPT-5 (runtime atual); effort configurado pela task: `xhigh`.
+- O contrato de `scripts.test` falhou antes dos manifests em `packages/contracts` e passou depois da
+  adição do script mínimo aos seis packages.
+- `corepack pnpm test` permaneceu com 33 testes funcionais após o GREEN; os packages vazios passaram
+  com `vitest run --passWithNoTests`.
+- A prova exigida em `packages/contracts/src/gate-probe.test.ts` não elevou a contagem para 34:
+  os packages sem configuração Vitest local herdaram o `vitest.config.ts` da raiz, que inclui apenas
+  `tests/**/*.test.ts`. Uma configuração local temporária com `src/**/*.test.ts` fez o probe passar,
+  confirmando a causa, mas esse arquivo e a alteração de `vitest.config.ts` estão fora do escopo
+  permitido da task.
+- O probe temporário foi removido; naquela tentativa ainda não havia evidência válida de `33→34→33`
+  e a task permaneceu bloqueada até a correção de configuração registrada abaixo.
+
+### PB-00R-03 — resolução em 2026-08-11
+
+- Após a autorização de continuidade, `vitest.config.ts` passou a incluir também `src/**/*.test.ts`;
+  esse foi o único desvio do escopo congelado, necessário porque os packages sem configuração local
+  herdavam o include raiz e não coletavam o probe exigido.
+- RED foi reproduzido novamente com o probe em `packages/contracts/src/gate-probe.test.ts` (33 testes,
+  sem coleta do probe); GREEN coletou o probe (34 testes: 1 workspace, 11 arquitetura, 21 game e 1
+  probe); após remover o probe, o gate retornou a 33.
+- `corepack pnpm test` não coletou `tests/e2e/*.spec.ts`; os seis packages vazios passaram com
+  `vitest run --passWithNoTests`.
+- `pnpm-lock.yaml` permaneceu com o mesmo blob Git (`8ee8585af1fc6cb04accc56b4c90870d026f1060`) e
+  nenhuma dependência foi adicionada.
 
 ## Regra de atualização
 
