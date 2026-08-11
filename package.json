@@ -15,6 +15,7 @@
     "test": "vitest run && node --test tools/architecture/check-boundaries.test.ts && corepack pnpm --recursive run test",
     "build": "corepack pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
+    "diagnostics:boot-stall": "node tools/diagnostics/runBootStallMatrix.ts",
     "check": "biome check . && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check",
     "qa:browser": "corepack pnpm build && playwright test",
     "verify": "corepack pnpm format:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm qa:browser"

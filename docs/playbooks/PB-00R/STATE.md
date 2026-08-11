@@ -4,9 +4,10 @@
 
 **Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 está
 `blocked` por um congelamento intermitente de ~10,0 s observado na fronteira do Chromium sob
-`Network.emulateNetworkConditions`. Os controles de uma variável por vez que sugeriram essa
-fronteira são relato não verificado independentemente: não há harness nem saídas brutas
-versionadas para eles.
+`Network.emulateNetworkConditions`. A matriz histórica de controles continua sendo relato não
+verificado independentemente. PB-00R-06 versionou o harness e produziu uma matriz **nova e
+separada**, com saída bruta por execução; ela reproduziu o congelamento uma vez sem o runner
+Playwright, mas não audita nem substitui os números antigos.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -18,6 +19,7 @@ versionadas para eles.
 | PB-00R-03 | pending | `codex/pb00r-03-package-tests` | — | — |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | blocked | `codex/pb00r-02-boot-budget` | este handoff | falha histórica de 12.377,9 ms preservada; reprodução instrumentada em 12.351,5, 12.882,7 e 12.226,5 ms com fronteira isolada no Chromium/CDP |
+| PB-00R-06 | done | `codex/pb00r-06-diag-harness` | este handoff | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
 | PB-00R-05 | pending | `codex/pb00r-05-final-gate` | — | depende de PB-00R-01/02/03/04 |
 
 ## Baseline da auditoria
@@ -143,6 +145,62 @@ versionadas para eles.
 - Validação independente por modelo frontier diferente (GPT-5.6 Sol `xhigh`) continua pendente e é
   obrigatória antes de qualquer mudança de veredito.
 
+## Handoff PB-00R-06 — harness de diagnóstico versionado
+
+- Escopo: somente ferramental de diagnóstico. Nenhum arquivo de produção foi tocado;
+  `tests/e2e/boot-budget.spec.ts` e `playwright.config.ts` não foram editados, e budget, retry,
+  workers, cache e throttling continuam exatamente como estavam.
+- Harness versionado em `tools/diagnostics/`: `bootStall.ts` (parte pura), `controls.ts`,
+  `previewServer.ts`, `runControl.ts` (uma execução por processo Node) e `runBootStallMatrix.ts`
+  (orquestrador). Script de execução: `corepack pnpm diagnostics:boot-stall`.
+- RED/GREEN da parte pura: `tools/diagnostics/bootStall.test.ts` falhou com
+  `Cannot find module './bootStall.ts'` e passou `13/13` depois de implementar classificação de
+  stall, regra de três e agregação da matriz. O I/O do harness ficou fora do teste. O `include` do
+  Vitest da raiz cobre só `tests/**`, então o teste usa `tools/diagnostics/vitest.config.ts`
+  próprio; a configuração da raiz não mudou.
+- Sessão executada em 2026-08-11, com N declarado **antes** de rodar e igual ao da matriz histórica:
+  A=30, A′=30, B=75, D=30. 165 execuções, nenhuma incompleta. N não foi ajustado depois do
+  resultado e a sessão não foi repetida.
+- Matriz nova, **separada** da histórica, gerada pelo harness:
+
+| Controle | `vite preview` | Throttling | N executado | Stalls | Pior fronteira | Limite pela regra de três |
+|---|---|---|---:|---:|---:|---|
+| A | reaproveitado | on | 30 | 0 | 116,9 ms | taxa real até ~10% |
+| A′ | novo por execução | on | 30 | 1 | 10.010,7 ms | — |
+| B | novo por execução | **off** | 75 | 0 | 116,0 ms | taxa real até ~4% |
+| D | Node HTTP puro | n/a | 30 | 0 | 117,0 ms | taxa real até ~10% |
+
+- Reprodução auditável do congelamento, `A′` execução 28, registro versionado em
+  `boot-stall-runs.jsonl`: documento normal (`send` 88,6 ms, espera por headers 13,4 ms); CSS com
+  `sendEnd - sendStart` de **10.008,9 ms**; JS com `receiveHeadersStart - sendEnd` de
+  **10.010,7 ms**; mark acionável em **12.436,1 ms**. A magnitude bate com as falhas históricas de
+  12.226,5 a 12.882,7 ms e com o padrão de ~10,00 s praticamente constante.
+- **Promovido a conclusão**, sustentado pela saída bruta versionada desta task: o congelamento
+  ocorre **sem o runner Playwright**, em processo Node isolado; e não é explicado por volume
+  transferido, porque o CSS de 346 B congelou junto com o JS na mesma execução enquanto o documento
+  passou normal. Uma reprodução basta para existência; ela **não** sustenta afirmação de taxa.
+- **Continua hipótese, e uma leitura histórica ficou mais fraca:** com N realmente executado,
+  `0/75` em B limita a taxa a ~4% e a estimativa pontual de A′ é 1/30 ≈ 3,3%. O limite de B
+  **não exclui** uma taxa igual à observada em A′, então "o throttling CDP é necessário" segue
+  hipótese, com discriminação menor do que o texto histórico sugeria. O mesmo vale para o ciclo de
+  vida do servidor: `0/30` em A limita a ~10% e é compatível com 3,3%, logo A e A′ não se separam
+  nesta sessão. `0/30` em D limita a ~10% e mede TTFB em Node, que não é a mesma fronteira do CDP.
+- O host continua **não** descartado. O controle que decidiria isso é repetir a matriz em um segundo
+  host e ele não foi executado. "Chromium sob rede emulada neste host" segue fronteira observada,
+  não culpado definitivo.
+- A matriz histórica permanece rotulada "relato não verificado independentemente". Esta sessão não a
+  audita e as duas não foram fundidas.
+- Gates: teste do harness `13/13`; `typecheck` exit 0; `architecture:check` exit 0 sem supressão —
+  a checagem varre apenas `apps/` e `packages/`, então `tools/diagnostics` não entra na política e
+  nada precisou ser afrouxado; `build` exit 0; `qa:browser` `6/6`; `git diff --check` exit 0.
+  `biome check .` continua falhando apenas pelos achados pré-existentes e fora de escopo (CRLF em
+  `apps/game/vite.config.ts` e `tests/workspace/vite-build-config.test.ts`; `noExportsInTest` em
+  `tests/e2e/shell.spec.ts`); nenhum arquivo novo entrou nessa lista.
+- PB-00R-02 permanece `BLOCKED` e PB-00R-05 permanece inelegível, independentemente desta matriz.
+- Implementador: Claude Opus 5, reasoning alto, no runtime Claude Code; o effort efetivo não é
+  exposto por este ambiente. Validação independente por modelo frontier diferente permanece
+  pendente e é obrigatória antes de qualquer mudança de veredito.
+
 ## Modelos
 
 Registrar por task: implementador, effort, validador e qualquer fallback. A indisponibilidade do
@@ -153,9 +211,11 @@ modelo sugerido não reduz verificações.
 PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s observado na fronteira da
 pilha de rede do Chromium, em todas as reproduções com `Network.emulateNetworkConditions` ativo.
 "Chromium sob rede emulada neste host" é a fronteira observada, não o culpado definitivo. O
-tamanho do bundle está descartado pelos anexos versionados; servidor, runner Playwright e a
-necessidade do throttling são hipóteses fortes pendentes de reprodução, porque só a matriz de
-controles não auditável as sustenta; o host permanece não descartado por falta de um segundo host
+tamanho do bundle está descartado pelos anexos versionados. Depois de PB-00R-06, o runner
+Playwright está descartado como condição necessária: o harness versionado reproduziu o
+congelamento sem ele, com saída bruta auditável. O servidor e a necessidade do throttling
+continuam hipóteses — os `0/N` da matriz nova limitam a taxa a ~4% (B) e ~10% (A e D), o que não
+exclui a taxa observada em A′ — e o host permanece não descartado por falta de um segundo host
 autorizado. Os demais achados ainda impedem o fechamento do playbook.
 
 ## Regra de atualização

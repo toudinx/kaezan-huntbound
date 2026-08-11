@@ -7,10 +7,11 @@
 **Decisão atual:** PB-00R-02 permanece `BLOCKED`. A instrumentação de fronteira localizou a falha
 em um congelamento de ~10,0 s na fronteira da pilha de rede do Chromium, presente em todas as
 reproduções com `Network.emulateNetworkConditions` ativo. O tamanho do bundle e da aplicação está
-descartado pelos anexos versionados; servidor, runner Playwright e o papel do throttling são
-hipóteses fortes pendentes de reprodução, apoiadas apenas por uma matriz de controles não
-auditável; o host **não** está descartado. A causa não é controlável dentro do escopo.
-PB-01 não está elegível.
+descartado pelos anexos versionados. PB-00R-06 versionou o harness de controles e reproduziu o
+congelamento com saída bruta auditável **sem o runner Playwright**, o que remove o runner da lista
+de condições necessárias; o servidor e o papel do throttling continuam hipóteses, agora com
+limites explícitos pela regra de três; o host **não** está descartado. A causa não é controlável
+dentro do escopo. PB-01 não está elegível.
 
 ## Evidência inicial
 
@@ -244,6 +245,12 @@ versionada — nenhuma delas é descarte definitivo:
 - *Necessidade do throttling CDP*: 0/75 com ele desligado contra 3/30 com ele ligado, pela mesma
   matriz e com a mesma limitação.
 
+> Estado posterior destes três itens: PB-00R-06 reproduziu o congelamento sem o runner Playwright
+> com saída bruta versionada, então o runner deixa de ser condição necessária. Os outros dois
+> continuam hipótese, e a leitura de "0/75 contra 3/30" ficou mais fraca do que este parágrafo
+> sugere — ver "PB-00R-06 — harness versionado e matriz nova". Este parágrafo é preservado como
+> registro do que se sabia na segunda investigação.
+
 **O que NÃO está descartado: o host.** Um canary Node ocioso amostrando a 10 ms não congela
 durante a janela, os demais processos Node seguem sadios e a memória livre permanece em ~7,7 GB.
 Isso exclui apenas uma classe de causa: uma parada global de escalonamento que atingisse todos os
@@ -273,6 +280,11 @@ descarte definitivo de nenhum componente.
 Os stalls do controle A′ mediram `10.011,1`, `10.000,4` e `10.013,9 ms`. A magnitude é
 praticamente constante em ~10,00 s nas seis reproduções, o que indica um timeout e não
 starvation aleatória.
+
+> Esta matriz **continua** relato não verificado independentemente e não foi corrigida, alterada
+> nem fundida com nada. PB-00R-06 versionou o harness e produziu uma matriz **nova e separada**,
+> registrada mais abaixo em "PB-00R-06 — harness versionado e matriz nova". Execuções novas não
+> auditam estes números: eles seguem sem saída bruta.
 
 **Receita para reconstruir os controles.** Todos usam o mesmo `dist/game` já construído e o mesmo
 `vite preview --host 127.0.0.1 --port 4173 --strictPort`.
@@ -347,6 +359,122 @@ CRLF na working tree por causa de `core.autocrlf`, e `tests/e2e/shell.spec.ts` v
 Code; o effort efetivo não é exposto pelo ambiente. A skill `game-studio:game-playtest` exigida
 pela task não está instalada neste host e foi substituída pelo gate `qa:browser`. A validação
 independente por modelo frontier diferente permanece pendente e é obrigatória.
+
+### PB-00R-06 — harness versionado e matriz nova
+
+**Veredito de PB-00R-02: continua `BLOCKED`.** Esta task é diagnóstica. Nenhum arquivo de produção
+foi tocado, `tests/e2e/boot-budget.spec.ts` e `playwright.config.ts` não foram editados, e budget,
+retry, workers, cache e throttling permanecem exatamente como estavam. Nada abaixo vale como
+evidência de aceite.
+
+**O que mudou de status.** Os controles A, A′, B e D deixaram de ser scripts de sessão. O harness
+está versionado em `tools/diagnostics/` e escreve saída bruta por execução, sem edição manual, em
+`docs/playbooks/PB-00R/artifacts/diagnostics/`:
+
+| Entregável | Arquivo |
+|---|---|
+| Parte pura, sob teste | `tools/diagnostics/bootStall.ts` |
+| Teste unitário RED/GREEN | `tools/diagnostics/bootStall.test.ts` |
+| Coleta do teste fora de `tests/**` | `tools/diagnostics/vitest.config.ts` |
+| Definição dos quatro controles | `tools/diagnostics/controls.ts` |
+| Ciclo de vida do `vite preview` | `tools/diagnostics/previewServer.ts` |
+| Uma execução, um processo Node | `tools/diagnostics/runControl.ts` |
+| Orquestrador e escrita da saída | `tools/diagnostics/runBootStallMatrix.ts` |
+| Saída bruta por execução | `artifacts/diagnostics/boot-stall-runs.jsonl` |
+| Matriz gerada | `artifacts/diagnostics/boot-stall-matrix.md` |
+| N declarado, host e totais | `artifacts/diagnostics/boot-stall-session.json` |
+
+O harness reproduz a receita já registrada: `chromium.launch`, `newContext`, `newPage`,
+`context.newCDPSession`, `Network.enable`, `Network.setCacheDisabled` e
+`Network.emulateNetworkConditions` com `latency: 150`, `downloadThroughput: 200_000`,
+`uploadThroughput: 93_750` e `connectionType: 'cellular4g'` — omitido apenas em B. Navega para
+`http://127.0.0.1:4173/`, espera `[data-shell-ready="true"]`, lê o mark e reporta o maior
+`sendEnd - sendStart` e o maior `receiveHeadersStart - sendEnd` de `Network.responseReceived`.
+A reaproveita um único `vite preview`; A′ inicia e encerra um a cada execução; nada mais difere.
+D não usa browser: documento, depois CSS e JS em paralelo com o JS reusando o agente do documento.
+Critério de stall: qualquer das duas fronteiras acima de 3.000 ms.
+
+**N declarado antes da sessão**, igual ao da matriz histórica para permitir comparação direta:
+A=30, A′=30, B=75, D=30. Foram 165 execuções em 2026-08-11, nenhuma incompleta. O N não foi
+ajustado depois de ver o resultado e a sessão não foi repetida.
+
+**Matriz nova — gerada pelo harness versionado, com saída bruta.** Ela não substitui nem audita a
+matriz histórica, que permanece relato não verificado independentemente. As duas não se fundem.
+
+| Controle | Cliente | Runner | `vite preview` | Throttling | Fronteira medida | N executado | Stalls | Pior fronteira | Limite pela regra de três |
+|---|---|---|---|---|---|---:|---:|---:|---|
+| A | Chromium | nenhum | reaproveitado | on | CDP | 30 | 0 | 116,9 ms | taxa real até ~10% |
+| A′ | Chromium | nenhum | novo por execução | on | CDP | 30 | 1 | 10.010,7 ms | — |
+| B | Chromium | nenhum | novo por execução | **off** | CDP | 75 | 0 | 116,0 ms | taxa real até ~4% |
+| D | Node HTTP puro | nenhum | novo por execução | n/a | TTFB em Node | 30 | 0 | 117,0 ms | taxa real até ~10% |
+
+O controle D não tem timeline CDP. Sua fronteira comparável é o TTFB medido em Node, reportado no
+lugar da espera por headers e rotulado `nodeHttpTtfb` em cada registro. Não é a mesma medida de
+A/A′/B, e a linha de D deve ser lida com essa ressalva.
+
+**A reprodução auditável.** Controle A′, execução 28, registro completo em `boot-stall-runs.jsonl`:
+
+| Recurso | `sendEnd - sendStart` | `receiveHeadersStart - sendEnd` | Bytes |
+|---|---:|---:|---:|
+| Documento | 88,6 ms | 13,4 ms | 238 |
+| CSS | **10.008,9 ms** | 20,8 ms | 346 |
+| JS | 0,6 ms | **10.010,7 ms** | 356 |
+
+Mark acionável nessa execução: **12.436,1 ms**. A mediana de A′ nas outras 29 execuções ficou em
+2.363,3 ms. A magnitude bate com as falhas históricas de 12.226,5, 12.351,5, 12.377,9 e 12.882,7 ms,
+e as duas fronteiras ficaram novamente em ~10,00 s praticamente constantes.
+
+**Promovido de hipótese a conclusão, sustentado pela saída bruta versionada desta task:**
+
+- *O runner Playwright não é condição necessária.* O congelamento ocorreu em um processo Node
+  isolado, sem test runner, e o registro está versionado. Uma reprodução basta para estabelecer
+  existência.
+- *O volume transferido não explica a falha, agora também fora do gate.* Na mesma execução o CSS de
+  346 B segurou a fronteira de envio por 10.008,9 ms enquanto o documento passou normal.
+
+**Continua hipótese — e uma leitura histórica ficou explicitamente mais fraca.**
+
+`0/N` não prova ausência. Com o N realmente executado:
+
+- *Necessidade do throttling CDP*: B ficou em `0/75`, compatível com taxa real de até ~4%. A
+  estimativa pontual de A′ nesta sessão é `1/30` ≈ 3,3%. O limite de B **não exclui** uma taxa
+  igual à de A′, então esta sessão não estabelece que o throttling seja necessário. O texto
+  histórico tratava `0/75` contra `3/30` como discriminação forte; com estes números a
+  discriminação não está disponível.
+- *Ciclo de vida do `vite preview`*: A ficou em `0/30`, compatível com até ~10%, o que também
+  cobre 3,3%. A e A′ não se separam nesta sessão.
+- *`vite preview` como causa*: D ficou em `0/30`, até ~10%, e mede outra fronteira. Não descarta o
+  servidor.
+
+**O host continua não descartado.** Nenhuma execução desta task rodou em segundo host, e o controle
+que decidiria isso permanece o mesmo: repetir a matriz em um host com imagem diferente e comparar a
+taxa. "Chromium sob rede emulada neste host" segue sendo a fronteira observada, não o culpado
+definitivo.
+
+**Comando de reexecução:**
+
+```text
+corepack pnpm build
+corepack pnpm diagnostics:boot-stall --runs A=30,A-prime=30,B=75,D=30
+```
+
+**RED/GREEN.** `tools/diagnostics/bootStall.test.ts` falhou com
+`Cannot find module './bootStall.ts'` e passou `13/13` depois de implementar a classificação de
+stall, a regra de três e a agregação da matriz. O I/O do harness ficou fora do teste. O `include`
+do Vitest da raiz cobre apenas `tests/**`; o teste usa `tools/diagnostics/vitest.config.ts`
+próprio e a configuração da raiz não mudou.
+
+**Gates desta task:** harness `13/13`; `typecheck` exit 0; `architecture:check` exit 0 **sem
+supressão** — a checagem varre somente `apps/` e `packages/`, então `tools/diagnostics` não entra
+na política de dependência e nada precisou ser afrouxado; `build` exit 0; `qa:browser` `6/6`;
+`git diff --check` exit 0. `biome check .` continua reprovando apenas pelos achados pré-existentes
+e fora de escopo já registrados abaixo; nenhum arquivo novo entrou nessa lista.
+
+**Modelos:** implementador Claude Opus 5, reasoning alto, no runtime Claude Code; o effort efetivo
+não é exposto pelo ambiente. Validação independente por modelo frontier diferente permanece
+pendente e obrigatória.
+
+PB-00R-02 permanece `BLOCKED` e PB-00R-05 permanece inelegível, independentemente desta matriz.
 
 PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
 exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. O estado
