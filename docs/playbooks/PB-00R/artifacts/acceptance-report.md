@@ -4,10 +4,12 @@
 
 **Data de abertura:** 2026-08-11
 
-**Decisão atual:** PB-00R-02 permanece `BLOCKED`. A instrumentação de fronteira isolou a falha em
-um congelamento de ~10,0 s da pilha de rede do Chromium que só ocorre com
-`Network.emulateNetworkConditions` ativo; servidor, bundle, aplicação, runner Playwright e host
-foram descartados por controles de uma variável. A causa não é controlável dentro do escopo.
+**Decisão atual:** PB-00R-02 permanece `BLOCKED`. A instrumentação de fronteira localizou a falha
+em um congelamento de ~10,0 s na fronteira da pilha de rede do Chromium, presente em todas as
+reproduções com `Network.emulateNetworkConditions` ativo. O tamanho do bundle e da aplicação está
+descartado pelos anexos versionados; servidor, runner Playwright e o papel do throttling são
+hipóteses fortes pendentes de reprodução, apoiadas apenas por uma matriz de controles não
+auditável; o host **não** está descartado. A causa não é controlável dentro do escopo.
 PB-01 não está elegível.
 
 ## Evidência inicial
@@ -146,17 +148,22 @@ eventos CDP `Network.requestWillBeSent/responseReceived/dataReceived/loadingFini
 o `response.timing` bruto de cada request, o event-loop lag do processo runner e o `timeOrigin`,
 que permite correlacionar o relógio do browser com o log do servidor local.
 
-O campo decisivo é `response.timing`. Em execuções sadias ele separa duas coisas que o total
-esconde:
+O campo decisivo é `response.timing`. Todos os seus campos são timestamps registrados pelo
+Chromium para a request, não leituras diretas do socket abaixo da camada emulada; o que o servidor
+recebeu e escreveu vem exclusivamente do log do servidor. Em execuções sadias esses timestamps
+separam duas coisas que o total esconde:
 
-- `receiveHeadersStart` entre 8 e 25 ms — o `vite preview` respondeu de fato no socket;
-- `receiveHeadersEnd` por volta de 180 ms — a rede emulada liberou os headers depois da latência.
+- `receiveHeadersStart` entre 8 e 25 ms — o Chromium já registra headers pouco depois do envio, e
+  o log do servidor corrobora com `ttfb` de ~1 ms;
+- `receiveHeadersEnd` por volta de 180 ms — o Chromium só marca os headers como completos depois
+  da latência aplicada pela rede emulada.
 
 **Correção da causa antes registrada.** O relatório anterior atribuiu a falha à "entrega dos
-subrecursos sob o throttling". As três falhas reproduzidas agora mostram o atraso em
-`receiveHeadersStart` e em `sendEnd`, que são leituras do socket real, abaixo da camada emulada.
-O tamanho do bundle não participa: o CSS de 959 bytes falha junto porque o browser nem chega a
-escrever o request dele no socket durante o congelamento.
+subrecursos sob o throttling". As três falhas reproduzidas mostram o atraso nos timestamps
+`receiveHeadersStart` e `sendEnd` registrados pelo Chromium; a leitura correspondente do lado do
+servidor vem do log do probe, que registra a chegada do request só ao fim da janela. O tamanho do
+bundle não participa: o CSS de 959 bytes falha junto, sem `sendEnd` registrado durante o
+congelamento e sem chegada correspondente no log do servidor.
 
 **Procedência dos números abaixo.** Os valores do gate oficial saem do anexo `boot-metrics` de cada
 execução, reproduzível por qualquer revisor com o comando da própria task e lendo o anexo:
@@ -178,23 +185,29 @@ log do servidor.
 
 Os controles A, A′, B e D foram executados por scripts de diagnóstico mantidos fora do repositório,
 em diretório temporário de sessão, porque o escopo de PB-00R-02 não autoriza criar arquivos novos
-além dos paths listados na task. Esses scripts **não sobrevivem à sessão**, então a matriz abaixo é
-auditável pela receita, não pelo artefato. A receita de cada controle está descrita adiante com
-detalhe suficiente para reconstrução; quem for validar deve reconstruí-los e comparar as taxas, não
-confiar nos números aqui. Se a validação exigir artefatos versionados, o caminho correto é uma task
-própria que autorize `tools/` ou `scripts/` para o harness de diagnóstico.
+além dos paths listados na task. Esses scripts **não sobrevivem à sessão** e não deixaram saída
+bruta versionada. A receita adiante permite montar **novos** experimentos; ela não audita os
+números históricos, que continuam sendo **relato não verificado independentemente**. Quem for
+validar deve reconstruir os controles e comparar as próprias taxas, nunca tratar a matriz como
+prova. Versionar o harness exige uma task própria que autorize `tools/` ou `scripts/`, e essa task
+não é aberta agora.
+
+O mesmo se aplica ao probe do servidor: ele foi carregado por `NODE_OPTIONS` em processos da
+sessão e seus logs também não estão versionados. As linhas "servidor recebeu/escreveu" abaixo são
+a única fonte legítima para afirmações sobre o servidor, mas são reproduzíveis pela receita, não
+auditáveis pelo artefato.
 
 Falha instrumentada de `12.351,5 ms` (todos os valores em ms relativos ao `timeOrigin` da página):
 
 | Fronteira | Documento | CSS (959 B) | JS (358.283 B) |
 |---|---:|---:|---:|
 | Request iniciado pelo browser | 1,0 | 350,4 | 349,5 |
-| `connect` concluído | 165,9 | 1,4 após o request | conexão reusada |
-| `sendEnd` (bytes do request escritos) | 166,4 | **10.010,3** | 0,8 |
-| Servidor recebeu o request | -2.534 e 174 | **10.378** | 354 |
-| Servidor escreveu headers (`ttfb`) | 1,3 | 0,5 | 1,1 |
-| Servidor terminou a resposta | 175 | 10.381 | **10.383** |
-| `receiveHeadersStart` no browser | 178,3 | **10.381,6** | **10.361,7** |
+| `connect` concluído (timestamp do Chromium) | 165,9 | 1,4 após o request | conexão reusada |
+| `sendEnd` (timestamp do Chromium) | 166,4 | **10.010,3** | 0,8 |
+| Servidor recebeu o request (log do servidor) | -2.534 e 174 | **10.378** | 354 |
+| Servidor escreveu headers, `ttfb` (log do servidor) | 1,3 | 0,5 | 1,1 |
+| Servidor terminou a resposta (log do servidor) | 175 | 10.381 | **10.383** |
+| `receiveHeadersStart` (timestamp do Chromium) | 178,3 | **10.381,6** | **10.361,7** |
 | Mark acionável | — | — | 12.351,5 |
 
 Falha instrumentada de `12.882,7 ms`: CSS com `send` de `1,5` a `10.015,9`; JS com
@@ -206,13 +219,30 @@ Falha da sequência final de gate, `12.226,5 ms`: `serverHeaders` do CSS em `10.
 `requestTime` de `189,0`, e do JS em `10.195,9` contra `187,5`; documento normal com `responseEnd`
 de `182,2 ms`.
 
-**O que está descartado, com a métrica que descarta.**
+**O que está descartado, e com qual força.**
 
-- *Aplicação e tamanho do bundle*: o CSS de 959 bytes congela igual e seu request nem é enviado.
-- *`vite preview`*: event loop saudável durante a janela, `ttfb` de ~1 ms e resposta completa em
-  1,8–3 ms assim que o request chega.
-- *Runner Playwright*: o controle A′ reproduz o congelamento sem o test runner. O processo CLI do
-  Playwright também congela, mas é sintoma: ele descongela no mesmo instante que a rede.
+Comprovado pelos anexos versionados/reproduzíveis (`boot-metrics` do próprio gate, gerado pelo
+teste versionado):
+
+- *Aplicação e tamanho do bundle*: o CSS de 959 bytes congela junto com o JS de 358.283 B, sem
+  `sendEnd` registrado durante a janela. Volume transferido não explica a falha.
+- *Fase de parse/execução/Phaser*: o `responseEnd` do documento permanece normal e o atraso está
+  inteiramente antes do recebimento dos subrecursos.
+- *Starvation do processo runner*: o `runnerEventLoop` do anexo fica nas dezenas baixas de ms na
+  mesma janela em que a rede fica parada por ~10,0 s.
+
+Hipóteses fortes pendentes de reprodução, apoiadas em logs/scripts de sessão sem saída bruta
+versionada — nenhuma delas é descarte definitivo:
+
+- *`vite preview`*: pelo log do probe, o event loop fica saudável durante a janela, o `ttfb` é de
+  ~1 ms e a resposta completa sai em 1,8–3 ms assim que o request chega. O probe não está
+  versionado, então isso é relato reproduzível pela receita, não artefato auditável.
+- *Runner Playwright*: o controle A′ teria reproduzido o congelamento sem o test runner, e o
+  processo CLI do Playwright congelaria como sintoma, descongelando junto com a rede. A matriz que
+  sustenta isso é relato não verificado independentemente; o runner **não** está definitivamente
+  descartado.
+- *Necessidade do throttling CDP*: 0/75 com ele desligado contra 3/30 com ele ligado, pela mesma
+  matriz e com a mesma limitação.
 
 **O que NÃO está descartado: o host.** Um canary Node ocioso amostrando a 10 ms não congela
 durante a janela, os demais processos Node seguem sadios e a memória livre permanece em ~7,7 GB.
@@ -227,7 +257,10 @@ teve acesso autorizado a outro host, e a task condiciona essa comparação a aut
 Enquanto ele não existir, a formulação correta é que a falha é *específica do Chromium sob rede
 emulada neste host*, e não que o host esteja eliminado.
 
-**Matriz de controles diagnósticos.** Controles nunca valem como aceite; servem só para isolar.
+**Matriz de controles diagnósticos — relato não verificado independentemente.** Não há harness nem
+saídas brutas versionadas para nenhuma linha abaixo; os números vêm de scripts que não sobreviveram
+à sessão. Controles nunca valem como aceite, e estes em particular não podem ser tratados como
+descarte definitivo de nenhum componente.
 
 | Controle | Cliente | Runner | `vite preview` | Throttling | Execuções | Stalls ~10 s |
 |---|---|---|---|---:|---:|---:|
@@ -261,20 +294,39 @@ starvation aleatória.
   não passam de ~200 ms, então nenhum caso cai perto da fronteira.
 
 **Causa raiz, no nível em que a evidência sustenta:** com `Network.emulateNetworkConditions`
-ativo, a pilha de rede do Chromium para de escrever e de ler seus sockets por ~10,0 s, em ambas as
-direções e em conexões distintas, liberando tudo no mesmo instante. O ciclo de vida do servidor
-desloca a janela em que isso acontece, mas 0/30 contra 3/30 é correlação forte e não prova de
-necessidade.
+ativo, o Chromium deixa de registrar progresso de envio e de recepção por ~10,0 s, em ambas as
+direções e em conexões distintas, liberando tudo no mesmo instante; no lado do servidor, o log do
+probe mostra o request chegando só ao fim dessa janela. Isso é a *fronteira observada* — "Chromium
+sob rede emulada neste host" —, não um culpado definitivo. O ciclo de vida do servidor deslocaria
+a janela em que isso acontece, mas 0/30 contra 3/30 vem da matriz não auditável e é, no máximo,
+correlação a reproduzir.
 
 **Limites desta conclusão, explicitados.** A evidência localiza a falha *na fronteira* da pilha de
 rede do Chromium; ela não identifica o componente interno nem a constante de ~10,0 s, e não
 distingue um defeito do próprio Chromium de uma interação entre o Chromium e algo específico deste
-host. Sem o controle em segundo host, "Chromium/CDP" é a fronteira provada, não o culpado provado.
+host. Sem o controle em segundo host, "Chromium/CDP" é a fronteira observada, não o culpado
+provado.
 
 **Mudança realizada:** apenas instrumentação diagnóstica e helpers puros com teste, em
 `tests/e2e/boot-budget.spec.ts`, `tests/e2e/support/bootMetrics.ts` e
-`tests/e2e/support/bootMetrics.test.ts`. Os listeners CDP rodam no processo Node; o domínio
-`Network` já emitia esses eventos, então não há custo novo no browser nem deslocamento do mark.
+`tests/e2e/support/bootMetrics.test.ts`. Os handlers CDP e o sampler de event loop executam no
+processo do runner, e o domínio `Network` já emitia esses eventos por causa da própria emulação de
+rede. Não existe prova de overhead zero: nada aqui mede o custo do runner sobre o mark. O que há é
+um limite observado — o lag de event loop registrado em `runnerEventLoop` ficou nas dezenas baixas
+de milissegundos em todas as execuções coletadas —, e o outlier de aproximadamente 10 s já existia
+antes desta instrumentação, na sequência histórica que falhou em `12.377,9 ms`.
+
+**Garantia de anexo em timeout.** O teste passou a fixar `navigationTimeoutMs` e
+`readinessTimeoutMs` em 15.000 ms cada, `pageMetricsTimeoutMs` em 5.000 ms e `teardownTimeoutMs`
+em 5.000 ms, com `test.setTimeout` em 50.000 ms. Isso deixa uma janela garantida de 20.000 ms para
+coletar métricas best-effort, anexar `boot-metrics` e relançar o erro original, em vez de deixar um
+`page.goto` travado consumir todo o timeout do teste. O budget medido continua em exatamente
+5.000 ms e retry, workers, cache e throttling permanecem inalterados. Revalidado com readiness
+deliberadamente quebrada (`[data-shell-ready="never"]`): falha em 17,6 s com `boot-metrics`
+presente, `reachedShell=false` e o erro `expect(locator).toHaveCount(expected) failed` visível. E
+com navegação travada (`latency: 600_000`): falha em 30,2 s, status `failed` e não `timedOut`, com
+`boot-metrics` presente, `reachedShell=false`, `pageMetricsCollected=false` e o erro
+`TimeoutError: page.goto: Timeout 15000ms exceeded` visível.
 
 **Proposta para desbloquear:** executar o gate em um runner dedicado e reproduzível, com Chromium
 e sistema fixados por imagem, sem outras cargas concorrentes, e medir a taxa de ocorrência lá antes

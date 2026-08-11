@@ -3,8 +3,10 @@
 **Status geral:** pending
 
 **Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 está
-`blocked` por um congelamento intermitente de ~10,0 s dentro da pilha de rede do Chromium sob
-`Network.emulateNetworkConditions`, agora isolado por controles com uma variável por vez.
+`blocked` por um congelamento intermitente de ~10,0 s observado na fronteira do Chromium sob
+`Network.emulateNetworkConditions`. Os controles de uma variável por vez que sugeriram essa
+fronteira são relato não verificado independentemente: não há harness nem saídas brutas
+versionadas para eles.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -85,15 +87,18 @@
   correlacionar com logs do servidor. Helpers puros `summarizeCdpRequests` e
   `summarizeResponseTimings` entraram por RED/GREEN.
 - Correção da causa antes registrada: a hipótese anterior atribuía o stall à "entrega dos
-  subrecursos sob o throttling". As métricas de fronteira mostram que o atraso aparece em
-  `receiveHeadersStart` e em `sendEnd`, que são leituras do socket real e não da camada emulada.
-  O tamanho do bundle não participa: o CSS de 959 bytes falha igual porque seu request sequer é
-  escrito no socket durante o congelamento.
-- Fronteira provada em três falhas totalmente instrumentadas: o servidor responde em ~1 ms, seu
-  event loop fica saudável, o canary ocioso e os demais processos Node não congelam, e mesmo assim
-  o Chromium não escreve nem lê seus sockets por ~10,0 s. Os dois sockets são liberados no mesmo
-  instante.
-- Matriz de controles diagnósticos (nunca evidência de aceite):
+  subrecursos sob o throttling". O anexo `boot-metrics` mostra o atraso em `receiveHeadersStart` e
+  em `sendEnd`, que são timestamps registrados pelo Chromium para cada request, não leituras
+  diretas do socket abaixo da camada emulada. Quando o servidor recebeu e escreveu dados só pode
+  ser afirmado pelos logs do servidor, e eles mostram o request chegando apenas ao fim da janela.
+  O tamanho do bundle não participa: o CSS de 959 bytes falha igual, sem `sendEnd` registrado
+  durante o congelamento e sem chegada correspondente no log do servidor.
+- Fronteira observada em três falhas instrumentadas: pelos logs do servidor, o `vite preview`
+  recebe o request só ao fim da janela e responde em ~1 ms, com event loop saudável; o canary
+  ocioso e os demais processos Node não congelam. Nos timestamps do Chromium, `sendEnd` e
+  `receiveHeadersStart` das duas conexões saltam ~10,0 s e são liberados no mesmo instante.
+- Matriz de controles diagnósticos — **relato não verificado independentemente**, sem harness nem
+  saídas brutas versionadas; nunca evidência de aceite:
 
 | Controle | Cliente | Runner Playwright | `vite preview` | Throttling | Execuções | Stalls ~10 s |
 |---|---|---|---|---:|---:|---:|
@@ -103,19 +108,30 @@
 | B | Chromium | não | novo por execução | **off** | 75 | 0 |
 | D | Node HTTP puro | não | novo por execução | n/a | 30 | 0 |
 
-- Leitura da matriz: o runner Playwright não é necessário (A′ reproduz sem ele); o servidor e o
-  loopback do host estão descartados (D nunca falha contra o mesmo servidor novo por execução);
-  o throttling CDP é necessário (0/75 com ele desligado contra 3/30 com ele ligado).
-  O ciclo de vida do servidor é um gatilho de janela temporal, não a causa (0/30 reaproveitando
-  contra 3/30 recriando); com amostra dessa ordem esse item permanece correlação forte, não prova.
+- Leitura da matriz, toda ela hipótese forte pendente de reprodução e não conclusão comprovada:
+  o runner Playwright não seria necessário (A′ reproduz sem ele); servidor e loopback do host não
+  falhariam sozinhos (D nunca falha); o throttling CDP seria necessário (0/75 desligado contra
+  3/30 ligado); o ciclo de vida do servidor deslocaria a janela sem ser a causa (0/30 contra
+  3/30). Nenhum desses descartes pode ser tratado como definitivo: os números vêm de scripts que
+  não sobreviveram à sessão e ninguém além do executor os viu rodar.
 - O host **não** está descartado. O canary só exclui uma parada global de escalonamento; causas de
   host que atinjam seletivamente a pilha de rede do Chromium seguem possíveis. O controle que
   decidiria isso é repetir a matriz em um segundo host, e ele não foi executado por falta de acesso
   autorizado. A formulação sustentada é "específico do Chromium sob rede emulada neste host".
 - Os scripts dos controles A, A′, B e D ficaram fora do repositório, em diretório temporário de
-  sessão, porque o escopo da task não autoriza criar arquivos novos. A matriz é auditável pela
-  receita registrada no `acceptance-report.md`, não pelo artefato; versionar o harness exige uma
-  task que autorize `tools/` ou `scripts/`.
+  sessão, porque o escopo da task não autoriza criar arquivos novos. A receita registrada no
+  `acceptance-report.md` permite montar novos experimentos, mas não audita os números históricos:
+  as execuções já feitas não deixaram saída bruta nenhuma. Versionar o harness exige uma task que
+  autorize `tools/` ou `scripts/`, e ela não é aberta agora.
+- Conclusão comprovada, sustentada só pelos anexos versionados/reproduzíveis (`boot-metrics` do
+  próprio gate): o documento chega dentro do normal enquanto os subrecursos ficam ~10,0 s sem
+  progresso nos timestamps do Chromium; o CSS de 959 bytes congela junto com o JS de 358.283 B,
+  logo o volume transferido não explica a falha; e o event loop do runner permanece nas dezenas
+  baixas de ms na mesma janela.
+- Garantia de anexo em timeout: navegação e readiness passaram a ter 15.000 ms cada, coleta de
+  métricas 5.000 ms e teardown 5.000 ms, sob `test.setTimeout` de 50.000 ms, deixando 20.000 ms
+  garantidos para coletar, anexar `boot-metrics` e relançar o erro original. Budget medido segue em
+  exatamente 5.000 ms; retry, workers, cache e throttling não mudaram.
 - Condição de parada aplicada: a causa está no Chromium/CDP, fora dos paths permitidos. Reduzir
   throttling, aquecer servidor, adicionar retry ou afrouxar o budget continuariam proibidos e
   apenas mascarariam a falha.
@@ -134,10 +150,13 @@ modelo sugerido não reduz verificações.
 
 ## Bloqueios
 
-PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s da pilha de rede do Chromium
-que só ocorre com `Network.emulateNetworkConditions` ativo. Servidor, bundle, aplicação e runner
-Playwright estão descartados por controles de uma variável; o host permanece não descartado por
-falta de um segundo host autorizado. Os demais achados ainda impedem o fechamento do playbook.
+PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s observado na fronteira da
+pilha de rede do Chromium, em todas as reproduções com `Network.emulateNetworkConditions` ativo.
+"Chromium sob rede emulada neste host" é a fronteira observada, não o culpado definitivo. O
+tamanho do bundle está descartado pelos anexos versionados; servidor, runner Playwright e a
+necessidade do throttling são hipóteses fortes pendentes de reprodução, porque só a matriz de
+controles não auditável as sustenta; o host permanece não descartado por falta de um segundo host
+autorizado. Os demais achados ainda impedem o fechamento do playbook.
 
 ## Regra de atualização
 

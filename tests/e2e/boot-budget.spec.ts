@@ -15,9 +15,50 @@ test.describe.configure({ retries: 0 });
 
 const eventLoopSampleMs = 50;
 
+// These bound how long a hung boot may hold the test; they do not touch the
+// measured budget, which stays at exactly 5.000 ms. Without them a stuck
+// `page.goto` consumes the whole test timeout and Playwright kills the test
+// before the catch block runs, losing the diagnostics of the only runs that
+// need them.
+const navigationTimeoutMs = 15_000;
+const readinessTimeoutMs = 15_000;
+const pageMetricsTimeoutMs = 5_000;
+// A browser still stuck on the hung navigation can also hang `detach`/`close`,
+// which would burn the reserve after the attachment and replace the original
+// error with a bare test timeout.
+const teardownTimeoutMs = 5_000;
+// Guaranteed remainder of the test timeout, reserved for collecting metrics
+// best-effort, attaching `boot-metrics`, rethrowing the original error and
+// tearing the browser down.
+const diagnosticsReserveMs = 20_000;
+const testTimeoutMs =
+  navigationTimeoutMs + readinessTimeoutMs + diagnosticsReserveMs;
+
+// A failed page can reject or hang, and either would eat the reserve window.
+// Both degrade to `null` so the attachment still happens.
+const withDeadline = async <T>(
+  work: Promise<T>,
+  timeoutMs: number,
+): Promise<T | null> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      work.catch(() => null),
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 test('reaches the actionable shell within the Fast 4G budget', async ({
   browser,
 }, testInfo) => {
+  test.setTimeout(testTimeoutMs);
+
   const context = await browser.newContext();
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -140,16 +181,20 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
     let readinessError: unknown = null;
 
     try {
-      await page.goto('http://127.0.0.1:4173/');
-      await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
+      await page.goto('http://127.0.0.1:4173/', {
+        timeout: navigationTimeoutMs,
+      });
+      await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1, {
+        timeout: readinessTimeoutMs,
+      });
     } catch (error) {
       readinessError = error;
     } finally {
       clearInterval(eventLoopSampler);
     }
 
-    const entries = await page
-      .evaluate(() => {
+    const entries = await withDeadline(
+      page.evaluate(() => {
         const navigationEntry = performance.getEntriesByType('navigation')[0] as
           | PerformanceNavigationTiming
           | undefined;
@@ -185,10 +230,11 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
               decodedBodySize: entry.decodedBodySize,
             })),
         };
-      })
+      }),
       // The page can be unusable precisely when it failed; the CDP timeline is
       // collected in Node and survives that.
-      .catch(() => null);
+      pageMetricsTimeoutMs,
+    );
 
     const slowestResources = criticalResources(entries?.resources ?? []);
     const [firstActionableMark] = entries?.actionableMarks ?? [];
@@ -280,7 +326,7 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
     expect(duration).toBeLessThanOrEqual(5_000);
   } finally {
     clearInterval(eventLoopSampler);
-    await cdp.detach();
-    await context.close();
+    await withDeadline(cdp.detach(), teardownTimeoutMs);
+    await withDeadline(context.close(), teardownTimeoutMs);
   }
 });
