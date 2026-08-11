@@ -1,17 +1,21 @@
 # PB-00R — Relatório final de aceite
 
-**BLOCKED**
+**PENDING — aguardando integração de PB-00R-01 e PB-00R-03**
 
 **Data de abertura:** 2026-08-11
 
-**Decisão atual:** PB-00R-02 permanece `BLOCKED`. A instrumentação de fronteira localizou a falha
-em um congelamento de ~10,0 s na fronteira da pilha de rede do Chromium, presente em todas as
-reproduções com `Network.emulateNetworkConditions` ativo. O tamanho do bundle e da aplicação está
-descartado pelos anexos versionados. PB-00R-06 versionou o harness de controles e reproduziu o
-congelamento com saída bruta auditável **sem o runner Playwright**, o que remove o runner da lista
-de condições necessárias; o servidor e o papel do throttling continuam hipóteses, agora com
-limites explícitos pela regra de três; o host **não** está descartado. A causa não é controlável
-dentro do escopo. PB-01 não está elegível.
+**Decisão atual:** PB-00R-02 está `done (risco aceito)`. A instrumentação localizou um congelamento
+intermitente de ~10,0 s na fronteira da pilha de rede do Chromium e preservou evidência auditável.
+Por decisão de produto, 5.000 ms permanece alvo saudável e warning; boot entre 5.000 e 30.000 ms
+com shell acionável não bloqueia, e acima de 30.000 ms ou sem shell acionável bloqueia. O histórico
+diagnóstico permanece íntegro. PB-00R-05 ainda aguarda a integração de PB-00R-01 e PB-00R-03, por
+isso PB-01 ainda não está elegível.
+
+O gate final adota severidade proporcional: warnings conhecidos não impedem evolução. `BLOCKED`
+fica reservado a falha que impeça build/boot, inutilize fluxo essencial, cause crash ou
+corrupção/perda de dados, introduza risco de segurança ou impeça concretamente a próxima iteração.
+Na presença apenas de desvios não graves, o fechamento usa `APPROVED_WITH_WARNINGS` e libera a
+próxima iteração com follow-ups registrados.
 
 ## Evidência inicial
 
@@ -475,6 +479,18 @@ não é exposto pelo ambiente. Validação independente por modelo frontier dife
 pendente e obrigatória.
 
 PB-00R-02 permanece `BLOCKED` e PB-00R-05 permanece inelegível, independentemente desta matriz.
+
+### Decisão de produto posterior — risco aceito
+
+Em 2026-08-11, o responsável pelo produto aceitou os boots instrumentados de 12,2–12,9 s para a
+fase atual. Esta decisão é posterior ao veredito histórico acima e altera seu efeito operacional,
+sem apagar a evidência: PB-00R-02 passa a `done (risco aceito)`. O alvo de 5.000 ms permanece como
+warning mensurável; o limite bloqueante passa a ser 30.000 ms, shell não acionável ou métricas
+ausentes. O tema deve ser refinado quando houver crescimento do projeto, dados de usuários reais ou
+regressão do tempo de boot.
+
+Esta aceitação remove PB-00R-02 da lista de bloqueios do gate final. PB-00R-05 continua aguardando
+somente a integração e validação das tasks restantes, inclusive PB-00R-01 e PB-00R-03.
 
 PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
 exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. O estado

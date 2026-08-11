@@ -21,8 +21,9 @@ Esta task não corrige silenciosamente defeitos funcionais.
 
 ## Resultado esperado
 
-`acceptance-report.md` termina em `APPROVED` com evidência de todos os critérios, ou permanece
-`BLOCKED` com reprodução e nova task limitada. Não existe aprovação parcial.
+`acceptance-report.md` termina em `APPROVED`, `APPROVED_WITH_WARNINGS` ou `BLOCKED`. Warning exige
+evidência, impacto descrito e follow-up priorizado, mas não impede a próxima iteração. `BLOCKED` é
+reservado a risco grave que impeça validar o produto.
 
 ## Dependências
 
@@ -44,7 +45,13 @@ Esta task não corrige silenciosamente defeitos funcionais.
 ## Decisões congeladas
 
 - Evidência fresca vence relatos anteriores.
-- Nenhum budget, retry, throttling, worker ou baseline pode ser afrouxado.
+- Só bloqueiam: build ou boot inviável; fluxo essencial inutilizável; crash; corrupção/perda de
+  dados; risco de segurança; ou impedimento concreto da próxima iteração.
+- Performance, flakiness diagnóstica, polish e dívida técnica sem impacto grave são warnings e não
+  podem impedir sozinhos o avanço do produto.
+- O alvo saudável de boot permanece em 5.000 ms. Entre 5.000 e 30.000 ms é warning aceito pela
+  decisão de produto de 2026-08-11; acima de 30.000 ms ou sem shell acionável bloqueia.
+- Retry, throttling, worker e cache não podem ser afrouxados.
 - Defeito funcional bloqueia e vira nova task; o fechamento só corrige relatório/estado.
 - O aviso de chunk Phaser acima de 500 kB permanece limite conhecido fora de escopo.
 - PB-01 só é liberado pelo commit aprovado desta task.
@@ -101,7 +108,10 @@ corepack pnpm verify
 ```
 
 Registre exit code, quantidade de testes unitários/arquiteturais, quantidade E2E, duração do boot e
-warnings. Qualquer falha bloqueia.
+warnings. Classifique cada falha pela severidade congelada acima. Falha não grave vira warning com
+evidência e follow-up; falha grave bloqueia. Para a assertion conhecida de 5.000 ms, aceite somente
+quando o anexo comprovar shell acionável em até 30.000 ms. Execute os demais gates isoladamente para
+provar que uma falha anterior não mascarou outro resultado.
 
 - [ ] **4. Revalidar resize visual na mesma sessão.**
 
@@ -112,13 +122,18 @@ uniforme, canvas/overlay únicos e centro livre.
 - [ ] **5. Revalidar cinco boots em processos frios.**
 
 ```powershell
-1..5 | ForEach-Object {
+$bootRuns = 1..5 | ForEach-Object {
+  $run = $_
   corepack pnpm exec playwright test tests/e2e/boot-budget.spec.ts --workers=1
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  [pscustomobject]@{ Run = $run; ExitCode = $LASTEXITCODE }
 }
+$bootRuns | Format-Table
 ```
 
-Registre os cinco marks e paths/nomes dos anexos JSON. Uma falha bloqueia toda a auditoria.
+Registre os cinco marks e paths/nomes dos anexos JSON. Marks até 5.000 ms passam sem ressalva; marks
+entre 5.000 e 30.000 ms são warnings aceitos e não encerram a coleta. Acima de 30.000 ms, shell não
+acionável, anexo ausente ou qualquer erro diferente da assertion de duração bloqueia a auditoria.
+Não conte nova execução do mesmo índice como retry.
 
 - [ ] **6. Revalidar descoberta de testes.**
 
@@ -148,14 +163,17 @@ gameplay, Canary runtime, IndexedDB, backend, service worker e gacha nos diffs P
 
 - [ ] **9. Atualizar decisão documental.**
 
-Se tudo passar:
+Se não houver risco grave:
 
 - marque os critérios do `README.md`;
-- altere `STATE.md` e `acceptance-report.md` para `done`/`APPROVED`;
+- altere `STATE.md` para `done` e `acceptance-report.md` para `APPROVED` ou
+  `APPROVED_WITH_WARNINGS`;
 - registre comandos, exits, contagens, cinco marks, screenshot, hash do lockfile, modelos e limites;
+- para cada warning, registre evidência, impacto, gatilho de reabertura e follow-up priorizado;
 - altere o roteiro e índice para PB-01 elegível, sem iniciar PB-01.
 
-Se qualquer item falhar, preserve `BLOCKED`, crie `PB-00R-FIX-<NN>-<slug>.md` e não marque critérios.
+Somente se houver risco grave, preserve `BLOCKED`, crie `PB-00R-FIX-<NN>-<slug>.md` e não libere
+PB-01. Não transforme warnings em bloqueios por perfeccionismo de base.
 
 - [ ] **10. Commit de fechamento.**
 
@@ -168,10 +186,12 @@ git commit -m "docs: close PB-00R foundation repairs"
 
 ## Critérios de aceite
 
-- [ ] Todos os critérios finais do README possuem evidência fresca.
+- [ ] Todos os critérios finais do README possuem evidência fresca e cada desvio está classificado
+  como warning ou blocker pela severidade definida nesta task.
 - [ ] Instalação e gates não alteram lockfile.
 - [ ] Resize pós-boot foi testado e screenshot aberta no tamanho original.
-- [ ] Cinco processos frios consecutivos passam o budget.
+- [ ] Cinco processos frios consecutivos alcançam o shell em até 30.000 ms, com ocorrências acima
+  de 5.000 ms registradas como warnings.
 - [ ] Probe temporário prova descoberta e é removido.
 - [ ] Limpeza remove somente o output interno.
 - [ ] Nenhum conteúdo posterior ou artifact temporário está rastreado.
@@ -180,13 +200,16 @@ git commit -m "docs: close PB-00R foundation repairs"
 
 ## Condições de parada
 
-Qualquer gate funcional, arquitetural, visual, de escopo ou reprodutibilidade sem evidência bloqueia.
-Não implemente a correção nesta task e não use retry para transformar falha em aprovação.
+Ausência de evidência impede classificar o achado, mas `BLOCKED` exige risco grave reproduzido. O boot
+entre 5.000 e 30.000 ms com shell e métricas presentes é warning conhecido. Outros desvios não graves
+também podem terminar em `APPROVED_WITH_WARNINGS` quando tiverem impacto e follow-up registrados.
+Não implemente correções nesta task e não use retry para transformar falha em aprovação.
 
 ## Relatório final
 
-Comece com `APPROVED` ou `BLOCKED`; liste commits auditados, modelos/efforts, comandos/exits,
-contagens, cinco marks, screenshot, lockfile, limites, commit final e elegibilidade de PB-01.
+Comece com `APPROVED`, `APPROVED_WITH_WARNINGS` ou `BLOCKED`; liste commits auditados,
+modelos/efforts, comandos/exits, contagens, cinco marks, screenshot, lockfile, limites, warnings,
+follow-ups, commit final e elegibilidade de PB-01.
 
 ## Prompt copiável para novo chat
 
@@ -207,9 +230,10 @@ working tree está limpa, que a porta 4173 está livre e que nenhum outro agente
 Esta é uma auditoria independente: não corrija runtime silenciosamente. Execute instalação frozen,
 verify, resize visual, cinco processos frios, probe temporário de descoberta, prova limitada de
 limpeza, arquitetura, tracking e escopo. Abra a screenshot no tamanho original. Evidência fresca
-vence relatórios anteriores; qualquer falha mantém BLOCKED e cria task corretiva separada.
+vence relatos anteriores. Classifique achados por severidade: warnings não impedem evolução;
+somente risco grave reproduzido mantém BLOCKED e cria task corretiva separada.
 
 Se tudo passar, atualize README.md, STATE.md, acceptance-report.md, roteiro e índice, libere PB-01 sem
-iniciá-lo e crie o commit docs: close PB-00R foundation repairs. Encerre com APPROVED ou BLOCKED,
-evidências completas, modelo/effort e hash do commit.
+iniciá-lo e crie o commit docs: close PB-00R foundation repairs. Encerre com APPROVED,
+APPROVED_WITH_WARNINGS ou BLOCKED, evidências completas, modelo/effort e hash do commit.
 ```

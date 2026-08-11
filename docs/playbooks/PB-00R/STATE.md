@@ -1,13 +1,12 @@
 # PB-00R — Estado operacional
 
-**Status geral:** pending
+**Status geral:** pending (não bloqueante até o gate integrado)
 
-**Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 está
-`blocked` por um congelamento intermitente de ~10,0 s observado na fronteira do Chromium sob
-`Network.emulateNetworkConditions`. A matriz histórica de controles continua sendo relato não
-verificado independentemente. PB-00R-06 versionou o harness e produziu uma matriz **nova e
-separada**, com saída bruta por execução; ela reproduziu o congelamento uma vez sem o runner
-Playwright, mas não audita nem substitui os números antigos.
+**Próxima onda elegível:** integrar PB-00R-01 e PB-00R-03. PB-00R-02 está `done (risco aceito)` por
+decisão de produto: 5.000 ms permanece alvo saudável e métrica de warning, enquanto somente boot
+acima de 30.000 ms ou ausência do shell acionável volta a bloquear. PB-00R-05 fica elegível assim
+que PB-00R-01 e PB-00R-03 também estiverem integradas na mesma branch; seus commits ainda não estão
+na branch atual.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -15,11 +14,11 @@ Playwright, mas não audita nem substitui os números antigos.
 
 | Task | Status | Branch sugerida | Commit | Evidência |
 |---|---|---|---|---|
-| PB-00R-01 | pending | `codex/pb00r-01-resize` | — | — |
-| PB-00R-03 | pending | `codex/pb00r-03-package-tests` | — | — |
+| PB-00R-01 | ready to integrate | `codex/pb00r-01-resize` | `911df51` | implementação e screenshot versionadas na branch; integração pendente |
+| PB-00R-03 | ready to integrate | `codex/pb00r-03-package-tests` | `809383e` | scripts de teste e prova de descoberta versionados na branch; integração pendente |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
-| PB-00R-02 | blocked | `codex/pb00r-02-boot-budget` | este handoff | falha histórica de 12.377,9 ms preservada; reprodução instrumentada em 12.351,5, 12.882,7 e 12.226,5 ms com fronteira isolada no Chromium/CDP |
-| PB-00R-06 | done | `codex/pb00r-06-diag-harness` | este handoff | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
+| PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
+| PB-00R-06 | done | `codex/pb00r-06-diag-harness` | `b3978ff` | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
 | PB-00R-05 | pending | `codex/pb00r-05-final-gate` | — | depende de PB-00R-01/02/03/04 |
 
 ## Baseline da auditoria
@@ -201,14 +200,28 @@ Playwright, mas não audita nem substitui os números antigos.
   exposto por este ambiente. Validação independente por modelo frontier diferente permanece
   pendente e é obrigatória antes de qualquer mudança de veredito.
 
+## Decisão de produto — risco de boot aceito
+
+- Em 2026-08-11, o responsável pelo produto aceitou os stalls instrumentados de 12,2–12,9 s como
+  risco compatível com a fase atual do projeto.
+- O alvo de 5.000 ms não é apagado: permanece como métrica de saúde e warning para regressão.
+- Boot entre 5.000 e 30.000 ms, com shell acionável e anexo diagnóstico preservado, não bloqueia
+  PB-00R-02 nem PB-00R-05.
+- Boot acima de 30.000 ms, shell não acionável, ausência de métricas ou regressão funcional continua
+  bloqueante.
+- PB-00R-02 passa a `done (risco aceito)`. A decisão substitui o efeito operacional dos vereditos
+  históricos `BLOCKED`, sem apagar ou reinterpretar as evidências que os sustentaram.
+- PB-00R-05 ainda depende da integração de PB-00R-01 e PB-00R-03; esta decisão não dispensa esses
+  pré-requisitos.
+
 ## Modelos
 
 Registrar por task: implementador, effort, validador e qualquer fallback. A indisponibilidade do
 modelo sugerido não reduz verificações.
 
-## Bloqueios
+## Risco conhecido de boot
 
-PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s observado na fronteira da
+PB-00R-02 registrou um congelamento intermitente de ~10,0 s observado na fronteira da
 pilha de rede do Chromium, em todas as reproduções com `Network.emulateNetworkConditions` ativo.
 "Chromium sob rede emulada neste host" é a fronteira observada, não o culpado definitivo. O
 tamanho do bundle está descartado pelos anexos versionados. Depois de PB-00R-06, o runner
@@ -216,7 +229,8 @@ Playwright está descartado como condição necessária: o harness versionado re
 congelamento sem ele, com saída bruta auditável. O servidor e a necessidade do throttling
 continuam hipóteses — os `0/N` da matriz nova limitam a taxa a ~4% (B) e ~10% (A e D), o que não
 exclui a taxa observada em A′ — e o host permanece não descartado por falta de um segundo host
-autorizado. Os demais achados ainda impedem o fechamento do playbook.
+autorizado. O risco foi aceito para a fase atual e não bloqueia mais PB-00R-02; permanece registrado
+para refinamento futuro e volta a bloquear se ultrapassar 30.000 ms ou impedir o shell acionável.
 
 ## Regra de atualização
 
