@@ -117,18 +117,22 @@ workspace. Nenhum servidor de banco, Docker ou instalação global é necessári
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-01-01](tasks/PB-01-01-definir-identidade-e-schemas.md) | identidade, schemas e diagnósticos | PB-00R fechado | Sol `xhigh` | pending |
-| [PB-01-02](tasks/PB-01-02-criar-catalogo-sqlite.md) | migrations, catálogo e repository transacional | PB-01-01 | Sol `xhigh` | pending |
-| [PB-01-03](tasks/PB-01-03-congelar-slice-e-proveniencia.md) | seleção curada, fixtures e source lock | PB-01-02 | Sol `xhigh` | pending |
-| [PB-01-04](tasks/PB-01-04-importar-vocacao-e-itens-xml.md) | importadores XML de Knight e itens | PB-01-03 | Sol `xhigh` | pending |
-| [PB-01-05](tasks/PB-01-05-importar-criaturas-e-spell-lua.md) | AST Lua para criaturas e Berserk | PB-01-03 | Sol `xhigh` | pending |
-| [PB-01-06](tasks/PB-01-06-materializar-e-exportar-slice.md) | serviço, dependency closure, DB, JSON e docs | PB-01-04/05 | Sol `xhigh` | pending |
-| [PB-01-07](tasks/PB-01-07-fechar-gate-integrado.md) | auditoria integrada e aceite | PB-01-06 | Opus 5 ou Sol `xhigh` | pending |
+| [PB-01-01](tasks/PB-01-01-definir-identidade-e-schemas.md) | identidade, schemas e diagnósticos | PB-00R fechado | Luna `xhigh` | pending |
+| [PB-01-02](tasks/PB-01-02-criar-catalogo-sqlite.md) | migrations, catálogo e repository transacional | PB-01-01 | Luna `xhigh` | pending |
+| [PB-01-03](tasks/PB-01-03-congelar-slice-e-proveniencia.md) | seleção curada, fixtures e source lock | PB-01-02 | Luna `xhigh` | pending |
+| [PB-01-04](tasks/PB-01-04-importar-vocacao-e-itens-xml.md) | importadores XML de Knight e itens | PB-01-03 | Luna `xhigh` | pending |
+| [PB-01-05](tasks/PB-01-05-importar-criaturas-e-spell-lua.md) | AST Lua para criaturas e Berserk | PB-01-03 | Luna `xhigh` | pending |
+| [PB-01-06](tasks/PB-01-06-materializar-e-exportar-slice.md) | serviço, dependency closure, DB, JSON e docs | PB-01-04/05 | Luna `xhigh` | pending |
+| [PB-01-07](tasks/PB-01-07-fechar-gate-integrado.md) | auditoria integrada e aceite | PB-01-06 | Claude Code/Opus 5 ou Sol `xhigh` | pending |
 
 PB-01-04 e PB-01-05 possuem paths funcionais independentes e podem ser executadas em paralelo por
 branches isoladas depois de PB-01-03. O fluxo padrão continua serial. Se o paralelismo for ativado,
 ambas removem suas worktrees e preservam branches; PB-01-06 é o integrador único, incorpora os dois
 commits, resolve somente o handoff documental e apaga as branches depois do gate integrado.
+
+PB-01-01 a PB-01-06 seguem Luna-first. Sol ou Claude Code/Opus 5 só substituem o executor quando um
+gatilho da política de escalonamento for registrado em `STATE.md`. PB-01-07 permanece frontier porque
+é auditoria independente e não uma implementação geral.
 
 ## Baseline de qualidade conhecido
 

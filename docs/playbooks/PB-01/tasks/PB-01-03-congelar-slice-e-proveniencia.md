@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** especificação executável e ferramental de proveniência
+**Classe da tarefa:** implementação geral bem especificada — seleção e proveniência já congeladas
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente após
+gatilho de escalonamento
 
 **Rota:** `game-studio:web-game-foundations` + `superpowers:test-driven-development` +
 `superpowers:verification-before-completion`.
@@ -238,9 +239,11 @@ PB-01-04 e PB-01-05 elegíveis sem iniciar nenhuma.
 ## Prompt copiável para novo chat
 
 ```text
-Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol xhigh.
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna xhigh.
 Use game-studio:web-game-foundations, superpowers:test-driven-development e
 superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente após um gatilho objetivo da política,
+registrado no STATE.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-03-congelar-slice-e-proveniencia.md.
 Crie a branch/worktree declaradas, fixe o source lock e o slice, crie somente fixtures sintéticas,
 prove os hashes do snapshot real, rode gates, atualize STATE, commite, integre por fast-forward e

@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** implementação complexa — contratos entre packages e identidade durável
+**Classe da tarefa:** implementação geral bem especificada — contratos e identidade já congelados
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5; fallback GPT-5.6 Sol `xhigh` com desvio registrado
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente se um
+gatilho de escalonamento for registrado
 
 **Rota:** `game-studio:web-game-foundations` + `superpowers:test-driven-development` +
 `superpowers:verification-before-completion`.
@@ -279,8 +280,10 @@ commit integrado, limpeza e PB-01-02 como próxima task. Não crie banco ou impo
 ```text
 Trabalhe em C:\Kaezan\kaezan-huntbound.
 
-Use GPT-5.6 Sol com effort xhigh. Use obrigatoriamente game-studio:web-game-foundations,
+Use GPT-5.6 Luna com effort xhigh. Use obrigatoriamente game-studio:web-game-foundations,
 superpowers:test-driven-development e superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente após um gatilho objetivo da política,
+registrado no STATE.
 
 Execute integralmente e somente:
 C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-01-definir-identidade-e-schemas.md

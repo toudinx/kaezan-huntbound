@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** implementação complexa — AST não confiável e mapeamento sem execução
+**Classe da tarefa:** implementação geral bem especificada — AST com whitelist congelada
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente se a
+AST real exigir forma fora da whitelist ou após outro gatilho de escalonamento
 
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
 
@@ -198,8 +199,10 @@ de integração/limpeza. Não materialize banco nem exporte JSON.
 ## Prompt copiável para novo chat
 
 ```text
-Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol xhigh.
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna xhigh.
 Use superpowers:test-driven-development e superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente se a AST real sair da whitelist ou após
+outro gatilho objetivo registrado no STATE.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-05-importar-criaturas-e-spell-lua.md.
 Use AST luaparse estrita e nunca execute Lua. Faça RED/GREEN, mapping, prova negativa, gates, STATE,
 commit, integração serial por fast-forward e limpeza. Não acesse SQLite/filesystem no adapter, não

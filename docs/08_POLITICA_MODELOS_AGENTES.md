@@ -7,15 +7,17 @@ Kaezan Huntbound.
 
 ## Objetivo
 
-Escolher modelo e effort pelo risco da tarefa, mantendo implementações pequenas econômicas e usando
-capacidade frontier onde julgamento, confiabilidade ou horizonte longo importam. Modelo sugerido não
-substitui testes, evidência fresca, revisão nem critérios de aceite.
+Escolher modelo e effort pelo risco residual da tarefa. GPT-5.6 Luna é o executor padrão de
+implementações gerais quando arquitetura, decisões e aceite já estão congelados. GPT-5.6 Sol ou
+Claude Opus 5 via Claude Code entram por escalonamento quando a tarefa exige novo julgamento,
+permanece bloqueada ou é uma auditoria independente. Modelo sugerido não substitui testes, evidência
+fresca, revisão nem critérios de aceite.
 
 ## Regra padrão
 
 | Classe da tarefa | Modelo e effort padrão | Validação |
 |---|---|---|
-| Implementação menor e bem especificada | GPT-5.6 Luna, `xhigh` | GPT-5.6 Sol `xhigh` ou Claude Opus 5 |
+| Implementação geral bem especificada | GPT-5.6 Luna, `xhigh` | gates automatizados; Sol/Opus somente por escalonamento ou marco explícito |
 | Especificação, plano, auditoria ou validação | GPT-5.6 Sol, `xhigh`, ou Claude Opus 5 | outro modelo frontier quando houver segunda revisão |
 | Implementação complexa | GPT-5.6 Sol, `xhigh`, ou Claude Opus 5 | modelo frontier diferente do implementador |
 
@@ -24,18 +26,25 @@ custo total para aquela classe de tarefa, ou indisponibilidade dos modelos prefe
 
 ## Classificação obrigatória
 
-Uma implementação é **menor e bem especificada** somente quando todas as condições são verdadeiras:
+Uma implementação é **geral e bem especificada** quando todas as condições são verdadeiras:
 
 - resolve um único comportamento ou fronteira coesa;
-- não decide arquitetura, schema, persistência, concorrência, segurança ou economia;
+- aplica arquitetura, schema, persistência e políticas já congelados sem precisar redesenhá-los;
 - possui paths e critérios objetivos já conhecidos;
 - permite red-green e verificação completa dentro da própria task;
-- uma falha não causa perda de dados nem contamina múltiplos playbooks.
+- opera somente sobre estado local reconstruível ou possui rollback/gates objetivos que limitam o
+  impacto da falha;
+- ambiguidades relevantes possuem condição de parada e rota explícita de escalonamento.
+
+Quantidade de arquivos, duração estimada ou presença de SQLite/importadores não tornam uma task
+complexa por si sós. Uma implementação extensa pode continuar em Luna quando o trabalho é mecânico,
+os contratos estão congelados e o resultado é verificável ponta a ponta.
 
 A implementação é **complexa** quando qualquer condição abaixo for verdadeira:
 
-- muda contratos entre packages ou decisões arquiteturais;
-- envolve determinismo, persistência, concorrência, segurança, economia ou migração;
+- precisa decidir ou modificar contratos, schema ou arquitetura ainda não congelados;
+- envolve dados não reconstruíveis, concorrência, segurança, economia ou migração com risco não
+  coberto por rollback e testes objetivos;
 - investiga comportamento intermitente, performance ou causa ainda desconhecida;
 - atravessa múltiplos subsistemas com dependências sequenciais;
 - exige julgamento significativo para definir o resultado correto.
@@ -43,9 +52,27 @@ A implementação é **complexa** quando qualquer condição abaixo for verdadei
 Especificações, auditorias e gates finais usam Sol ou Opus 5 mesmo quando o diff esperado é pequeno,
 pois o risco está no julgamento e não na quantidade de linhas.
 
+## Escalonamento Luna-first
+
+Uma task de implementação começa em Luna e só troca para Sol ou Opus 5 quando ocorrer pelo menos um
+dos gatilhos abaixo:
+
+- a mesma causa bloqueia dois ciclos RED/GREEN consecutivos;
+- concluir exige mudar decisão congelada, schema, política de identidade, allowlist ou escopo;
+- o executor não consegue provar segurança, rollback, determinismo ou isolamento com os gates da
+  task;
+- aparece comportamento real não coberto pelo contrato e com mais de uma interpretação plausível;
+- o usuário pede escalonamento ou a task é explicitamente um marco de auditoria independente.
+
+Antes de escalar, o executor registra em `STATE.md` a evidência do bloqueio, tentativas realizadas,
+decisão pendente e modelo de destino. Sol/Opus não são validadores obrigatórios de toda entrega Luna;
+os gates automatizados são o primeiro validador, e revisão frontier fica concentrada nos marcos e
+exceções de risco.
+
 ## Diversidade de revisão
 
-- Uma implementação Luna deve preferir Sol ou Opus 5 para revisão e validação.
+- Quando uma implementação Luna atingir um marco de revisão frontier ou for escalada, deve preferir
+  Sol ou Opus 5 para revisão e validação.
 - Uma implementação Sol deve preferir Opus 5; uma implementação Opus 5 deve preferir Sol.
 - O mesmo modelo pode revisar somente quando a plataforma não oferecer alternativa. O desvio deve
   ser registrado em `STATE.md` com modelo, effort e motivo.

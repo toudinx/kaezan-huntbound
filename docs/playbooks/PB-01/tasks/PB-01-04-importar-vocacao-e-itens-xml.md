@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** implementação complexa — adapter de fonte e normalização de dados
+**Classe da tarefa:** implementação geral bem especificada — adapter XML seletivo
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente após
+gatilho de escalonamento
 
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
 
@@ -183,8 +184,10 @@ inicie parser Lua ou materialização.
 ## Prompt copiável para novo chat
 
 ```text
-Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol xhigh.
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna xhigh.
 Use superpowers:test-driven-development e superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente após um gatilho objetivo da política,
+registrado no STATE.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-04-importar-vocacao-e-itens-xml.md.
 Siga o fluxo serial por padrão: branch/worktree exatas, RED/GREEN, gates, STATE, commit, fast-forward
 na main, reverificação e limpeza. Importe somente Knight e itens solicitados; não leia filesystem no

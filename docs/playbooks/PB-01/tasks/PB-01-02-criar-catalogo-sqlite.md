@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** implementação complexa — persistência, migrations e atomicidade
+**Classe da tarefa:** implementação geral bem especificada — persistência local reconstruível
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente após
+gatilho de escalonamento
 
 **Rota:** `game-studio:web-game-foundations` + `superpowers:test-driven-development` +
 `superpowers:verification-before-completion`.
@@ -228,8 +229,10 @@ limpeza e PB-01-03 como próxima task.
 
 ```text
 Trabalhe em C:\Kaezan\kaezan-huntbound.
-Use GPT-5.6 Sol xhigh e as skills game-studio:web-game-foundations,
+Use GPT-5.6 Luna xhigh e as skills game-studio:web-game-foundations,
 superpowers:test-driven-development e superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente após um gatilho objetivo da política,
+registrado no STATE.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-02-criar-catalogo-sqlite.md.
 Crie a branch/worktree exatas, implemente migrations e repository por RED/GREEN, use apenas as
 dependências exatas da task, rode gates, atualize STATE, commite, integre por fast-forward e limpe

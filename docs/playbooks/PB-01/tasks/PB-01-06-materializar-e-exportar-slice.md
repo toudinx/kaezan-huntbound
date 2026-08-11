@@ -2,11 +2,12 @@
 
 **Status inicial:** pending
 
-**Classe da tarefa:** implementação complexa — orquestração, integridade e determinismo ponta a ponta
+**Classe da tarefa:** implementação geral bem especificada — integração de contratos já congelados
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** GPT-5.6 Luna `xhigh`
 
-**Validador sugerido:** Claude Opus 5
+**Validador sugerido:** gates automatizados; GPT-5.6 Sol `xhigh` ou Claude Code/Opus 5 somente se
+determinismo, rollback ou boundaries não puderem ser provados, ou após outro gatilho de escalonamento
 
 **Rota:** `game-studio:web-game-foundations` + `superpowers:test-driven-development` +
 `superpowers:verification-before-completion`.
@@ -286,9 +287,11 @@ commit, integração e limpeza. Indique PB-01-07; não declare PB-01 fechado.
 ## Prompt copiável para novo chat
 
 ```text
-Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol xhigh.
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna xhigh.
 Use game-studio:web-game-foundations, superpowers:test-driven-development e
 superpowers:verification-before-completion.
+Não escale por cautela genérica; use Sol/Claude somente se determinismo, rollback ou boundaries não
+puderem ser provados, ou após outro gatilho objetivo registrado no STATE.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-06-materializar-e-exportar-slice.md.
 Confirme PB-01-04/05 integradas ou aplique o protocolo paralelo exato. Faça closure curada,
 transação, operação versionada, rebuild SQLite, JSON/hash/docs determinísticos e registry browser-safe

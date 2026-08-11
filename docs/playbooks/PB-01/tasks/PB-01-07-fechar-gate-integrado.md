@@ -4,7 +4,7 @@
 
 **Classe da tarefa:** auditoria e validação final
 
-**Modelo sugerido:** Claude Opus 5; fallback GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** Claude Code/Opus 5; fallback GPT-5.6 Sol `xhigh`
 
 **Validador sugerido:** modelo frontier diferente do executor
 
@@ -194,7 +194,7 @@ commit integrado, limpeza e elegibilidade real de PB-02.
 
 ```text
 Trabalhe em C:\Kaezan\kaezan-huntbound.
-Use Claude Opus 5 para auditoria; fallback GPT-5.6 Sol xhigh com desvio registrado. Use
+Use Claude Code/Opus 5 para auditoria; fallback GPT-5.6 Sol xhigh com desvio registrado. Use
 game-studio:web-game-foundations e superpowers:verification-before-completion.
 Execute somente C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-01\tasks\PB-01-07-fechar-gate-integrado.md.
 Faça auditoria independente com evidência fresca, provas controladas, rebuilds determinísticos e

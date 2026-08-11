@@ -34,6 +34,8 @@
 
 ## Decisões operacionais
 
+- PB-01-01 a PB-01-06 usam GPT-5.6 Luna `xhigh` por padrão. Sol/Claude só entram após gatilho
+  objetivo de escalonamento registrado neste arquivo; PB-01-07 é auditoria frontier independente.
 - Tasks são seriais por padrão.
 - PB-01-04/05 podem formar uma onda paralela somente quando ambas partirem da `main` já contendo
   PB-01-03. Nesse modo, executores preservam branches e PB-01-06 integra ambos serialmente.
