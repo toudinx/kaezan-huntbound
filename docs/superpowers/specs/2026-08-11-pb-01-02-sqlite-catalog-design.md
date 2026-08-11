@@ -17,9 +17,11 @@ somente puder ser atendido mudando `packages/contracts/src/content/**`.
 ## Fronteiras e interfaces
 
 O driver `better-sqlite3@13.0.3` e APIs Node ficam restritos a `tools/content-catalog/`.
-`packages/content/src/catalog/ContentCatalogPort.ts` define e exporta a porta de leitura;
-`packages/content/src/index.ts` reexporta somente essa porta. A porta de escrita fica em
-`packages/content/src/application/internal/CuratedCatalogWriter.ts` e não sai no entrypoint.
+`packages/content/src/catalog/ContentCatalogPort.ts` exporta a porta de leitura pelo próprio módulo.
+`packages/content/src/index.ts` não pertence ao escopo permitido de PB-01-02 e permanece inalterado;
+PB-01-06, que inclui o entrypoint em seu escopo, poderá reexportar a porta de leitura. A porta de
+escrita fica em `packages/content/src/application/internal/CuratedCatalogWriter.ts` e nunca sai no
+entrypoint.
 
 A operação transacional usa uma assinatura que rejeita callbacks assíncronos por tipo:
 
@@ -32,7 +34,9 @@ export interface CuratedCatalogTransactionWriter {
 export interface CuratedCatalogWriter {
   transaction<Operation extends (tx: CuratedCatalogTransactionWriter) => unknown>(
     operation: Operation &
-      (ReturnType<Operation> extends PromiseLike<unknown> ? never : unknown),
+      (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
+        ? unknown
+        : never),
   ): ReturnType<Operation>;
 }
 ```
@@ -72,7 +76,7 @@ Reexecutar o conjunto inalterado não escreve linhas.
 ao round-trip:
 
 ```text
-schema_migrations
+schema_migrations, content_identity_ledger
 source_snapshots, source_files
 content_slices, content_entities, content_aliases, content_entity_facets
 content_slice_roots, content_slice_entities
@@ -98,6 +102,17 @@ outro GUID/source tuple, e um GUID/source tuple existente não pode receber outr
 são únicos por `(source_system, alias)` e sempre apontam para a entidade declarada; referências cruas
 de spell permanecem somente em `spell_source_vocation_refs`.
 
+`content_identity_ledger` é um ledger permanente, sem timestamp exportável, com GUID, stable key,
+identity source system, kind, source ID e first-seen slice. Toda entidade commitada registra primeiro
+seu mapeamento no ledger; linhas do ledger nunca são atualizadas nem removidas, mesmo quando a
+entidade deixa o último slice. `content_entities` representa somente entidades ativas e referencia o
+ledger. `listOrphanEntities()` ignora o ledger. Assim, remover conteúdo ativo não permite reutilizar
+historicamente uma stable key, GUID ou source tuple.
+
+O prefixo da stable key deve corresponder ao kind concreto: vocations usam `vocation:tibia:`,
+creatures `creature:tibia:`, items `item:tibia:` e spells `spell:tibia:`. A fronteira valida essa
+relação antes da escrita e `content_entities` a reforça com `CHECK`.
+
 ## Validação da fronteira de escrita
 
 `replaceCatalogBundle` recebe o tipo público por ergonomia, mas não confia no tipo apagado em
@@ -107,8 +122,8 @@ ao schema Zod:
 
 1. roots e dependencies são disjuntos e sua união é exatamente o conjunto de stable keys das
    entidades do bundle;
-2. toda entidade possui exatamente uma projeção, e o conjunto de `projection.facets` é igual ao de
-   `entity.includedFacets`;
+2. toda entidade inclui obrigatoriamente o facet `identity`, possui exatamente uma projeção e o
+   conjunto de `projection.facets` é igual ao de `entity.includedFacets`;
 3. toda dependency é alcançável a partir de uma root pelas relações declaradas: summon e loot de
    criatura, spell para família permitida e família para suas vocações;
 4. nenhuma relação aponta para entidade ou família ausente e o kind concreto corresponde à tabela
@@ -119,6 +134,23 @@ ao schema Zod:
 Falha Zod, colisão de identidade, alias ambíguo, referência ausente, dependência inalcançável, facet
 incompatível ou constraint SQL aborta toda a transação. Essas validações adicionais não mudam os
 contratos; apenas estreitam o conjunto persistível para cumprir as regras normativas de curadoria.
+
+O mapeamento campo → facet é fechado e testado:
+
+- `identity`: GUID, stable key, display name, source e aliases;
+- `stats`: health, experience e speed de criatura;
+- `appearance`: look type;
+- `combat`: attacks, defenses, summons, resistances e immunities;
+- `conditions`: conditions;
+- `loot`: loot;
+- `item`: stackable, max stack size e weight;
+- `progression`: família, ganhos, velocidades, mana multiplier e skill multipliers de vocação;
+- `spell`: palavras, custos, cooldowns, damage type, área, fórmula, famílias permitidas e audits de
+  projeção.
+
+Campos obrigatórios implicam seu facet; campos opcionais/listas/records só podem estar presentes ou
+não vazios quando o facet correspondente está aprovado. Vocation families são relações internas,
+não entidades faceteadas.
 
 ## Semântica de substituição e múltiplos slices
 
@@ -137,9 +169,9 @@ Cada bundle representa exatamente o slice identificado por `bundle.slice.key`.
    projection audits;
 6. substitui aliases e relações globais apenas para entidades novas ou exclusivas do slice; dados
    compartilhados idênticos não recebem writes;
-7. remove filhos e entidades que deixaram esse slice somente quando não são referenciados por outro
-   slice; depois remove famílias e proveniência que ficaram sem referência; agregados compartilhados
-   permanecem;
+7. remove filhos e entidades ativas que deixaram esse slice somente quando não são referenciados por
+   outro slice; depois remove famílias e proveniência que ficaram sem referência; agregados
+   compartilhados permanecem e o `content_identity_ledger` nunca é removido;
 8. executa `listOrphanEntities()` antes do commit e falha se restar qualquer entidade sem slice.
 
 `listOrphanEntities()` retorna GUIDs ordenados de entidades sem linha em `content_slice_entities`.
@@ -158,8 +190,10 @@ Coleções cuja ordem faz parte do contrato — attacks, defenses, conditions, s
 loot e projection audits — persistem um `ordinal` inteiro não negativo e são lidas por ele. Arrays
 de identidade são canonicalizados: entidades por `stableKey`, famílias por `key`, roots/dependencies
 e source files por chave/path, aliases por `(sourceSystem, alias)`, projections por `entityKey`,
-facets pela ordem de `ContentFacetSchema`, members e spell-family por chave. Chaves de records são
-reconstruídas em ordem lexical.
+facets pela ordem de `ContentFacetSchema`, members e spell-family por chave. Records são
+reconstruídos como objetos com todos os pares, sem prometer ordem observável de propriedades. O
+serializador canônico escreve diretamente as chaves de records em ordem lexical, inclusive chaves
+integer-like, sem depender da enumeração de propriedades de objetos JavaScript.
 
 O teste principal compara o bundle lido com a forma canônica completa do bundle validado, incluindo
 todos os campos e arrays; comparar apenas contagens não é aceito como prova de round-trip.
@@ -184,9 +218,14 @@ TypeScript e prova que:
 - `@huntbound/content` não importa `better-sqlite3`, builtins Node nem código de
   `tools/content-catalog`;
 - `packages/content/src/index.ts` não exporta o writer interno;
-- imports de `application/internal/CuratedCatalogWriter` só são aceitos no adapter em
-  `tools/content-catalog/` e, quando existirem em PB-01-06, em `ImportCanarySlice` e
-  `ApplyCuratedOperation`.
+- imports de `application/internal/CuratedCatalogWriter` só são aceitos em
+  `ImportCanarySlice.ts`, `ApplyCuratedOperation.ts` e
+  `tools/content-catalog/composition/createContentCatalogApplication.ts`.
+
+Em PB-01-02, somente o arquivo de definição referencia o nome `CuratedCatalogWriter`: o adapter
+expõe uma API estruturalmente compatível, sem importar a porta interna. A composition root de
+PB-01-06 fará a ligação nominal e será a única referência do tooling, preservando a allowlist exata
+exigida por PB-01-06/07.
 
 Esse teste dedicado cabe no escopo permitido da task e não exige ampliar agora o checker global,
 que ignora imports relativos.
@@ -197,13 +236,16 @@ O ciclo RED/GREEN cobre:
 
 - migration inicial, `foreign_keys = 1`, WAL em arquivo, nomes/IDs/hashes inválidos, aplicação
   atômica, repetição no-op e reconstrução idêntica de dois bancos;
-- validação runtime, GUID canônico, identidade imutável, aliases, source tuple obrigatório, kinds,
-  `CHECK`s e FKs reais para loot, summon, families e spell-family;
+- validação runtime, GUID canônico, correspondência stable-key/kind, facet `identity` obrigatório,
+  identidade imutável, aliases, source tuple obrigatório, `CHECK`s e FKs reais para loot, summon,
+  families e spell-family;
+- ledger persistente: aceitar uma entidade, removê-la do último slice e provar que remapear sua
+  stable key, GUID ou source tuple continua falhando;
 - round-trip canônico completo, duas referências cruas preservadas sem aliases e ordem por ordinal;
 - substituição isolada de slice, entidade compartilhada idêntica, colisão compartilhada, remoção de
   stale rows, reimport sem writes e detecção/rejeição de órfãos;
-- callback async rejeitado pelo compilador, thenable rejeitado em runtime e handle transacional
-  inválido após o callback;
+- callback async e retorno union contendo `PromiseLike` rejeitados pelo compilador, thenable
+  rejeitado em runtime e handle transacional inválido após o callback;
 - lifecycle antes da migration, slice ausente, close repetido e operações após close;
 - regra arquitetural dedicada.
 
@@ -220,4 +262,5 @@ materializado é versionado.
 
 Parsers XML/Lua, fixtures Canary, importação/rebuild pública, CLI final, exportação JSON,
 documentação gerada, gameplay, save, servidor de banco, alteração dos contratos de PB-01-01 e
-alteração do checker arquitetural global.
+alteração do checker arquitetural global. O entrypoint `packages/content/src/index.ts` também não é
+alterado nesta task.
