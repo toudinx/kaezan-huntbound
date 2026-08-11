@@ -2,11 +2,10 @@
 
 **Status geral:** pending (não bloqueante até o gate integrado)
 
-**Próxima onda elegível:** integrar PB-00R-01 e PB-00R-03. PB-00R-02 está `done (risco aceito)` por
+**Próxima onda elegível:** integrar PB-00R-03. PB-00R-02 está `done (risco aceito)` por
 decisão de produto: 5.000 ms permanece alvo saudável e métrica de warning, enquanto somente boot
-acima de 30.000 ms ou ausência do shell acionável volta a bloquear. PB-00R-05 fica elegível assim
-que PB-00R-01 e PB-00R-03 também estiverem integradas na mesma branch; seus commits ainda não estão
-na branch atual.
+acima de 30.000 ms ou ausência do shell acionável volta a bloquear. PB-00R-01 já está integrada
+nesta branch. PB-00R-05 fica elegível assim que PB-00R-03 também estiver integrada.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -14,7 +13,7 @@ na branch atual.
 
 | Task | Status | Branch sugerida | Commit | Evidência |
 |---|---|---|---|---|
-| PB-00R-01 | ready to integrate | `codex/pb00r-01-resize` | `911df51` | implementação e screenshot versionadas na branch; integração pendente |
+| PB-00R-01 | done | `codex/pb00r-01-resize` | `911df51` | E2E pós-resize, screenshot, 6 E2E, 21 testes do app, typecheck e build |
 | PB-00R-03 | ready to integrate | `codex/pb00r-03-package-tests` | `809383e` | scripts de teste e prova de descoberta versionados na branch; integração pendente |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
@@ -30,6 +29,17 @@ na branch atual.
 - Seis packages em `packages/*` não declaram script `test`.
 - Build alerta que `dist/game`, externo à raiz Vite, não será esvaziado automaticamente.
 - Hash do lockfile observado: `0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651`.
+
+## Handoff PB-00R-01
+
+- Implementador: GPT-5 nesta sessão; a task sugeria GPT-5.6 Luna. Effort: `xhigh` conforme task.
+- Validador: Playwright/Vitest/typecheck/build locais; validação externa por outro modelo não foi executada nesta sessão.
+- RED: após boot em `390×844` e resize para `1366×768`, canvas e DOM mudavam, mas a grade permanecia limitada a aproximadamente 390 px; o E2E falhou inicialmente por baseline ausente.
+- Implementação: `ShellScene` agora mantém uma `Graphics`, redesenha com `clear()` a partir de `gameSize`, escuta `Phaser.Scale.Events.RESIZE` e remove o mesmo listener em `SHUTDOWN`.
+- Regressão: o E2E cobre dois ciclos adicionais, garante um canvas/overlay e aguarda a pintura WebGL antes do screenshot.
+- Screenshot revisada no tamanho original: `tests/e2e/shell.spec.ts-snapshots/shell-mobile-to-desktop-win32.png`; a grade cobre `1366×768` e os quatro baselines existentes não foram regenerados.
+- Comandos e resultados: `corepack pnpm install --frozen-lockfile` (exit 0); `corepack pnpm --filter @huntbound/game test` (21/21); `corepack pnpm exec playwright test tests/e2e/shell.spec.ts --workers=1` (6/6); `corepack pnpm typecheck` (exit 0); `corepack pnpm build` (exit 0, somente warnings conhecidos de `dist/game` e chunk grande); `git diff --check` (exit 0).
+- Próximo passo: integrar este commit serialmente; não iniciar PB-00R-02 nesta task.
 
 ## Protocolo de integração paralela
 

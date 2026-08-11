@@ -76,6 +76,32 @@ for (const viewport of shellViewports) {
   });
 }
 
+test('redraws the playfield after in-session viewport changes', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await expect(page.locator('[data-testid="shell-viewport"]')).toContainText(
+    '1366 × 768',
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
+  await page.waitForTimeout(500);
+  await expect(page.locator('#game-root canvas')).toHaveCount(1);
+  await expect(page.locator('[data-testid="app-shell"]')).toHaveCount(1);
+  await expect(page).toHaveScreenshot('shell-mobile-to-desktop.png', {
+    fullPage: true,
+  });
+});
+
 test('recovers lifecycle changes without duplicating shell elements', async ({
   page,
 }) => {
