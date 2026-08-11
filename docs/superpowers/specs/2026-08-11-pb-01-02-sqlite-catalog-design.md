@@ -116,6 +116,10 @@ path, hash e aliases próprios. `content_alias_registry` mantém a resolução g
 Duas participações podem repetir o mesmo alias para o mesmo GUID, mas o mesmo alias nunca pode
 resolver para GUIDs diferentes.
 
+O alias registry é permanente e referencia `content_identity_ledger`, não `content_entities`.
+Remover a última participação ou a entidade ativa não remove a resolução histórica. Uma tentativa
+futura de remapear o alias para outro GUID falha; um teste cobre exatamente esse lifecycle.
+
 O prefixo da stable key deve corresponder ao kind concreto: vocations usam `vocation:tibia:`,
 creatures `creature:tibia:`, items `item:tibia:` e spells `spell:tibia:`. A fronteira valida essa
 relação antes da escrita e `content_entities` a reforça com `CHECK`.
@@ -140,7 +144,9 @@ ao schema Zod:
 6. toda vocation family do bundle possui associação explícita ao slice, mesmo quando não é
    referenciada por vocation ou spell naquele bundle;
 7. em cada slice, `family.vocationKeys` é exatamente o conjunto de vocations cuja `familyKey` aponta
-   para aquela family; os dois sentidos da relação são inversos exatos.
+   para aquela family; os dois sentidos da relação são inversos exatos;
+8. `sourceFiles`, aliases de cada entidade e `allowedVocationFamilies` não contêm duplicatas; a
+   fronteira rejeita multiplicidade antes da primeira mutação em vez de deduplicar silenciosamente.
 
 Falha Zod, colisão de identidade, alias ambíguo, referência ausente, dependência inalcançável, facet
 incompatível ou constraint SQL aborta toda a transação. Essas validações adicionais não mudam os
@@ -148,7 +154,8 @@ contratos; apenas estreitam o conjunto persistível para cumprir as regras norma
 
 O mapeamento campo → facet é fechado e testado:
 
-- `identity`: GUID, stable key e display name;
+- `identity`: GUID, stable key e display name, mas somente GUID/stable key participam do hash de
+  consistência compartilhada;
 - `stats`: health, experience e speed de criatura;
 - `appearance`: look type;
 - `combat`: attacks, defenses, summons, resistances e immunities;
@@ -156,13 +163,14 @@ O mapeamento campo → facet é fechado e testado:
 - `loot`: loot;
 - `item`: stackable, max stack size e weight;
 - `progression`: família, ganhos, velocidades, mana multiplier e skill multipliers de vocação;
-- `spell`: palavras, custos, cooldowns, damage type, área, fórmula, famílias permitidas e audits de
-  projeção.
+- `spell`: palavras, custos, cooldowns, damage type, área, fórmula e famílias permitidas.
 
 Campos obrigatórios implicam seu facet; campos opcionais/listas/records só podem estar presentes ou
 não vazios quando o facet correspondente está aprovado. Source e aliases são metadados de catálogo
 slice-scoped, sujeitos às regras próprias de proveniência/unicidade, e não payloads de facet.
-Vocation families são relações internas, não entidades faceteadas.
+Display name exige o facet `identity`, mas permanece metadata de apresentação slice-scoped e não
+entra no hash cruzado. Projection audits também são metadata catalog-only slice-scoped e não entram
+no payload/hash de `spell`. Vocation families são relações internas, não entidades faceteadas.
 
 A matriz de facets permitidos é fechada:
 
@@ -186,14 +194,15 @@ Cada bundle representa exatamente o slice identificado por `bundle.slice.key`.
    se forem byte a byte iguais, retorna sem executar `INSERT`, `UPDATE` ou `DELETE`;
 4. insere entidades/agregados novos e atualiza entidades exclusivas do slice, preservando
    obrigatoriamente os mapeamentos imutáveis de identidade;
-5. para entidade compartilhada, compara somente os facets sobrepostos: payload diferente em facet já
-   projetado por outro slice é colisão; facets novos pertencem apenas aos slices que os projetam;
+5. registra os payloads/hashes dos facets touched sem comparar imediatamente com outros slices;
+   divergência temporária é permitida dentro do callback externo e facets novos pertencem apenas aos
+   slices que os projetam;
 6. substitui os dados próprios do slice: metadados, roots, memberships, vocation families,
    projections/facets, aliases, relações e projection audits;
 7. remove os payloads slice-scoped que deixaram o slice;
 8. remove entidades ativas que deixaram esse slice somente quando não são referenciadas por outro
-   outro slice; depois remove famílias e proveniência que ficaram sem referência; agregados
-   compartilhados permanecem e o `content_identity_ledger` nunca é removido;
+   slice; depois remove famílias e proveniência que ficaram sem referência; agregados compartilhados
+   permanecem e `content_identity_ledger`/`content_alias_registry` nunca são removidos;
 9. executa novamente `listOrphanEntities()` e todas as validações globais antes do commit e falha se
    restar qualquer entidade sem slice ou payload compartilhado inconsistente.
 
@@ -201,7 +210,9 @@ Cada bundle representa exatamente o slice identificado por `bundle.slice.key`.
 slice-scoped agrupadas por facet; todas as tabelas de payload incluem `slice_key` e `entity_guid`.
 `content_entity_facets` registra a projeção e o SHA-256 da serialização canônica do payload daquele
 facet. Para qualquer `(entity_guid, facet)` projetado por mais de um slice, todos os hashes e payloads
-devem ser idênticos no gate final.
+de domínio devem ser idênticos no gate final. Source, aliases, display name, consumer/rationale de
+projection e projection audits são deliberadamente excluídos dessa comparação e preservados na
+visão de cada slice.
 
 `readCatalogBundle(slice)` lê apenas as cópias daquele slice e preenche arrays/records vazios exigidos
 pelo contrato para facets não projetados. Assim, uma dependência parcial pode ganhar posteriormente
@@ -210,6 +221,11 @@ facet compartilhado exige apresentar todos os slices que o projetam na mesma tra
 somente A deixa o payload/hash antigo de B divergente e falha; atualizar A e B converge e passa.
 Chamadas múltiplas a `replaceCatalogBundle`, inclusive as que seriam no-op isoladamente, são
 registradas como slices touched e validadas juntas apenas no gate final.
+
+O serviço autorizado `ApplyCuratedOperation` recebe um array não vazio de bundles e chama
+`replaceCatalogBundle` para todos dentro de uma única `CuratedCatalogWriter.transaction`. O caso
+comum passa `[bundle]`; uma evolução coordenada passa todos os slices afetados. A composition root
+somente injeta a capability nesse serviço e nunca executa `transaction()` diretamente.
 
 `listOrphanEntities()` retorna GUIDs ordenados de entidades sem linha em `content_slice_entities`.
 Ela é pública apenas na porta transacional para permitir o gate de aplicação e diagnóstico; o fluxo
@@ -248,6 +264,12 @@ esperado. Loot referencia creature e item; summon referencia owner e summoned cr
 spell-family referencia spell e família; vocation member referencia ambos. Conteúdo usa
 `ON DELETE RESTRICT`, com remoções válidas executadas explicitamente em ordem filho-primeiro.
 
+Como payloads são slice-scoped, as FKs também são compostas. Toda tabela filha referencia
+`content_slice_entities(slice_key, entity_guid)` e o parent payload tipado do mesmo slice. Loot e
+summon referenciam seus alvos por `(slice_key, target_guid)`; vocation members e spell-family
+referenciam `content_slice_vocation_families(slice_key, family_key)`. Nenhuma FK global pode resolver
+uma relação do slice A usando uma entidade/family presente apenas no slice B.
+
 `CHECK`s cobrem kinds, UUID/source obrigatórios, hash lowercase de 64 hexadecimais, chance em
 0..10.000 ou 0..100.000 conforme a unidade, magnitudes finitas/não negativas exigidas pelo contrato,
 intervalos e ordinals não negativos, counts positivos, min <= max, shapes/kinds discriminados e
@@ -268,6 +290,13 @@ TypeScript e prova que:
   tooling de consulta;
 - a factory mutável `openMutableContentCatalog` só pode ser importada pela composition root e por
   `tools/content-catalog/**/*.test.ts`; qualquer outro importer falha com path e símbolo.
+
+O checker também limita acesso ao storage: somente `tools/content-catalog/database/**`,
+`migrations/**` e `repository/**` podem importar `better-sqlite3` ou módulos internos de database.
+Commands, exportadores e composition root não podem importar o driver, SQL, `Database`, `Statement`
+ou helpers de handle bruto. Módulos de database/repository não exportam handles SQL em nenhuma API;
+o teste inspeciona exports e tipos públicos e falha para propriedades `prepare`, `exec`, `pragma` ou
+o tipo do driver. A única capability mutável consumível continua sendo a factory restrita.
 
 O adapter implementa a transação sem importar a porta interna. A factory mutável é um export de
 módulo restrito pelo checker, não sai de package entrypoint nem de barrel. Em PB-01-06, a composition
@@ -299,6 +328,8 @@ O ciclo RED/GREEN cobre:
   coordenada de facet compartilhado, reimport sem writes e detecção/rejeição de órfãos inclusive no
   caminho no-op;
 - provenance/aliases distintos por slice sem remapear identidade ou criar alias ambíguo;
+- remoção da última participação de alias seguida de tentativa de remapeamento, que deve falhar pelo
+  registry permanente;
 - vocation family sem referência direta, display name e members preservados pelo vínculo explícito
   ao slice; relação vocation↔family inversa exata;
 - callback async e retorno union contendo `PromiseLike` rejeitados pelo compilador, thenable

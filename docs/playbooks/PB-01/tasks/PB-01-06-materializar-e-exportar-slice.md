@@ -121,7 +121,7 @@ export function importCanarySlice(
 ): { readonly bundle: CatalogContentBundle; readonly diagnostics: readonly ContentDiagnostic[] };
 
 export function applyCuratedOperation(
-  operation: CatalogContentBundle,
+  operations: readonly [CatalogContentBundle, ...CatalogContentBundle[]],
   writer: CuratedCatalogWriter,
 ): void;
 
@@ -180,8 +180,10 @@ No modo paralelo, execute dentro da worktree 06 os dois `git merge --no-ff` defi
 - [ ] **4. Escrever testes transacionais dos dois serviços e confirmar RED.** Prove rollback em
   parser/schema/ref/constraint e idempotência por contagem/hashes antes/depois.
 - [ ] **5. Implementar application services.** `ImportCanarySlice` e `ApplyCuratedOperation` usam a
-  mesma função privada de validação+transação. Borda filesystem é injetada. Nenhum import de `node:*`
-  entra em `packages/content`; writer não sai no entrypoint.
+  mesma função privada de validação+transação. `ApplyCuratedOperation` aceita um array não vazio e
+  aplica todos os bundles na mesma transação, permitindo evolução coordenada de facets
+  compartilhados; o caso comum passa um elemento. Borda filesystem é injetada. Nenhum import de
+  `node:*` entra em `packages/content`; writer não sai no entrypoint.
 - [ ] **6. Executar import real controlado.** Confirme source lock, importe somente o slice e revise
   manualmente a lista final de entities/dependencies. Se houver dependência inesperada, pare antes de
   versionar a operação.
@@ -228,7 +230,7 @@ corepack pnpm --filter @huntbound/content test
 corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
 corepack pnpm typecheck
 corepack pnpm architecture:check
-rg -n "CuratedCatalogWriter" packages tools/content-catalog
+rg -n "CuratedCatalogWriter" packages tools/content-catalog -g '!**/*.test.ts' -g '!**/*.spec.ts'
 corepack pnpm build
 corepack pnpm content:check
 corepack pnpm exec biome check packages/content tools/content-catalog tools/architecture package.json

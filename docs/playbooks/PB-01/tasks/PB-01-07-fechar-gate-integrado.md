@@ -123,7 +123,7 @@ $copiedSourceHashes = @($trackedHashes | Where-Object { $lockedHashes -contains 
 if ($copiedSourceHashes.Count -gt 0) { throw "Fixture coincide byte a byte com fonte Canary" }
 rg -n "references/canary|\.lua|\.xml|better-sqlite3|node:fs" apps/game packages/simulation packages/content/src/runtime
 rg -n 'sourcePath|sourceSha256|snapshot|aliases|provenance|ImportProjectionAudit|sourceVocation' packages/content/src/generated packages/content/src/runtime
-rg -n "CuratedCatalogWriter" packages tools/content-catalog
+rg -n "CuratedCatalogWriter" packages tools/content-catalog -g '!**/*.test.ts' -g '!**/*.spec.ts'
 corepack pnpm architecture:check
 ```
 

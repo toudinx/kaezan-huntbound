@@ -139,8 +139,9 @@ Todas as tabelas filhas referenciam `content_entities(guid)`; loot referencia cr
 summon referencia owner e summoned creature; spell-family referencia ambos e referências cruas da
 spell permanecem em tabela de auditoria, sem serem aliases; conditions preservam
 tipo, dano total e intervalo. Facets ligam cada entidade à projeção curada, com consumer/rationale.
-Use `CHECK` para kind, escalas de chance, magnitudes, counts e unidades. Use `ON DELETE RESTRICT`
-para conteúdo.
+Payloads e relações também usam FKs compostas `(slice_key, entity_guid/family_key)` para impedir
+referências cruzadas entre slices. Use `CHECK` para kind, escalas de chance, magnitudes, counts e
+unidades. Use `ON DELETE RESTRICT` para conteúdo.
 
 ## Execução RED/GREEN
 
