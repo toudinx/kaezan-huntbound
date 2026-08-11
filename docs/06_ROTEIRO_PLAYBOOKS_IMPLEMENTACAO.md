@@ -37,6 +37,7 @@ contagem de arquivos, linhas ou minutos.
 | Ordem | Playbook | Resultado independente |
 |---:|---|---|
 | [PB-00](playbooks/PB-00/README.md) | Workspace e shell browser | monorepo, Phaser/DOM shell, testes e CI local |
+| [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo |
 | PB-01 | Contratos e snapshot Canary | schemas internos, versão de fonte e importer fixture |
 | PB-02 | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis |
 | PB-03 | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay |
@@ -48,8 +49,9 @@ contagem de arquivos, linhas ou minutos.
 | PB-09 | Helper mínimo | cura, alvo, ações e loot como módulos desligáveis |
 | PB-10 | Playtest e performance | browser QA, screenshots, métricas e orçamento de assets |
 
-PB-00, PB-01 e PB-02 formam a primeira leva. Nenhum playbook de gameplay deve começar antes de eles
-fecharem os contratos que impedem paths, IDs e regras de vazarem entre camadas.
+PB-00R está ativo e bloqueia PB-01. Depois de seu fechamento, PB-00, PB-01 e PB-02 formam a primeira
+leva. Nenhum playbook de gameplay deve começar antes de eles fecharem os contratos que impedem paths,
+IDs e regras de vazarem entre camadas.
 
 ## PB-00 — Definition of Ready
 

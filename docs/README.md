@@ -9,9 +9,10 @@ ordem abaixo vence.
 2. `03_ADR_PHASER4_BROWSER_FIRST.md` — stack e arquitetura web, conforme alterada pela ADR-002.
 3. `07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md` — formato obrigatório de playbooks, task cards e handoffs
    portáveis entre agentes.
-4. `06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md` — ordem e Definition of Ready dos futuros playbooks.
-5. `BASE_CONTEXTO_KAEZAN_HUNTBOUND(1).md` — contexto mestre atualizado para agentes.
-6. `01_GUIA_DE_EXECUCAO.md` — resumo rápido de controle.
+4. `08_POLITICA_MODELOS_AGENTES.md` — seleção normativa de modelos, effort e revisão independente.
+5. `06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md` — ordem e Definition of Ready dos futuros playbooks.
+6. `BASE_CONTEXTO_KAEZAN_HUNTBOUND(1).md` — contexto mestre atualizado para agentes.
+7. `01_GUIA_DE_EXECUCAO.md` — resumo rápido de controle.
 
 ## Evidência histórica
 
@@ -31,8 +32,10 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
 
 ## Playbooks ativos
 
-- [`PB-00 — Workspace e shell browser`](playbooks/PB-00/README.md) — playbook modular inicial; suas
-  task cards devem ser executadas uma por chat, começando por `PB-00-01`.
+- [`PB-00R — Correções do gate de fundação`](playbooks/PB-00R/README.md) — bloqueia PB-01 até corrigir
+  resize, budget de boot, descoberta de testes e limpeza do output.
+- [`PB-00 — Workspace e shell browser`](playbooks/PB-00/README.md) — histórico da fundação original;
+  seu fechamento será revalidado por PB-00R.
 
 ## Decisão vigente em uma linha
 

@@ -5,6 +5,8 @@
 **Objetivo:** permitir que cada etapa seja executada em um chat novo, com troca livre entre Codex,
 Claude Code ou outro agente competente, sem carregar todo o histórico conversacional.
 
+**Política transversal de modelos:** `08_POLITICA_MODELOS_AGENTES.md`.
+
 ## Decisão central
 
 Um playbook não é um prompt monolítico. Ele é um índice de execução composto por **tasks coesas**.
@@ -112,6 +114,8 @@ Cada task deve declarar:
 14. **Commit.** Resultado deve ser versionado quando já existir repositório Git; a task de
     inicialização do repositório cria o primeiro baseline.
 15. **Relatório final.** Resumo de mudanças, verificações, desvios e próxima task elegível.
+16. **Prompt copiável.** Bloco final sem placeholders, pronto para abrir a task em um chat novo, com
+    workspace, path da task, modelo/effort, skills, escopo, verificações, handoff e commit.
 
 Testes devem preceder a implementação quando a mudança tiver comportamento testável. Tasks de
 auditoria, documentação, infraestrutura inicial ou spikes podem usar outra evidência apropriada, que
@@ -147,10 +151,16 @@ Para permitir troca de agente entre quaisquer duas tasks:
 - preferir critérios executáveis a descrições subjetivas de conclusão;
 - registrar todo desvio aprovado da task original.
 
-A escolha de modelo e effort é feita por task. Configuração, scaffolding mecânico e documentação
-podem usar modelos/efforts mais econômicos; contratos críticos, determinismo, persistência,
-concorrência e segurança justificam modelos mais fortes e effort maior. O playbook não deve exigir
-que todas as tasks usem o mesmo agente.
+A escolha de modelo e effort é feita por task conforme `08_POLITICA_MODELOS_AGENTES.md`. Cada task
+declara classe, modelo sugerido, validador sugerido e fallback. A revisão crítica prefere modelo
+diferente do implementador. Ausência do modelo recomendado deve ser registrada, sem reduzir gates.
+
+## Tasks paralelas
+
+Tasks só podem executar em paralelo quando o `README.md` do playbook declarar paths e dependências
+independentes. Cada chat usa worktree e branch isolados. Verificações que disputem porta, banco,
+fixture mutável ou output compartilhado são serializadas. Atualizações concorrentes em `STATE.md` e
+`README.md` são integradas por um único responsável depois dos commits funcionais.
 
 ## Prompt mínimo para executar uma task
 
@@ -174,6 +184,9 @@ bloqueio e informe exatamente o que precisa ser decidido. Não amplie o escopo s
 Skills ou modos específicos do agente podem ser acrescentados antes desse bloco, mas não substituem
 a task card como fonte de verdade.
 
+Cada task card contém sua própria versão preenchida desse prompt. O bloco genérico acima serve apenas
+como referência para autores de playbooks e não deve ser entregue ao executor com placeholders.
+
 ## Checklist para criar um novo playbook
 
 - [ ] O playbook referencia este padrão como diretriz transversal.
@@ -183,6 +196,7 @@ a task card como fonte de verdade.
 - [ ] Cada task declara leitura mínima e não exige carregar toda a documentação.
 - [ ] Dependências e possíveis paralelismos estão explícitos.
 - [ ] Toda task possui evidência de conclusão adequada ao tipo de trabalho.
+- [ ] Toda task declara modelo/effort, validador e prompt copiável sem placeholders.
 - [ ] `STATE.md` permite trocar de agente sem reconstruir o histórico.
 - [ ] Nenhuma decisão importante existe apenas dentro dos prompts.
 - [ ] O fechamento do playbook valida o resultado integrado, sem refazer todas as tasks no mesmo chat.
@@ -196,4 +210,3 @@ a task card como fonte de verdade.
 - Deixar decisões, comandos ou bloqueios apenas no relatório do chat.
 - Permitir que uma task absorva problemas independentes encontrados no caminho.
 - Presumir que o próximo agente será o mesmo modelo ou terá acesso à conversa anterior.
-
