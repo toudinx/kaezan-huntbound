@@ -87,6 +87,7 @@ packages/content/src/index.ts
 packages/content/tsconfig.json
 tools/content-catalog/cli.ts
 tools/content-catalog/commands/**
+tools/content-catalog/composition/**
 tools/content-catalog/export/**
 tools/content-catalog/**/*.test.ts
 tools/architecture/check-boundaries.ts

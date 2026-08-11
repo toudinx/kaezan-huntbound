@@ -76,7 +76,7 @@ Reexecutar o conjunto inalterado não escreve linhas.
 ao round-trip:
 
 ```text
-schema_migrations, content_identity_ledger
+schema_migrations, content_identity_ledger, content_alias_registry
 source_snapshots, source_files
 content_slices, content_entities, content_aliases, content_entity_facets
 content_slice_roots, content_slice_entities, content_slice_vocation_families
@@ -109,6 +109,13 @@ entidade deixa o último slice. `content_entities` representa somente entidades 
 ledger. `listOrphanEntities()` ignora o ledger. Assim, remover conteúdo ativo não permite reutilizar
 historicamente uma stable key, GUID ou source tuple.
 
+Proveniência e aliases não fazem parte da identidade durável global. `source`, participação de alias
+e display metadata são armazenados por `(slice, entity)` para que cada bundle preserve snapshot,
+path, hash e aliases próprios. `content_alias_registry` mantém a resolução global única de
+`(source_system, alias) → entity_guid`; `content_aliases` registra quais slices usam essa resolução.
+Duas participações podem repetir o mesmo alias para o mesmo GUID, mas o mesmo alias nunca pode
+resolver para GUIDs diferentes.
+
 O prefixo da stable key deve corresponder ao kind concreto: vocations usam `vocation:tibia:`,
 creatures `creature:tibia:`, items `item:tibia:` e spells `spell:tibia:`. A fronteira valida essa
 relação antes da escrita e `content_entities` a reforça com `CHECK`.
@@ -131,7 +138,9 @@ ao schema Zod:
 5. snapshot/path/hash de cada entidade são consistentes com a proveniência do slice e com
    `source_files`;
 6. toda vocation family do bundle possui associação explícita ao slice, mesmo quando não é
-   referenciada por vocation ou spell naquele bundle.
+   referenciada por vocation ou spell naquele bundle;
+7. em cada slice, `family.vocationKeys` é exatamente o conjunto de vocations cuja `familyKey` aponta
+   para aquela family; os dois sentidos da relação são inversos exatos.
 
 Falha Zod, colisão de identidade, alias ambíguo, referência ausente, dependência inalcançável, facet
 incompatível ou constraint SQL aborta toda a transação. Essas validações adicionais não mudam os
@@ -139,7 +148,7 @@ contratos; apenas estreitam o conjunto persistível para cumprir as regras norma
 
 O mapeamento campo → facet é fechado e testado:
 
-- `identity`: GUID, stable key, display name, source e aliases;
+- `identity`: GUID, stable key e display name;
 - `stats`: health, experience e speed de criatura;
 - `appearance`: look type;
 - `combat`: attacks, defenses, summons, resistances e immunities;
@@ -151,8 +160,9 @@ O mapeamento campo → facet é fechado e testado:
   projeção.
 
 Campos obrigatórios implicam seu facet; campos opcionais/listas/records só podem estar presentes ou
-não vazios quando o facet correspondente está aprovado. Vocation families são relações internas,
-não entidades faceteadas.
+não vazios quando o facet correspondente está aprovado. Source e aliases são metadados de catálogo
+slice-scoped, sujeitos às regras próprias de proveniência/unicidade, e não payloads de facet.
+Vocation families são relações internas, não entidades faceteadas.
 
 A matriz de facets permitidos é fechada:
 
@@ -177,25 +187,29 @@ Cada bundle representa exatamente o slice identificado por `bundle.slice.key`.
 4. insere entidades/agregados novos e atualiza entidades exclusivas do slice, preservando
    obrigatoriamente os mapeamentos imutáveis de identidade;
 5. para entidade compartilhada, compara somente os facets sobrepostos: payload diferente em facet já
-   projetado por outro slice é colisão; facets novos são adicionados ao agregado global e pertencem
-   apenas aos slices que os projetam;
+   projetado por outro slice é colisão; facets novos pertencem apenas aos slices que os projetam;
 6. substitui os dados próprios do slice: metadados, roots, memberships, vocation families,
    projections/facets, aliases, relações e projection audits;
-7. remove um payload de facet global somente quando nenhum slice restante projeta esse facet;
-8. remove filhos e entidades ativas que deixaram esse slice somente quando não são referenciados por
+7. remove os payloads slice-scoped que deixaram o slice;
+8. remove entidades ativas que deixaram esse slice somente quando não são referenciadas por outro
    outro slice; depois remove famílias e proveniência que ficaram sem referência; agregados
    compartilhados permanecem e o `content_identity_ledger` nunca é removido;
 9. executa novamente `listOrphanEntities()` e todas as validações globais antes do commit e falha se
    restar qualquer entidade sem slice ou payload compartilhado inconsistente.
 
-`content_entities` guarda identidade global; facts de domínio são payloads globais agrupados por
-facet; `content_entity_facets` registra quais slices projetam cada facet. `readCatalogBundle(slice)`
-reconstrói somente os payloads projetados por esse slice, preenchendo arrays/records vazios exigidos
+`content_entities` guarda somente a identidade global ativa. Facts de domínio são cópias
+slice-scoped agrupadas por facet; todas as tabelas de payload incluem `slice_key` e `entity_guid`.
+`content_entity_facets` registra a projeção e o SHA-256 da serialização canônica do payload daquele
+facet. Para qualquer `(entity_guid, facet)` projetado por mais de um slice, todos os hashes e payloads
+devem ser idênticos no gate final.
+
+`readCatalogBundle(slice)` lê apenas as cópias daquele slice e preenche arrays/records vazios exigidos
 pelo contrato para facets não projetados. Assim, uma dependência parcial pode ganhar posteriormente
 um facet novo — por exemplo, Snake ganhar `loot` — sem alterar a visão dos slices antigos. Alterar um
-facet já compartilhado exige que todos os slices que o projetam terminem a mesma transação com o
-mesmo payload; chamadas múltiplas a `replaceCatalogBundle` no mesmo callback são validadas em
-conjunto somente no gate final.
+facet compartilhado exige apresentar todos os slices que o projetam na mesma transação: atualizar
+somente A deixa o payload/hash antigo de B divergente e falha; atualizar A e B converge e passa.
+Chamadas múltiplas a `replaceCatalogBundle`, inclusive as que seriam no-op isoladamente, são
+registradas como slices touched e validadas juntas apenas no gate final.
 
 `listOrphanEntities()` retorna GUIDs ordenados de entidades sem linha em `content_slice_entities`.
 Ela é pública apenas na porta transacional para permitir o gate de aplicação e diagnóstico; o fluxo
@@ -209,10 +223,11 @@ item e spell ficam nas tabelas pai. Fórmula e área de spell são colunas expl�
 Records e listas restantes usam tabelas relacionais: multiplicadores de skill, resistências,
 imunidades, famílias, attacks, defenses, conditions, summons, loot e auditorias de spell.
 
-`content_slice_vocation_families` associa explicitamente todas as families presentes no bundle ao
-slice. `vocation_family_members` inclui o slice na chave, preservando exatamente os members daquela
-visão. O reader não infere a lista de families apenas pelas referências de vocation/spell; portanto
-uma family válida mas não referenciada não se perde no round-trip.
+`vocation_families` guarda somente a key global. `content_slice_vocation_families` associa todas as
+families presentes no bundle ao slice e armazena o `displayName` daquela visão.
+`vocation_family_members` inclui o slice na chave, preservando exatamente os members. O reader não
+infere families apenas pelas referências de vocation/spell; portanto uma family não referenciada,
+um display name slice-specific e seus members não se perdem no round-trip.
 
 Coleções cuja ordem faz parte do contrato — attacks, defenses, conditions, summons, immunities,
 loot e projection audits — persistem um `ordinal` inteiro não negativo e são lidas por ele. Arrays
@@ -283,7 +298,9 @@ O ciclo RED/GREEN cobre:
   stale rows, adição de facet a entidade compartilhada sem alterar slices antigos, atualização
   coordenada de facet compartilhado, reimport sem writes e detecção/rejeição de órfãos inclusive no
   caminho no-op;
-- vocation family sem referência direta preservada pelo vínculo explícito ao slice;
+- provenance/aliases distintos por slice sem remapear identidade ou criar alias ambíguo;
+- vocation family sem referência direta, display name e members preservados pelo vínculo explícito
+  ao slice; relação vocation↔family inversa exata;
 - callback async e retorno union contendo `PromiseLike` rejeitados pelo compilador, thenable
   rejeitado em runtime e handle transacional inválido após o callback;
 - lifecycle antes da migration, slice ausente, close repetido e operações após close;

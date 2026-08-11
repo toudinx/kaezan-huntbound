@@ -124,7 +124,7 @@ export function openMutableContentCatalog(
 O migration `001_initial_catalog.sql` cria, no mínimo:
 
 ```text
-schema_migrations, content_identity_ledger
+schema_migrations, content_identity_ledger, content_alias_registry
 source_snapshots, source_files
 content_slices, content_entities, content_aliases, content_entity_facets
 content_slice_roots, content_slice_entities, content_slice_vocation_families
