@@ -21,7 +21,7 @@ sem executar código, callbacks ou expressões arbitrárias.
 ## Resultado esperado
 
 Fixtures sintéticas cobrem melee, ranged, area, heal, summon, loot por nome/ID, elementos,
-imunidades e fórmula skill-attack. Nós AST fora da whitelist falham de forma acionável; não há
+imunidades, poison condition e fórmula skill-attack. Nós AST fora da whitelist falham de forma acionável; não há
 `eval`, `Function`, VM Lua ou subprocesso Canary.
 
 ## Dependências e leitura mínima
@@ -44,6 +44,10 @@ imunidades e fórmula skill-attack. Nós AST fora da whitelist falham de forma a
 - Chance percentual Canary vira basis points multiplicando por 100; loot preserva escala 100000.
 - Voices, locations textuais, sounds e callbacks sem consumidor são ignorados por allowlist
   documentada. Nada entra em metadata genérico.
+- Poison melee de Snake é convertido para condition declarativa; não pode ser ignorado.
+- `vocationNames` preserva `knight` e `elite knight` como referências cruas. A projeção explícita
+  para `vocation-family:huntbound:knight` ocorre somente em PB-01-06; os nomes não são aliases de
+  entidade.
 
 ## Escopo permitido
 
@@ -71,6 +75,7 @@ export interface CanaryCreatureDto {
   readonly lookType: number;
   readonly attacks: readonly CanaryAttackDto[];
   readonly defenses: readonly CanaryDefenseDto[];
+  readonly conditions: readonly CanaryConditionDto[];
   readonly summons: readonly CanarySummonDto[];
   readonly lootRefs: readonly ({ readonly sourceId: string } | { readonly sourceName: string })[];
   readonly elements: Readonly<Record<string, number>>;
@@ -105,14 +110,20 @@ export function parseCanarySpellLua(lua: string): CanaryParseResult<CanarySpellD
 
 - [ ] **1. Criar branch `codex/pb01-05-lua-importers` e worktree
   `C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers` a partir da `main` elegível.**
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound status --short
+git -C C:\Kaezan\kaezan-huntbound worktree add C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers -b codex/pb01-05-lua-importers main
+```
 - [ ] **2. Escrever testes do AST guard e confirmar RED.** Rejeite `dofile`, `require`, chamada não
   allowlisted, loop, mutation dinâmica, índice calculado e função inesperada. Diagnóstico inclui
   linha/coluna.
 - [ ] **3. Implementar parser/visitor mínimo.** Separe parse AST, extração de tabela, resolução de
   constantes simbólicas e mapping; nenhum arquivo monolítico concentra tudo.
 - [ ] **4. Escrever testes de criaturas e confirmar RED.** Use as quatro formas sintéticas para
-  melee, ranged, area/heal/summon e dependência. Cubra normalização de dano/chance, loot misto,
-  elementos/imunidades, ausência de raceId e campo sem whitelist.
+  melee, ranged, area/heal/summon e dependência. Cubra normalização de dano/chance, poison com
+  `totalDamage`/`intervalMs`, loot misto, elementos/imunidades, ausência de raceId e campo sem
+  whitelist.
 - [ ] **5. Implementar mapping de creatures e obter GREEN.** Ordene ataques, summons e loot pela
   ordem de origem somente quando semanticamente relevante; export canônico ordenará por identidade.
 - [ ] **6. Escrever teste de spell/fórmula e confirmar RED.** Cubra ID/nome/words/custos/cooldowns,
@@ -129,7 +140,8 @@ export function parseCanarySpellLua(lua: string): CanaryParseResult<CanarySpellD
 corepack pnpm --filter @huntbound/content test -- src/importers/canary/lua
 corepack pnpm --filter @huntbound/content typecheck
 corepack pnpm architecture:check
-corepack pnpm check
+corepack pnpm exec biome check packages/content docs/content/CANARY_LUA_MAPPING.md
+corepack pnpm format:check
 git diff --check
 ```
 
@@ -137,11 +149,38 @@ git diff --check
   `feat: parse curated Canary Lua content`. No serial, fast-forward na `main`, reverifique e remova
   worktree/branch; indique PB-01-06. Em onda paralela autorizada, preserve branch para PB-01-06.
 
+Fluxo serial — execute somente este bloco quando PB-01-05 integrar diretamente na `main`:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers add packages/content docs/content/CANARY_LUA_MAPPING.md docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers commit -m "feat: parse curated Canary Lua content"
+git -C C:\Kaezan\kaezan-huntbound switch main
+git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb01-05-lua-importers
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound --filter @huntbound/content test -- src/importers/canary/lua
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound --filter @huntbound/content typecheck
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch -d codex/pb01-05-lua-importers
+```
+
+Fluxo paralelo — execute este bloco no lugar do serial; não faça merge nem apague a branch:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers add packages/content docs/content/CANARY_LUA_MAPPING.md docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers commit -m "feat: parse curated Canary Lua content"
+git -C C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers status --short
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-05-lua-importers
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch --list codex/pb01-05-lua-importers
+```
+
+O `status --short` deve ficar vazio e o último comando deve listar a branch preservada para PB-01-06.
+
 ## Critérios de aceite
 
 - [ ] Nenhum Lua é executado; AST/whitelist bloqueia formas desconhecidas.
 - [ ] Quatro criaturas e Berserk são representáveis pelas fixtures.
-- [ ] Dano, chances, intervalos, área e fórmula são normalizados com unidades explícitas.
+- [ ] Dano, chances, poison, intervalos, área e fórmula são normalizados com unidades explícitas.
 - [ ] Diagnósticos incluem localização e contexto.
 - [ ] Mapping/allowlist documentados e testes RED/GREEN.
 - [ ] Adapter não depende de Node/SQLite/Phaser.
@@ -166,4 +205,3 @@ Use AST luaparse estrita e nunca execute Lua. Faça RED/GREEN, mapping, prova ne
 commit, integração serial por fast-forward e limpeza. Não acesse SQLite/filesystem no adapter, não
 importe outros conteúdos e não inicie PB-01-06.
 ```
-

@@ -44,7 +44,9 @@ PB-01-01 deve estar `done` na `main` e a árvore deve estar limpa.
 - GUID é `TEXT PRIMARY KEY`; timestamps são ISO-8601 UTC somente para migrations/proveniência, não
   participam de exportação determinística.
 - Migrations e operações são texto versionado; `.sqlite`, `-wal` e `-shm` ficam ignorados.
-- Repository recebe `ContentBundle`/entidades validados; não faz parsing de fonte.
+- Adapter recebe `CatalogContentBundle` validado; não faz parsing de fonte.
+- O package exporta somente leitura. A porta de mutação é interna à composição de aplicação e só
+  pode ser usada por `ImportCanarySlice`/`ApplyCuratedOperation`, criados em PB-01-06.
 
 ## Escopo permitido
 
@@ -56,6 +58,7 @@ tools/content-catalog/**/*.test.ts
 tools/content-catalog/tsconfig.json
 tools/content-catalog/vitest.config.ts
 packages/content/src/catalog/ContentCatalogPort.ts
+packages/content/src/application/internal/CuratedCatalogWriter.ts
 packages/content/package.json
 package.json
 pnpm-lock.yaml
@@ -63,22 +66,33 @@ pnpm-lock.yaml
 docs/playbooks/PB-01/STATE.md
 ```
 
+## Fora de escopo
+
+- source lock, fixtures, parsers XML/Lua e dados reais;
+- serviços públicos de importação/rebuild, CLI final, export JSON ou docs geradas;
+- expor writer no entrypoint de `@huntbound/content`;
+- gameplay, assets, save ou servidor de banco.
+
 ## Interfaces produzidas
 
 ```ts
-export interface ContentCatalogTransactionPort {
-  upsertBundle(bundle: ContentBundle): void;
+export interface CuratedCatalogTransactionWriter {
+  replaceCatalogBundle(bundle: CatalogContentBundle): void;
   listOrphanEntities(): readonly ContentGuid[];
 }
 
-export interface ContentCatalogPort {
-  migrate(): void;
-  transaction<T>(operation: (tx: ContentCatalogTransactionPort) => T): T;
-  readBundle(sliceKey: string): ContentBundle;
+export interface ContentCatalogReadPort {
+  readCatalogBundle(sliceKey: string): CatalogContentBundle;
   countRows(): Readonly<Record<string, number>>;
 }
 
-export interface OpenContentCatalog extends ContentCatalogPort {
+// Internal application port: do not export from packages/content/src/index.ts.
+export interface CuratedCatalogWriter {
+  transaction<T>(operation: (tx: CuratedCatalogTransactionWriter) => T): T;
+}
+
+export interface OpenContentCatalog extends ContentCatalogReadPort, CuratedCatalogWriter {
+  migrate(): void;
   close(): void;
 }
 
@@ -90,22 +104,30 @@ O migration `001_initial_catalog.sql` cria, no mínimo:
 ```text
 schema_migrations
 source_snapshots, source_files
-content_slices, content_entities, content_aliases
+content_slices, content_entities, content_aliases, content_entity_facets
 content_slice_roots, content_slice_entities
-vocations
-creatures, creature_attacks, creature_defenses, creature_summons
+vocation_families, vocations, vocation_family_members
+creatures, creature_attacks, creature_defenses, creature_conditions, creature_summons
 items, loot_entries
-spells, spell_vocations
+spells, spell_vocation_families, spell_source_vocation_refs
 ```
 
 Todas as tabelas filhas referenciam `content_entities(guid)`; loot referencia creature e item;
-summon referencia owner e summoned creature; spell-vocation referencia ambos. Use `CHECK` para
-kind, escalas de chance, magnitudes, counts e unidades. Use `ON DELETE RESTRICT` para conteúdo.
+summon referencia owner e summoned creature; spell-family referencia ambos e referências cruas da
+spell permanecem em tabela de auditoria, sem serem aliases; conditions preservam
+tipo, dano total e intervalo. Facets ligam cada entidade à projeção curada, com consumer/rationale.
+Use `CHECK` para kind, escalas de chance, magnitudes, counts e unidades. Use `ON DELETE RESTRICT`
+para conteúdo.
 
 ## Execução RED/GREEN
 
-- [ ] **1. Criar `codex/pb01-02-sqlite-catalog` e worktree
-  `C:\Kaezan\kaezan-huntbound-pb01-02-sqlite-catalog` a partir de `main`.**
+- [ ] **1. Criar branch/worktree a partir de `main`.**
+
+```powershell
+git status --porcelain=v1 --untracked-files=all
+git branch codex/pb01-02-sqlite-catalog main
+git worktree add C:\Kaezan\kaezan-huntbound-pb01-02-sqlite-catalog codex/pb01-02-sqlite-catalog
+```
 - [ ] **2. Instalar dependências exatas na raiz.**
 
 ```powershell
@@ -129,16 +151,19 @@ cada arquivo em transação. Não use ORM nem migration global.
 
 - [ ] **5. Escrever testes de constraints/repository e confirmar RED.**
 
-Cubra: bundle mínimo persiste; stable key/GUID/source tuple duplicados falham; loot sem item falha;
-summon sem criatura falha; kind filho incompatível falha; erro no último insert deixa contagens
-iguais ao baseline; reimport idêntico é idempotente; entidade sem slice aparece como órfã.
+Cubra: bundle mínimo persiste; stable key/GUID/source tuple duplicados ou ausentes falham; aliases
+ambíguos falham; loot sem item falha; summon sem criatura falha; kind filho incompatível falha; erro
+no último insert deixa contagens iguais ao baseline; reimport idêntico é idempotente; entidade sem
+slice aparece como órfã. Cubra também member sem família, spell-family ausente e duas refs cruas da
+spell preservadas sem criar alias de entidade.
 
 - [ ] **6. Implementar repository mínimo e obter GREEN.**
 
-O port fica em `packages/content/src/catalog/ContentCatalogPort.ts`; o adapter em `tools/` o
-implementa. Prepared statements ficam privados ao adapter. `transaction()` não aceita promessa; uma operação
-assíncrona deve ser rejeitada pelo tipo. `readBundle()` reconstrói arrays ordenados por `stableKey` e
-IDs de relação.
+O read port fica em `packages/content/src/catalog/ContentCatalogPort.ts`; o writer fica em
+`packages/content/src/application/internal/CuratedCatalogWriter.ts` e não sai no entrypoint. O
+adapter em `tools/` implementa ambos, mas seu handle só existe na composição CLI. Prepared statements
+ficam privados. `transaction()` não aceita promessa; operação assíncrona é rejeitada pelo tipo.
+`readCatalogBundle()` reconstrói arrays ordenados por `stableKey` e IDs de relação.
 
 - [ ] **7. Provar reconstrução.**
 
@@ -156,7 +181,8 @@ Adicione somente padrões específicos necessários, por exemplo `.cache/content
 corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
 corepack pnpm exec tsc --project tools/content-catalog/tsconfig.json
 corepack pnpm architecture:check
-corepack pnpm check
+corepack pnpm exec biome check tools/content-catalog packages/content/src/catalog packages/content/src/application/internal package.json
+corepack pnpm format:check
 git diff --check
 ```
 
@@ -164,16 +190,26 @@ git diff --check
 
 Commit: `feat: add transactional content catalog`.
 
-Depois do commit, faça `git merge --ff-only codex/pb01-02-sqlite-catalog` na `main`, repita os dois
-comandos específicos de teste/typecheck, remova a worktree validada, `git worktree prune` e
-`git branch -d codex/pb01-02-sqlite-catalog`.
+Na raiz, confirme as duas árvores limpas e execute literalmente:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-02-sqlite-catalog add tools/content-catalog packages/content package.json pnpm-lock.yaml .gitignore docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-02-sqlite-catalog commit -m "feat: add transactional content catalog"
+git switch main
+git merge --ff-only codex/pb01-02-sqlite-catalog
+corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
+corepack pnpm exec tsc --project tools/content-catalog/tsconfig.json
+git worktree remove C:\Kaezan\kaezan-huntbound-pb01-02-sqlite-catalog
+git worktree prune
+git branch -d codex/pb01-02-sqlite-catalog
+```
 
 ## Critérios de aceite
 
 - [ ] Schema relacional completo e migrations idempotentes.
 - [ ] Foreign keys e checks são testados por falhas reais.
 - [ ] Rollback impede estado parcial.
-- [ ] Repository não vaza SQL nem aceita dados não validados.
+- [ ] Read port não vaza SQL; writer interno não sai no entrypoint e rejeita dados não validados.
 - [ ] DB temporário é reconstruível; nenhum arquivo SQLite está rastreado.
 - [ ] Tooling não entra no grafo browser/simulation.
 - [ ] Commit integrado e recursos temporários removidos.

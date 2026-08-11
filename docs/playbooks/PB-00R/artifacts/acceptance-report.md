@@ -825,10 +825,12 @@ gatilho de reabertura e follow-up.
 
 ## Decisão
 
-`APPROVED_WITH_WARNINGS`. Nenhum risco grave foi reproduzido: o build passa, os cinco gates
-substantivos passam isoladamente, o shell fica acionável em ~2,5 s em cinco processos frios, o
-resize redesenha o playfield completo, a descoberta de testes é comprovada por probe e a limpeza do
-output respeita sua fronteira. O único gate vermelho é `format:check`, cuja causa foi isolada até a
-prova de que o conteúdo versionado está correto.
+`APPROVED_WITH_WARNINGS`. Após a integração da PB-00R-FIX-01 (`91fd968`), `format:check` e o
+`verify` completo passam em checkout novo. O build passa, o shell fica acionável em ~2,5 s em cinco
+processos frios, o resize redesenha o playfield completo, a descoberta de testes é comprovada por
+probe e a limpeza do output respeita sua fronteira. O warning remanescente de
+`lint/suspicious/noExportsInTest` pertence ao `biome check .` usado por `pnpm check`, não ao fluxo
+`verify`, e permanece registrado como achado pré-existente fora do escopo.
 
-**PB-01 está elegível a partir do commit de fechamento desta task.** PB-01 não foi iniciado aqui.
+**PB-01 está elegível a partir do commit de fechamento `4b9dd56`.** Seu playbook modular foi
+especificado posteriormente; a implementação não foi iniciada neste fechamento.

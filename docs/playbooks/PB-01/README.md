@@ -35,11 +35,13 @@ Em caso de conflito, ler nesta ordem:
   `157e6f9e21318bd3033eea553fe9275b429faf72`.
 - O catálogo Huntbound é a fonte interna após a migração aceita. SQLite é sua materialização local;
   schema, migrations e operações curadas ficam versionados em texto.
-- O browser consome apenas JSON interno validado. Não carrega SQLite, Lua, XML ou paths Canary.
+- O catálogo preserva proveniência; o browser consome uma projeção JSON validada sem source paths,
+  hashes, aliases de importação, SQLite, Lua ou XML.
 - Cada entidade possui UUIDv5 determinístico, stable key legível, ID original e proveniência.
 - GUID não deriva de display name ou path. O namespace UUID do Huntbound é criado uma vez em
   PB-01-01, testado e congelado no contrato.
 - Toda entidade pertence a um `ContentSlice` ou é dependência transitiva alcançável. Órfãos falham.
+- Cada campo materializado pertence a um facet curado com consumidor/razão explícitos.
 - Não existe importação em massa. Cada playbook migra somente conteúdo com uso concreto.
 - Lua é analisado estaticamente por AST e nunca executado.
 - Arquivos Canary reais permanecem em `references/`, fora do Git. Fixtures versionadas são
@@ -53,15 +55,20 @@ ID: `fixture:pb-01-contract-coverage`.
 
 | Papel | Entidade | Forma coberta |
 |---|---|---|
-| raiz | Knight | vocação, ganhos, velocidade, multiplicadores e relação com spell |
+| raiz | Knight | família de vocação, ganhos, velocidade, multiplicadores e relação com spell |
 | raiz | Berserk (`exori`, spell ID 80) | spell instantânea, custo, cooldown, área e vocações |
 | raiz | Rotworm | melee puro, defesa e loot misto por nome/ID |
 | raiz | Amazon | melee + ataque físico à distância com projétil |
 | raiz | Orc Shaman | dano elemental, área, cura e summon |
-| dependência | Snake | alvo íntegro do summon do Orc Shaman |
+| dependência | Snake | identity/stats/appearance/combat/poison como alvo íntegro do summon; loot excluído |
 | dependências | itens de loot usados | resolução por item ID e nome sem importar catálogo excedente |
 
 O slice prova cobertura de contratos; não escolhe a primeira hunt de PB-04.
+
+Berserk lista Knight e Elite Knight na fonte. A projeção interna mapeia os dois nomes para a família
+Huntbound `vocation-family:huntbound:knight`, distinta da entidade Knight
+`vocation:tibia:knight`. Elite Knight (source ID 8) permanece apenas como referência crua auditável
+da spell; não é alias nem entidade migrada sem consumidor.
 
 ## Arquitetura alvo
 
@@ -70,7 +77,7 @@ references/canary (origem congelada)
   └─► adapters XML/Lua estáticos
         └─► DTOs de importação
               └─► schemas + curadoria + dependency closure
-                    └─► ImportContentSlice (transação)
+                    └─► ImportCanarySlice / ApplyCuratedOperation (transação)
                           └─► catálogo SQLite Huntbound
                                 ├─► documentação gerada
                                 └─► JSON canônico ──► ContentRegistry browser
@@ -123,19 +130,30 @@ branches isoladas depois de PB-01-03. O fluxo padrão continua serial. Se o para
 ambas removem suas worktrees e preservam branches; PB-01-06 é o integrador único, incorpora os dois
 commits, resolve somente o handoff documental e apaga as branches depois do gate integrado.
 
+## Baseline de qualidade conhecido
+
+Na autoria deste playbook, `corepack pnpm check` já reprova por
+`lint/suspicious/noExportsInTest` em `tests/e2e/shell.spec.ts`; o achado é anterior ao PB-01 e está
+registrado no aceite do PB-00R. As tasks 01–06 usam `biome check` restrito aos paths alterados mais
+`format:check`, sem fingir um gate raiz verde. PB-01-06 adiciona `content:check` aos scripts raiz e
+PB-01-07 usa `corepack pnpm verify` como gate bloqueante integrado. O baseline conhecido não permite
+introduzir nenhuma violação nova nos paths do PB-01.
+
 ## Critérios finais de aceite
 
 - [ ] GUIDs, stable keys, aliases e proveniência possuem schemas e constraints verificáveis.
 - [ ] O catálogo é reconstruído do zero por migrations e operações versionadas.
 - [ ] Foreign keys permanecem ligadas e importação inválida faz rollback integral.
-- [ ] O slice contém apenas raízes declaradas e dependências alcançáveis; zero órfãos.
+- [ ] O slice contém apenas raízes declaradas, facets aprovados e dependências alcançáveis; zero
+  órfãos ou campos sem consumidor.
 - [ ] Parsers XML/Lua são estáticos, estritos e cobertos por RED/GREEN.
 - [ ] Nenhum arquivo Lua/XML real do Canary é rastreado no Git ou executado.
 - [ ] Os hashes do source lock conferem com o snapshot local congelado.
 - [ ] A mesma importação executada duas vezes não altera linhas.
 - [ ] Duas reconstruções limpas produzem JSON byte-identical e o mesmo golden SHA-256.
 - [ ] Documentação e bundle derivam da mesma visão consultada do catálogo.
-- [ ] Runtime consome somente o registry/JSON interno e não conhece tooling ou source paths.
+- [ ] Runtime consome somente `RuntimeContentBundle`/registry e não conhece provenance, aliases de
+  importação, tooling ou source paths.
 - [ ] `corepack pnpm verify` passa no resultado integrado.
 - [ ] PB-02 pode resolver chaves estáveis sem depender de Canary.
 
@@ -153,4 +171,3 @@ commits, resolve somente o handoff documental e apaga as branches depois do gate
 Abra um chat novo e envie o bloco copiável da próxima task indicada em `STATE.md`. Execute somente
 uma task por chat. A task cria sua branch/worktree, verifica, commita, integra por `--ff-only` no
 fluxo serial e remove recursos temporários após sucesso. Não antecipe a task seguinte.
-

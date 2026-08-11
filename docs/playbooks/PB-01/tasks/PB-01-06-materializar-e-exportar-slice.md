@@ -15,7 +15,7 @@
 
 ## Objetivo
 
-Conectar source lock, seleção, parsers, schemas e repository por `ImportContentSlice`; fechar apenas
+Conectar source lock, seleção, parsers, schemas e repository por `ImportCanarySlice`; fechar apenas
 as dependências alcançáveis; persistir uma operação curada versionada; reconstruir SQLite; gerar JSON,
 golden hash, registry browser-safe e documentação a partir da mesma visão do catálogo.
 
@@ -42,21 +42,29 @@ Se a onda paralela foi registrada em `STATE.md`, crie a mesma branch a partir da
 e incorpore, nesta ordem:
 
 ```powershell
-git cherry-pick codex/pb01-04-xml-importers
-git cherry-pick codex/pb01-05-lua-importers
+git merge --no-ff codex/pb01-04-xml-importers -m "merge: integrate PB-01 XML importers"
+git merge --no-ff codex/pb01-05-lua-importers -m "merge: integrate PB-01 Lua importers"
 ```
 
 Somente conflito em `docs/playbooks/PB-01/STATE.md` está previamente autorizado: preserve ambos os
 handoffs e marque as duas tasks done. Qualquer conflito funcional, manifest ou lockfile bloqueia; não
-resolva por descarte. As branches 04/05 só são apagadas depois do gate integrado desta task.
+resolva por descarte. Merges preservam ancestry para `git branch -d`; as branches 04/05 só são
+apagadas depois do gate integrado desta task.
 
 ## Decisões congeladas
 
-- `ImportContentSlice` é o único writer de conteúdo curado.
+- `ImportCanarySlice` e `ApplyCuratedOperation` são os únicos serviços com acesso ao writer interno;
+  ambos passam pela mesma validação/transação. Nenhum repository writer sai no entrypoint.
 - Ordem: verificar origem → parsear raízes → descobrir refs → carregar dependências allowlisted →
   validar schemas → calcular GUIDs → persistir operação em transação → validar órfãos → exportar.
-- Closure inclui Snake e itens de loot efetivamente referenciados por Rotworm, Amazon, Orc Shaman e
-  Snake. Não segue relações textuais, bestiary locations ou catálogo adjacente.
+- Closure inclui Snake como summon com facets `identity/stats/appearance/combat/conditions`; loot de
+  Snake fica explicitamente fora. Itens de loot são fechados somente para Rotworm, Amazon e Orc
+  Shaman. Não segue relações textuais, bestiary locations ou catálogo adjacente.
+- Nomes de vocation `knight` e `elite knight` de Berserk são referências cruas distintas projetadas
+  para `vocation-family:huntbound:knight`. Essa família é uma identidade Huntbound separada da
+  entidade Knight `vocation:tibia:knight`; Elite Knight (source ID 8) não vira alias nem entidade sem
+  consumidor. A operação de catálogo preserva as duas refs cruas para auditoria; runtime recebe só a
+  relação spell-family.
 - A operação durável vive em
   `packages/content/catalog/operations/0001-pb01-contract-coverage.json` e contém o bundle normalizado,
   sem código/paths executáveis.
@@ -64,6 +72,8 @@ resolva por descarte. As branches 04/05 só são apagadas depois do gate integra
 - Export JSON usa UTF-8, LF, indentação de dois espaços, keys/arrays em ordem canônica e exatamente
   uma newline final.
 - Documentação é gerada; edição manual do catálogo gerado deve falhar no modo `--check`.
+- Operação/DB usam `CatalogContentBundle`; JSON/registry usam `RuntimeContentBundle`, que omite
+  source paths, hashes, aliases e provenance.
 
 ## Escopo permitido
 
@@ -78,27 +88,43 @@ tools/content-catalog/cli.ts
 tools/content-catalog/commands/**
 tools/content-catalog/export/**
 tools/content-catalog/**/*.test.ts
+tools/architecture/check-boundaries.ts
+tools/architecture/check-boundaries.test.ts
+tools/architecture/dependency-policy.json
 docs/content/generated/**
 package.json
 pnpm-lock.yaml (somente se scripts exigirem resolução já fixada; sem nova dependência)
 docs/playbooks/PB-01/STATE.md
 ```
 
+## Fora de escopo
+
+- importar Elite Knight, tratá-la como alias de Knight ou ampliar entidade/facet fora da seleção;
+- exportar provenance/aliases para runtime;
+- expor writer/repository SQLite fora da composição CLI;
+- gameplay, assets, save, editor ou atualização automática Canary.
+
 ## Interfaces produzidas
 
 ```ts
-export interface ImportContentSliceDependencies {
+export interface ImportCanarySliceDependencies {
   readonly readSource(path: string): string;
-  readonly repository: ContentCatalogPort;
+  readonly writer: CuratedCatalogWriter;
 }
 
-export function importContentSlice(
+export function importCanarySlice(
   selection: ContentSliceDefinition,
   lock: SourceSnapshotLock,
-  dependencies: ImportContentSliceDependencies,
-): { readonly bundle: ContentBundle; readonly diagnostics: readonly ContentDiagnostic[] };
+  dependencies: ImportCanarySliceDependencies,
+): { readonly bundle: CatalogContentBundle; readonly diagnostics: readonly ContentDiagnostic[] };
+
+export function applyCuratedOperation(
+  operation: CatalogContentBundle,
+  writer: CuratedCatalogWriter,
+): void;
 
 export interface ContentRegistry {
+  getVocationFamily(key: VocationFamilyKey): VocationFamilyDefinition;
   getVocation(key: ContentKey): VocationDefinition;
   getCreature(key: ContentKey): CreatureDefinition;
   getItem(key: ContentKey): ItemDefinition;
@@ -106,7 +132,8 @@ export interface ContentRegistry {
   has(key: ContentKey): boolean;
 }
 
-export function createContentRegistry(bundle: ContentBundle): ContentRegistry;
+export function projectRuntimeBundle(bundle: CatalogContentBundle): RuntimeContentBundle;
+export function createContentRegistry(bundle: RuntimeContentBundle): ContentRegistry;
 ```
 
 CLI/scripts obrigatórios:
@@ -117,25 +144,42 @@ CLI/scripts obrigatórios:
   "content:catalog:validate": "node tools/content-catalog/cli.ts validate",
   "content:canary:check": "node tools/content-catalog/cli.ts import-canary --check",
   "content:generate": "node tools/content-catalog/cli.ts generate",
-  "content:generate:check": "node tools/content-catalog/cli.ts generate --check"
+  "content:generate:check": "node tools/content-catalog/cli.ts generate --check",
+  "content:check": "corepack pnpm content:catalog:rebuild && corepack pnpm content:catalog:validate && corepack pnpm content:generate:check"
 }
 ```
 
 `content:generate` escreve; `content:generate:check` gera em memória e falha se JSON/hash/docs
-divergirem. O gate raiz usa somente a variante `:check`.
+divergirem. `check` e `verify` da raiz passam a chamar `corepack pnpm content:check`; nenhum deles
+chama `content:canary:check`, pois checkout reproduzível não depende de `references/`.
 
 ## Execução RED/GREEN
 
 - [ ] **1. Criar branch/worktree e integrar a onda, se aplicável.** Worktree:
   `C:\Kaezan\kaezan-huntbound-pb01-06-materialize-slice`.
-- [ ] **2. Escrever teste de dependency closure e confirmar RED.** Comece com as cinco raízes; exija
-  Snake e loot items usados, zero extras, erro agregado para refs ausentes/ambíguas e ciclo seguro.
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound status --short
+git -C C:\Kaezan\kaezan-huntbound worktree add C:\Kaezan\kaezan-huntbound-pb01-06-materialize-slice -b codex/pb01-06-materialize-slice main
+```
+
+No modo paralelo, execute dentro da worktree 06 os dois `git merge --no-ff` definidos em
+“Integração da onda opcional” antes do RED. No modo serial, não execute esses merges.
+- [ ] **2. Escrever teste de dependency/facet closure e confirmar RED.** Comece com as cinco raízes;
+  exija Snake com os cinco facets aprovados, loot items somente das três roots, zero extras, erro
+  agregado para refs/facets ausentes ou ambíguos e ciclo seguro. Todo campo emitido deve apontar para
+  um facet com consumer/rationale.
+- [ ] **2a. Testar a família de vocação e confirmar RED.** Knight pertence a
+  `vocation-family:huntbound:knight`; Berserk permite essa família; `knight` e `elite knight` ficam
+  como duas refs cruas de auditoria no catálogo. Exija falha para família ausente, alias falso de
+  Elite Knight ou vazamento das refs cruas ao runtime.
 - [ ] **3. Implementar closure pura.** Use queue/set por stable source identity. Cada entidade
   incorporada registra `root` ou `dependency` e `requiredBy`; não inferir dependência por substring.
-- [ ] **4. Escrever teste transacional de `ImportContentSlice` e confirmar RED.** Prove rollback em
+- [ ] **4. Escrever testes transacionais dos dois serviços e confirmar RED.** Prove rollback em
   parser/schema/ref/constraint e idempotência por contagem/hashes antes/depois.
-- [ ] **5. Implementar application service.** Borda filesystem é injetada. Nenhum import de
-  `node:*` entra em `packages/content`.
+- [ ] **5. Implementar application services.** `ImportCanarySlice` e `ApplyCuratedOperation` usam a
+  mesma função privada de validação+transação. Borda filesystem é injetada. Nenhum import de `node:*`
+  entra em `packages/content`; writer não sai no entrypoint.
 - [ ] **6. Executar import real controlado.** Confirme source lock, importe somente o slice e revise
   manualmente a lista final de entities/dependencies. Se houver dependência inesperada, pare antes de
   versionar a operação.
@@ -145,15 +189,22 @@ divergirem. O gate raiz usa somente a variante `:check`.
 - [ ] **8. Escrever testes de serialização/golden e confirmar RED.** Em dois diretórios temporários,
   reconstrua DB, consulte, serialize e compare bytes/SHA-256. Inverta ordem de inserts e exija saída
   igual.
-- [ ] **9. Implementar export JSON, hash e docs.** Gere:
+- [ ] **9. Implementar projeção runtime, export JSON, hash e docs.** Prove por schema/busca estrutural
+  que runtime não contém `sourcePath`, `sourceSha256`, `snapshot`, `aliases`, provenance,
+  `ImportProjectionAudit` ou refs cruas de vocation. Gere:
   - `packages/content/src/generated/pb-01-contract-coverage.json`;
   - `packages/content/src/generated/pb-01-contract-coverage.sha256`;
   - `docs/content/generated/PB-01-CATALOG.md`.
 - [ ] **10. Implementar registry browser-safe e testes.** Lookup ausente lança erro contendo key e
   slice; constructor valida bundle uma vez e não permite mutação do objeto armazenado.
-- [ ] **11. Adicionar scripts e gate de paths.** `architecture:check` ou checker específico deve
+- [ ] **11. Adicionar scripts e gates raiz/path.** Integre `content:check` em `check` e `verify` sem
+  adicionar `content:canary:check`. `architecture:check` ou checker específico deve
   rejeitar imports de `tools/content-catalog`, `references/canary`, `.lua`, `.xml` ou SQLite por
   `apps/game`, `packages/simulation` e `packages/content/src/runtime`.
+  Adicione também regra testada que permite importar `CuratedCatalogWriter` somente em
+  `ImportCanarySlice.ts`, `ApplyCuratedOperation.ts` e na composição
+  `tools/content-catalog/composition/createContentCatalogApplication.ts`; qualquer terceira
+  referência falha com diagnóstico contendo importer e path proibido.
 - [ ] **12. Rodar prova determinística completa.** Execute duas vezes, capturando hashes:
 
 ```powershell
@@ -175,8 +226,11 @@ corepack pnpm --filter @huntbound/content test
 corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
 corepack pnpm typecheck
 corepack pnpm architecture:check
+rg -n "CuratedCatalogWriter" packages tools/content-catalog
 corepack pnpm build
-corepack pnpm check
+corepack pnpm content:check
+corepack pnpm exec biome check packages/content tools/content-catalog tools/architecture package.json
+corepack pnpm format:check
 git diff --check
 ```
 
@@ -186,14 +240,36 @@ git diff --check
   resultado contém os dois commits, apague também branches 04/05 com `git branch -d` e execute
   `git worktree prune`.
 
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-06-materialize-slice add packages/content tools/content-catalog tools/architecture docs/content package.json pnpm-lock.yaml docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-06-materialize-slice commit -m "feat: materialize curated content slice"
+git -C C:\Kaezan\kaezan-huntbound switch main
+git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb01-06-materialize-slice
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:catalog:rebuild
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:catalog:validate
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:canary:check
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:generate:check
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound typecheck
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound architecture:check
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-06-materialize-slice
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch -d codex/pb01-06-materialize-slice
+```
+
+Se a onda paralela foi usada, remova primeiro as worktrees 04/05 já limpas, execute `worktree prune`
+e só então apague `codex/pb01-04-xml-importers` e `codex/pb01-05-lua-importers` com `branch -d`.
+
 ## Critérios de aceite
 
 - [ ] Closure contém somente raízes + dependências justificadas e zero órfãos.
 - [ ] Import real confere commit/hashes e nunca executa Lua.
+- [ ] Elite Knight é referência crua auditável projetada para família Huntbound, não alias/entidade.
 - [ ] Operação versionada reconstrói DB sem `references/`.
 - [ ] Reimport é idempotente; falha faz rollback.
 - [ ] Dois rebuilds produzem JSON/hash/docs idênticos.
-- [ ] Registry é browser-safe e tooling não entra no bundle.
+- [ ] Runtime bundle não contém provenance/aliases; registry é browser-safe e tooling não entra no bundle.
+- [ ] Architecture check executável limita imports de `CuratedCatalogWriter` aos dois serviços e à
+  composition root permitida.
 - [ ] Todos os gates e limpeza passam.
 
 ## Condições de parada

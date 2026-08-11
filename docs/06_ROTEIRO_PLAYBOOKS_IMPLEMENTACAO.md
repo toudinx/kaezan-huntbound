@@ -38,7 +38,7 @@ contagem de arquivos, linhas ou minutos.
 |---:|---|---|
 | [PB-00](playbooks/PB-00/README.md) | Workspace e shell browser | monorepo, Phaser/DOM shell, testes e CI local |
 | [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo — **fechado** |
-| PB-01 | Contratos e snapshot Canary | schemas internos, versão de fonte e importer fixture |
+| [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **especificado; execução pendente** |
 | PB-02 | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis |
 | PB-03 | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay |
 | PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições |
@@ -50,10 +50,10 @@ contagem de arquivos, linhas ou minutos.
 | PB-10 | Playtest e performance | browser QA, screenshots, métricas e orçamento de assets |
 
 PB-00R foi fechado em 2026-08-11 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-00R-05, e
-**deixa de bloquear PB-01**. Os warnings remanescentes são não bloqueantes e estão priorizados em
-`playbooks/PB-00R/artifacts/acceptance-report.md`; o único que exige código é
-`playbooks/PB-00R/tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md`, que pode correr em
-paralelo. **PB-01 é o próximo playbook elegível.** PB-00, PB-01 e PB-02 formam a primeira leva.
+**deixa de bloquear PB-01**. A PB-00R-FIX-01 foi integrada no commit `91fd968`; `format:check` e
+`verify` estão verdes em checkout novo. Os warnings remanescentes são não bloqueantes e estão
+priorizados em `playbooks/PB-00R/artifacts/acceptance-report.md`. **O playbook modular PB-01 está
+especificado e é o próximo a executar.** PB-00, PB-01 e PB-02 formam a primeira leva.
 Nenhum playbook de gameplay deve começar antes de eles fecharem os contratos que impedem paths, IDs
 e regras de vazarem entre camadas.
 

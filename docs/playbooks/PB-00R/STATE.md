@@ -7,7 +7,8 @@ resolvidos. PB-00R-02 permanece `done (risco aceito)` por decisão de produto: 5
 alvo saudável e métrica de warning, enquanto somente boot acima de 30.000 ms ou ausência do shell
 acionável volta a bloquear.
 
-**PB-01:** **elegível** desde o commit de fechamento de PB-00R-05. PB-01 não foi iniciado.
+**PB-01:** **elegível** desde o commit de fechamento de PB-00R-05. O playbook modular foi
+especificado; sua execução ainda não foi iniciada.
 
 ## Tasks
 
@@ -18,8 +19,8 @@ acionável volta a bloquear.
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
 | PB-00R-06 | done | `codex/pb00r-06-diag-harness` | `b3978ff` | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
-| PB-00R-05 | done — `APPROVED_WITH_WARNINGS` | `codex/pb00r-06-diag-harness` (integração) | commit de fechamento | auditoria integrada completa em `artifacts/acceptance-report.md` |
-| PB-00R-FIX-01 | done | `codex/pb00r-fix-01-line-endings` | commit de integração | `.gitattributes`, `format:check` e `verify` verdes em checkout novo; W1/W2 resolvidos |
+| PB-00R-05 | done — `APPROVED_WITH_WARNINGS` | `codex/pb00r-06-diag-harness` (integração) | `4b9dd56` | auditoria integrada completa em `artifacts/acceptance-report.md` |
+| PB-00R-FIX-01 | done | `codex/pb00r-fix-01-line-endings` | `91fd968` | `.gitattributes`, `format:check` e `verify` verdes em checkout novo; W1/W2 resolvidos |
 
 PB-00R-01 e PB-00R-03 foram rebaseados da worktree para a branch de integração, então seus hashes
 mudaram. PB-00R-05 comparou os dois lados e confirmou diff de código idêntico em ambos os pares; a

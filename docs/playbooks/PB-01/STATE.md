@@ -28,6 +28,8 @@
   `C:\Kaezan\kaezan-huntbound\references\canary`.
 - Node/pnpm: 24.14.0 / 11.21.0 via Corepack.
 - PB-00R: `done`; PB-00R-FIX-01 integrado e W1/W2 resolvidos.
+- Baseline conhecido: `corepack pnpm check` reprova fora do PB-01 por `noExportsInTest` em
+  `tests/e2e/shell.spec.ts`; gates PB-01 usam Biome restrito e `verify` integrado.
 - Working tree esperada ao iniciar PB-01-01: limpa e na `main`.
 
 ## Decisões operacionais
@@ -59,4 +61,3 @@ Ao concluir ou bloquear uma task:
 4. indicar a próxima task realmente elegível;
 5. registrar modelo, effort e validador efetivos;
 6. não apagar histórico de falhas ou desvios.
-

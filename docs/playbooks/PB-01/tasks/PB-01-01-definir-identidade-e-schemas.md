@@ -17,7 +17,8 @@
 
 Criar a linguagem interna de conteúdo do Huntbound antes de banco ou importers: identidade UUIDv5,
 stable keys, proveniência, schemas Zod e diagnósticos estruturados para vocações, criaturas, ataques,
-defesas, summons, itens, loot, spells, slices e bundles.
+defesas, conditions, summons, itens, loot, spells, slices, projeções por facet e bundles separados
+para catálogo/runtime.
 
 ## Resultado esperado
 
@@ -53,6 +54,8 @@ SQLite, filesystem ou Phaser.
   adapter, não preservados no domínio.
 - Intervalos/cooldowns são inteiros em milissegundos; ranges/radius são inteiros em tiles.
 - `zod@4.4.3` e `uuid@14.0.1` entram com versão exata.
+- Proveniência e aliases de importação existem somente no envelope de catálogo. Tipos runtime não
+  possuem source path, source hash ou alias de adapter.
 
 ## Escopo permitido
 
@@ -84,6 +87,7 @@ export const HUNTBOUND_CONTENT_NAMESPACE = '471cdc3d-d99e-4bed-9782-9923d845f3d7
 export type EntityKind = 'vocation' | 'creature' | 'item' | 'spell';
 export type ContentGuid = string & { readonly __brand: 'ContentGuid' };
 export type ContentKey = string & { readonly __brand: 'ContentKey' };
+export type VocationFamilyKey = string & { readonly __brand: 'VocationFamilyKey' };
 
 export function createContentGuid(
   kind: EntityKind,
@@ -107,27 +111,38 @@ Schemas obrigatórios, todos `strict()` e com tipos inferidos:
 ```ts
 ContentGuidSchema
 ContentKeySchema
+VocationFamilyKeySchema       // vocation-family:huntbound:knight
 SourceReferenceSchema
 ContentAliasSchema
+ImportProjectionAuditSchema   // refs cruas de origem -> relação interna; somente catálogo
 ContentSliceDefinitionSchema
+ContentProjectionSchema       // entity key + facets + consumer + rationale
+VocationFamilyDefinitionSchema
 VocationDefinitionSchema
 CreatureAttackDefinitionSchema // discriminated union: melee | ranged | area
 CreatureDefenseActionSchema     // inicialmente heal
+ConditionDefinitionSchema       // inicialmente poison: totalDamage + intervalMs
 CreatureSummonDefinitionSchema
 CreatureDefinitionSchema
 ItemDefinitionSchema
 LootEntryDefinitionSchema
 SpellDefinitionSchema
 SpellFormulaDefinitionSchema // inicialmente skillAttack com coeficientes declarativos
-ContentBundleSchema
+CatalogContentBundleSchema
+RuntimeContentBundleSchema
 ```
 
-`CreatureDefinition` inclui stats básicos, outfit/lookType, ataques, ações defensivas, summons,
-resistências elementais, imunidades e loot. `SpellFormulaDefinition` descreve coeficientes, nunca
-função executável. `ContentBundle` possui exatamente `schemaVersion`, `contentVersion`, `slice`, `vocations`,
-`creatures`, `items` e `spells`. Arrays são readonly no tipo. Cada entidade inclui `guid`,
-`stableKey`, `displayName`, `source` e aliases. `SourceReference` inclui `system`, `snapshot`,
-`sourceId`, `sourcePath` e `sourceSha256`.
+`CreatureDefinition` inclui stats básicos, outfit/lookType, ataques, conditions, ações defensivas,
+summons, resistências elementais, imunidades e loot conforme os facets do slice.
+`SpellFormulaDefinition` descreve coeficientes, nunca função executável. Os dois bundles possuem
+`schemaVersion`, `contentVersion`, `slice`, `vocationFamilies`, `vocations`, `creatures`, `items` e
+`spells`.
+`CatalogContentBundle` envolve cada entidade com `source` e aliases; `SourceReference` inclui
+`system`, `snapshot`, `sourceId`, `sourcePath` e `sourceSha256`. `RuntimeContentBundle` contém somente
+`guid`, `stableKey`, `displayName`, `includedFacets` e dados runtime projetados. Arrays são readonly.
+`VocationDefinition` aponta para `VocationFamilyKey`; `SpellDefinition` aponta para famílias
+permitidas. Referências cruas como `knight`/`elite knight` vivem em `ImportProjectionAudit` somente no
+catálogo, nunca como aliases de Knight nem no bundle runtime.
 
 ## Execução RED/GREEN
 
@@ -153,6 +168,14 @@ Confirme que somente o manifest correto e `pnpm-lock.yaml` mudaram.
 
 Cubra GUID idêntico para a mesma tupla, GUID diferente entre kinds/source IDs, independência de
 display name/path, stable key válida e rejeição de maiúscula, underscore, espaço ou slug vazio.
+Inclua estes vetores literais para detectar nome canônico implementado incorretamente:
+
+```text
+tibia/creature/26  -> 9a8dd398-e67b-5a98-be03-3406bd581cf9
+tibia/item/3031    -> 78974d81-ae2d-5ba6-855e-04d1909ab11a
+tibia/spell/80     -> 48bec9e6-c6e6-5fd4-9d59-cc29a6478a4c
+tibia/vocation/4  -> e3823a68-9f12-51e1-9b83-fde613163995
+```
 
 ```powershell
 corepack pnpm --filter @huntbound/contracts test -- src/content/identity.test.ts
@@ -167,9 +190,11 @@ canônica em um único módulo.
 
 - [ ] **5. Escrever testes dos schemas antes dos schemas.**
 
-Cubra um bundle mínimo válido e falhas específicas: GUID inválido, stable key inválida, chance fora
-da escala, dano negativo, `min > max`, intervalo não inteiro, summon sem creature key, loot sem item
-key e arrays/campos extras.
+Cubra bundles mínimos válidos de catálogo/runtime e falhas específicas: GUID inválido, stable key
+inválida, chance fora da escala, dano negativo, `min > max`, intervalo não inteiro, poison inválido,
+summon sem creature key, loot sem item key, facet sem consumer/rationale, campo fora de facet e
+arrays/campos extras. Prove que família ausente falha, que referências cruas não viram aliases e que
+provenance/source/aliases/projection audit são rejeitados pelo schema runtime.
 
 - [ ] **6. Implementar schemas estritos e diagnósticos.**
 
@@ -178,8 +203,12 @@ Use `z.discriminatedUnion('kind', ...)` para ataques. Não use `z.any()`, `z.unk
 uma função pública:
 
 ```ts
-export function validateContentBundle(input: unknown):
-  | { readonly ok: true; readonly value: ContentBundle }
+export function validateCatalogContentBundle(input: unknown):
+  | { readonly ok: true; readonly value: CatalogContentBundle }
+  | { readonly ok: false; readonly diagnostics: readonly ContentDiagnostic[] };
+
+export function validateRuntimeContentBundle(input: unknown):
+  | { readonly ok: true; readonly value: RuntimeContentBundle }
   | { readonly ok: false; readonly diagnostics: readonly ContentDiagnostic[] };
 ```
 
@@ -194,7 +223,8 @@ origem, regra de renome e exemplos dos quatro kinds. Não registrar dados do sli
 corepack pnpm --filter @huntbound/contracts test
 corepack pnpm --filter @huntbound/contracts typecheck
 corepack pnpm architecture:check
-corepack pnpm check
+corepack pnpm exec biome check packages/contracts
+corepack pnpm format:check
 git diff --check
 ```
 
@@ -227,6 +257,8 @@ git branch -d codex/pb01-01-content-contracts
 - [ ] UUIDv5 é determinístico e independente de nome/path/snapshot.
 - [ ] Unidades e ranges são explícitos e validados.
 - [ ] Schemas rejeitam campos extras e dados ambíguos.
+- [ ] Família de vocação é identidade própria; refs externas cruas não se tornam aliases.
+- [ ] Schema runtime rejeita provenance, aliases e projection audits do catálogo.
 - [ ] Contracts não importam Node, DOM, Phaser, SQLite, XML ou Lua.
 - [ ] Dependências exatas e lockfile estão versionados.
 - [ ] Handoff, commit, integração e limpeza foram concluídos.

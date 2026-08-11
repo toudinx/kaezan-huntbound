@@ -44,6 +44,11 @@ Todo conteúdo entra por um `ContentSlice` que registra:
 - snapshot e arquivos de origem;
 - estado da curadoria e versão de exportação.
 
+Cada entidade selecionada declara também seus facets projetados (`identity`, `stats`, `appearance`,
+`combat`, `conditions`, `loot`, `item`, `progression` ou `spell`), o consumidor e a justificativa. O gate
+rejeita campo materializado sem facet aprovado e facet sem consumidor; uma entidade pode ser
+dependência parcial sem fingir que representa toda a ficha Canary.
+
 O importer aceita apenas as raízes declaradas e a menor dependência transitiva necessária para
 manter integridade. Não haverá comando para importar todo o Canary no PB-01. Um gate deve reprovar
 entidades órfãs, ausentes de qualquer slice e inalcançáveis a partir de suas raízes.
@@ -66,9 +71,14 @@ Entidades-raiz:
 - criatura Orc Shaman, como dano elemental à distância, área, cura e summon.
 
 Dependências obrigatórias incluem Snake, invocada por Orc Shaman, e os itens efetivamente
-referenciados pelas tabelas de loot selecionadas. Uma dependência só entra quando necessária para
-integridade ou para o comportamento coberto; campos Canary sem consumidor no PB-01 devem ser
-registrados como não suportados, não importados preventivamente.
+referenciados pelas tabelas de loot selecionadas. Snake entra com identity, stats, appearance,
+combat e poison condition necessários ao papel de summon; seu loot não entra enquanto nenhuma hunt
+a selecionar como encounter. Berserk referencia Knight e Elite Knight na origem; ambos são
+projetados para a família Huntbound `vocation-family:huntbound:knight`, distinta da entidade Knight
+`vocation:tibia:knight`. Elite Knight (source ID 8) permanece referência crua de auditoria, não alias
+nem entidade importada. Uma dependência só entra quando necessária para integridade ou para o comportamento
+coberto; campos Canary sem consumidor no PB-01 devem ser registrados como não suportados, não
+importados preventivamente.
 
 As criaturas do slice vêm da mesma raiz
 `references/canary/data-otservbr-global/monster/`. Knight, Berserk e os itens vêm das fontes
@@ -102,7 +112,7 @@ Canary congelado
 DTOs de importação
       │ schemas + seleção curada + dependências
       ▼
-ImportContentSlice
+ImportCanarySlice / ApplyCuratedOperation
       │ transação única
       ▼
 Catálogo SQLite Huntbound
@@ -115,13 +125,13 @@ Catálogo SQLite Huntbound
 `packages/contracts/src/content/` define tipos, schemas e diagnósticos compartilhados. O conjunto
 mínimo inclui:
 
-- `ContentGuid`, `ContentKey`, `SourceReference` e `ContentAlias`;
-- `ContentSliceDefinition` e relações de dependência;
-- `VocationDefinition`;
+- `ContentGuid`, `ContentKey`, `VocationFamilyKey`, `SourceReference` e `ContentAlias`;
+- `ContentSliceDefinition`, projeções por facet e relações de dependência;
+- `VocationFamilyDefinition` e `VocationDefinition`, ligadas por family key;
 - `CreatureDefinition`, com ataques discriminados, defesas, cura e summons;
 - `ItemDefinition` e `LootEntryDefinition`;
-- `SpellDefinition` e sua relação com vocações;
-- `ContentBundle` e `ContentDiagnostic`.
+- `SpellDefinition`, famílias de vocação permitidas e referências cruas de projeção auditável;
+- `CatalogContentBundle`, `RuntimeContentBundle` e `ContentDiagnostic`.
 
 Os schemas são a fronteira de entrada do domínio. DTOs inválidos não alcançam o banco. Tipos de
 combate representam somente dados declarativos necessários ao slice; cálculo de dano, IA, seleção de
@@ -140,7 +150,7 @@ versionada e testada.
 
 ### Application service
 
-`ImportContentSlice` coordena leitura, parsing, validação, resolução de identidade, fechamento de
+`ImportCanarySlice` coordena leitura, parsing, validação, resolução de identidade, fechamento de
 dependências e persistência. Ele depende de portas e não conhece detalhes concretos de SQLite ou do
 filesystem.
 
@@ -159,30 +169,41 @@ O schema relacional mínimo contém:
 
 - `schema_migrations`;
 - `source_snapshots` e `source_files`;
-- `content_slices`, `content_slice_roots` e `content_slice_entities`;
+- `content_slices`, `content_slice_roots`, `content_slice_entities` e `content_entity_facets`;
 - `content_entities` e `content_aliases`;
-- `vocations`;
-- `creatures`, `creature_attacks`, `creature_defenses` e `creature_summons`;
+- `vocation_families`, `vocations` e `vocation_family_members`;
+- `creatures`, `creature_attacks`, `creature_defenses`, `creature_conditions` e
+  `creature_summons`;
 - `items` e `loot_entries`;
-- `spells` e `spell_vocations`.
+- `spells`, `spell_vocation_families` e `spell_source_vocation_refs`.
 
 Foreign keys ficam ligadas em toda conexão. Migrations são monotônicas e atômicas. O repository não
-expõe SQL fora do adaptador e não permite escrita que contorne `ImportContentSlice`.
+expõe SQL fora do adaptador e não permite escrita que contorne `ImportCanarySlice` ou
+`ApplyCuratedOperation`. Uma regra executável de arquitetura limita imports do writer interno a
+esses dois serviços e à composition root do tooling.
 
 ### Runtime and exports
 
-O browser consome somente `packages/content/src/generated/` por uma API de registry. O bundle é
-ordenado por identidade, serializado com regra única de newline e validado antes de ser escrito.
-SQLite, paths Canary, DTOs de parser e detalhes de proveniência não entram no estado da simulação.
+O catálogo e a operação curada usam `CatalogContentBundle`, que preserva source paths, hashes,
+aliases de importação e proveniência. O browser consome somente o `RuntimeContentBundle` projetado
+em `packages/content/src/generated/`; suas entidades não possuem source path, source hash, aliases
+de importação ou detalhes do adapter. O bundle é ordenado por identidade, serializado com regra única
+de newline e validado antes de ser escrito. SQLite, paths Canary, DTOs de parser e proveniência não
+entram no estado da simulação.
 
 Uma documentação de catálogo é gerada pelas mesmas consultas que produzem o bundle. Ela lista GUID,
-stable key, tipo, origem, slice, dependências e campos selecionados. Não existe registro manual
-paralelo que possa divergir do banco.
+stable key, tipo, família de vocação, origem, slice, dependências e campos selecionados. Os bundles
+incluem `vocationFamilies`; o runtime recebe a relação interna spell-family, mas não as referências
+cruas usadas na projeção. Não existe registro manual paralelo que possa divergir do banco.
 
 ## Fixtures e licença
 
 Fixtures versionadas são sintéticas, mínimas e apenas reproduzem as formas necessárias dos formatos
 Canary. Arquivos Lua/XML originais permanecem em `references/`, que continua ignorado pelo Git.
+
+O source lock registra `GPL-2.0-only`, `LICENSE` e o SHA-256
+`189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b`; o verificador aplica à
+licença as mesmas regras de `realpath`, arquivo regular e contenção usadas nas fontes.
 
 Uma prova local controlada lê as fontes reais congeladas, confere commit, paths e SHA-256, importa o
 slice e gera dados internos normalizados. O repositório versiona manifesto de proveniência, operações
@@ -231,11 +252,12 @@ PB-01-06 e PB-01-07 são seriais.
 ## Critérios de sucesso
 
 - todo conteúdo migrado pertence ao slice inicial ou é dependência alcançável;
+- todo campo materializado pertence a um facet aprovado com consumidor/razão explícitos;
 - GUIDs e stable keys são únicos, determinísticos e documentados;
 - o catálogo pode ser reconstruído do zero por migrations e operações versionadas;
 - nenhum Lua/XML Canary é executado, copiado para o Git ou lido pelo runtime;
 - uma falha no meio da importação não deixa estado parcial;
 - duas importações idênticas não alteram o catálogo e geram JSON byte-identical;
-- documentação, bundle e golden hash derivam da mesma visão validada;
+- documentação, bundle de catálogo, projeção runtime e golden hash derivam da mesma visão validada;
 - o gate integrado existente continua verde;
 - PB-02 pode consumir chaves estáveis sem conhecer paths Canary.

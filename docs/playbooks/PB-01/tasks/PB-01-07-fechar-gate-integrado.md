@@ -57,16 +57,33 @@ docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md
 Código só pode mudar por uma task `PB-01-FIX-01` separada se a auditoria encontrar defeito; esta
 task registra e para, não absorve correção funcional.
 
+## Fora de escopo
+
+- corrigir código, schema, conteúdo ou tooling durante a auditoria;
+- ampliar o slice, importar assets ou iniciar PB-02;
+- reclassificar falha bloqueante como warning sem correção e nova evidência;
+- rastrear qualquer fonte Canary real.
+
 ## Execução da auditoria
 
 - [ ] **1. Criar branch `codex/pb01-07-integrated-gate` e worktree
   `C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate` a partir da `main`.**
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound status --short
+git -C C:\Kaezan\kaezan-huntbound worktree add C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate -b codex/pb01-07-integrated-gate main
+```
 - [ ] **2. Confirmar baseline.** Registre `git status`, log PB-01, versões Node/pnpm, hash do lockfile,
   commit Canary, source paths e ausência de processos que disputem porta 4173.
 - [ ] **3. Instalação congelada e reconstrução limpa.** Remova somente a cache específica
   `.cache/content-catalog` após validar o path dentro da worktree. Execute:
 
 ```powershell
+$worktreeRoot = (Resolve-Path .).Path
+$cachePath = [IO.Path]::GetFullPath((Join-Path $worktreeRoot '.cache\content-catalog'))
+$expectedCachePath = [IO.Path]::GetFullPath('C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate\.cache\content-catalog')
+if ($cachePath -ne $expectedCachePath -or -not $cachePath.StartsWith($worktreeRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw "Cache path fora da worktree: $cachePath" }
+if (Test-Path -LiteralPath $cachePath) { Remove-Item -LiteralPath $cachePath -Recurse -Force }
 corepack pnpm install --frozen-lockfile
 corepack pnpm content:canary:check
 corepack pnpm content:catalog:rebuild
@@ -84,18 +101,37 @@ corepack pnpm content:generate:check
   - nó Lua não allowlisted falha com linha/coluna;
   - segunda aplicação da mesma operação mantém row counts/hashes.
 - [ ] **6. Auditar catálogo/documentação.** Confirme roots Knight/Berserk/Rotworm/Amazon/Orc Shaman,
-  Snake como dependência, todos os itens alcançáveis, zero extras/órfãos, GUIDs/stable keys únicos e
-  documentação alinhada ao JSON por query/gerador.
+  Snake como dependência parcial, Elite Knight apenas como referência crua projetada para a família
+  Huntbound distinta `vocation-family:huntbound:knight`, todos os itens
+  alcançáveis, zero extras/órfãos, GUIDs/stable keys únicos e documentação alinhada ao JSON por
+  query/gerador. Confirme ainda a matriz de facets por entidade, inclusive `conditions` de Snake e a
+  ausência intencional de loot de Snake; cada campo emitido deve possuir consumer/rationale.
 - [ ] **7. Auditar licença e boundaries.** Execute:
 
 ```powershell
 git ls-files references
 git check-ignore references/canary/data/XML/vocations.xml
+$trackedSourceFiles = @(git ls-files -- '*.lua' '*.xml')
+$unexpectedSourceFiles = @($trackedSourceFiles | Where-Object { -not $_.StartsWith('packages/test-fixtures/canary/pb01/', [StringComparison]::Ordinal) })
+if ($unexpectedSourceFiles.Count -gt 0) { throw "Lua/XML rastreado fora da allowlist sintética: $($unexpectedSourceFiles -join ', ')" }
+$sourceLock = Get-Content packages/content/src/sources/canary-157e6f9e.json -Raw | ConvertFrom-Json
+$licenseHash = (Get-FileHash -Algorithm SHA256 -LiteralPath references/canary/LICENSE).Hash.ToLowerInvariant()
+if ($licenseHash -ne $sourceLock.licenseSha256) { throw "Hash da licença divergiu" }
+$lockedHashes = @($sourceLock.files | ForEach-Object { $_.sha256 })
+$trackedHashes = @($trackedSourceFiles | ForEach-Object { (Get-FileHash -Algorithm SHA256 -LiteralPath $_).Hash.ToLowerInvariant() })
+$copiedSourceHashes = @($trackedHashes | Where-Object { $lockedHashes -contains $_ })
+if ($copiedSourceHashes.Count -gt 0) { throw "Fixture coincide byte a byte com fonte Canary" }
 rg -n "references/canary|\.lua|\.xml|better-sqlite3|node:fs" apps/game packages/simulation packages/content/src/runtime
+rg -n 'sourcePath|sourceSha256|snapshot|aliases|provenance|ImportProjectionAudit|sourceVocation' packages/content/src/generated packages/content/src/runtime
+rg -n "CuratedCatalogWriter" packages tools/content-catalog
 corepack pnpm architecture:check
 ```
 
-Primeiro comando e busca em runtime não retornam violações; `git check-ignore` confirma exclusão.
+Primeiro comando e buscas em runtime/gerados não retornam violações; `git check-ignore` confirma
+exclusão. O relatório registra `GPL-2.0-only`, path/hash verificados da licença, revisão de que as
+fixtures allowlisted são sintéticas e a prova automatizada de que nenhuma coincide byte a byte com
+as sete fontes do source lock. A lista de referências ao writer deve conter somente os dois serviços,
+a definição interna e a composition root permitida pela regra de arquitetura.
 
 - [ ] **8. Executar gate raiz completo.** Reserve a porta 4173 e rode uma vez:
 
@@ -115,13 +151,31 @@ git status --short
   `content:catalog:rebuild`, `content:catalog:validate`, `content:generate:check`, `architecture:check` e
   `verify`; depois remova worktree/branch e prune. Em bloqueio, não integre fechamento falso.
 
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate add docs/playbooks/PB-01 docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate commit -m "docs: close PB-01 curated content gate"
+git -C C:\Kaezan\kaezan-huntbound switch main
+git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb01-07-integrated-gate
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:catalog:rebuild
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:catalog:validate
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound content:generate:check
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound architecture:check
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound verify
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-07-integrated-gate
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch -d codex/pb01-07-integrated-gate
+```
+
 ## Critérios de aceite
 
 - [ ] Todos os gates e provas têm evidência fresca e reproduzível.
 - [ ] Catálogo contém somente conteúdo curado e dependências alcançáveis.
+- [ ] Facets/consumer/rationale cobrem cada campo; Snake inclui poison e exclui loot deliberadamente.
+- [ ] Família Knight é distinta da entidade Knight; refs Knight/Elite Knight não viram aliases.
 - [ ] Banco reconstrói sem Canary; import check compara com Canary explicitamente.
 - [ ] Idempotência, rollback, FK, órfãos e byte identity foram demonstrados.
-- [ ] Zero código/fonte Canary rastreado e zero vazamento para runtime/simulation.
+- [ ] Zero código/fonte Canary rastreado e zero provenance/aliases vazando para runtime/simulation.
+- [ ] Regra de arquitetura prova que nenhum writer adicional contorna os dois application services.
 - [ ] Relatório final não contradiz README/STATE/roteiro.
 - [ ] Integração e limpeza concluídas somente após reverificação.
 

@@ -102,6 +102,11 @@ não é saco genérico para tudo que aparecer.
 
 - [ ] **1. Criar branch/worktree.** Branch `codex/pb01-04-xml-importers`; worktree
   `C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers`; base `main` com PB-01-03 integrada.
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound status --short
+git -C C:\Kaezan\kaezan-huntbound worktree add C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers -b codex/pb01-04-xml-importers main
+```
 - [ ] **2. Escrever testes de vocation e confirmar RED.** Cubra Knight selecionado, outra vocação
   ignorada, ID ausente, ID duplicado, número inválido e campo extra semanticamente relevante.
 - [ ] **3. Implementar parser de vocations mínimo e obter GREEN.** Configure atributos com prefixo
@@ -118,7 +123,8 @@ não é saco genérico para tudo que aparecer.
 corepack pnpm --filter @huntbound/content test -- src/importers/canary/xml
 corepack pnpm --filter @huntbound/content typecheck
 corepack pnpm architecture:check
-corepack pnpm check
+corepack pnpm exec biome check packages/content docs/content/CANARY_XML_MAPPING.md
+corepack pnpm format:check
 git diff --check
 ```
 
@@ -126,6 +132,33 @@ git diff --check
   `feat: parse curated Canary XML content`. No fluxo serial, faça fast-forward na `main`, repita os
   testes XML/typecheck, remova worktree/branch e indique PB-01-05. No modo paralelo explicitamente
   ativado, remova somente a worktree limpa, preserve a branch e não edite a `main`; PB-01-06 integra.
+
+Fluxo serial — execute somente este bloco quando PB-01-04 integrar diretamente na `main`:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers add packages/content docs/content/CANARY_XML_MAPPING.md docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers commit -m "feat: parse curated Canary XML content"
+git -C C:\Kaezan\kaezan-huntbound switch main
+git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb01-04-xml-importers
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound --filter @huntbound/content test -- src/importers/canary/xml
+corepack pnpm --dir C:\Kaezan\kaezan-huntbound --filter @huntbound/content typecheck
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch -d codex/pb01-04-xml-importers
+```
+
+Fluxo paralelo — execute este bloco no lugar do serial; não faça merge nem apague a branch:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers add packages/content docs/content/CANARY_XML_MAPPING.md docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers commit -m "feat: parse curated Canary XML content"
+git -C C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers status --short
+git -C C:\Kaezan\kaezan-huntbound worktree remove C:\Kaezan\kaezan-huntbound-pb01-04-xml-importers
+git -C C:\Kaezan\kaezan-huntbound worktree prune
+git -C C:\Kaezan\kaezan-huntbound branch --list codex/pb01-04-xml-importers
+```
+
+O `status --short` deve ficar vazio e o último comando deve listar a branch preservada para PB-01-06.
 
 ## Critérios de aceite
 

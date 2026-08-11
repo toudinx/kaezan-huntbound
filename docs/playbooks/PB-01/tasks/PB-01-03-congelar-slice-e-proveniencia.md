@@ -42,8 +42,17 @@ snapshot local sem alterar ou copiar suas fontes.
 - Slice: `fixture:pb-01-contract-coverage`.
 - Raízes: vocation ID `4`, spell ID `80`, creature race IDs `26`, `77` e `6`.
 - Snake race ID é dependência da criatura `6`, não raiz.
+- Projeções: Knight `identity/progression`; Berserk `identity/spell`; três creatures raiz
+  `identity/stats/appearance/combat/loot`; Snake `identity/stats/appearance/combat/conditions` sem
+  loot; itens alcançados `identity/item`.
+- Todo facet possui `consumer` e `rationale`; campo sem facet aprovado falha.
 - Fixtures usam entidades fictícias e valores inventados; não reproduzem texto/código Canary.
 - Source lock real fixa commit, path e os SHA-256 abaixo.
+- Source lock registra `license: "GPL-2.0-only"`, `licensePath: "LICENSE"` e
+  `licenseSha256: "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b"`; nenhum conteúdo da
+  licença ou fonte é copiado para a fixture.
+- A política de projeção mapeia as referências cruas `knight` e `elite knight` de Berserk para
+  `vocation-family:huntbound:knight`; não declara Elite Knight como alias de Knight.
 - Dependências de parser são instaladas nesta task para permitir PB-01-04/05 paralelas:
   `fast-xml-parser@5.10.1`, `luaparse@0.3.1`, `@types/luaparse@0.2.13`.
 
@@ -75,6 +84,14 @@ docs/content/PB-01-SELECTION.md
 docs/playbooks/PB-01/STATE.md
 ```
 
+## Fora de escopo
+
+- parsing XML/Lua e materialização de conteúdo real;
+- copiar código, comentários ou dados literais Canary para fixtures;
+- importar Elite Knight como entidade ou alias: os nomes crus Knight/Elite Knight serão projetados
+  para uma família Huntbound distinta em PB-01-06;
+- ampliar roots/facets, escolher hunt ou definir gameplay.
+
 ## Interfaces produzidas
 
 ```ts
@@ -82,6 +99,15 @@ export interface LockedSourceFile {
   readonly relativePath: string;
   readonly sha256: string;
   readonly purpose: 'vocations' | 'items' | 'spell' | 'creature';
+}
+
+export interface SourceSnapshotLock {
+  readonly sourceSystem: 'canary';
+  readonly commit: string;
+  readonly license: 'GPL-2.0-only';
+  readonly licensePath: 'LICENSE';
+  readonly licenseSha256: string;
+  readonly files: readonly LockedSourceFile[];
 }
 
 export function verifySourceLock(
@@ -105,6 +131,12 @@ export type CanaryParseResult<T> =
 Branch `codex/pb01-03-curated-slice`; worktree
 `C:\Kaezan\kaezan-huntbound-pb01-03-curated-slice`; base `main` com PB-01-02 integrada.
 
+```powershell
+git status --porcelain=v1 --untracked-files=all
+git branch codex/pb01-03-curated-slice main
+git worktree add C:\Kaezan\kaezan-huntbound-pb01-03-curated-slice codex/pb01-03-curated-slice
+```
+
 - [ ] **2. Fixar parser dependencies sem criar parsers.**
 
 ```powershell
@@ -115,8 +147,10 @@ corepack pnpm --filter @huntbound/content add -D @types/luaparse@0.2.13
 - [ ] **3. Escrever testes do source lock e confirmar RED.**
 
 Use diretório temporário sintético para provar: tudo correto passa; hash, path ou commit divergente
-gera código específico; arquivo ausente lista todos os ausentes numa execução; verificação nunca
-escreve na origem.
+gera código específico; arquivo ausente lista todos os ausentes numa execução; path absoluto, `..`,
+duplicata após normalização, symlink/junction escapando do root e arquivo não regular são rejeitados;
+`realpath` de todo arquivo permanece sob o `realpath` do snapshot root; verificação nunca escreve na
+origem. Aplique os mesmos checks ao `licensePath` e rejeite `licenseSha256` divergente.
 
 - [ ] **4. Implementar verificador e validar o snapshot real.**
 
@@ -129,9 +163,11 @@ node tools/content-catalog/source/verifySourceLock.ts references/canary packages
 
 - [ ] **5. Escrever manifesto do slice e testes de seleção.**
 
-O JSON declara apenas cinco raízes (Knight, Berserk e três criaturas), o propósito de cada uma e a
-política `dependencyMode: "reachable-only"`. Testes rejeitam raiz extra, GUID manual, source ID
-duplicado e item declarado como raiz sem justificativa.
+O JSON declara apenas cinco raízes (Knight, Berserk e três criaturas), facets/consumer/rationale de
+cada uma e a política `dependencyMode: "reachable-only"`. Testes rejeitam raiz extra, GUID manual,
+source ID duplicado, facet sem consumidor/razão, campo fora do facet e item declarado como raiz sem
+justificativa. A policy também fixa `vocation-family:huntbound:knight` e rejeita mapear a referência
+crua `elite knight` como alias da entidade Knight.
 
 - [ ] **6. Criar o tipo de resultado compartilhado e fixtures sintéticas mínimas.**
 
@@ -153,22 +189,37 @@ lista será produzida pela materialização real em PB-01-06.
 corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
 corepack pnpm --filter @huntbound/content test
 corepack pnpm architecture:check
-corepack pnpm check
+corepack pnpm exec biome check packages/content/src/selections packages/content/src/sources packages/content/src/importers/canary/sourceTypes.ts packages/test-fixtures/canary tools/content-catalog/source
+corepack pnpm format:check
 git diff --check
 git check-ignore references/canary/data/XML/vocations.xml
 ```
 
 - [ ] **9. Atualizar STATE, commitar, integrar e limpar.**
 
-Commit `docs: freeze curated Canary content slice`. Faça fast-forward na `main`, reexecute o teste do
-source lock e a suíte específica, remova worktree/branch e indique PB-01-04 como próxima task;
-PB-01-05 também fica elegível.
+Commit `docs: freeze curated Canary content slice`. Na raiz, confirme ambas as árvores limpas e rode:
+
+```powershell
+git -C C:\Kaezan\kaezan-huntbound-pb01-03-curated-slice add packages/content packages/test-fixtures tools/content-catalog/source package.json pnpm-lock.yaml docs/content/PB-01-SELECTION.md docs/playbooks/PB-01/STATE.md
+git -C C:\Kaezan\kaezan-huntbound-pb01-03-curated-slice commit -m "docs: freeze curated Canary content slice"
+git switch main
+git merge --ff-only codex/pb01-03-curated-slice
+node tools/content-catalog/source/verifySourceLock.ts references/canary packages/content/src/sources/canary-157e6f9e.json
+corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts
+git worktree remove C:\Kaezan\kaezan-huntbound-pb01-03-curated-slice
+git worktree prune
+git branch -d codex/pb01-03-curated-slice
+```
+
+Indique PB-01-04 como próxima task; PB-01-05 também fica elegível.
 
 ## Critérios de aceite
 
 - [ ] Source lock real contém exatamente sete paths/hashes e commit congelado.
 - [ ] Verificador detecta todas as classes de divergência sem escrever na origem.
 - [ ] Slice possui cinco raízes e `reachable-only`.
+- [ ] Facets/consumer/rationale tornam a curadoria verificável por campo.
+- [ ] Paths reais/licença estão confinados por `realpath`; `licenseSha256` é verificado.
 - [ ] Fixtures são sintéticas, pequenas e cobrem todas as formas necessárias.
 - [ ] Nenhum Lua/XML Canary foi adicionado ao Git.
 - [ ] Dependências exatas e lockfile estão prontos para PB-01-04/05.
