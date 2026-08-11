@@ -29,6 +29,7 @@ presentes. PB-01 não está elegível.
 - `corepack pnpm --filter @huntbound/game build` terminou com exit 0 sem o warning de output externo. O warning de chunk Phaser acima de 500 kB permanece aceito e fora de escopo.
 - Implementador: GPT-5 no runtime Codex; modelo sugerido GPT-5.6 Luna, effort `xhigh`; effort efetivo não exposto. Validação independente Sol/Opus permanece para PB-00R-05.
 - `corepack pnpm test`, `corepack pnpm typecheck`, `corepack pnpm build` e `git diff --check` passaram; o lockfile permaneceu inalterado.
+- Integração: commits `c4dc64c` e `acc8318` foram incorporados em `main` por fast-forward; PB-00R-02 tornou-se elegível.
 
 PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
 exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. O estado

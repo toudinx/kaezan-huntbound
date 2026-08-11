@@ -2,7 +2,7 @@
 
 **Status geral:** pending
 
-**Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 permanece bloqueado até a integração serial do commit `c4dc64c` de PB-00R-04.
+**Próxima onda elegível:** PB-00R-01, PB-00R-02 e PB-00R-03, em worktrees isolados. O commit `c4dc64c` de PB-00R-04 já foi integrado serialmente em `main`.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -45,7 +45,7 @@
 - Prova de limite: `C:\Kaezan\kaezan-huntbound-pb00r-04-clean-build\dist\game\pb00r-game-sentinel.txt` foi removida pelo build; `C:\Kaezan\kaezan-huntbound-pb00r-04-clean-build\dist\pb00r-parent-sentinel.txt` permaneceu durante a prova e foi removida especificamente depois.
 - Build: `corepack pnpm --filter @huntbound/game build` e `corepack pnpm build` passaram com exit 0. O warning de `outDir` externo desapareceu; permanece apenas o warning conhecido de chunk Phaser acima de 500 kB.
 - Gates: `corepack pnpm test` passou com 34 testes no gate raiz, `corepack pnpm typecheck` passou, `git diff --check` passou e o lockfile não mudou.
-- Próximo passo: integrar `c4dc64c` serialmente antes de iniciar PB-00R-02; não iniciar PB-00R-02 neste chat.
+- Integração: `c4dc64c` e `acc8318` foram incorporados em `main` por fast-forward. PB-00R-02 está elegível; não iniciar PB-00R-02 neste chat.
 
 ## Modelos
 
