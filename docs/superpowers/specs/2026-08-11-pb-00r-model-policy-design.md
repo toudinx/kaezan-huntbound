@@ -38,6 +38,26 @@ Cada task card será autossuficiente, indicará leitura mínima, paths permitido
 procedimento red-green quando houver comportamento testável, comandos obrigatórios, critérios de
 parada, handoff e commit esperado.
 
+### Prompt copiável obrigatório
+
+Toda task card terminará com `## Prompt copiável para novo chat`. O bloco será executável por cópia
+e cola, sem `TBD`, `TODO`, `<PATH>`, `<MODELO>` ou outro placeholder que exija completar o texto.
+
+Cada prompt deve declarar explicitamente:
+
+- o workspace esperado `C:\Kaezan\kaezan-huntbound` e o path exato da task card;
+- a classe da tarefa, o modelo/effort sugerido e as skills obrigatórias;
+- que somente a task indicada pode ser executada;
+- as leituras mínimas, decisões congeladas e condições de parada da própria task;
+- a obrigação de começar por teste falhando quando houver comportamento testável;
+- os comandos de verificação, a atualização de `STATE.md` e o commit esperado;
+- a proibição de iniciar a próxima task no mesmo chat;
+- para tasks da mesma onda paralela, a exigência de worktree e branch isolados antes de editar.
+
+O prompt pode mandar o agente ler a task card em vez de duplicar todo o seu conteúdo, mas não pode
+depender de histórico de conversa, anexos não versionados ou instruções que existam apenas no chat
+que criou o playbook.
+
 ## Decomposição das correções
 
 ### PB-00R-01 — Redesenhar o playfield no resize
@@ -145,6 +165,7 @@ validação diferente dos implementadores quando possível.
 - Dependências, ondas paralelas e restrição da porta 4173 estão explícitas.
 - PB-01 permanece bloqueado durante o PB-00R.
 - A política de modelos vale para todos os playbooks futuros e prevê indisponibilidade.
+- Cada task possui prompt de implementação ou validação pronto para copiar em um chat novo.
 - Nenhum critério do PB-00 é reduzido para facilitar o fechamento.
 
 ## Fora de escopo
