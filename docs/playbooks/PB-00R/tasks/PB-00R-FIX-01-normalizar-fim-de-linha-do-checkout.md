@@ -10,7 +10,19 @@
 
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`
 
-**Paralelismo:** sim. Não bloqueia PB-01 e não depende de nenhuma task de gameplay.
+**Branch-base:** `main`
+
+**Branch temporária:** `codex/pb00r-fix-01-line-endings`
+
+**Worktree temporária:** `C:\Kaezan\kaezan-huntbound-pb00r-fix-01-line-endings`
+
+**Integração:** `git merge --ff-only`; verificação completa em `main`; remoção automática da
+worktree e da branch após sucesso.
+
+**Paralelismo:** não nesta execução. Embora o warning não bloqueie PB-01, a task adiciona uma política
+de EOL para o repositório inteiro e executa `git add --renormalize .`; conclua integração e limpeza
+antes de iniciar PB-01. Se `main` avançar e impedir fast-forward, preserve worktree e branch e reporte
+o impedimento.
 
 **Origem:** warning W1 de PB-00R-05, registrado em
 `docs/playbooks/PB-00R/artifacts/acceptance-report.md`.
@@ -58,6 +70,15 @@ linha de lógica. O diff resultante deve ser exclusivamente de fim de linha.
 
 ## Passos
 
+- [ ] **0. Criar ou confirmar a worktree isolada.** A raiz principal deve estar limpa e em `main`.
+  Se ainda não estiver na branch/worktree declarada acima, execute a partir da raiz:
+
+```powershell
+git status --porcelain=v1 --untracked-files=all
+git worktree add C:\Kaezan\kaezan-huntbound-pb00r-fix-01-line-endings -b codex/pb00r-fix-01-line-endings main
+Set-Location C:\Kaezan\kaezan-huntbound-pb00r-fix-01-line-endings
+```
+
 - [ ] **1. RED.** Registrar `corepack pnpm format:check` em exit 1 e capturar a lista dos 12
   arquivos, junto com `git ls-files --eol | Select-String 'w/crlf'`. As duas listas devem coincidir.
 
@@ -98,6 +119,33 @@ O segundo comando deve sair **vazio**. Se sair qualquer linha, pare: houve mudan
 - [ ] **9. Atualizar** `STATE.md` e a seção de warnings do `acceptance-report.md`, marcando W1 e W2
   como resolvidos com evidência fresca.
 
+- [ ] **10. Criar o commit da task.** Confirme árvore sem alterações fora do escopo e crie:
+
+```powershell
+git add .gitattributes biome.json docs/playbooks/PB-00R/STATE.md docs/playbooks/PB-00R/artifacts/acceptance-report.md
+git diff --cached --check
+git commit -m "build: normalize checkout line endings"
+```
+
+- [ ] **11. Integrar, verificar e limpar sem pedir confirmação adicional.** Execute a partir da raiz
+  principal. Não crie merge commit, não faça rebase automático e não use deleção forçada:
+
+```powershell
+Set-Location C:\Kaezan\kaezan-huntbound
+git status --porcelain=v1 --untracked-files=all
+git switch main
+git merge --ff-only codex/pb00r-fix-01-line-endings
+corepack pnpm verify
+git merge-base --is-ancestor codex/pb00r-fix-01-line-endings main
+git worktree remove C:\Kaezan\kaezan-huntbound-pb00r-fix-01-line-endings
+git worktree prune
+git branch -d codex/pb00r-fix-01-line-endings
+```
+
+O status inicial deve estar vazio e todos os comandos devem terminar em exit `0`. Se outputs
+ignorados impedirem `git worktree remove`, valide novamente o path absoluto e remova somente essa
+pasta temporária por operação recuperável; nunca use a raiz principal como alvo.
+
 ## Critérios de aceite
 
 - [ ] `.gitattributes` existe e fixa `eol=lf` para arquivos de texto.
@@ -107,12 +155,18 @@ O segundo comando deve sair **vazio**. Se sair qualquer linha, pare: houve mudan
 - [ ] Nenhuma regra do Biome foi afrouxada e `files.maxSize` não foi aumentado.
 - [ ] Lockfile inalterado e nenhum artefato novo rastreado.
 - [ ] Budget, retry, workers, cache e throttling inalterados.
+- [ ] Commit integrado em `main` por fast-forward e `corepack pnpm verify` repetido com exit 0 no
+  resultado integrado.
+- [ ] Worktree temporária removida, `git worktree prune` executado e branch temporária apagada sem
+  força.
 
 ## Condições de parada
 
 Se a renormalização produzir qualquer diferença que não seja de fim de linha, pare e reporte em vez
 de commitar. Se `verify` continuar vermelho depois do GREEN de `format:check`, o achado é outro e
-merece task própria — não afrouxe o gate para fechar esta.
+merece task própria — não afrouxe o gate para fechar esta. Se o fast-forward, a verificação integrada
+ou qualquer pré-condição de limpeza falhar, preserve worktree e branch e reporte: a task ainda não
+está concluída.
 
 ## Prompt copiável para novo chat
 
@@ -120,7 +174,8 @@ merece task própria — não afrouxe o gate para fechar esta.
 Trabalhe no workspace C:\Kaezan\kaezan-huntbound.
 
 Use GPT-5.6 Luna com effort xhigh. Use obrigatoriamente as skills
-superpowers:test-driven-development e superpowers:verification-before-completion.
+superpowers:test-driven-development, superpowers:verification-before-completion e
+superpowers:using-git-worktrees.
 
 Execute integralmente e somente a task:
 C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-00R\tasks\PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md
@@ -140,5 +195,14 @@ playwright.config.ts nem vitest.config.ts, e não altere budget, retry, workers,
 
 Termine com `corepack pnpm verify` em exit 0, atualize STATE.md e a seção de warnings do
 acceptance-report.md marcando W1 e W2 como resolvidos, e crie o commit
-`build: normalize checkout line endings`. Não inicie PB-01 nem nenhuma outra task.
+`build: normalize checkout line endings`. Use `main` como branch-base, a branch
+`codex/pb00r-fix-01-line-endings` e a worktree
+`C:\Kaezan\kaezan-huntbound-pb00r-fix-01-line-endings`.
+
+Depois do commit, não peça ao usuário para fazer fast-forward. Volte à raiz principal, confirme
+status limpo, integre com `git merge --ff-only codex/pb00r-fix-01-line-endings` e repita
+`corepack pnpm verify` em `main`. Somente após exit 0, confirme a ancestralidade, remova a worktree,
+execute `git worktree prune` e apague a branch com `git branch -d`. Se integração, verificação ou
+limpeza falhar, preserve worktree e branch e reporte o impedimento. Não inicie PB-01 nem nenhuma
+outra task.
 ```

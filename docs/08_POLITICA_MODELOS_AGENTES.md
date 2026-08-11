@@ -75,7 +75,16 @@ Toda task deve declarar perto do cabeçalho:
 
 Toda task deve terminar com `## Prompt copiável para novo chat`: um bloco completo, sem placeholders,
 que possa ser copiado sem depender da conversa anterior. O prompt inclui workspace, path da task,
-modelo/effort, skills, escopo, verificação, handoff, commit e proibição de iniciar a próxima task.
+modelo/effort, skills, escopo, verificação, handoff, commit, branch-base, modo de integração,
+verificação pós-integração, limpeza de worktree/branch e proibição de iniciar a próxima task.
+
+Integração local rotineira e limpeza dos recursos temporários criados pelo executor fazem parte da
+autorização normal da task e não exigem uma segunda confirmação do usuário. Tasks seriais usam o
+modo declarado — por padrão `git merge --ff-only` —, verificam o resultado integrado e removem
+worktree e branch temporárias após o sucesso. Em tasks paralelas, o executor remove a worktree limpa
+depois do commit, preserva a branch para o integrador e só o integrador apaga essa branch após
+incorporá-la e validar o conjunto. Conflito, teste vermelho, árvore suja ou fast-forward impossível
+preservam o estado e impedem declarar a task concluída.
 
 ## Avaliação contínua
 

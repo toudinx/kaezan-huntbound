@@ -113,9 +113,15 @@ Cada task deve declarar:
 13. **Persistência do handoff.** Atualização exigida em `STATE.md` e em ADR/spec quando aplicável.
 14. **Commit.** Resultado deve ser versionado quando já existir repositório Git; a task de
     inicialização do repositório cria o primeiro baseline.
-15. **Relatório final.** Resumo de mudanças, verificações, desvios e próxima task elegível.
-16. **Prompt copiável.** Bloco final sem placeholders, pronto para abrir a task em um chat novo, com
-    workspace, path da task, modelo/effort, skills, escopo, verificações, handoff e commit.
+15. **Ciclo de conclusão.** Branch-base, branch temporária, worktree, modo de integração, verificação
+    pós-integração e limpeza devem estar explícitos. Uma task serial concluída integra seu commit,
+    verifica o resultado e remove worktree e branch temporárias sem exigir nova confirmação do
+    usuário.
+16. **Relatório final.** Resumo de mudanças, verificações, integração, limpeza, desvios e próxima
+    task elegível.
+17. **Prompt copiável.** Bloco final sem placeholders, pronto para abrir a task em um chat novo, com
+    workspace, path da task, modelo/effort, skills, escopo, verificações, handoff, commit, integração
+    e limpeza.
 
 Testes devem preceder a implementação quando a mudança tiver comportamento testável. Tasks de
 auditoria, documentação, infraestrutura inicial ou spikes podem usar outra evidência apropriada, que
@@ -130,11 +136,50 @@ deve estar explicitamente definida na task card.
 5. Verificar os critérios de aceite com evidência fresca.
 6. Atualizar o handoff persistente.
 7. Criar o commit previsto, se Git já estiver disponível.
-8. Encerrar o chat com um relatório curto e iniciar a próxima task em outro chat.
+8. Integrar automaticamente a task serial no branch-base pelo modo declarado, sem pedir ao usuário
+   que faça o fast-forward rotineiro.
+9. Repetir no resultado integrado as verificações exigidas pela task.
+10. Remover a worktree concluída, executar `git worktree prune` e apagar com segurança a branch
+    temporária já integrada.
+11. Encerrar o chat com um relatório curto e iniciar a próxima task em outro chat.
 
 Uma correção pequena descoberta durante a execução pode permanecer na mesma task quando for
 necessária para alcançar seu critério de aceite. Um problema independente deve ser registrado como
 nova task, sem expandir silenciosamente o prompt atual.
+
+## Ciclo automático de integração e limpeza
+
+Executar uma task autoriza seu ciclo normal de conclusão. O agente não pede uma segunda confirmação
+para integrar localmente um commit aprovado, avançar o branch-base por fast-forward ou remover os
+recursos temporários que ele próprio criou.
+
+Para uma task serial, o fluxo padrão é:
+
+```text
+git status --porcelain=v1 --untracked-files=all
+git switch <branch-base-concreto>
+git merge --ff-only <branch-temporaria-concreta>
+<comando-concreto-de-verificacao-integrada>
+git worktree remove <path-absoluto-validado-da-worktree>
+git worktree prune
+git branch -d <branch-temporaria-concreta>
+```
+
+Os marcadores acima são notação para autores do padrão. O prompt copiável de cada task deve trazer
+nomes, paths e comandos reais, sem placeholders.
+
+A limpeza só ocorre depois de confirmar que a worktree está limpa, que o commit existe e que o path
+resolvido corresponde à worktree temporária registrada. A branch temporária só é apagada depois que
+o resultado integrado passa nas verificações e contém o commit esperado, ou uma equivalência de
+patch explicitamente comprovada por uma integração autorizada.
+
+Se `--ff-only` falhar, houver conflito, teste vermelho, árvore suja, branch-base inesperado ou dúvida
+sobre o path, a task ainda não terminou. O agente preserva worktree e branch, registra o estado e
+reporta o impedimento; não cria merge commit, não faz rebase e não força deleção por conta própria.
+
+Worktrees usadas por pull request permanecem enquanto houver revisão pendente. Ambientes cujo host
+administra a worktree usam o mecanismo nativo de saída e não apagam diretórios pertencentes à
+plataforma.
 
 ## Portabilidade entre agentes e modelos
 
@@ -162,6 +207,12 @@ independentes. Cada chat usa worktree e branch isolados. Verificações que disp
 fixture mutável ou output compartilhado são serializadas. Atualizações concorrentes em `STATE.md` e
 `README.md` são integradas por um único responsável depois dos commits funcionais.
 
+Ao concluir a implementação paralela, cada executor verifica a árvore, cria o commit e remove sua
+worktree para não acumular pastas temporárias, mas preserva a branch. Remover a worktree não remove a
+branch nem o commit. O integrador incorpora as branches serialmente, resolve somente conflitos
+autorizados, verifica o conjunto e apaga cada branch temporária com `git branch -d` apenas depois de
+comprovar sua integração. Tasks paralelas não disputam fast-forward concorrente de `main`.
+
 ## Prompt mínimo para executar uma task
 
 ```text
@@ -175,7 +226,9 @@ Inspecione o estado real do workspace antes de editar. Preserve decisões congel
 tasks posteriores.
 
 Implemente o escopo, execute todas as verificações, atualize o handoff persistente e produza o commit
-solicitado quando Git estiver disponível.
+solicitado quando Git estiver disponível. Conclua também a integração e a limpeza declaradas na task
+sem pedir confirmação adicional para o fast-forward rotineiro. Se a task for paralela, remova a
+worktree limpa após o commit e preserve a branch para o integrador designado.
 
 Se uma decisão não coberta, inconsistência ou risco impedir a conclusão segura, pare, registre o
 bloqueio e informe exatamente o que precisa ser decidido. Não amplie o escopo silenciosamente.
@@ -197,6 +250,9 @@ como referência para autores de playbooks e não deve ser entregue ao executor 
 - [ ] Dependências e possíveis paralelismos estão explícitos.
 - [ ] Toda task possui evidência de conclusão adequada ao tipo de trabalho.
 - [ ] Toda task declara modelo/effort, validador e prompt copiável sem placeholders.
+- [ ] Toda task declara branch-base, integração, verificação pós-integração e limpeza.
+- [ ] O protocolo remove worktrees concluídas e branches temporárias já integradas.
+- [ ] Tasks paralelas distinguem a remoção imediata da worktree da remoção posterior da branch.
 - [ ] `STATE.md` permite trocar de agente sem reconstruir o histórico.
 - [ ] Nenhuma decisão importante existe apenas dentro dos prompts.
 - [ ] O fechamento do playbook valida o resultado integrado, sem refazer todas as tasks no mesmo chat.
@@ -210,3 +266,6 @@ como referência para autores de playbooks e não deve ser entregue ao executor 
 - Deixar decisões, comandos ou bloqueios apenas no relatório do chat.
 - Permitir que uma task absorva problemas independentes encontrados no caminho.
 - Presumir que o próximo agente será o mesmo modelo ou terá acesso à conversa anterior.
+- Encerrar uma task serial pedindo ao usuário que faça um fast-forward rotineiro.
+- Deixar worktree concluída ou branch temporária integrada para limpeza manual posterior.
+- Apagar worktree suja, branch não integrada ou qualquer path que não tenha sido validado.
