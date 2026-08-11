@@ -158,6 +158,32 @@ subrecursos sob o throttling". As três falhas reproduzidas agora mostram o atra
 O tamanho do bundle não participa: o CSS de 959 bytes falha junto porque o browser nem chega a
 escrever o request dele no socket durante o congelamento.
 
+**Procedência dos números abaixo.** Os valores do gate oficial saem do anexo `boot-metrics` de cada
+execução, reproduzível por qualquer revisor com o comando da própria task e lendo o anexo:
+
+```text
+$env:PLAYWRIGHT_JSON_OUTPUT_NAME='<caminho>\report.json'
+corepack pnpm exec playwright test tests/e2e/boot-budget.spec.ts --workers=1 --reporter=list,json
+```
+
+O corpo do anexo vem em base64 no JSON do reporter, em
+`suites[0].specs[0].tests[0].results[0].attachments[] | name == 'boot-metrics'`. As linhas
+`[boot-budget]`, `[boot-gap]` e `[boot-socket]` no stdout trazem os mesmos campos já resolvidos.
+
+Os tempos do lado do servidor vieram de um probe carregado por `NODE_OPTIONS=--require <probe>.cjs`
+em todos os processos Node da execução. O probe embrulha `http.createServer` e registra, por
+request, o instante de chegada, o `ttfb` e o fim da resposta, além do event-loop lag do próprio
+processo. A correlação entre os dois lados usa o campo `timeOrigin` do anexo e o `Date.now()` do
+log do servidor.
+
+Os controles A, A′, B e D foram executados por scripts de diagnóstico mantidos fora do repositório,
+em diretório temporário de sessão, porque o escopo de PB-00R-02 não autoriza criar arquivos novos
+além dos paths listados na task. Esses scripts **não sobrevivem à sessão**, então a matriz abaixo é
+auditável pela receita, não pelo artefato. A receita de cada controle está descrita adiante com
+detalhe suficiente para reconstrução; quem for validar deve reconstruí-los e comparar as taxas, não
+confiar nos números aqui. Se a validação exigir artefatos versionados, o caminho correto é uma task
+própria que autorize `tools/` ou `scripts/` para o harness de diagnóstico.
+
 Falha instrumentada de `12.351,5 ms` (todos os valores em ms relativos ao `timeOrigin` da página):
 
 | Fronteira | Documento | CSS (959 B) | JS (358.283 B) |
@@ -185,10 +211,21 @@ de `182,2 ms`.
 - *Aplicação e tamanho do bundle*: o CSS de 959 bytes congela igual e seu request nem é enviado.
 - *`vite preview`*: event loop saudável durante a janela, `ttfb` de ~1 ms e resposta completa em
   1,8–3 ms assim que o request chega.
-- *Host Windows*: um canary Node ocioso amostrando a 10 ms não congela durante a janela, os demais
-  processos Node seguem sadios e a memória livre permanece em ~7,7 GB.
 - *Runner Playwright*: o controle A′ reproduz o congelamento sem o test runner. O processo CLI do
   Playwright também congela, mas é sintoma: ele descongela no mesmo instante que a rede.
+
+**O que NÃO está descartado: o host.** Um canary Node ocioso amostrando a 10 ms não congela
+durante a janela, os demais processos Node seguem sadios e a memória livre permanece em ~7,7 GB.
+Isso exclui apenas uma classe de causa: uma parada global de escalonamento que atingisse todos os
+processos. Não exclui causas de host que atinjam seletivamente a pilha de rede do Chromium, como
+um filtro WFP, inspeção de rede de antivírus, driver de filtro ou política de energia por processo.
+Um canary dentro do mesmo host não pode, por construção, decidir isso.
+
+Descartar o host exige um controle externo: repetir a matriz em um segundo host com imagem
+diferente e comparar a taxa de ocorrência. Esse controle **não foi executado** porque este chat não
+teve acesso autorizado a outro host, e a task condiciona essa comparação a autorização explícita.
+Enquanto ele não existir, a formulação correta é que a falha é *específica do Chromium sob rede
+emulada neste host*, e não que o host esteja eliminado.
 
 **Matriz de controles diagnósticos.** Controles nunca valem como aceite; servem só para isolar.
 
@@ -204,12 +241,35 @@ Os stalls do controle A′ mediram `10.011,1`, `10.000,4` e `10.013,9 ms`. A mag
 praticamente constante em ~10,00 s nas seis reproduções, o que indica um timeout e não
 starvation aleatória.
 
+**Receita para reconstruir os controles.** Todos usam o mesmo `dist/game` já construído e o mesmo
+`vite preview --host 127.0.0.1 --port 4173 --strictPort`.
+
+- *Cliente Chromium sem runner* (A, A′, B): script Node que faz `chromium.launch()`,
+  `newContext()`, `newPage()`, `context.newCDPSession(page)`, envia `Network.enable` e
+  `Network.setCacheDisabled`, envia `Network.emulateNetworkConditions` com os mesmos
+  `latency: 150`, `downloadThroughput: 200_000`, `uploadThroughput: 93_750` e
+  `connectionType: 'cellular4g'` (omitido apenas no controle B), navega para
+  `http://127.0.0.1:4173/`, espera `[data-shell-ready="true"]`, lê o mark e reporta o maior
+  `sendEnd - sendStart` e o maior `receiveHeadersStart - sendEnd` observados em
+  `Network.responseReceived`. Um processo Node novo por execução.
+- *Cliente sem browser* (D): script Node que faz três GETs em `http://127.0.0.1:4173` — documento,
+  depois CSS e JS em paralelo, o JS reusando o agente do documento — e mede `ttfb` e total.
+- *Diferença entre A e A′*: em A o `vite preview` é iniciado uma vez e reaproveitado por todas as
+  execuções; em A′ ele é iniciado e encerrado a cada execução. Nada mais muda.
+- *Critério de stall*: `sendEnd - sendStart` ou `receiveHeadersStart - sendEnd` acima de 3.000 ms.
+  O limiar é folgado de propósito: os stalls observados ficam em ~10.000 ms e as execuções sadias
+  não passam de ~200 ms, então nenhum caso cai perto da fronteira.
+
 **Causa raiz, no nível em que a evidência sustenta:** com `Network.emulateNetworkConditions`
 ativo, a pilha de rede do Chromium para de escrever e de ler seus sockets por ~10,0 s, em ambas as
 direções e em conexões distintas, liberando tudo no mesmo instante. O ciclo de vida do servidor
 desloca a janela em que isso acontece, mas 0/30 contra 3/30 é correlação forte e não prova de
-necessidade. A constante exata dentro do Chromium não foi nomeada e permanece a fronteira ainda
-não explicada.
+necessidade.
+
+**Limites desta conclusão, explicitados.** A evidência localiza a falha *na fronteira* da pilha de
+rede do Chromium; ela não identifica o componente interno nem a constante de ~10,0 s, e não
+distingue um defeito do próprio Chromium de uma interação entre o Chromium e algo específico deste
+host. Sem o controle em segundo host, "Chromium/CDP" é a fronteira provada, não o culpado provado.
 
 **Mudança realizada:** apenas instrumentação diagnóstica e helpers puros com teste, em
 `tests/e2e/boot-budget.spec.ts`, `tests/e2e/support/bootMetrics.ts` e

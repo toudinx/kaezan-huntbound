@@ -95,10 +95,19 @@ function offsetOrNull(offset: number | undefined): number | null {
 }
 
 /**
- * `receiveHeadersStart` is when the local server actually answered on the
- * socket; `receiveHeadersEnd` is when the emulated network released those
- * headers. Their distance is the hold imposed by throttling, which separates a
- * slow server from a slow emulated network.
+ * Rebases Chromium's `response.timing` offsets onto the page timeline.
+ *
+ * `headersStartMs` and `headersEndMs` are Chromium's own `receiveHeadersStart`
+ * and `receiveHeadersEnd`; `throttleHoldMs` is simply the distance between
+ * them. No causal meaning is asserted here.
+ *
+ * In healthy runs that distance tracks the configured emulated latency, and
+ * `headersStartMs` lands within a few ms of the timestamp the local server
+ * logs for the same request. That correlation does NOT hold under the stall
+ * this task investigates: in the 12351.5 ms failure the server logged the
+ * script headers at ~355 ms while `headersStartMs` reported 10361.7 ms. Read
+ * these as "when Chromium recorded the header read", and confirm any claim
+ * about the server against the server's own log.
  */
 export function summarizeResponseTimings(
   timings: readonly CdpResponseTiming[],
@@ -129,8 +138,16 @@ export function summarizeResponseTimings(
 }
 
 /**
- * Rebuilds a per-request delivery timeline from raw CDP Network events so a
- * stall can be attributed to a concrete boundary instead of a total duration.
+ * Rebuilds a per-request timeline from raw CDP Network events.
+ *
+ * `largestGapMs` is the longest interval between two consecutive *observed*
+ * events for a request, and `largestGapAfterMs` is where that interval starts.
+ * It is a pointer for reading the timeline, not evidence of where a stall
+ * occurred: Chromium does not emit `dataReceived` as the bytes are delivered,
+ * it reports them in a burst once the transfer completes, so the interval
+ * between the request and that burst covers the whole transfer rather than any
+ * single boundary. Use `summarizeResponseTimings` and the server log to place
+ * a stall.
  */
 export function summarizeCdpRequests(
   events: readonly CdpNetworkEvent[],

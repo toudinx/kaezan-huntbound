@@ -22,8 +22,14 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
 
-  // Diagnostic only: the Network domain already streams these events, so
-  // listening in Node adds no browser-side work and cannot move the mark.
+  // Diagnostic only. `Network.enable` is required for the emulated network, so
+  // these events are already being emitted and serialised whether or not
+  // anything listens; the handlers below only buffer them in Node. That keeps
+  // the added cost off the page, but it is not a proof of zero cost: the
+  // handlers, the array growth and the sampler below all run in the runner
+  // process. The measured effect is bounded by the runner event-loop lag
+  // recorded in `runnerEventLoop`, which stayed in the low tens of ms across
+  // every run collected so far.
   const networkEvents: CdpNetworkEvent[] = [];
   const responseTimings: Array<Record<string, unknown>> = [];
   const socketTimings: CdpResponseTiming[] = [];
@@ -128,59 +134,75 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
       connectionType: 'cellular4g',
     });
 
-    await page.goto('http://127.0.0.1:4173/');
-    await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
+    // A run that never reaches the shell is exactly the run whose diagnostics
+    // matter most, so readiness failures are held until the metrics are safely
+    // attached and then rethrown unchanged.
+    let readinessError: unknown = null;
 
-    clearInterval(eventLoopSampler);
+    try {
+      await page.goto('http://127.0.0.1:4173/');
+      await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
+    } catch (error) {
+      readinessError = error;
+    } finally {
+      clearInterval(eventLoopSampler);
+    }
 
-    const entries = await page.evaluate(() => {
-      const navigationEntry = performance.getEntriesByType('navigation')[0] as
-        | PerformanceNavigationTiming
-        | undefined;
+    const entries = await page
+      .evaluate(() => {
+        const navigationEntry = performance.getEntriesByType('navigation')[0] as
+          | PerformanceNavigationTiming
+          | undefined;
 
-      return {
-        timeOrigin: performance.timeOrigin,
-        actionableMarks: performance
-          .getEntriesByName('huntbound:shell-actionable')
-          .map((entry) => ({
-            name: entry.name,
-            startTime: entry.startTime,
-          })),
-        navigation: navigationEntry
-          ? {
-              responseStart: navigationEntry.responseStart,
-              responseEnd: navigationEntry.responseEnd,
-              domInteractive: navigationEntry.domInteractive,
-              domContentLoadedEventEnd:
-                navigationEntry.domContentLoadedEventEnd,
-              loadEventEnd: navigationEntry.loadEventEnd,
-            }
-          : null,
-        resources: performance
-          .getEntriesByType('resource')
-          .map((entry) => entry as PerformanceResourceTiming)
-          .map((entry) => ({
-            name: entry.name,
-            initiatorType: entry.initiatorType,
-            startTime: entry.startTime,
-            duration: entry.duration,
-            transferSize: entry.transferSize,
-            encodedBodySize: entry.encodedBodySize,
-            decodedBodySize: entry.decodedBodySize,
-          })),
-      };
-    });
+        return {
+          timeOrigin: performance.timeOrigin,
+          actionableMarks: performance
+            .getEntriesByName('huntbound:shell-actionable')
+            .map((entry) => ({
+              name: entry.name,
+              startTime: entry.startTime,
+            })),
+          navigation: navigationEntry
+            ? {
+                responseStart: navigationEntry.responseStart,
+                responseEnd: navigationEntry.responseEnd,
+                domInteractive: navigationEntry.domInteractive,
+                domContentLoadedEventEnd:
+                  navigationEntry.domContentLoadedEventEnd,
+                loadEventEnd: navigationEntry.loadEventEnd,
+              }
+            : null,
+          resources: performance
+            .getEntriesByType('resource')
+            .map((entry) => entry as PerformanceResourceTiming)
+            .map((entry) => ({
+              name: entry.name,
+              initiatorType: entry.initiatorType,
+              startTime: entry.startTime,
+              duration: entry.duration,
+              transferSize: entry.transferSize,
+              encodedBodySize: entry.encodedBodySize,
+              decodedBodySize: entry.decodedBodySize,
+            })),
+        };
+      })
+      // The page can be unusable precisely when it failed; the CDP timeline is
+      // collected in Node and survives that.
+      .catch(() => null);
 
-    const slowestResources = criticalResources(entries.resources);
-    const [firstActionableMark] = entries.actionableMarks;
+    const slowestResources = criticalResources(entries?.resources ?? []);
+    const [firstActionableMark] = entries?.actionableMarks ?? [];
     const anchor = documentAnchor as {
       monotonicSeconds: number;
       wallTimeMs: number;
     } | null;
+    // Without a page timeline the document request itself becomes the zero
+    // point, so CDP timings stay comparable instead of being dropped.
+    const timeOriginSource = entries ? 'page' : 'documentRequest';
     const timeBase = anchor
       ? {
           monotonicSeconds: anchor.monotonicSeconds,
-          pageMs: anchor.wallTimeMs - entries.timeOrigin,
+          pageMs: entries ? anchor.wallTimeMs - entries.timeOrigin : 0,
         }
       : null;
     const cdpRequests = timeBase
@@ -196,10 +218,13 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
     )[0];
     const bootMetrics = {
       actionable: firstActionableMark?.startTime ?? null,
-      actionableMarkCount: entries.actionableMarks.length,
-      timeOrigin: entries.timeOrigin,
-      navigation: entries.navigation,
-      resources: entries.resources,
+      actionableMarkCount: entries?.actionableMarks.length ?? 0,
+      reachedShell: readinessError === null,
+      pageMetricsCollected: entries !== null,
+      timeOrigin: entries?.timeOrigin ?? null,
+      timeOriginSource,
+      navigation: entries?.navigation ?? null,
+      resources: entries?.resources ?? [],
       criticalResources: slowestResources,
       cdpRequests,
       cdpSocketTimings,
@@ -217,19 +242,6 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
       contentType: 'application/json',
     });
 
-    if (!entries.navigation) {
-      throw new Error('Boot navigation timing is missing.');
-    }
-
-    const duration = readShellActionableDuration(entries.actionableMarks);
-    const [slowestResource] = slowestResources;
-
-    console.log(
-      `[boot-budget] actionable=${duration.toFixed(1)}ms ` +
-        `responseEnd=${entries.navigation.responseEnd.toFixed(1)}ms ` +
-        `slowest=${slowestResource?.name ?? 'none'}:` +
-        `${slowestResource?.duration.toFixed(1) ?? '0.0'}ms`,
-    );
     console.log(
       `[boot-gap] gap=${stalledRequest?.largestGapMs.toFixed(1) ?? '0.0'}ms ` +
         `after=${stalledRequest?.largestGapAfterMs?.toFixed(1) ?? 'none'}ms ` +
@@ -246,6 +258,24 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
           `throttleHold=${timing.throttleHoldMs?.toFixed(1) ?? 'none'}ms`,
       );
     }
+
+    if (readinessError) {
+      throw readinessError;
+    }
+
+    if (!entries?.navigation) {
+      throw new Error('Boot navigation timing is missing.');
+    }
+
+    const duration = readShellActionableDuration(entries.actionableMarks);
+    const [slowestResource] = slowestResources;
+
+    console.log(
+      `[boot-budget] actionable=${duration.toFixed(1)}ms ` +
+        `responseEnd=${entries.navigation.responseEnd.toFixed(1)}ms ` +
+        `slowest=${slowestResource?.name ?? 'none'}:` +
+        `${slowestResource?.duration.toFixed(1) ?? '0.0'}ms`,
+    );
 
     expect(duration).toBeLessThanOrEqual(5_000);
   } finally {

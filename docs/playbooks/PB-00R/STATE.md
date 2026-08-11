@@ -108,6 +108,14 @@
   o throttling CDP é necessário (0/75 com ele desligado contra 3/30 com ele ligado).
   O ciclo de vida do servidor é um gatilho de janela temporal, não a causa (0/30 reaproveitando
   contra 3/30 recriando); com amostra dessa ordem esse item permanece correlação forte, não prova.
+- O host **não** está descartado. O canary só exclui uma parada global de escalonamento; causas de
+  host que atinjam seletivamente a pilha de rede do Chromium seguem possíveis. O controle que
+  decidiria isso é repetir a matriz em um segundo host, e ele não foi executado por falta de acesso
+  autorizado. A formulação sustentada é "específico do Chromium sob rede emulada neste host".
+- Os scripts dos controles A, A′, B e D ficaram fora do repositório, em diretório temporário de
+  sessão, porque o escopo da task não autoriza criar arquivos novos. A matriz é auditável pela
+  receita registrada no `acceptance-report.md`, não pelo artefato; versionar o harness exige uma
+  task que autorize `tools/` ou `scripts/`.
 - Condição de parada aplicada: a causa está no Chromium/CDP, fora dos paths permitidos. Reduzir
   throttling, aquecer servidor, adicionar retry ou afrouxar o budget continuariam proibidos e
   apenas mascarariam a falha.
@@ -127,9 +135,9 @@ modelo sugerido não reduz verificações.
 ## Bloqueios
 
 PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s da pilha de rede do Chromium
-que só ocorre com `Network.emulateNetworkConditions` ativo. Servidor, bundle, aplicação, runner
-Playwright e host estão descartados por controles de uma variável. Os demais achados ainda impedem
-o fechamento do playbook.
+que só ocorre com `Network.emulateNetworkConditions` ativo. Servidor, bundle, aplicação e runner
+Playwright estão descartados por controles de uma variável; o host permanece não descartado por
+falta de um segundo host autorizado. Os demais achados ainda impedem o fechamento do playbook.
 
 ## Regra de atualização
 
