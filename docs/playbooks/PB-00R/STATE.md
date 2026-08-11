@@ -3,7 +3,8 @@
 **Status geral:** pending
 
 **Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 está
-`blocked` por stall intermitente na entrega dos subrecursos sob a rede emulada.
+`blocked` por um congelamento intermitente de ~10,0 s dentro da pilha de rede do Chromium sob
+`Network.emulateNetworkConditions`, agora isolado por controles com uma variável por vez.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -14,7 +15,7 @@
 | PB-00R-01 | pending | `codex/pb00r-01-resize` | — | — |
 | PB-00R-03 | pending | `codex/pb00r-03-package-tests` | — | — |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
-| PB-00R-02 | blocked | `codex/pb00r-02-boot-budget` | este handoff | 5 passes seguidos; nova sequência falhou em 12.377,9 ms |
+| PB-00R-02 | blocked | `codex/pb00r-02-boot-budget` | este handoff | falha histórica de 12.377,9 ms preservada; reprodução instrumentada em 12.351,5, 12.882,7 e 12.226,5 ms com fronteira isolada no Chromium/CDP |
 | PB-00R-05 | pending | `codex/pb00r-05-final-gate` | — | depende de PB-00R-01/02/03/04 |
 
 ## Baseline da auditoria
@@ -76,6 +77,48 @@
   GPT-5.6 Sol, effort `xhigh`; revisão somente leitura confirmou que budget, retry, workers, cache e
   throttling não foram enfraquecidos.
 
+## Handoff PB-00R-02 — segunda investigação (fronteira isolada)
+
+- Veredito: permanece `BLOCKED`. Nenhuma decisão congelada mudou e nenhuma produção foi alterada.
+- Instrumentação acrescentada (somente `tests/e2e/**`): eventos CDP `Network.*` com timestamps,
+  `response.timing` bruto por request, event-loop lag do processo runner e `timeOrigin` para
+  correlacionar com logs do servidor. Helpers puros `summarizeCdpRequests` e
+  `summarizeResponseTimings` entraram por RED/GREEN.
+- Correção da causa antes registrada: a hipótese anterior atribuía o stall à "entrega dos
+  subrecursos sob o throttling". As métricas de fronteira mostram que o atraso aparece em
+  `receiveHeadersStart` e em `sendEnd`, que são leituras do socket real e não da camada emulada.
+  O tamanho do bundle não participa: o CSS de 959 bytes falha igual porque seu request sequer é
+  escrito no socket durante o congelamento.
+- Fronteira provada em três falhas totalmente instrumentadas: o servidor responde em ~1 ms, seu
+  event loop fica saudável, o canary ocioso e os demais processos Node não congelam, e mesmo assim
+  o Chromium não escreve nem lê seus sockets por ~10,0 s. Os dois sockets são liberados no mesmo
+  instante.
+- Matriz de controles diagnósticos (nunca evidência de aceite):
+
+| Controle | Cliente | Runner Playwright | `vite preview` | Throttling | Execuções | Stalls ~10 s |
+|---|---|---|---|---:|---:|---:|
+| Gate oficial | Chromium | sim | novo por execução | on | 71 | 3 |
+| A | Chromium | não | reaproveitado | on | 30 | 0 |
+| A′ | Chromium | não | novo por execução | on | 30 | 3 |
+| B | Chromium | não | novo por execução | **off** | 75 | 0 |
+| D | Node HTTP puro | não | novo por execução | n/a | 30 | 0 |
+
+- Leitura da matriz: o runner Playwright não é necessário (A′ reproduz sem ele); o servidor e o
+  loopback do host estão descartados (D nunca falha contra o mesmo servidor novo por execução);
+  o throttling CDP é necessário (0/75 com ele desligado contra 3/30 com ele ligado).
+  O ciclo de vida do servidor é um gatilho de janela temporal, não a causa (0/30 reaproveitando
+  contra 3/30 recriando); com amostra dessa ordem esse item permanece correlação forte, não prova.
+- Condição de parada aplicada: a causa está no Chromium/CDP, fora dos paths permitidos. Reduzir
+  throttling, aquecer servidor, adicionar retry ou afrouxar o budget continuariam proibidos e
+  apenas mascarariam a falha.
+- Sequência final do gate: `2.356,4`, `2.354,6`, `2.352,9`, `2.350,8` e falha em `12.226,5 ms`.
+  A sequência parou na primeira falha, sem retry.
+- Implementador desta investigação: Claude Opus 5, reasoning alto, no runtime Claude Code; o effort
+  efetivo não é exposto por este ambiente. A skill `game-studio:game-playtest` exigida pela task não
+  está instalada neste host; o gate `qa:browser` foi usado no lugar e passou `6/6`.
+- Validação independente por modelo frontier diferente (GPT-5.6 Sol `xhigh`) continua pendente e é
+  obrigatória antes de qualquer mudança de veredito.
+
 ## Modelos
 
 Registrar por task: implementador, effort, validador e qualquer fallback. A indisponibilidade do
@@ -83,8 +126,10 @@ modelo sugerido não reduz verificações.
 
 ## Bloqueios
 
-PB-00R-02 está bloqueada pelo stall intermitente de subrecursos no host/browser/CDP sob a rede
-emulada. Os demais achados ainda impedem o fechamento do playbook.
+PB-00R-02 está bloqueada por um congelamento intermitente de ~10,0 s da pilha de rede do Chromium
+que só ocorre com `Network.emulateNetworkConditions` ativo. Servidor, bundle, aplicação, runner
+Playwright e host estão descartados por controles de uma variável. Os demais achados ainda impedem
+o fechamento do playbook.
 
 ## Regra de atualização
 

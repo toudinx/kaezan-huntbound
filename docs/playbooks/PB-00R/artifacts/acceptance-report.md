@@ -4,8 +4,10 @@
 
 **Data de abertura:** 2026-08-11
 
-**Decisão atual:** PB-00R-02 permanece `BLOCKED`: a instrumentação reproduziu o outlier e o isolou
-na entrega dos subrecursos sob a rede emulada, mas a causa não é controlável dentro do escopo.
+**Decisão atual:** PB-00R-02 permanece `BLOCKED`. A instrumentação de fronteira isolou a falha em
+um congelamento de ~10,0 s da pilha de rede do Chromium que só ocorre com
+`Network.emulateNetworkConditions` ativo; servidor, bundle, aplicação, runner Playwright e host
+foram descartados por controles de uma variável. A causa não é controlável dentro do escopo.
 PB-01 não está elegível.
 
 ## Evidência inicial
@@ -131,6 +133,108 @@ veredito prevalente.
 **Modelos:** implementador GPT-5 no runtime Codex, effort efetivo não exposto; validador solicitado
 GPT-5.6 Sol `xhigh`. A revisão somente leitura não encontrou enfraquecimento de budget, retry,
 workers, cache ou throttling e exigiu o veredito `BLOCKED` pela ausência de causa controlável.
+
+### PB-00R-02 — segunda investigação: fronteira isolada
+
+**Veredito:** permanece `BLOCKED`. Budget de 5.000 ms, latência de 150 ms, download de 200.000 B/s,
+upload de 93.750 B/s, cache desabilitado, contexto novo, um worker e zero retry continuam
+inalterados. Nenhum arquivo de produção foi tocado.
+
+A instrumentação anterior media apenas Resource Timing, que não distingue "servidor lento" de
+"rede emulada lenta" de "browser congelado". Foram acrescentados, somente em `tests/e2e/**`, os
+eventos CDP `Network.requestWillBeSent/responseReceived/dataReceived/loadingFinished/loadingFailed`,
+o `response.timing` bruto de cada request, o event-loop lag do processo runner e o `timeOrigin`,
+que permite correlacionar o relógio do browser com o log do servidor local.
+
+O campo decisivo é `response.timing`. Em execuções sadias ele separa duas coisas que o total
+esconde:
+
+- `receiveHeadersStart` entre 8 e 25 ms — o `vite preview` respondeu de fato no socket;
+- `receiveHeadersEnd` por volta de 180 ms — a rede emulada liberou os headers depois da latência.
+
+**Correção da causa antes registrada.** O relatório anterior atribuiu a falha à "entrega dos
+subrecursos sob o throttling". As três falhas reproduzidas agora mostram o atraso em
+`receiveHeadersStart` e em `sendEnd`, que são leituras do socket real, abaixo da camada emulada.
+O tamanho do bundle não participa: o CSS de 959 bytes falha junto porque o browser nem chega a
+escrever o request dele no socket durante o congelamento.
+
+Falha instrumentada de `12.351,5 ms` (todos os valores em ms relativos ao `timeOrigin` da página):
+
+| Fronteira | Documento | CSS (959 B) | JS (358.283 B) |
+|---|---:|---:|---:|
+| Request iniciado pelo browser | 1,0 | 350,4 | 349,5 |
+| `connect` concluído | 165,9 | 1,4 após o request | conexão reusada |
+| `sendEnd` (bytes do request escritos) | 166,4 | **10.010,3** | 0,8 |
+| Servidor recebeu o request | -2.534 e 174 | **10.378** | 354 |
+| Servidor escreveu headers (`ttfb`) | 1,3 | 0,5 | 1,1 |
+| Servidor terminou a resposta | 175 | 10.381 | **10.383** |
+| `receiveHeadersStart` no browser | 178,3 | **10.381,6** | **10.361,7** |
+| Mark acionável | — | — | 12.351,5 |
+
+Falha instrumentada de `12.882,7 ms`: CSS com `send` de `1,5` a `10.015,9`; JS com
+`receiveHeadersStart` em `+10.423,8`; servidor recebeu o JS em `606`, escreveu headers em `1,1 ms`
+e só concluiu em `10.643`; o request do CSS chegou ao servidor em `10.631` e foi servido em
+`1,8 ms`.
+
+Falha da sequência final de gate, `12.226,5 ms`: `serverHeaders` do CSS em `10.249,7` contra
+`requestTime` de `189,0`, e do JS em `10.195,9` contra `187,5`; documento normal com `responseEnd`
+de `182,2 ms`.
+
+**O que está descartado, com a métrica que descarta.**
+
+- *Aplicação e tamanho do bundle*: o CSS de 959 bytes congela igual e seu request nem é enviado.
+- *`vite preview`*: event loop saudável durante a janela, `ttfb` de ~1 ms e resposta completa em
+  1,8–3 ms assim que o request chega.
+- *Host Windows*: um canary Node ocioso amostrando a 10 ms não congela durante a janela, os demais
+  processos Node seguem sadios e a memória livre permanece em ~7,7 GB.
+- *Runner Playwright*: o controle A′ reproduz o congelamento sem o test runner. O processo CLI do
+  Playwright também congela, mas é sintoma: ele descongela no mesmo instante que a rede.
+
+**Matriz de controles diagnósticos.** Controles nunca valem como aceite; servem só para isolar.
+
+| Controle | Cliente | Runner | `vite preview` | Throttling | Execuções | Stalls ~10 s |
+|---|---|---|---|---:|---:|---:|
+| Gate oficial | Chromium | Playwright | novo por execução | on | 71 | 3 |
+| A | Chromium | nenhum | reaproveitado | on | 30 | 0 |
+| A′ | Chromium | nenhum | novo por execução | on | 30 | 3 |
+| B | Chromium | nenhum | novo por execução | **off** | 75 | 0 |
+| D | Node HTTP puro | nenhum | novo por execução | n/a | 30 | 0 |
+
+Os stalls do controle A′ mediram `10.011,1`, `10.000,4` e `10.013,9 ms`. A magnitude é
+praticamente constante em ~10,00 s nas seis reproduções, o que indica um timeout e não
+starvation aleatória.
+
+**Causa raiz, no nível em que a evidência sustenta:** com `Network.emulateNetworkConditions`
+ativo, a pilha de rede do Chromium para de escrever e de ler seus sockets por ~10,0 s, em ambas as
+direções e em conexões distintas, liberando tudo no mesmo instante. O ciclo de vida do servidor
+desloca a janela em que isso acontece, mas 0/30 contra 3/30 é correlação forte e não prova de
+necessidade. A constante exata dentro do Chromium não foi nomeada e permanece a fronteira ainda
+não explicada.
+
+**Mudança realizada:** apenas instrumentação diagnóstica e helpers puros com teste, em
+`tests/e2e/boot-budget.spec.ts`, `tests/e2e/support/bootMetrics.ts` e
+`tests/e2e/support/bootMetrics.test.ts`. Os listeners CDP rodam no processo Node; o domínio
+`Network` já emitia esses eventos, então não há custo novo no browser nem deslocamento do mark.
+
+**Proposta para desbloquear:** executar o gate em um runner dedicado e reproduzível, com Chromium
+e sistema fixados por imagem, sem outras cargas concorrentes, e medir a taxa de ocorrência lá antes
+de aceitar o budget. Se o congelamento persistir em runner limpo, o caminho é registrar o defeito
+contra o Chromium/CDP com esta evidência de fronteira, não afrouxar o gate.
+
+**Gates desta investigação:** `bootMetrics` `4/4`; `@huntbound/game` `21/21`; `typecheck` exit 0;
+`build` exit 0; `qa:browser` `6/6` com mark de `2.360,2 ms`; `git diff --check` exit 0. A sequência
+oficial de cinco processos passou em `2.356,4`, `2.354,6`, `2.352,9` e `2.350,8 ms` e falhou no
+quinto com `12.226,5 ms`, encerrando a sequência sem retry. Essa falha prevalece sobre os passes.
+
+**Achado fora de escopo, não corrigido:** `corepack pnpm format:check` já falhava antes desta
+investigação. `apps/game/vite.config.ts` e `tests/workspace/vite-build-config.test.ts` estão com
+CRLF na working tree por causa de `core.autocrlf`, e `tests/e2e/shell.spec.ts` viola
+`lint/suspicious/noExportsInTest`. Nenhum desses arquivos pertence ao escopo de PB-00R-02.
+
+**Modelos:** implementador desta investigação Claude Opus 5, reasoning alto, no runtime Claude
+Code; o effort efetivo não é exposto pelo ambiente. A skill `game-studio:game-playtest` exigida
+pela task não está instalada neste host e foi substituída pelo gate `qa:browser`. A validação
+independente por modelo frontier diferente permanece pendente e é obrigatória.
 
 PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
 exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. O estado
