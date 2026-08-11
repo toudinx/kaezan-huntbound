@@ -1,8 +1,17 @@
 # PB-00R — Relatório final de aceite
 
-**PENDING — aguardando integração de PB-00R-01 e PB-00R-03**
+**APPROVED_WITH_WARNINGS**
 
 **Data de abertura:** 2026-08-11
+
+**Data de fechamento:** 2026-08-11 · auditoria PB-00R-05 · Claude Opus 5, reasoning alto, runtime
+Claude Code (effort efetivo não exposto pelo ambiente)
+
+Nenhum risco grave foi reproduzido. Build e boot são viáveis, o shell fica acionável, não há crash,
+corrupção ou perda de dados, não há risco de segurança e nada impede concretamente PB-01. Os quatro
+desvios encontrados são warnings com evidência, impacto, gatilho de reabertura e follow-up
+registrados abaixo. **PB-01 volta a ser elegível.** A evidência desta seção é fresca e prevalece
+sobre relatos anteriores.
 
 **Decisão atual:** PB-00R-02 está `done (risco aceito)`. A instrumentação localizou um congelamento
 intermitente de ~10,0 s na fronteira da pilha de rede do Chromium e preservou evidência auditável.
@@ -386,7 +395,7 @@ está versionado em `tools/diagnostics/` e escreve saída bruta por execução, 
 | Orquestrador e escrita da saída | `tools/diagnostics/runBootStallMatrix.ts` |
 | Saída bruta por execução | `artifacts/diagnostics/boot-stall-runs.jsonl` |
 | Matriz gerada | `artifacts/diagnostics/boot-stall-matrix.md` |
-| N declarado, host e totais | `artifacts/diagnostics/boot-stall-session.json` |
+| N declarado, host e totais | `artifacts/diagnostics/boot-stall-session.jsonl` |
 
 O harness reproduz a receita já registrada: `chromium.launch`, `newContext`, `newPage`,
 `context.newCDPSession`, `Network.enable`, `Network.setCacheDisabled` e
@@ -509,6 +518,299 @@ somente a integração e validação das tasks restantes, inclusive PB-00R-01 e 
 - `pnpm-lock.yaml` e dependências não mudaram; o blob Git permaneceu
   `8ee8585af1fc6cb04accc56b4c90870d026f1060`.
 
-PB-00R-05 preencherá o restante desta seção com os commits integrados, modelos/efforts, comandos,
-exit codes, contagens, timings, screenshot pós-resize, hash do lockfile e decisão final. Todos os
-pré-requisitos estão integrados nesta branch; o estado permanece `PENDING` até a validação final.
+## PB-00R-05 — auditoria final integrada (2026-08-11)
+
+**Veredito: `APPROVED_WITH_WARNINGS`.** Auditoria independente, somente leitura sobre a
+implementação: nenhum arquivo de runtime, teste ou toolchain foi alterado por esta task. Budget,
+retry, workers, cache e throttling foram inspecionados e continuam intactos.
+
+### Commits auditados
+
+Árvore auditada: `94c4f62` na branch `codex/pb00r-06-diag-harness`, que é a branch de integração das
+quatro correções. `main` permanece em `5fca6c2`.
+
+| Task | Commit integrado | Commit da worktree original | Modelo implementador | Effort |
+|---|---|---|---|---|
+| PB-00R-04 | `c4dc64c` | `c4dc64c` | GPT-5 (runtime Codex) | `xhigh` sugerido; efetivo não exposto |
+| PB-00R-02 | `86e6391` | `86e6391` | GPT-5 (Codex) + Claude Opus 5 | não exposto |
+| PB-00R-06 | `b3978ff` | `b3978ff` | Claude Opus 5 | não exposto |
+| PB-00R-01 | `b5c5612` | `911df51` | GPT-5 (runtime Codex) | `xhigh` sugerido; efetivo não exposto |
+| PB-00R-03 | `94c4f62` | `809383e` | GPT-5 (runtime atual) | `xhigh` |
+
+PB-00R-01 e PB-00R-03 foram rebaseados da worktree para a branch de integração, então seus hashes
+mudaram. A auditoria comparou os dois lados: o diff de código é idêntico em ambos os pares
+(`apps/game/src/phaser/scenes/ShellScene.ts`, `tests/e2e/shell.spec.ts` e a screenshot em um;
+os seis manifests, `tests/workspace/workspace-config.test.ts` e `vitest.config.ts` no outro). A
+única diferença é o texto de `STATE.md`/`acceptance-report.md` resolvido na integração.
+
+**Diversidade de modelo:** o validador (Claude Opus 5) difere do implementador principal das quatro
+correções funcionais (GPT-5/Codex), conforme `docs/08_POLITICA_MODELOS_AGENTES.md`. Ele **não**
+difere do implementador de PB-00R-06 nem da segunda investigação de PB-00R-02, ambos Opus 5 — ver
+warning W4.
+
+### Comandos, exit codes e contagens
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `git status --porcelain=v1 --untracked-files=all` | 0 | saída vazia, antes e depois |
+| 2 | `git diff --check` | 0 | limpo |
+| 3 | `corepack pnpm install --frozen-lockfile` | 0 | `Already up to date`, 8 projetos |
+| 4 | `corepack pnpm verify` | **1** | reprova no 1.º gate, `format:check` — warning W1 |
+| 5 | `corepack pnpm format:check` | **1** | 12 erros, 1 warning, 60 arquivos |
+| 6 | `corepack pnpm architecture:check` | 0 | sem violações |
+| 7 | `corepack pnpm typecheck` | 0 | 7 de 8 projetos |
+| 8 | `corepack pnpm test` | 0 | **38** testes |
+| 9 | `corepack pnpm build` | 0 | só o warning de chunk Phaser |
+| 10 | `corepack pnpm qa:browser` | 0 | **7/7** E2E, mark `2.515,9 ms` |
+| 11 | `playwright test tests/e2e/boot-budget.spec.ts` ×5 | 0,0,0,0,0 | cinco processos frios |
+| 12 | `playwright test shell.spec.ts -g "redraws the playfield…"` | 0 | 1/1, sem atualizar snapshot |
+
+Como `verify` encadeia com `&&`, a reprovação em `format:check` mascara todos os gates seguintes.
+Por isso os cinco gates restantes foram executados isoladamente (linhas 6 a 10): **todos passam**.
+Nenhuma falha anterior escondeu outro resultado.
+
+**Contagem de testes — 38, não 33.** O número 33 no card da task é anterior às próprias correções
+auditadas. A composição fresca é:
+
+| Runner | Arquivos | Testes |
+|---|---:|---:|
+| `vitest run` na raiz | 3 | 6 |
+| `node --test tools/architecture/check-boundaries.test.ts` | 1 | 11 |
+| `@huntbound/game` | 5 | 21 |
+| 6 packages vazios (`--passWithNoTests`) | 0 | 0 |
+| **total** | | **38** |
+
+Os 5 testes a mais em relação a 33 são os 4 de `tests/e2e/support/bootMetrics.test.ts` (PB-00R-02) e
+1 de `tests/workspace/vite-build-config.test.ts` (PB-00R-04). Nenhum `*.spec.ts` do Playwright foi
+coletado pelo runner unitário.
+
+### Lockfile
+
+SHA-256 idêntico antes e depois de `corepack pnpm install --frozen-lockfile`:
+
+```text
+0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651
+```
+
+Blob Git inalterado: `8ee8585af1fc6cb04accc56b4c90870d026f1060`. Nenhum gate alterou o lockfile.
+
+### Resize pós-boot revalidado
+
+`redraws the playfield after in-session viewport changes` passou em `1,4 s` **sem** `--update-snapshots`;
+a working tree continuou limpa depois, provando que o baseline não foi regravado.
+
+A screenshot `tests/e2e/shell.spec.ts-snapshots/shell-mobile-to-desktop-win32.png` foi aberta no
+tamanho original (1366×768) e inspecionada:
+
+- a grade cobre os 1366×768 completos, com linhas até as bordas direita e inferior;
+- a intensidade é uniforme, sem emenda ou degrau na fronteira dos 390 px iniciais;
+- há exatamente um canvas e um overlay — um badge `SHELL READY` e um badge `1366 × 768 · 1.00 DPR`;
+- o centro está livre de resíduo geométrico.
+
+Evidência adicional e mais forte que a inspeção visual: a screenshot pós-resize é **byte-idêntica**
+à screenshot de um boot nativo em desktop. Ambas têm SHA-256
+`CA64A539904EF0E9D628D370A9DF48333268811E9CCB232B0347A231FDC2F9BD`. Redimensionar de 390×844 para
+1366×768 produz exatamente o mesmo raster que iniciar já em 1366×768.
+
+O listener é removido no shutdown com a mesma referência de função usada no registro — `redrawGrid`
+é propriedade arrow estável, passada tanto para `this.scale.on` quanto para `this.scale.off`. O
+teste `recovers lifecycle changes without duplicating shell elements` passou, cobrindo a não
+duplicação após recriação.
+
+### Cinco boots em processos frios
+
+Cinco processos Playwright separados, um por execução, sem retry e sem reaproveitar servidor:
+
+| Processo | Exit | Mark acionável | `responseEnd` | `actionableMarkCount` | `reachedShell` |
+|---:|---:|---:|---:|---:|---|
+| 1 | 0 | **2.517,5 ms** | 182,2 ms | 1 | true |
+| 2 | 0 | **2.494,2 ms** | 179,9 ms | 1 | true |
+| 3 | 0 | **2.532,3 ms** | 186,0 ms | 1 | true |
+| 4 | 0 | **2.518,1 ms** | 179,6 ms | 1 | true |
+| 5 | 0 | **2.533,3 ms** | 186,7 ms | 1 | true |
+
+Os cinco marks ficam **abaixo do alvo saudável de 5.000 ms**. Nenhum warning de boot foi necessário
+nesta sessão e o congelamento histórico de ~10 s não se reproduziu em nenhuma das sete navegações
+instrumentadas do dia (cinco desta sequência mais duas do `qa:browser`). Isso **não** revoga o risco
+conhecido: ele é intermitente e a taxa histórica é de poucos por cento.
+
+Anexos `boot-metrics` preservados, um por execução, todos com corpo real:
+
+| Processo | Relatório JSON | Bytes do anexo |
+|---:|---|---:|
+| 1 | `report-1.json` | 15.216 |
+| 2 | `report-2.json` | 15.268 |
+| 3 | `report-3.json` | 15.252 |
+| 4 | `report-4.json` | 15.248 |
+| 5 | `report-5.json` | 15.232 |
+
+Os JSONs foram gravados em diretório temporário de sessão
+(`…\scratchpad\boot5\report-<n>.json`), fora do repositório, e **não** são versionados — o escopo
+desta task não autoriza adicionar artefatos novos. São reproduzíveis pelo comando da própria task
+com `PLAYWRIGHT_JSON_OUTPUT_NAME`. O caminho versionado e auditável para esse tipo de evidência
+continua sendo o harness de PB-00R-06 em `artifacts/diagnostics/`.
+
+### Descoberta de testes revalidada
+
+Os sete manifests declaram `test` não mascarado:
+
+| Package | `scripts.test` |
+|---|---|
+| `apps/game` | `vitest run` |
+| `packages/contracts` | `vitest run --passWithNoTests` |
+| `packages/simulation` | `vitest run --passWithNoTests` |
+| `packages/content` | `vitest run --passWithNoTests` |
+| `packages/assets` | `vitest run --passWithNoTests` |
+| `packages/save` | `vitest run --passWithNoTests` |
+| `packages/test-fixtures` | `vitest run --passWithNoTests` |
+
+`tests/workspace/workspace-config.test.ts` faz cumprir o contrato: rejeita script ausente, vazio, com
+`|| true` ou com `exit 0`, nos sete packages e nos sete scripts de raiz.
+
+Probe temporário em `packages/contracts/src/gate-probe.test.ts`, com o script raiz **intocado**:
+
+```text
+38  →  39  (probe presente, coletado por packages/contracts)  →  38  (probe removido)
+```
+
+O probe foi removido e a working tree voltou a limpa; ele não entra no commit. Nenhum `*.spec.ts`
+foi coletado pelo runner unitário em nenhuma das três execuções.
+
+### Limite da limpeza do output
+
+Paths absolutos resolvidos antes da prova:
+
+```text
+C:\Kaezan\kaezan-huntbound\dist\game\pb00r-05-game-sentinel.txt     (interna)
+C:\Kaezan\kaezan-huntbound\dist\pb00r-05-parent-sentinel.txt        (irmã, externa ao outDir)
+```
+
+Depois de `corepack pnpm build` (exit 0): a sentinela **interna foi removida** e a **irmã
+permaneceu**. A limpeza respeita a fronteira do `outDir` e não toca paths externos. A sentinela irmã
+foi removida especificamente ao fim da prova e `dist/` voltou a conter apenas `game/`.
+
+O warning de output externo não limpo **não aparece mais**. O único warning do build é o de chunk
+Phaser acima de 500 kB, limite conhecido e fora de escopo.
+
+### Arquitetura, escopo e tracking
+
+`corepack pnpm architecture:check` exit 0. `git ls-files` lista 126 arquivos; a varredura por
+`references/`, `.obsidian/`, `dist/`, `playwright-report/`, `test-results/`, `apps/game/dist/`,
+probes, sentinelas, `.env`, segredos, credenciais e chaves não encontrou **nenhum** path rastreado.
+`git diff --check` e `git status --short` terminaram limpos ao fim da auditoria.
+
+Todo o intervalo PB-00R (`e93a7c4..HEAD`) toca 25 arquivos fora de `docs/`. A busca por `gacha`,
+`IndexedDB`, `serviceWorker`, `service-worker`, runtime `Canary`, `backend`, `outfit`, `inventory`,
+`gameplay`, `localStorage` e `fetch(` nas linhas **adicionadas** fora de `docs/` não retornou
+ocorrência alguma. Nenhum sistema de playbook posterior foi antecipado.
+
+O único arquivo de produção alterado em todo o PB-00R é
+`apps/game/src/phaser/scenes/ShellScene.ts`. As demais mudanças são configuração mínima
+(`emptyOutDir: true`; `testIgnore` de `support/**/*.test.ts`; include de `src/**/*.test.ts`),
+manifests, testes e o harness de diagnóstico.
+
+**Nada foi afrouxado.** Verificado por leitura direta:
+
+| Controle | Valor no HEAD auditado |
+|---|---|
+| Budget medido | `expect(duration).toBeLessThanOrEqual(5_000)` |
+| Retries | `test.describe.configure({ retries: 0 })` |
+| Workers | `workers: 1` |
+| Cache | `Network.setCacheDisabled` com `cacheDisabled: true` |
+| Throttling | `latency: 150`, `downloadThroughput: 200_000`, `uploadThroughput: 93_750`, `cellular4g` |
+
+O `testIgnore` adicionado ao Playwright cobre apenas `**/support/**/*.test.ts` e não exclui nenhum
+`*.spec.ts` — confirmado pelos 7 testes coletados em `qa:browser`.
+
+## Warnings
+
+Nenhum warning abaixo atinge a barra de bloqueio congelada. Todos têm evidência fresca, impacto,
+gatilho de reabertura e follow-up.
+
+### W1 — `pnpm verify` reprova em `format:check` por fim de linha da working tree
+
+- **Evidência.** `corepack pnpm format:check` exit 1: `Found 12 errors. Found 1 warning.` Os 12
+  arquivos com erro são **exatamente** os 12 arquivos rastreados que `git ls-files --eol` reporta
+  como `i/lf w/crlf`: `apps/game/src/phaser/scenes/ShellScene.ts`, `apps/game/vite.config.ts`, os
+  seis `packages/*/package.json`, `tests/e2e/shell.spec.ts`,
+  `tests/workspace/vite-build-config.test.ts`, `tests/workspace/workspace-config.test.ts` e
+  `vitest.config.ts`. `core.autocrlf` está em `true` e não existe `.gitattributes` no repositório.
+- **Prova de que a causa é só essa.** O conteúdo de `HEAD` desses 12 arquivos foi extraído para um
+  diretório temporário com fim de linha LF e submetido a `biome format`: `Checked 13 files. No
+  fixes applied.`, **exit 0**. O 13.º arquivo do lote é o `biome.json` copiado junto. Não existe
+  defeito de formatação no conteúdo versionado.
+- **O warning restante não participa.** O `!` de 1,3 MiB vem de `apps/game/dist/assets/index-BAWoqgt4.js`.
+  Rodar `biome format apps/game/dist` isoladamente termina em **exit 0**, então o warning não
+  contribui para a reprovação. Ver W2.
+- **Impacto.** O comando canônico de gate fica vermelho em qualquer checkout Windows com
+  `core.autocrlf=true`, e para no primeiro gate, escondendo os cinco seguintes. É atrito de fluxo e
+  risco de mascaramento, não defeito de produto: os cinco gates substantivos passam quando
+  executados isoladamente e o conteúdo commitado está correto.
+- **Gatilho de reabertura.** Passa a bloquear se algum arquivo aparecer com defeito real de
+  formatação no conteúdo commitado — isto é, se a reprodução com LF deixar de terminar em exit 0.
+- **Follow-up (prioridade alta).**
+  [PB-00R-FIX-01](../tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md) — adicionar
+  `.gitattributes` com `* text=auto eol=lf`, renormalizar e provar `verify` verde ponta a ponta.
+  Exige red-green e task própria porque toca a raiz do repositório, fora do escopo de PB-00R-05.
+
+### W2 — saída de build obsoleta em `apps/game/dist` é varrida pelo Biome
+
+- **Evidência.** `apps/game/dist/` contém `index.html`, `assets/index-1Ku5mUUX.css` e
+  `assets/index-BAWoqgt4.js` (1.378.104 B), todos com data de 2026-08-10 — anteriores a PB-00R-04,
+  que passou a emitir em `dist/game`. O Biome varre o diretório e emite o warning de `maxSize`.
+- **Impacto.** Baixo e local. O diretório é ignorado pelo Git (`.gitignore:7:dist/`), não está
+  rastreado e não existe em clone novo. Não afeta build, testes nem o exit code do gate.
+- **Gatilho de reabertura.** Passa a importar se algum gate começar a ler esse diretório obsoleto
+  como se fosse a saída corrente.
+- **Follow-up (prioridade baixa).** Apagar o diretório localmente e, se o ruído voltar, incluir
+  `**/dist/**` em `files.includes` do `biome.json`. Dobrar com PB-00R-FIX-01.
+
+### W3 — congelamento intermitente de boot continua conhecido e não descartado
+
+- **Evidência desta sessão.** Sete navegações instrumentadas, zero stalls; marks entre 2.494,2 e
+  2.533,3 ms, todos abaixo do alvo saudável de 5.000 ms. A ausência de reprodução em sete tentativas
+  **não** refuta um evento cuja taxa histórica é de poucos por cento; o intervalo é largo demais.
+- **Evidência que permanece válida.** PB-00R-02 e PB-00R-06 registram marks de 12,2 a 12,9 s
+  com o congelamento de ~10,00 s na fronteira da pilha de rede do Chromium sob rede emulada, com
+  saída bruta versionada em `artifacts/diagnostics/boot-stall-runs.jsonl`. O host não está
+  descartado; o controle que decidiria isso é repetir a matriz em um segundo host.
+- **Impacto.** Aceito por decisão de produto de 2026-08-11 para a fase atual. 5.000 ms segue alvo
+  saudável e métrica de warning.
+- **Gatilho de reabertura.** Mark acima de 30.000 ms, shell não acionável, `actionableMarkCount`
+  diferente de 1, anexo `boot-metrics` ausente, ou aumento perceptível da taxa de ocorrência.
+- **Follow-up (prioridade média).** Repetir a matriz de `tools/diagnostics/` em um segundo host com
+  imagem diferente, quando houver acesso autorizado, e medir a taxa lá.
+
+### W4 — validação independente parcial e imprecisões documentais
+
+- **Evidência.** O validador desta auditoria é Claude Opus 5, que difere do implementador das quatro
+  correções funcionais (GPT-5/Codex) mas **coincide** com o implementador de PB-00R-06 e da segunda
+  investigação de PB-00R-02. `docs/08_POLITICA_MODELOS_AGENTES.md` pede modelo diferente; a
+  plataforma desta sessão não oferecia GPT-5.6 Sol, e o desvio fica registrado aqui e em `STATE.md`.
+  Além disso: o `STATE.md` registrava para PB-00R-01 e PB-00R-03 os hashes das worktrees
+  (`911df51`, `809383e`) e não os hashes integrados (`b5c5612`, `94c4f62`); a tabela de entregáveis
+  de PB-00R-06 citava `boot-stall-session.json`, mas o arquivo em disco é `boot-stall-session.jsonl`.
+  Ambos corrigidos neste fechamento.
+- **Impacto.** Nenhum sobre o produto. Afeta rastreabilidade e a força da revisão cruzada sobre a
+  parte diagnóstica; a parte funcional tem revisão cruzada de modelo.
+- **Gatilho de reabertura.** Qualquer mudança de veredito sobre PB-00R-02 exige, como as duas
+  investigações já registram, validação por modelo frontier diferente de Opus 5.
+- **Follow-up (prioridade baixa).** Submeter o harness de PB-00R-06 e este fechamento a GPT-5.6 Sol
+  `xhigh` quando disponível.
+
+## Achados fora de escopo não corrigidos
+
+- `biome check .` (usado por `pnpm check`, **não** por `pnpm verify`) segue reprovando por
+  `lint/suspicious/noExportsInTest` em `tests/e2e/shell.spec.ts`. Pré-existente e fora do escopo
+  desta task.
+- Chunk Phaser acima de 500 kB no build: limite conhecido, explicitamente fora de escopo do PB-00R.
+
+## Decisão
+
+`APPROVED_WITH_WARNINGS`. Nenhum risco grave foi reproduzido: o build passa, os cinco gates
+substantivos passam isoladamente, o shell fica acionável em ~2,5 s em cinco processos frios, o
+resize redesenha o playfield completo, a descoberta de testes é comprovada por probe e a limpeza do
+output respeita sua fronteira. O único gate vermelho é `format:check`, cuja causa foi isolada até a
+prova de que o conteúdo versionado está correto.
+
+**PB-01 está elegível a partir do commit de fechamento desta task.** PB-01 não foi iniciado aqui.

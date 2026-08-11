@@ -17,7 +17,8 @@ limpo e o fechamento integrado depende de todas as correções.
 
 ## Restrições globais
 
-- PB-01 permanece bloqueado enquanto este playbook não estiver `done`.
+- PB-01 permanece bloqueado enquanto este playbook não estiver `done`. **Liberado em 2026-08-11**
+  pelo fechamento `APPROVED_WITH_WARNINGS` de PB-00R-05; ver `artifacts/acceptance-report.md`.
 - Um achado só bloqueia quando impede build/boot, inutiliza um fluxo essencial, causa crash ou
   corrupção/perda de dados, cria risco de segurança, ou impede concretamente a próxima iteração.
 - Performance, flakiness diagnóstica, polish e dívida técnica sem impacto grave são warnings
@@ -84,28 +85,33 @@ porta 4173.
 
 | ID | Classe | Modelo sugerido | Dependência | Paralelo | Status |
 |---|---|---|---|---|---|
-| [PB-00R-01](tasks/PB-00R-01-redesenhar-playfield-no-resize.md) | implementação menor | Luna `xhigh` | nenhuma | onda 1 | pronto para integrar |
-| [PB-00R-03](tasks/PB-00R-03-fechar-descoberta-de-testes-por-package.md) | implementação menor | Luna `xhigh` | nenhuma | onda 1 | pronto para integrar |
+| [PB-00R-01](tasks/PB-00R-01-redesenhar-playfield-no-resize.md) | implementação menor | Luna `xhigh` | nenhuma | onda 1 | done |
+| [PB-00R-03](tasks/PB-00R-03-fechar-descoberta-de-testes-por-package.md) | implementação menor | Luna `xhigh` | nenhuma | onda 1 | done |
 | [PB-00R-04](tasks/PB-00R-04-limpar-output-de-build.md) | implementação menor | Luna `xhigh` | nenhuma | onda 1 | done |
 | [PB-00R-02](tasks/PB-00R-02-estabilizar-budget-de-boot.md) | implementação complexa | Sol `xhigh` ou Opus 5 | PB-00R-04 | não | done (risco aceito) |
-| [PB-00R-05](tasks/PB-00R-05-revalidar-gate-integrado.md) | validação | Sol `xhigh` ou Opus 5 | PB-00R-01/02/03/04 | não | pending |
+| [PB-00R-06](tasks/PB-00R-06-versionar-harness-de-diagnostico.md) | diagnóstico | Opus 5 | PB-00R-02 | não | done |
+| [PB-00R-05](tasks/PB-00R-05-revalidar-gate-integrado.md) | validação | Sol `xhigh` ou Opus 5 | PB-00R-01/02/03/04 | não | done — `APPROVED_WITH_WARNINGS` |
+| [PB-00R-FIX-01](tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md) | implementação menor | Luna `xhigh` | PB-00R-05 | sim | pending (warning W1) |
 
 ## Critérios finais de aceite
 
-- [ ] Resize de 390×844 para 1366×768 na mesma página redesenha o playfield completo.
-- [ ] Listener de resize da scene é removido no shutdown e não duplica após HMR/recriação.
-- [ ] Screenshot pós-resize está versionada e revisada no tamanho original.
-- [ ] Cinco processos frios consecutivos observam o mark acionável em até 30.000 ms; ocorrências
+- [x] Resize de 390×844 para 1366×768 na mesma página redesenha o playfield completo.
+- [x] Listener de resize da scene é removido no shutdown e não duplica após HMR/recriação.
+- [x] Screenshot pós-resize está versionada e revisada no tamanho original.
+- [x] Cinco processos frios consecutivos observam o mark acionável em até 30.000 ms; ocorrências
   acima do alvo saudável de 5.000 ms ficam registradas como warning não bloqueante.
-- [ ] Toda execução do budget registra métricas suficientes para diagnosticar nova falha.
-- [ ] Todo package do workspace declara script `test` não mascarado.
-- [ ] Um teste novo em qualquer package entra no gate sem editar o script raiz.
-- [ ] Playwright continua fora do runner unitário.
-- [ ] Build limpa `dist/game` e remove sentinela sem tocar paths externos ao output.
-- [ ] `corepack pnpm install --frozen-lockfile` passa e os gates do `verify` passam; é aceita somente
-  a falha conhecida da assertion de 5.000 ms quando o shell fica acionável em até 30.000 ms e as
-  métricas são preservadas.
-- [ ] Relatório final registra limites conhecidos, modelos usados e desvios.
+- [x] Toda execução do budget registra métricas suficientes para diagnosticar nova falha.
+- [x] Todo package do workspace declara script `test` não mascarado.
+- [x] Um teste novo em qualquer package entra no gate sem editar o script raiz.
+- [x] Playwright continua fora do runner unitário.
+- [x] Build limpa `dist/game` e remove sentinela sem tocar paths externos ao output.
+- [x] `corepack pnpm install --frozen-lockfile` passa sem alterar o lockfile.
+- [ ] `corepack pnpm verify` passa ponta a ponta. **Não atingido — warning W1.** Cinco dos seis
+  gates passam (`architecture:check`, `typecheck`, `test`, `build`, `qa:browser`); `format:check`
+  reprova com 12 erros. Os 12 arquivos são exatamente os 12 arquivos rastreados que estão `i/lf` no
+  índice e `w/crlf` na working tree por causa de `core.autocrlf=true` sem `.gitattributes`. O
+  conteúdo commitado passa em `biome format` com exit 0. Não há defeito de formatação versionado.
+- [x] Relatório final registra limites conhecidos, modelos usados e desvios.
 
 ## Fora de escopo
 

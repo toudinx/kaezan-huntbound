@@ -1,24 +1,30 @@
 # PB-00R — Estado operacional
 
-**Status geral:** pending (não bloqueante até o gate integrado)
+**Status geral:** done — `APPROVED_WITH_WARNINGS` em 2026-08-11 (PB-00R-05).
 
-**Próxima task elegível:** PB-00R-05. PB-00R-01, PB-00R-02, PB-00R-03 e PB-00R-04 estão integradas
-nesta branch. PB-00R-02 está `done (risco aceito)` por decisão de produto: 5.000 ms permanece alvo
-saudável e métrica de warning, enquanto somente boot acima de 30.000 ms ou ausência do shell
-acionável volta a bloquear.
+**Próxima task elegível:** nenhuma dentro de PB-00R. PB-00R-FIX-01 está aberta como follow-up
+priorizado do warning W1 e **não** bloqueia PB-01. PB-00R-02 permanece `done (risco aceito)` por
+decisão de produto: 5.000 ms permanece alvo saudável e métrica de warning, enquanto somente boot
+acima de 30.000 ms ou ausência do shell acionável volta a bloquear.
 
-**PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
+**PB-01:** **elegível** desde o commit de fechamento de PB-00R-05. PB-01 não foi iniciado.
 
 ## Tasks
 
-| Task | Status | Branch sugerida | Commit | Evidência |
+| Task | Status | Branch | Commit integrado | Evidência |
 |---|---|---|---|---|
-| PB-00R-01 | done | `codex/pb00r-01-resize` | `911df51` | E2E pós-resize, screenshot, 6 E2E, 21 testes do app, typecheck e build |
-| PB-00R-03 | done | `codex/pb00r-03-package-tests` | `809383e` | RED/GREEN nos manifests; probe `33→34→33`; Playwright fora do runner unitário |
+| PB-00R-01 | done | `codex/pb00r-01-resize` | `b5c5612` (worktree `911df51`) | E2E pós-resize, screenshot, 21 testes do app, typecheck e build |
+| PB-00R-03 | done | `codex/pb00r-03-package-tests` | `94c4f62` (worktree `809383e`) | RED/GREEN nos manifests; probe revalidado `38→39→38`; Playwright fora do runner unitário |
 | PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | done (risco aceito) | `codex/pb00r-02-boot-budget` | `86e6391` | stalls de 12,2–12,9 s preservados como warning; métricas e harness permitem detectar regressão acima de 30 s |
 | PB-00R-06 | done | `codex/pb00r-06-diag-harness` | `b3978ff` | harness versionado em `tools/diagnostics/`, saída bruta de 165 execuções e matriz nova em `artifacts/diagnostics/` |
-| PB-00R-05 | pending | `codex/pb00r-05-final-gate` | — | depende de PB-00R-01/02/03/04 |
+| PB-00R-05 | done — `APPROVED_WITH_WARNINGS` | `codex/pb00r-06-diag-harness` (integração) | commit de fechamento | auditoria integrada completa em `artifacts/acceptance-report.md` |
+| PB-00R-FIX-01 | pending | a definir | — | follow-up do warning W1; não bloqueia PB-01 |
+
+PB-00R-01 e PB-00R-03 foram rebaseados da worktree para a branch de integração, então seus hashes
+mudaram. PB-00R-05 comparou os dois lados e confirmou diff de código idêntico em ambos os pares; a
+única diferença é o texto de documentos resolvido na integração. Os hashes de worktree ficam
+registrados entre parênteses para preservar a rastreabilidade.
 
 ## Baseline da auditoria
 
@@ -269,6 +275,43 @@ para refinamento futuro e volta a bloquear se ultrapassar 30.000 ms ou impedir o
   `vitest run --passWithNoTests`.
 - `pnpm-lock.yaml` permaneceu com o mesmo blob Git (`8ee8585af1fc6cb04accc56b4c90870d026f1060`) e
   nenhuma dependência foi adicionada.
+
+## Handoff PB-00R-05 — auditoria final integrada
+
+- Veredito: `APPROVED_WITH_WARNINGS`. Nenhum risco grave reproduzido. PB-01 liberado, não iniciado.
+- Auditor: Claude Opus 5, reasoning alto, runtime Claude Code; effort efetivo não exposto pelo
+  ambiente. Difere do implementador das quatro correções funcionais (GPT-5/Codex) e **coincide** com
+  o de PB-00R-06 e da segunda investigação de PB-00R-02 — desvio registrado como warning W4, com
+  GPT-5.6 Sol indisponível nesta plataforma.
+- Skills: `superpowers:verification-before-completion` aplicada. `game-studio:game-playtest` e
+  `game-studio:web-game-foundations` continuam **não instaladas** neste host; a revalidação visual e
+  de performance usou os gates versionados `qa:browser`, o teste de resize com screenshot e a
+  sequência de cinco processos frios.
+- Nenhum arquivo de runtime, teste ou toolchain foi alterado. Só documentos mudaram.
+- Árvore auditada: `94c4f62` em `codex/pb00r-06-diag-harness`, branch de integração das quatro
+  correções. `main` continua em `5fca6c2` e ainda não recebeu a integração.
+- Lockfile: SHA-256 `0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651` idêntico
+  antes e depois de `install --frozen-lockfile`; blob `8ee8585af1fc6cb04accc56b4c90870d026f1060`.
+- Gates isolados: `architecture:check` 0, `typecheck` 0, `test` 0 com **38** testes, `build` 0,
+  `qa:browser` 0 com **7/7**. `verify` reprova no primeiro gate, `format:check`, e por isso os
+  demais foram executados isoladamente para provar que nada ficou mascarado.
+- Cinco boots frios: `2.517,5`, `2.494,2`, `2.532,3`, `2.518,1` e `2.533,3 ms`, todos **abaixo** do
+  alvo saudável de 5.000 ms, todos com `boot-metrics`, `actionableMarkCount=1` e `reachedShell=true`.
+  O congelamento histórico não se reproduziu; sete tentativas não refutam um evento de poucos por
+  cento e o risco W3 continua registrado.
+- Resize: teste passou sem atualizar snapshot e a screenshot pós-resize é **byte-idêntica**
+  (`CA64A539…`) à de um boot nativo em desktop.
+- Descoberta: probe temporário em `packages/contracts/src/gate-probe.test.ts` mediu `38→39→38` sem
+  editar o script raiz; removido antes do commit. A contagem histórica de 33 ficou desatualizada
+  pelos 4 testes de `bootMetrics` (PB-00R-02) e 1 de `vite-build-config` (PB-00R-04).
+- Limpeza: sentinela interna removida pelo build, sentinela irmã em `dist/` preservada e depois
+  removida especificamente. Warning de output externo não aparece mais.
+- Warnings registrados no `acceptance-report.md`: W1 `format:check` vermelho por CRLF de working
+  tree com conteúdo commitado em LF e correto; W2 saída obsoleta em `apps/game/dist`; W3 stall de
+  boot conhecido; W4 validação cruzada parcial e imprecisões documentais corrigidas.
+- Correções documentais deste fechamento: hashes integrados de PB-00R-01/03 passaram a constar na
+  tabela acima ao lado dos hashes de worktree, e a referência a `boot-stall-session.json` virou
+  `boot-stall-session.jsonl`, que é o arquivo real em disco.
 
 ## Regra de atualização
 

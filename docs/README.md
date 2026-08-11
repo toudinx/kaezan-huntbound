@@ -32,10 +32,16 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
 
 ## Playbooks ativos
 
-- [`PB-00R — Correções do gate de fundação`](playbooks/PB-00R/README.md) — bloqueia PB-01 até corrigir
-  resize, budget de boot, descoberta de testes e limpeza do output.
+- [`PB-00R — Correções do gate de fundação`](playbooks/PB-00R/README.md) — **fechado** em 2026-08-11
+  como `APPROVED_WITH_WARNINGS`; corrigiu resize, budget de boot, descoberta de testes e limpeza do
+  output, e **não bloqueia mais PB-01**. Warnings priorizados em
+  [`acceptance-report.md`](playbooks/PB-00R/artifacts/acceptance-report.md).
 - [`PB-00 — Workspace e shell browser`](playbooks/PB-00/README.md) — histórico da fundação original;
-  seu fechamento será revalidado por PB-00R.
+  seu fechamento foi revalidado por PB-00R.
+
+**Próximo playbook elegível: PB-01 — Contratos e snapshot Canary.** Ainda não iniciado; a ordem e a
+Definition of Ready estão em
+[`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha
 
