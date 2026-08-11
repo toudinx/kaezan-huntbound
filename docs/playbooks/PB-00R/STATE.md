@@ -2,7 +2,7 @@
 
 **Status geral:** pending
 
-**Próxima onda elegível:** PB-00R-01, PB-00R-03 e PB-00R-04, em worktrees isolados.
+**Próxima onda elegível:** PB-00R-01 e PB-00R-03, em worktrees isolados. PB-00R-02 permanece bloqueado até a integração serial do commit `c4dc64c` de PB-00R-04.
 
 **PB-01:** bloqueado até PB-00R-05 aprovar o gate integrado.
 
@@ -12,7 +12,7 @@
 |---|---|---|---|---|
 | PB-00R-01 | pending | `codex/pb00r-01-resize` | — | — |
 | PB-00R-03 | pending | `codex/pb00r-03-package-tests` | — | — |
-| PB-00R-04 | pending | `codex/pb00r-04-clean-build` | — | — |
+| PB-00R-04 | done | `codex/pb00r-04-clean-build` | `c4dc64c` | RED/GREEN, sentinelas e gates registrados abaixo |
 | PB-00R-02 | pending | `codex/pb00r-02-boot-budget` | — | depende de PB-00R-04 |
 | PB-00R-05 | pending | `codex/pb00r-05-final-gate` | — | depende de PB-00R-01/02/03/04 |
 
@@ -34,6 +34,18 @@
 4. Playwright/porta 4173 não executa simultaneamente no mesmo host.
 5. PB-00R-02 começa somente após PB-00R-04 integrado.
 6. PB-00R-05 começa somente após as quatro correções integradas e árvore limpa.
+
+## Handoff PB-00R-04
+
+- Implementador: GPT-5 no runtime Codex; modelo sugerido pela task: GPT-5.6 Luna, effort `xhigh`.
+  O effort efetivo não é exposto por este ambiente. Validação independente Sol/Opus permanece para o gate final.
+- Branch/commit: `codex/pb00r-04-clean-build` / `c4dc64cff7c885f83cc4a519418cf38e1d664670`.
+- RED: `corepack pnpm exec vitest run tests/workspace/vite-build-config.test.ts` falhou com `emptyOutDir` recebido como `undefined`.
+- GREEN: o mesmo comando passou após adicionar somente `emptyOutDir: true` e preservar `outDir: '../../dist/game'`.
+- Prova de limite: `C:\Kaezan\kaezan-huntbound-pb00r-04-clean-build\dist\game\pb00r-game-sentinel.txt` foi removida pelo build; `C:\Kaezan\kaezan-huntbound-pb00r-04-clean-build\dist\pb00r-parent-sentinel.txt` permaneceu durante a prova e foi removida especificamente depois.
+- Build: `corepack pnpm --filter @huntbound/game build` e `corepack pnpm build` passaram com exit 0. O warning de `outDir` externo desapareceu; permanece apenas o warning conhecido de chunk Phaser acima de 500 kB.
+- Gates: `corepack pnpm test` passou com 34 testes no gate raiz, `corepack pnpm typecheck` passou, `git diff --check` passou e o lockfile não mudou.
+- Próximo passo: integrar `c4dc64c` serialmente antes de iniciar PB-00R-02; não iniciar PB-00R-02 neste chat.
 
 ## Modelos
 
