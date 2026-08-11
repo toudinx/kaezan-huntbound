@@ -32,7 +32,9 @@ unidade de trabalho.
 2. `docs/playbooks/PB-01/README.md`;
 3. `packages/contracts/src/content/**` integrado por PB-01-01;
 4. `docs/content/IDENTITY_POLICY.md`;
-5. `tools/architecture/dependency-policy.json` e checker.
+5. `tools/architecture/dependency-policy.json` e checker;
+6. `docs/superpowers/specs/2026-08-11-pb-01-02-sqlite-catalog-design.md`, que substitui as
+   assinaturas simplificadas anteriores desta task e detalha ordenação, lifecycle e múltiplos slices.
 
 PB-01-01 deve estar `done` na `main` e a árvore deve estar limpa.
 
@@ -89,26 +91,46 @@ export interface ContentCatalogReadPort {
 
 // Internal application port: do not export from packages/content/src/index.ts.
 export interface CuratedCatalogWriter {
-  transaction<T>(operation: (tx: CuratedCatalogTransactionWriter) => T): T;
+  transaction<Operation extends (tx: CuratedCatalogTransactionWriter) => unknown>(
+    operation: Operation &
+      (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
+        ? unknown
+        : never),
+  ): ReturnType<Operation>;
 }
 
-export interface OpenContentCatalog extends ContentCatalogReadPort, CuratedCatalogWriter {
+export interface OpenContentCatalog extends ContentCatalogReadPort {
   migrate(): void;
   close(): void;
 }
 
 export function openContentCatalog(path: string): OpenContentCatalog;
+
+export interface OpenMutableContentCatalog extends OpenContentCatalog {
+  transaction<Operation extends (tx: CuratedCatalogTransactionWriter) => unknown>(
+    operation: Operation &
+      (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
+        ? unknown
+        : never),
+  ): ReturnType<Operation>;
+}
+
+// Tooling-internal module export. Architecture permits it only to the composition root and tests.
+export function openMutableContentCatalog(
+  path: string,
+): OpenMutableContentCatalog;
 ```
 
 O migration `001_initial_catalog.sql` cria, no mínimo:
 
 ```text
-schema_migrations
+schema_migrations, content_identity_ledger
 source_snapshots, source_files
 content_slices, content_entities, content_aliases, content_entity_facets
-content_slice_roots, content_slice_entities
-vocation_families, vocations, vocation_family_members
+content_slice_roots, content_slice_entities, content_slice_vocation_families
+vocation_families, vocations, vocation_family_members, vocation_skill_multipliers
 creatures, creature_attacks, creature_defenses, creature_conditions, creature_summons
+creature_resistances, creature_immunities
 items, loot_entries
 spells, spell_vocation_families, spell_source_vocation_refs
 ```
@@ -161,10 +183,13 @@ spell preservadas sem criar alias de entidade.
 - [ ] **6. Implementar repository mínimo e obter GREEN.**
 
 O read port fica em `packages/content/src/catalog/ContentCatalogPort.ts`; o writer fica em
-`packages/content/src/application/internal/CuratedCatalogWriter.ts` e não sai no entrypoint. O
-adapter em `tools/` implementa ambos, mas seu handle só existe na composição CLI. Prepared statements
-ficam privados. `transaction()` não aceita promessa; operação assíncrona é rejeitada pelo tipo.
-`readCatalogBundle()` reconstrói arrays ordenados por `stableKey` e IDs de relação.
+`packages/content/src/application/internal/CuratedCatalogWriter.ts` e não sai no entrypoint. A
+factory pública do adapter entrega somente leitura/lifecycle; a factory mutável é restrita à futura
+composition root e aos testes por checker dedicado. Prepared statements ficam privados.
+`transaction()` rejeita por tipo qualquer retorno contendo `PromiseLike`, inclusive union, e possui
+guarda runtime. `readCatalogBundle()` usa `stableKey`/keys para arrays de identidade, `ordinal` para
+relações ordenadas e serialização canônica explícita para records. A spec específica desta task
+define o comportamento completo e prevalece sobre os snippets simplificados.
 
 - [ ] **7. Provar reconstrução.**
 

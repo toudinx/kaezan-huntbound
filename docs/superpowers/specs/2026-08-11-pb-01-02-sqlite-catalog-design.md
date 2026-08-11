@@ -79,7 +79,7 @@ ao round-trip:
 schema_migrations, content_identity_ledger
 source_snapshots, source_files
 content_slices, content_entities, content_aliases, content_entity_facets
-content_slice_roots, content_slice_entities
+content_slice_roots, content_slice_entities, content_slice_vocation_families
 vocation_families, vocations, vocation_family_members, vocation_skill_multipliers
 creatures, creature_attacks, creature_defenses, creature_conditions, creature_summons
 creature_resistances, creature_immunities
@@ -129,7 +129,9 @@ ao schema Zod:
 4. nenhuma relação aponta para entidade ou família ausente e o kind concreto corresponde à tabela
    filha;
 5. snapshot/path/hash de cada entidade são consistentes com a proveniência do slice e com
-   `source_files`.
+   `source_files`;
+6. toda vocation family do bundle possui associação explícita ao slice, mesmo quando não é
+   referenciada por vocation ou spell naquele bundle.
 
 Falha Zod, colisão de identidade, alias ambíguo, referência ausente, dependência inalcançável, facet
 incompatível ou constraint SQL aborta toda a transação. Essas validações adicionais não mudam os
@@ -152,27 +154,48 @@ Campos obrigatórios implicam seu facet; campos opcionais/listas/records só pod
 não vazios quando o facet correspondente está aprovado. Vocation families são relações internas,
 não entidades faceteadas.
 
+A matriz de facets permitidos é fechada:
+
+- vocation: `identity` e `progression`, ambos obrigatórios;
+- creature: `identity`, `stats` e `appearance` obrigatórios; `combat`, `conditions` e `loot`
+  opcionais;
+- item: `identity` obrigatório e `item` opcional;
+- spell: `identity` e `spell`, ambos obrigatórios.
+
+Qualquer facet fora da linha do kind é rejeitado mesmo quando não há campos correspondentes.
+
 ## Semântica de substituição e múltiplos slices
 
 Cada bundle representa exatamente o slice identificado por `bundle.slice.key`.
 `replaceCatalogBundle` substitui somente esse slice e preserva os demais. A operação:
 
 1. valida e canonicaliza o bundle sem escrever;
-2. compara a serialização canônica recebida com a serialização canônica reconstruída para o slice;
+2. executa o gate global de órfãos antes de considerar o caminho no-op; catálogo já inconsistente
+   falha mesmo quando o slice recebido é idêntico;
+3. compara a serialização canônica recebida com a serialização canônica reconstruída para o slice;
    se forem byte a byte iguais, retorna sem executar `INSERT`, `UPDATE` ou `DELETE`;
-3. insere entidades/agregados novos e atualiza entidades exclusivas do slice, preservando
+4. insere entidades/agregados novos e atualiza entidades exclusivas do slice, preservando
    obrigatoriamente os mapeamentos imutáveis de identidade;
-4. compartilha uma entidade ou família já usada por outro slice somente quando sua definição
-   canônica completa — campos, proveniência, aliases, facets e relações — é idêntica; uma definição
-   divergente é colisão e causa rollback;
-5. substitui os dados próprios do slice: metadados, roots, memberships, projections/facets e
-   projection audits;
-6. substitui aliases e relações globais apenas para entidades novas ou exclusivas do slice; dados
-   compartilhados idênticos não recebem writes;
-7. remove filhos e entidades ativas que deixaram esse slice somente quando não são referenciados por
+5. para entidade compartilhada, compara somente os facets sobrepostos: payload diferente em facet já
+   projetado por outro slice é colisão; facets novos são adicionados ao agregado global e pertencem
+   apenas aos slices que os projetam;
+6. substitui os dados próprios do slice: metadados, roots, memberships, vocation families,
+   projections/facets, aliases, relações e projection audits;
+7. remove um payload de facet global somente quando nenhum slice restante projeta esse facet;
+8. remove filhos e entidades ativas que deixaram esse slice somente quando não são referenciados por
    outro slice; depois remove famílias e proveniência que ficaram sem referência; agregados
    compartilhados permanecem e o `content_identity_ledger` nunca é removido;
-8. executa `listOrphanEntities()` antes do commit e falha se restar qualquer entidade sem slice.
+9. executa novamente `listOrphanEntities()` e todas as validações globais antes do commit e falha se
+   restar qualquer entidade sem slice ou payload compartilhado inconsistente.
+
+`content_entities` guarda identidade global; facts de domínio são payloads globais agrupados por
+facet; `content_entity_facets` registra quais slices projetam cada facet. `readCatalogBundle(slice)`
+reconstrói somente os payloads projetados por esse slice, preenchendo arrays/records vazios exigidos
+pelo contrato para facets não projetados. Assim, uma dependência parcial pode ganhar posteriormente
+um facet novo — por exemplo, Snake ganhar `loot` — sem alterar a visão dos slices antigos. Alterar um
+facet já compartilhado exige que todos os slices que o projetam terminem a mesma transação com o
+mesmo payload; chamadas múltiplas a `replaceCatalogBundle` no mesmo callback são validadas em
+conjunto somente no gate final.
 
 `listOrphanEntities()` retorna GUIDs ordenados de entidades sem linha em `content_slice_entities`.
 Ela é pública apenas na porta transacional para permitir o gate de aplicação e diagnóstico; o fluxo
@@ -185,6 +208,11 @@ adapter de teste, nunca por uma API pública.
 item e spell ficam nas tabelas pai. Fórmula e área de spell são colunas explícitas em `spells`.
 Records e listas restantes usam tabelas relacionais: multiplicadores de skill, resistências,
 imunidades, famílias, attacks, defenses, conditions, summons, loot e auditorias de spell.
+
+`content_slice_vocation_families` associa explicitamente todas as families presentes no bundle ao
+slice. `vocation_family_members` inclui o slice na chave, preservando exatamente os members daquela
+visão. O reader não infere a lista de families apenas pelas referências de vocation/spell; portanto
+uma family válida mas não referenciada não se perde no round-trip.
 
 Coleções cuja ordem faz parte do contrato — attacks, defenses, conditions, summons, immunities,
 loot e projection audits — persistem um `ordinal` inteiro não negativo e são lidas por ele. Arrays
@@ -220,12 +248,21 @@ TypeScript e prova que:
 - `packages/content/src/index.ts` não exporta o writer interno;
 - imports de `application/internal/CuratedCatalogWriter` só são aceitos em
   `ImportCanarySlice.ts`, `ApplyCuratedOperation.ts` e
-  `tools/content-catalog/composition/createContentCatalogApplication.ts`.
+  `tools/content-catalog/composition/createContentCatalogApplication.ts`;
+- a factory pública `openContentCatalog` entrega somente leitura/lifecycle e pode ser usada pelo
+  tooling de consulta;
+- a factory mutável `openMutableContentCatalog` só pode ser importada pela composition root e por
+  `tools/content-catalog/**/*.test.ts`; qualquer outro importer falha com path e símbolo.
 
-Em PB-01-02, somente o arquivo de definição referencia o nome `CuratedCatalogWriter`: o adapter
-expõe uma API estruturalmente compatível, sem importar a porta interna. A composition root de
-PB-01-06 fará a ligação nominal e será a única referência do tooling, preservando a allowlist exata
-exigida por PB-01-06/07.
+O adapter implementa a transação sem importar a porta interna. A factory mutável é um export de
+módulo restrito pelo checker, não sai de package entrypoint nem de barrel. Em PB-01-06, a composition
+root importa essa factory e `CuratedCatalogWriter`, realiza a atribuição estrutural e entrega a
+capacidade somente aos dois application services. Assim, nem importar o tipo nem obter a capacidade
+de escrita pode contornar a allowlist PB-01-06/07.
+
+A factory pública retorna um wrapper de capability em runtime, não um cast do handle mutável:
+`transaction` não existe como propriedade acessível no objeto retornado por `openContentCatalog`.
+Um teste verifica tipo, `"transaction" in handle === false` e tentativa de acesso por cast.
 
 Esse teste dedicado cabe no escopo permitido da task e não exige ampliar agora o checker global,
 que ignora imports relativos.
@@ -243,7 +280,10 @@ O ciclo RED/GREEN cobre:
   stable key, GUID ou source tuple continua falhando;
 - round-trip canônico completo, duas referências cruas preservadas sem aliases e ordem por ordinal;
 - substituição isolada de slice, entidade compartilhada idêntica, colisão compartilhada, remoção de
-  stale rows, reimport sem writes e detecção/rejeição de órfãos;
+  stale rows, adição de facet a entidade compartilhada sem alterar slices antigos, atualização
+  coordenada de facet compartilhado, reimport sem writes e detecção/rejeição de órfãos inclusive no
+  caminho no-op;
+- vocation family sem referência direta preservada pelo vínculo explícito ao slice;
 - callback async e retorno union contendo `PromiseLike` rejeitados pelo compilador, thenable
   rejeitado em runtime e handle transacional inválido após o callback;
 - lifecycle antes da migration, slice ausente, close repetido e operações após close;
