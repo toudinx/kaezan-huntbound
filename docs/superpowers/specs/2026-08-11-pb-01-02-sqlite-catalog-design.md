@@ -1,6 +1,6 @@
 # PB-01-02 — Catálogo SQLite transacional
 
-**Status:** aprovada em auditoria Sol; aguardando aprovação final do usuário
+**Status:** aprovada em auditoria Sol e pelo usuário; pronta para implementação
 
 **Data:** 2026-08-11
 
