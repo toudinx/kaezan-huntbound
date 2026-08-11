@@ -12,7 +12,7 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "typecheck": "corepack pnpm --recursive run typecheck",
-    "test": "vitest run && node --test tools/architecture/check-boundaries.test.ts && corepack pnpm --filter @huntbound/game test",
+    "test": "vitest run && node --test tools/architecture/check-boundaries.test.ts && corepack pnpm --recursive run test",
     "build": "corepack pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
     "check": "biome check . && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check",

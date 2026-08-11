@@ -53,8 +53,10 @@ A auditoria reproduziu as duas lacunas do fechamento anterior antes da edição:
   que expõe esse fallback, a mesma invocação histórica terminou com exit code 0. A diferença foi
   confirmada como resolução de PATH, não como falha do runtime.
 
-O gate agora executa os testes do package `@huntbound/game` depois dos testes raiz, sem incluir
-`tests/e2e/*.spec.ts` no Vitest. As contagens observadas antes e depois foram:
+O gate agora agrega os testes de todos os packages do workspace com `corepack pnpm --recursive run
+test` depois dos testes raiz, sem incluir `tests/e2e/*.spec.ts` no Vitest. A forma recursiva foi
+escolhida em vez de um filtro por package nomeado para que packages criados a partir do PB-01 entrem
+no gate sem edição do script. As contagens observadas antes e depois foram:
 
 | Comando | Antes da correção | Depois da correção |
 |---|---|---|

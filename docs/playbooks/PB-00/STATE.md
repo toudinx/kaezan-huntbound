@@ -15,7 +15,6 @@
 | PB-00-04 | done | `feat: add responsive browser lifecycle` | lifecycle/viewport controllers, shell responsivo e inspeção local | foco e visibilidade são estado de apresentação; PB-00-05 elegível |
 | PB-00-05 | done | `test: add browser shell quality gate` | Chromium em quatro viewports, lifecycle, baselines e budget Fast 4G | build de produção local; PB-00-06 elegível |
 | PB-00-06 | done | `docs: close PB-00 foundation gate` | `artifacts/acceptance-report.md` e gates frescos aprovados | PB-00 fechado; PB-01 elegível |
-
 | PB-00-FIX-01 | done | `build: cover package tests in the integrated gate` | `corepack pnpm test` com 7 arquivos e 33 testes; `verify` sem pnpm no PATH | PB-00 corrigido; PB-01 permanece elegível |
 
 ## Toolchain congelada
@@ -158,6 +157,16 @@ PB-00-06 em 2026-08-10:
   `docs/playbooks/PB-00/STATE.md`, `docs/playbooks/PB-00/artifacts/toolchain-baseline.md` e
   `docs/playbooks/PB-00/artifacts/acceptance-report.md`. A task card já estava não rastreada antes
   desta execução e não foi incluída no commit.
+
+Ajustes de revisão da PB-00-FIX-01, no mesmo dia:
+
+- a agregação passou de `--filter @huntbound/game` para `corepack pnpm --recursive run test`; o filtro
+  nomeado cobria apenas o package existente e teria excluído silenciosamente do gate os testes que o
+  PB-01 criar em `packages/*`, reintroduzindo o defeito que esta task corrigiu;
+- `corepack pnpm verify` reexecutado após a troca — exit 0, 7 arquivos e 33 testes unitários mais 6
+  testes Chromium; SHA-256 do lockfile preservado;
+- a linha da tabela de tasks foi reconectada ao cabeçalho e a task card passou a ser rastreada, para
+  que o link do `README.md` resolva em um clone limpo.
 
 ## Bloqueios
 
