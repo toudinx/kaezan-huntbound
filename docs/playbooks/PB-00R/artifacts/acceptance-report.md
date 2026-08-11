@@ -13,12 +13,12 @@ desvios encontrados são warnings com evidência, impacto, gatilho de reabertura
 registrados abaixo. **PB-01 volta a ser elegível.** A evidência desta seção é fresca e prevalece
 sobre relatos anteriores.
 
-**Decisão atual:** PB-00R-02 está `done (risco aceito)`. A instrumentação localizou um congelamento
-intermitente de ~10,0 s na fronteira da pilha de rede do Chromium e preservou evidência auditável.
-Por decisão de produto, 5.000 ms permanece alvo saudável e warning; boot entre 5.000 e 30.000 ms
-com shell acionável não bloqueia, e acima de 30.000 ms ou sem shell acionável bloqueia. O histórico
-diagnóstico permanece íntegro. PB-00R-05 ainda aguarda a integração de PB-00R-01 e PB-00R-03, por
-isso PB-01 ainda não está elegível.
+**Decisão atual:** PB-00R está concluído. PB-00R-01 e PB-00R-03 foram integradas, PB-00R-FIX-01
+resolveu W1/W2 e PB-01 está elegível. PB-00R-02 permanece `done (risco aceito)`: a instrumentação
+localizou um congelamento intermitente de ~10,0 s na fronteira da pilha de rede do Chromium e
+preservou evidência auditável. Por decisão de produto, 5.000 ms permanece alvo saudável e warning;
+boot entre 5.000 e 30.000 ms com shell acionável não bloqueia, e acima de 30.000 ms ou sem shell
+acionável bloqueia. O histórico diagnóstico permanece íntegro.
 
 O gate final adota severidade proporcional: warnings conhecidos não impedem evolução. `BLOCKED`
 fica reservado a falha que impeça build/boot, inutilize fluxo essencial, cause crash ou

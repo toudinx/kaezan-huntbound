@@ -2,10 +2,10 @@
 
 **Status geral:** done — `APPROVED_WITH_WARNINGS` em 2026-08-11 (PB-00R-05).
 
-**Próxima task elegível:** nenhuma dentro de PB-00R. PB-00R-FIX-01 está aberta como follow-up
-priorizado do warning W1 e **não** bloqueia PB-01. PB-00R-02 permanece `done (risco aceito)` por
-decisão de produto: 5.000 ms permanece alvo saudável e métrica de warning, enquanto somente boot
-acima de 30.000 ms ou ausência do shell acionável volta a bloquear.
+**Próxima task elegível:** nenhuma dentro de PB-00R. PB-00R-FIX-01 está concluída; W1 e W2 foram
+resolvidos. PB-00R-02 permanece `done (risco aceito)` por decisão de produto: 5.000 ms permanece
+alvo saudável e métrica de warning, enquanto somente boot acima de 30.000 ms ou ausência do shell
+acionável volta a bloquear.
 
 **PB-01:** **elegível** desde o commit de fechamento de PB-00R-05. PB-01 não foi iniciado.
 

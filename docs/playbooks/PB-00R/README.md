@@ -91,7 +91,7 @@ porta 4173.
 | [PB-00R-02](tasks/PB-00R-02-estabilizar-budget-de-boot.md) | implementação complexa | Sol `xhigh` ou Opus 5 | PB-00R-04 | não | done (risco aceito) |
 | [PB-00R-06](tasks/PB-00R-06-versionar-harness-de-diagnostico.md) | diagnóstico | Opus 5 | PB-00R-02 | não | done |
 | [PB-00R-05](tasks/PB-00R-05-revalidar-gate-integrado.md) | validação | Sol `xhigh` ou Opus 5 | PB-00R-01/02/03/04 | não | done — `APPROVED_WITH_WARNINGS` |
-| [PB-00R-FIX-01](tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md) | implementação menor | Luna `xhigh` | PB-00R-05 | sim | pending (warning W1) |
+| [PB-00R-FIX-01](tasks/PB-00R-FIX-01-normalizar-fim-de-linha-do-checkout.md) | implementação menor | Luna `xhigh` | PB-00R-05 | sim | done — W1/W2 resolvidos |
 
 ## Critérios finais de aceite
 
@@ -106,11 +106,8 @@ porta 4173.
 - [x] Playwright continua fora do runner unitário.
 - [x] Build limpa `dist/game` e remove sentinela sem tocar paths externos ao output.
 - [x] `corepack pnpm install --frozen-lockfile` passa sem alterar o lockfile.
-- [ ] `corepack pnpm verify` passa ponta a ponta. **Não atingido — warning W1.** Cinco dos seis
-  gates passam (`architecture:check`, `typecheck`, `test`, `build`, `qa:browser`); `format:check`
-  reprova com 12 erros. Os 12 arquivos são exatamente os 12 arquivos rastreados que estão `i/lf` no
-  índice e `w/crlf` na working tree por causa de `core.autocrlf=true` sem `.gitattributes`. O
-  conteúdo commitado passa em `biome format` com exit 0. Não há defeito de formatação versionado.
+- [x] `corepack pnpm verify` passa ponta a ponta. PB-00R-FIX-01 normalizou o checkout e resolveu W1;
+  W2 também foi encerrado ao remover a saída obsoleta.
 - [x] Relatório final registra limites conhecidos, modelos usados e desvios.
 
 ## Fora de escopo
