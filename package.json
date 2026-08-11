@@ -8,16 +8,16 @@
     "node": ">=24.14.0 <25"
   },
   "scripts": {
-    "dev": "pnpm --filter @huntbound/game dev",
+    "dev": "corepack pnpm --filter @huntbound/game dev",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "typecheck": "pnpm --recursive run typecheck",
-    "test": "vitest run && node --test tools/architecture/check-boundaries.test.ts",
-    "build": "pnpm --recursive run build",
+    "typecheck": "corepack pnpm --recursive run typecheck",
+    "test": "vitest run && node --test tools/architecture/check-boundaries.test.ts && corepack pnpm --filter @huntbound/game test",
+    "build": "corepack pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
-    "check": "biome check . && pnpm typecheck && pnpm test && pnpm architecture:check",
-    "qa:browser": "pnpm build && playwright test",
-    "verify": "pnpm format:check && pnpm architecture:check && pnpm typecheck && pnpm test && pnpm build && pnpm qa:browser"
+    "check": "biome check . && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check",
+    "qa:browser": "corepack pnpm build && playwright test",
+    "verify": "corepack pnpm format:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm qa:browser"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",

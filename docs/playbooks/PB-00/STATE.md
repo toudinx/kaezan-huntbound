@@ -16,6 +16,8 @@
 | PB-00-05 | done | `test: add browser shell quality gate` | Chromium em quatro viewports, lifecycle, baselines e budget Fast 4G | build de produção local; PB-00-06 elegível |
 | PB-00-06 | done | `docs: close PB-00 foundation gate` | `artifacts/acceptance-report.md` e gates frescos aprovados | PB-00 fechado; PB-01 elegível |
 
+| PB-00-FIX-01 | done | `build: cover package tests in the integrated gate` | `corepack pnpm test` com 7 arquivos e 33 testes; `verify` sem pnpm no PATH | PB-00 corrigido; PB-01 permanece elegível |
+
 ## Toolchain congelada
 
 Registrada em `docs/playbooks/PB-00/artifacts/toolchain-baseline.md`:
@@ -135,6 +137,27 @@ PB-00-06 em 2026-08-10:
 - quatro screenshots baseline abertas no tamanho original e aprovadas visualmente;
 - tracking, versões, boundaries e buscas de conteúdo posterior aprovados; detalhes e mapeamento de
   cada critério estão em `artifacts/acceptance-report.md`.
+
+## Verificações da PB-00-FIX-01 — 2026-08-10
+
+- Reprodução anterior: `corepack pnpm test` exit 0, com 2 arquivos e 12 testes (1 Vitest e 11
+  cenários Node); `corepack pnpm verify` exit 1 em shell sem o fallback `pnpm`, com `'pnpm' não é
+  reconhecido como um comando interno ou externo`. No shell do ambiente Codex, o fallback fez a
+  reprodução histórica do `verify` terminar em exit 0.
+- `corepack pnpm install --frozen-lockfile` — exit 0; lockfile inalterado.
+- `corepack pnpm test` — exit 0; 7 arquivos e 33 testes: 1 arquivo Vitest raiz/1 teste, 5 arquivos
+  Vitest de `apps/game`/21 testes e 1 arquivo Node/11 cenários. Nenhum spec Playwright foi coletado.
+- `corepack pnpm verify` — exit 0 em shell novo e em shell sem o fallback de `pnpm` no PATH; o trecho
+  unitário manteve 7 arquivos/33 testes e o QA browser executou 2 specs/6 testes.
+- `corepack pnpm architecture:check` — exit 0.
+- `git diff --check` — exit 0; apenas avisos normais de conversão LF/CRLF do Git foram emitidos.
+- SHA-256 de `pnpm-lock.yaml` antes e depois: `0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651`.
+- A resolução de PATH foi corrigida chamando `corepack pnpm` explicitamente nos scripts compostos;
+  não houve instalação global, `corepack enable`, upgrade de dependência ou alteração de host.
+- Arquivos alterados: `package.json`, `docs/playbooks/PB-00/README.md`,
+  `docs/playbooks/PB-00/STATE.md`, `docs/playbooks/PB-00/artifacts/toolchain-baseline.md` e
+  `docs/playbooks/PB-00/artifacts/acceptance-report.md`. A task card já estava não rastreada antes
+  desta execução e não foi incluída no commit.
 
 ## Bloqueios
 

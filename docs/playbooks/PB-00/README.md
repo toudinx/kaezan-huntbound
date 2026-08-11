@@ -89,6 +89,7 @@ ao final do PB-00. Criar seus sistemas reais pertence aos playbooks corresponden
 | [PB-00-04](tasks/PB-00-04-lifecycle-responsivo.md) | Resize, safe areas, focus e reduced motion | PB-00-03 | high | lifecycle e quatro viewports funcionais | done |
 | [PB-00-05](tasks/PB-00-05-automatizar-qa-browser.md) | Playwright, screenshots e budget de boot | PB-00-04 | high | QA browser reproduzível | done |
 | [PB-00-06](tasks/PB-00-06-fechar-gate-integrado.md) | Verificação integrada e fechamento | PB-00-05 | high | todos os gates PB-00 aprovados | done |
+| [PB-00-FIX-01](tasks/PB-00-FIX-01-cobrir-testes-de-package-no-gate.md) | Testes de package no gate e verify reproduzível | PB-00-06 | medium | 33 testes unitários agregados e PATH via Corepack | done |
 
 As tasks são sequenciais porque cada uma consome contratos ou scripts da anterior. Uma correção
 independente descoberta no caminho vira task adicional `PB-00-FIX-<NN>-<slug>.md`; ela não é

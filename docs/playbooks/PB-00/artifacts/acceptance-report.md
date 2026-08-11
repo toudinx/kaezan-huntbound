@@ -41,6 +41,32 @@
 | `git status --short` | 0 | árvore inicial limpa; somente documentação permitida pertence ao commit de fechamento |
 | `git ls-files` | 0 | inventário revisado; nenhum path proibido rastreado |
 
+## Correção PB-00-FIX-01 — 2026-08-10
+
+A auditoria reproduziu as duas lacunas do fechamento anterior antes da edição:
+
+- no gate anterior, `corepack pnpm test` terminou com exit code 0, mas executou 2 arquivos e 12
+  testes: 1 arquivo Vitest com 1 teste e 1 arquivo Node com 11 cenários; os 21 testes de
+  `apps/game` ficaram fora;
+- em um shell novo sem o fallback de `pnpm` do ambiente Codex, `corepack pnpm verify` terminou com
+  exit code 1 e `'pnpm' não é reconhecido como um comando interno ou externo`; no shell do ambiente,
+  que expõe esse fallback, a mesma invocação histórica terminou com exit code 0. A diferença foi
+  confirmada como resolução de PATH, não como falha do runtime.
+
+O gate agora executa os testes do package `@huntbound/game` depois dos testes raiz, sem incluir
+`tests/e2e/*.spec.ts` no Vitest. As contagens observadas antes e depois foram:
+
+| Comando | Antes da correção | Depois da correção |
+|---|---|---|
+| `corepack pnpm test` | exit 0; 2 arquivos / 12 testes (1 Vitest + 11 Node) | exit 0; 7 arquivos / 33 testes (6 Vitest + 11 Node) |
+| `corepack pnpm verify` | exit 0 no shell com fallback; 4 arquivos de teste / 18 testes (2 unitários + 2 specs Playwright) | exit 0; 9 arquivos de teste / 39 testes (7 unitários + 2 specs Playwright) |
+
+O SHA-256 de `pnpm-lock.yaml` foi `0DFE3DE417C77E90F0FAFA5883A2C29FEBF7214900F7444BE45639476A636651`
+antes e depois. A via adotada para o PATH foi chamar `corepack pnpm` explicitamente nos scripts
+compostos da raiz; não houve instalação global, `corepack enable` ou mudança de configuração do
+host. Esta nota corrige a leitura histórica da linha `corepack pnpm verify` acima: o verify de
+PB-00-06 não cobria os testes de `apps/game`; essa cobertura passou a existir nesta task.
+
 A prova controlada do checker criou uma fixture temporária com `simulation -> phaser`, recebeu exit
 code 1 e confirmou o diagnóstico com arquivo, linha, import e regra DOM. Os demais cenários cobriram
 import dinâmico, reexport, Node builtin, dependência interna e dependências de manifest.

@@ -41,6 +41,11 @@ corepack pnpm check
 corepack pnpm verify
 ```
 
+Os scripts compostos da raiz também chamam explicitamente `corepack pnpm` para cada encadeamento
+interno. Assim, o gate não depende de um executável `pnpm` separado no `PATH`, de instalação global
+ou de `corepack enable`; basta o Corepack fornecido pela versão de Node documentada. A invocação
+canônica continua sendo `corepack pnpm <script>` em um shell novo.
+
 Neste host, o proxy TLS corporativo exige que os processos Node usem o repositório de CAs do Windows.
 As verificações foram executadas com `NODE_OPTIONS=--use-system-ca` apenas no processo atual; nenhuma
 configuração global foi alterada. Em ambientes cuja cadeia TLS já seja confiável para Node, os comandos
