@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  testIgnore: '**/support/**/*.test.ts',
   outputDir: 'test-results',
   workers: 1,
   reporter: [
