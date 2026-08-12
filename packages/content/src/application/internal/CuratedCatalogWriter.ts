@@ -6,7 +6,9 @@ export interface CuratedCatalogTransactionWriter {
 }
 
 export interface CuratedCatalogWriter {
-  transaction<Operation extends (tx: CuratedCatalogTransactionWriter) => unknown>(
+  transaction<
+    Operation extends (tx: CuratedCatalogTransactionWriter) => unknown,
+  >(
     operation: Operation &
       (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
         ? unknown
