@@ -152,7 +152,7 @@ export class SqliteContentCatalog
     if (!slice) {
       throw new CatalogError(
         'catalog-missing-slice',
-        `Catalog slice is missing: ${sliceKey}`,
+        `Missing slice: ${sliceKey}`,
       );
     }
 
@@ -1158,7 +1158,7 @@ export class SqliteContentCatalog
     if (!this.migrated) {
       throw new CatalogError(
         'catalog-not-migrated',
-        'Catalog migrations must be applied before use',
+        'Catalog is not migrated; migrations must be applied before use',
       );
     }
   }
