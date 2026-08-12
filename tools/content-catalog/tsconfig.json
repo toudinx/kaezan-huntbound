@@ -1,5 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["node", "vitest/globals"] },
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@huntbound/contracts": ["../../packages/contracts/src/index.ts"]
+    }
+  },
   "include": ["**/*.ts"]
 }
