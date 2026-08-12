@@ -13,6 +13,7 @@ import { openDatabase } from '../database/openDatabase';
 import { applyMigrations } from '../migrations/MigrationRunner';
 import {
   canonicalizeCatalogBundle,
+  canonicalJson,
   facetPayloadHash,
   validatePersistableBundle,
 } from './canonicalCatalog';
@@ -613,6 +614,9 @@ export class SqliteContentCatalog
             'Catalog transactions must return synchronously, not a thenable',
           );
         }
+        this.assertNoOrphans();
+        this.assertSharedFacetPayloadsAgree();
+        this.assertForeignKeyCheckIsEmpty();
       } finally {
         active = false;
         this.transactionActive = false;
@@ -635,6 +639,16 @@ export class SqliteContentCatalog
 
   private replaceCatalogBundle(input: CatalogContentBundle): void {
     const bundle = canonicalizeCatalogBundle(validatePersistableBundle(input));
+    const existing = this.database
+      .prepare('SELECT 1 FROM content_slices WHERE slice_key = ?')
+      .get(bundle.slice.key);
+    if (
+      existing &&
+      canonicalJson(this.readCatalogBundle(bundle.slice.key)) ===
+        canonicalJson(bundle)
+    ) {
+      return;
+    }
     this.deleteSlice(bundle.slice.key);
     for (const entity of allEntities(bundle)) {
       const kind = entityKind(entity);
@@ -1011,6 +1025,7 @@ export class SqliteContentCatalog
           audit.targetFamilyKey,
         );
     }
+    this.cleanupUnreferencedRows();
   }
 
   private deleteSlice(sliceKey: string): void {
@@ -1039,6 +1054,97 @@ export class SqliteContentCatalog
     ];
     for (const statement of statements)
       this.database.prepare(statement).run(sliceKey);
+  }
+
+  private cleanupUnreferencedRows(): void {
+    this.database
+      .prepare(
+        'DELETE FROM content_entities WHERE NOT EXISTS (SELECT 1 FROM content_slice_entities WHERE content_slice_entities.entity_guid = content_entities.guid)',
+      )
+      .run();
+    this.database
+      .prepare(
+        'DELETE FROM vocation_families WHERE NOT EXISTS (SELECT 1 FROM content_slice_vocation_families WHERE content_slice_vocation_families.family_key = vocation_families.family_key)',
+      )
+      .run();
+    this.database
+      .prepare(
+        `DELETE FROM source_files
+         WHERE NOT EXISTS (
+           SELECT 1 FROM content_slice_entities
+           WHERE content_slice_entities.source_system = source_files.source_system
+             AND content_slice_entities.snapshot = source_files.snapshot
+             AND content_slice_entities.source_path = source_files.source_path
+         )`,
+      )
+      .run();
+    this.database
+      .prepare(
+        `DELETE FROM source_snapshots
+         WHERE NOT EXISTS (SELECT 1 FROM source_files WHERE source_files.source_system = source_snapshots.source_system AND source_files.snapshot = source_snapshots.snapshot)
+           AND NOT EXISTS (SELECT 1 FROM content_slices WHERE content_slices.source_system = source_snapshots.source_system AND content_slices.snapshot = source_snapshots.snapshot)`,
+      )
+      .run();
+  }
+
+  private assertNoOrphans(): void {
+    const orphans = this.listOrphanEntities();
+    if (orphans.length > 0) {
+      throw new CatalogError(
+        'catalog-migration',
+        `Catalog contains orphan entities: ${orphans.join(', ')}`,
+      );
+    }
+  }
+
+  private assertSharedFacetPayloadsAgree(): void {
+    const rows = this.database
+      .prepare(
+        `SELECT entity_guid, facet, payload_sha256
+         FROM content_entity_facets
+         ORDER BY entity_guid, facet, payload_sha256`,
+      )
+      .all() as Array<{
+      readonly entity_guid: ContentGuid;
+      readonly facet: ContentFacet;
+      readonly payload_sha256: string;
+    }>;
+    const hashes = new Map<string, Set<string>>();
+    for (const row of rows) {
+      const key = `${row.entity_guid}\0${row.facet}`;
+      const values = hashes.get(key) ?? new Set<string>();
+      values.add(row.payload_sha256);
+      hashes.set(key, values);
+    }
+    for (const [key, values] of hashes) {
+      if (values.size > 1) {
+        throw new CatalogError(
+          'catalog-migration',
+          `Shared facet payloads disagree for ${key.replace('\0', '/')}`,
+        );
+      }
+    }
+  }
+
+  private assertForeignKeyCheckIsEmpty(): void {
+    const violations = this.database.pragma('foreign_key_check') as Array<{
+      readonly table: string;
+      readonly rowid: number;
+      readonly parent: string;
+      readonly fkid: number;
+    }>;
+    if (violations.length > 0) {
+      const details = violations
+        .map(
+          (violation) =>
+            `${violation.table}:${violation.rowid}->${violation.parent}#${violation.fkid}`,
+        )
+        .join(', ');
+      throw new CatalogError(
+        'catalog-migration',
+        `SQLite foreign key violations: ${details}`,
+      );
+    }
   }
 
   private assertOpen(): void {
