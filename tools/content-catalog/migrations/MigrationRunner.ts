@@ -53,6 +53,9 @@ function discoverMigrations(directory: string): readonly MigrationFile[] {
   const ids = new Set<number>();
 
   for (const file of files) {
+    if (!file.name.endsWith('.sql')) {
+      continue;
+    }
     const match = migrationName.exec(file.name);
     if (!match || !file.isFile()) {
       throw new CatalogMigrationError(

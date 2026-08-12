@@ -26,3 +26,7 @@ yarn-error.log*
 .vite/
 .turbo/
 *.tsbuildinfo
+.cache/content-catalog/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
