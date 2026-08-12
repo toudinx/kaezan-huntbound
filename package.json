@@ -23,6 +23,9 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
     "@playwright/test": "1.62.1",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "24.13.3",
+    "better-sqlite3": "13.0.3",
     "typescript": "7.0.2",
     "vite": "8.2.1",
     "vitest": "4.1.10"
