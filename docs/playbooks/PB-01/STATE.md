@@ -6,14 +6,14 @@
 
 **Última atualização:** 2026-08-11
 
-**Próxima task elegível:** `PB-01-02`
+**Próxima task elegível:** `PB-01-03`
 
 ## Tasks
 
 | ID | Status | Branch | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-01-01 | done | `codex/pb01-01-content-contracts` | `0b465e4c0f2631bf37c1144a2fd7b2de34781a9b` | 22 testes; typecheck; architecture; Biome; format; diff check |
-| PB-01-02 | pending | `codex/pb01-02-sqlite-catalog` | — | — |
+| PB-01-02 | done | `codex/pb01-02-sqlite-catalog` | `429d98a2cfef393918d2e7a1efc8c05565acdf83` | 39 testes; migration/schema; round-trip; constraints; multi-slice; lifecycle; architecture; typecheck; Biome; format; diff check |
 | PB-01-03 | pending | `codex/pb01-03-curated-slice` | — | — |
 | PB-01-04 | pending | `codex/pb01-04-xml-importers` | — | — |
 | PB-01-05 | pending | `codex/pb01-05-lua-importers` | — | — |
@@ -67,7 +67,22 @@ Modelo/effort efetivos: GPT-5.6 Luna `xhigh`. Validador efetivo: gates automatiz
 gatilho objetivo para escalonamento a Sol/Claude.
 
 Nenhum banco, fixture Canary, parser, importer ou gameplay foi criado. PB-01-02 é a próxima task
-elegível.
+foi concluída no branch `codex/pb01-02-sqlite-catalog`; PB-01-03 é a próxima task elegível.
+
+Evidência fresca de PB-01-02 no commit `429d98a2cfef393918d2e7a1efc8c05565acdf83`:
+
+```text
+corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts -> 39 passed
+corepack pnpm exec tsc --project tools/content-catalog/tsconfig.json -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check ... -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+git ls-files '*.sqlite' '*.sqlite-wal' '*.sqlite-shm' -> sem saída
+```
+
+O validador efetivo nesta sessão foi a suíte automatizada e os gates locais; nenhuma auditoria Sol
+adicional foi executada.
 
 ## Bloqueios
 
