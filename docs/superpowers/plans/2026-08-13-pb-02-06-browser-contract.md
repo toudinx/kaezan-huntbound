@@ -593,7 +593,7 @@ Add this direct dependency:
 
 ```
 "dependencies": {
-  "@huntbound/assets": "workspace:*",
+  "@huntbound/assets": "0.0.0",
   "phaser": "4.2.1"
 }
 ```
