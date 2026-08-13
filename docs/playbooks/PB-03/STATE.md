@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 e PB-03-02 concluídas; PB-03-03 é a próxima task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-04 concluídas; PB-03-05 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-03.
+**Próxima task elegível:** PB-03-05.
 
 ## Tasks
 
@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | PB-03-01 | done | `codex/pb03-01-kernel-contracts` | `c09a4cc` | 37 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-02 | done | `codex/pb03-02-kernel-random` | `4dbcc96` | 12 testes; typecheck; architecture; Biome; format; diff check |
-| PB-03-03 | pending | `codex/pb03-03-kernel-grid` | — | — |
+| PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` | 18 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | pending | `codex/pb03-05-kernel-tick-loop` | — | — |
 | PB-03-06 | pending | `codex/pb03-06-kernel-replay` | — | — |
@@ -118,11 +118,23 @@ ai:       f1d5ad77 ce8a401b 9ead377c edd33fe5 327526b4 2f753712 826067ea 387f9b0
 movement: 9046423d fcd233cd 207a837d a83cf41a 1adb5830 2241cdbd edbec034 3471c9d1
 scenario: fc89a05c 535ac971 733b1b1a 27af86d8 0fcb29a6 971986f7 ab6025df 6f306771
 ```
+## PB-03-03 — handoff concluído
+
+PB-03-03 foi implementada na branch `codex/pb03-03-kernel-grid`. O commit funcional rebaseado é `0fe667b`
+(`feat: resolve deterministic grid movement`). `@huntbound/simulation` agora publica as direções
+canônicas, deltas, tradução de coordenadas, custo de passo, grid estático, índice de ocupação e
+`resolveStep`. A resolução é pura e mantém a precedência `bounds` → `terrain` → `diagonal-corner`
+→ `occupied`; ocupação por ator não impede corte de canto e terreno impede.
+
+O pacote declara somente o vínculo interno com `@huntbound/contracts` e `vitest` como devDependency,
+sem dependência externa de runtime. A documentação durável foi atualizada em
+`docs/simulation/KERNEL_CONTRACT.md`. PB-03-02 já está concluída e PB-03-04 é a próxima task elegível;
+comandos, tick, eventos, snapshot e replay não foram antecipados.
 
 Evidência fresca na worktree da task:
 
 ```text
-node node_modules/vitest/vitest.mjs run --root packages/simulation --reporter=verbose -> exit 0; 12 passed
+node node_modules/vitest/vitest.mjs run --root packages/simulation --reporter=verbose -> exit 0; 18 passed
 node node_modules/typescript/bin/tsc --project packages/simulation/tsconfig.json --pretty false -> exit 0
 node tools/architecture/check-boundaries.ts -> exit 0
 node node_modules/@biomejs/biome/bin/biome check packages/simulation -> exit 0
@@ -141,8 +153,11 @@ Skills usadas: `superpowers:using-superpowers`, `superpowers:brainstorming`, `su
 `superpowers:test-driven-development` e `superpowers:verification-before-completion`. Validador
 efetivo: gates automatizados; não houve gatilho objetivo para escalonamento.
 
-Modo de conclusão: serial, com fast-forward em `main`, reverificação integrada e remoção da worktree e
-da branch temporárias. PB-03-03 é a próxima task elegível; grid, comandos e loop não foram antecipados.
+
+
+
+Modo de conclusão: serial, com rebase sobre a main atual, fast-forward, reverificação integrada e
+remoção da worktree e da branch temporárias.
 
 ## PB-03-04 — handoff concluído
 
