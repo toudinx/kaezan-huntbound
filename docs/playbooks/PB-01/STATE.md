@@ -15,7 +15,7 @@
 | PB-01-01 | done | `codex/pb01-01-content-contracts` | `0b465e4c0f2631bf37c1144a2fd7b2de34781a9b` | 22 testes; typecheck; architecture; Biome; format; diff check |
 | PB-01-02 | done | `codex/pb01-02-sqlite-catalog` | `429d98a2cfef393918d2e7a1efc8c05565acdf83` | 39 testes; migration/schema; round-trip; constraints; multi-slice; lifecycle; architecture; typecheck; Biome; format; diff check |
 | PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
-| PB-01-04 | done | `codex/pb01-04-xml-importers` | `f1154b5ef52989ed9c3029ab1f57ddcefaef43ad` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
+| PB-01-04 | done | `codex/pb01-04-xml-importers` | `530cc31d7d132428346cece9c42b562d7829e219` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
 | PB-01-05 | pending | `codex/pb01-05-lua-importers` | — | — |
 | PB-01-06 | pending | `codex/pb01-06-materialize-slice` | — | — |
 | PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
@@ -116,7 +116,7 @@ allowlist. O mapping está em `docs/content/CANARY_XML_MAPPING.md`; os adapters 
 pelo entrypoint runtime, não leem filesystem e não mantêm cache global. Fixtures sintéticas foram
 mantidas inline nos testes; nenhum XML Canary real foi copiado ou lido pelo adapter.
 
-Evidência fresca de PB-01-04 no commit `f1154b5ef52989ed9c3029ab1f57ddcefaef43ad`:
+Evidência fresca de PB-01-04 no commit `530cc31d7d132428346cece9c42b562d7829e219`:
 
 ```text
 corepack pnpm --filter @huntbound/content test -- src/importers/canary/xml -> 27 passed
