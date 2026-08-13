@@ -11,5 +11,5 @@ export {
   decodeCommandLog,
   encodeCommandLog,
 } from './commands/commandLog.ts';
-export * from './random/index.ts';
 export * from './grid/index.ts';
+export * from './random/index.ts';
