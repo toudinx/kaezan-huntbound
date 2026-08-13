@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-FIX-01
+**Próxima task elegível:** PB-02-FIX-01, seguida de PB-02-FIX-02 e da reexecução do PB-02-07
 
 ## Tasks
 
@@ -19,7 +19,8 @@
 | PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
 | PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
-| PB-02-FIX-01 | pending | — | — | — |
+| [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | pending | `codex/pb02-fix-01-profile-emission` | — | — |
+| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | pending | `codex/pb02-fix-02-verify-idempotence` | — | — |
 
 ## Baseline congelado
 
@@ -297,16 +298,25 @@ PB-02 permanece aberto e PB-03 não é elegível. Nenhum código foi alterado du
 
 ## Bloqueios
 
-Dois blockers reproduzíveis, ambos de produto, abertos por PB-02-07 e endereçados por PB-02-FIX-01:
+Dois blockers reproduzíveis, ambos de produto, abertos por PB-02-07. Cada um tem task corretiva
+própria porque são problemas, arquivos e verificações independentes; a ordem é serial porque as duas
+tocam este handoff:
 
 1. **`build:product` distribui mídia `cipsoft-personal`.** O `publicDir` do Vite continua sendo
    `apps/game/public`, então `dist/game/assets/personal` recebe as cinco mídias reais congeladas
    (8 arquivos, 242324 bytes) mesmo com o build em exit 0. O guard valida o
    catálogo do perfil, não o conteúdo emitido.
+   → [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md): `publicDir: false` e
+   emissão da árvore validada pelo próprio guard, preservando o contrato de URL.
 2. **`verify` não é idempotente.** `biome.json` não exclui `apps/game/public/assets/test` nem
    `apps/game/public/assets/product`; como `test`/`build` fazem stage dessas saídas e `format:check`
    é o primeiro passo, a segunda execução consecutiva de `verify` falha. Provado: execução 1 exit 0,
    execução 2 exit 1.
+   → [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md): excluir as duas saídas
+   geradas do Biome, como `personal` e `expected` já são.
+
+O fechamento do PB-02 só volta à mesa depois das duas correções integradas e de uma **reexecução
+completa da matriz PB-02-07**. O corretor não fecha o playbook que ele mesmo corrigiu.
 
 Warnings não bloqueantes: `__huntboundAssetProbe` sobrevive ao tree-shaking nos bundles
 `personal`/`product` embora não seja instalado em runtime; aviso de chunk > 500 kB; worktree e branch
