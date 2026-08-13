@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-05
+**Próxima task elegível:** PB-02-06
 
 ## Tasks
 
@@ -16,7 +16,7 @@
 | PB-02-02 | done | `codex/pb02-02-source-selection` | `ff0ea57` | 11 testes; locks real/sintético 5/5; typecheck; architecture; Biome; format; diff check |
 | PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
 | PB-02-04 | done | `codex/pb02-04-asset-runtime` | `a11ea9d` | 36 testes; typecheck; Biome; diff check; provider relativo/concorrente/deduplicado |
-| PB-02-05 | pending | `codex/pb02-05-profile-guards` | — | — |
+| PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
 | PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
 | PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
 
@@ -199,6 +199,38 @@ perfis, build guard, scripts e boundaries; nenhum código do app/browser foi ant
 Uma revisão independente após a integração encontrou três riscos no provider: catálogo relativo,
 loads concorrentes e validação parcial de entries que compartilhavam mídia. Os três receberam RED,
 correção em `a11ea9d` e provas verdes; a suíte passou de 33 para 36 testes.
+
+## PB-02-05 — handoff concluído
+
+PB-02-05 foi integrado em `main` por fast-forward no commit `cb75037`. A implementação fecha os
+perfis `test`, `personal` e `product` com validação transitive de `catalog.json -> packs -> media`,
+política de `buildProfiles` e licença, staging byte-for-byte com catálogo de destino canônico, CLI
+`profile-check`/`stage-profile`/`build-profile`, guard Vite em `buildStart` e scanner TypeScript de
+boundaries. `product` rejeita sempre `cipsoft-personal` com `ASSET_LICENSE_FORBIDDEN`.
+
+O golden tree versionado é `packages/test-fixtures/assets/pb02/expected/test/`; `apps/game/public/assets/test`,
+`product` e `personal` são apenas outputs ignorados. O modo `test` também foi configurado no
+`vite preview` do Playwright, porque o config aceita exclusivamente os três perfis. Os scripts Node
+usam `--experimental-transform-types` para executar os sources TypeScript existentes no Node 24.14.
+
+Evidência fresca de PB-02-05:
+
+```text
+corepack pnpm check -> exit 0
+corepack pnpm verify -> exit 0; 7 testes Playwright, todos verdes
+corepack pnpm assets:check -> exit 0; packSha256 775d56f87b156349d9e81410d1703bac1499e1d332a2c1064dce498d18d97af5
+assets:personal:generate + assets:personal:check -> exit 0; 5 mídias, 241948 bytes, packSha256 a711c757874783d25da4242102abd681f6d07528bc2481af0139126a877dff9c
+product restricted proof -> build:product exit 1 com ASSET_PROFILE_FORBIDDEN e ASSET_LICENSE_FORBIDDEN
+product restaged + assets:product:check + build:product -> exit 0
+git ls-files apps/game/public/assets -> sem saída
+```
+
+O validador efetivo foi a matriz automatizada local; foram usados `game-studio:web-game-foundations`,
+`superpowers:using-superpowers`, `superpowers:brainstorming`, `superpowers:writing-plans`,
+`superpowers:executing-plans`, `superpowers:using-git-worktrees`, `superpowers:test-driven-development`,
+`superpowers:systematic-debugging` e `superpowers:verification-before-completion`. Não houve
+escalonamento para validador externo. PB-02-06 é a próxima task elegível para composição/provider no
+app e contrato browser; nenhum uso de provider foi antecipado.
 
 ## Bloqueios
 
