@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | PB-03-01 | done | `codex/pb03-01-kernel-contracts` | `c09a4cc` | 37 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-02 | done | `codex/pb03-02-kernel-random` | `4dbcc96` | 12 testes; typecheck; architecture; Biome; format; diff check |
-| PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` | 18 testes; typecheck; architecture; Biome; format; diff check |
+| PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` + `5e67e56` | 18 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | pending | `codex/pb03-05-kernel-tick-loop` | — | — |
 | PB-03-06 | pending | `codex/pb03-06-kernel-replay` | — | — |
@@ -120,15 +120,16 @@ scenario: fc89a05c 535ac971 733b1b1a 27af86d8 0fcb29a6 971986f7 ab6025df 6f30677
 ```
 ## PB-03-03 — handoff concluído
 
-PB-03-03 foi implementada na branch `codex/pb03-03-kernel-grid` nos commits `0fe667b` (`feat: resolve
-deterministic grid movement`) e `dd1c74d` (`fix: order simulation exports`). `@huntbound/simulation` agora publica as direções
+PB-03-03 foi implementada na branch `codex/pb03-03-kernel-grid` no commit rebaseado `4408f23`
+(`feat: resolve deterministic grid movement`), com o ajuste final de exports em `5e67e56`
+(`fix: order grid exports`). `@huntbound/simulation` agora publica as direções
 canônicas, deltas, tradução de coordenadas, custo de passo, grid estático, índice de ocupação e
 `resolveStep`. A resolução é pura e mantém a precedência `bounds` → `terrain` → `diagonal-corner`
 → `occupied`; ocupação por ator não impede corte de canto e terreno impede.
 
 O pacote declara somente o vínculo interno com `@huntbound/contracts` e `vitest` como devDependency,
 sem dependência externa de runtime. A documentação durável foi atualizada em
-`docs/simulation/KERNEL_CONTRACT.md`. PB-03-02 já está concluída e PB-03-04 é a próxima task elegível;
+`docs/simulation/KERNEL_CONTRACT.md`. PB-03-02 e PB-03-04 já estão concluídas e PB-03-05 é a próxima task elegível;
 comandos, tick, eventos, snapshot e replay não foram antecipados.
 
 Evidência fresca na worktree da task:
@@ -156,7 +157,7 @@ efetivo: gates automatizados; não houve gatilho objetivo para escalonamento.
 
 
 
-Modo de conclusão: serial, com rebase sobre a main atual, fast-forward, reverificação integrada e
+Modo de conclusão: serial, com rebase sobre a main atual (que já continha PB-03-04), fast-forward, reverificação integrada e
 remoção da worktree e da branch temporárias.
 
 ## PB-03-04 — handoff concluído
@@ -193,8 +194,8 @@ Codex baseado em GPT-5; o alias Luna/xhigh sugerido não é exposto nesta sessã
 e `superpowers:verification-before-completion`. Validador efetivo: gates automatizados.
 
 Modo de conclusão: integração por merge explícito porque `main` avançou com PB-03-02 durante a execução,
-seguida de reverificação integrada e remoção da worktree e da branch temporárias. PB-03-03 continua sendo
-a próxima task elegível; grid não foi antecipado.
+seguida de reverificação integrada e remoção da worktree e da branch temporárias. PB-03-03 e PB-03-04 estão
+concluídas; PB-03-05 é a próxima task elegível.
 
 ## Bloqueios
 
