@@ -6,6 +6,7 @@ import { createScanner, SyntaxKind } from 'typescript/unstable/ast';
 
 import { checkAssetBoundaries } from './asset-boundaries.ts';
 import { checkContentBoundaries } from './content-boundaries.ts';
+import { checkSimulationBoundaries } from './simulation-boundaries.ts';
 
 type DependencyMap = Record<string, string>;
 
@@ -455,6 +456,7 @@ export async function checkBoundaries(
 
   diagnostics.push(...(await checkContentBoundaries(root)));
   diagnostics.push(...(await checkAssetBoundaries(root)));
+  diagnostics.push(...(await checkSimulationBoundaries(root)));
   return diagnostics;
 }
 

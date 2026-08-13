@@ -230,3 +230,103 @@ impede o passo diagonal. O destino, porém, continua sujeito à verificação de
 ortogonais custam `baseTicks`; passos diagonais custam `Math.ceil(baseTicks * 3 / 2)` ticks. O
 `baseTicks` é o `stepCooldownTicks` do blueprint, e a decisão de `cooldown` pertence ao chamador,
 não à camada geométrica.
+
+## Loop de tick
+
+`createSimulationKernel(scenario, seed)` devolve o kernel headless. A API é `tick`, `advanceOne()`,
+`advance(ticks)`, `enqueue(command)` e `state()`. Eventos são a única saída observável; `state()`
+existe para teste e para o snapshot de PB-03-06 e devolve uma cópia, nunca uma referência interna.
+
+### Boot
+
+Os atores de `initialActors` recebem `EntityId` `1..n` na ordem de declaração, `readyAtTick` `0` e o
+`nextEntityId` fica em `n + 1`. O tick inicial é `0`. O boot emite um `actor/spawned` por ator
+inicial, em ordem de `EntityId`, começando na sequência `1`; esses eventos ficam no journal e saem
+na primeira chamada de `advanceOne()`, que é a que executa o tick `0`.
+
+### Fases
+
+A ordem é fixa e não tem exceção:
+
+```text
+1. intake    comandos externos com tick == currentTick saem do buffer já ordenados;
+             intents internas decididas em ticks anteriores para este tick entram na fila de passo
+2. apply     validação e mutação por comando, na ordem (prioridade, sequence)
+3. systems   S1 lifecycle -> S2 movement -> S3 ai
+4. flush     o journal do tick é fechado e devolvido; currentTick += 1
+```
+
+`advance(ticks)` concatena os journals na ordem dos ticks e é equivalente a `ticks` chamadas de
+`advanceOne()`. `advance(0)` não avança e devolve vazio; `ticks` negativo, fracionário ou `NaN`
+lança `RangeError`.
+
+A `sequence` de evento é monotônica global na run e nunca reinicia entre ticks. O kernel não acumula
+journal: `advanceOne()` devolve os eventos daquele tick e esvazia o buffer.
+
+### `apply`
+
+| Comando | Efeito em `apply` |
+| --- | --- |
+| `scenario/spawn-actor` | valida blueprint e célula, reserva a célula e enfileira o spawn para S1 |
+| `scenario/despawn-actor` | enfileira o despawn para S1 e torna a entidade inendereçável no tick |
+| `actor/face` | muda `facing` e emite `actor/faced` imediatamente |
+| `actor/move-step` | enfileira a intent de passo para S2 |
+| `actor/wait` | não muta nada e não emite evento |
+
+Rejeições congeladas, todas com `command/rejected` e sem qualquer mutação de estado:
+
+- comando de ator para entidade inexistente: `SIM_COMMAND_UNKNOWN_ENTITY`;
+- `scenario/despawn-actor` para entidade inexistente: `SIM_COMMAND_UNKNOWN_ENTITY`;
+- `scenario/spawn-actor` com blueprint inexistente: `SIM_SCHEMA_INVALID`;
+- `scenario/spawn-actor` fora do grid, em terreno bloqueado, em célula ocupada ou em célula já
+  reservada por um spawn anterior do mesmo tick: `SIM_SPAWN_TILE_UNAVAILABLE`.
+
+Como `scenario/*` tem prioridade `0` e `actor/move-step` tem prioridade `2`, um despawn aplicado no
+mesmo tick precede o passo do mesmo ator, e o passo vira `SIM_COMMAND_UNKNOWN_ENTITY`. A entidade
+deixa de ser endereçável já em `apply`, embora só saia do mundo em S1.
+
+A disponibilidade da célula de spawn é avaliada contra os atores vivos no momento de `apply` e
+contra as células reservadas por spawns anteriores do mesmo tick. Um despawn do mesmo tick ainda não
+liberou a célula quando o spawn é validado, porque a materialização acontece em S1.
+
+### Sistemas
+
+`S1 lifecycle` materializa spawns e despawns pendentes em ordem de `sequence`. Um spawn aceito
+recebe o próximo `EntityId`, entra com `readyAtTick = currentTick` e emite `actor/spawned`. Um
+despawn remove o ator e emite `actor/despawned`. `EntityId` nunca é reaproveitado.
+
+`S2 movement` resolve as intents em ordem crescente de `EntityId`. Empate no mesmo ator resolve
+primeiro a intent externa e depois a interna, e dentro de cada origem por ordem de entrada. Para
+cada intent:
+
+1. **cooldown antes da geometria.** Um ator só age quando `currentTick >= readyAtTick`. Caso
+   contrário o passo emite `actor/move-blocked` com `reason: 'cooldown'` e `attempted` igual à
+   célula que o passo teria alcançado;
+2. `resolveStep` avalia `bounds`, `terrain`, `diagonal-corner` e `occupied` nessa precedência, e o
+   bloqueio emite `actor/move-blocked` com a causa vinda do grid;
+3. um passo bem-sucedido move o ator, define `facing` igual à direção do passo, define
+   `readyAtTick = currentTick + stepCostTicks(base, direção)` e emite `actor/moved`.
+
+Como a resolução é sequencial, dois atores disputando a mesma célula no mesmo tick são decididos
+pelo menor `EntityId`: o primeiro move e o segundo recebe `occupied`. Pelo mesmo motivo, a célula
+liberada por um ator já pode ser ocupada por um ator de `EntityId` maior no mesmo tick.
+
+`S3 ai` percorre os atores com `behavior: 'wander'` em ordem crescente de `EntityId` e decide
+somente para quem está fora de cooldown no tick corrente. A decisão consome exatamente um
+`nextBelow(8)` do stream `ai` e indexa a ordem canônica de direções; um bloqueio não gera nova
+tentativa no mesmo tick. A intent resultante é enfileirada para `currentTick + 1` e nunca para o
+tick corrente. Ator `inert` jamais consome o stream `ai`, portanto acrescentar ou remover atores
+inertes não altera as decisões de wander; remover um ator `wander` altera as decisões seguintes de
+forma determinística, porque muda o consumo do stream.
+
+Comandos internos gerados por `S3` usam uma fila interna própria, ordenada por `EntityId`. Eles não
+entram no command log e não consomem `sequence` de comando externo.
+
+### Determinismo
+
+Nenhum sistema lê relógio, cria promessa, agenda callback ou depende de ordem de inserção de
+estrutura preenchida de forma não determinística. `Math.random`, `Date`, `performance`, timers,
+`crypto`, `globalThis`, `process` e qualquer import externo são proibidos em
+`packages/simulation/src/**` e a regra é executável em `tools/architecture/simulation-boundaries.ts`,
+incluída em `architecture:check`. A regra vale para todo arquivo do pacote; `vitest` é o único
+pacote externo tolerado, e apenas em arquivos `*.test.ts`.
