@@ -1,4 +1,3 @@
-export * from './random/index.ts';
 export type {
   CommandAcceptance,
   CommandBuffer,
@@ -12,3 +11,4 @@ export {
   decodeCommandLog,
   encodeCommandLog,
 } from './commands/commandLog.ts';
+export * from './random/index.ts';
