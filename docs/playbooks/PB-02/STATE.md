@@ -12,7 +12,7 @@
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-02-01 | done | `codex/pb02-01-asset-contracts` | `feat: define stable asset contracts` (integração fast-forward desta task) | 13 testes; typecheck; architecture; Biome; format; diff check |
+| PB-02-01 | done | `codex/pb02-01-asset-contracts` | `86f8921` | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | pending | `codex/pb02-02-source-selection` | — | — |
 | PB-02-03 | pending | `codex/pb02-03-deterministic-packer` | — | — |
 | PB-02-04 | pending | `codex/pb02-04-asset-runtime` | — | — |
