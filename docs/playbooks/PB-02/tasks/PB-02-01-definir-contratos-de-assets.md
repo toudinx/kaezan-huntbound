@@ -207,8 +207,9 @@ Refinements obrigatórios:
 - categoria compatível: lookType somente outfit/creature, clientId somente object, effectId somente
   effect e missileId somente missile;
 - `presentation` com pivot finito, scale positiva e filtering conhecido;
-- animação com inteiros não negativos/positivos, `minMs <= maxMs`, uma duração por frame e
-  `startFrame + frameCount <= atlasFrameCount`;
+- animação com inteiros não negativos/positivos, `minMs <= maxMs`, uma duração por fase de origem,
+  `frameCount` igual ao produto de patterns, layers e fases (uma fase implícita quando a lista está
+  vazia) e `startFrame + frameCount <= atlasFrameCount`;
 - pack IDs únicos no catálogo;
 - preload referencia pack existente e required keys únicas;
 - `product` nunca aparece em grupo `cipsoft-personal`.

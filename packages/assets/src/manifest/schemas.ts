@@ -453,15 +453,22 @@ function validatePackEntryDetails(
 
     entry.animations.forEach((animation, animationIndex) => {
       const animationPath = [...entryPath, 'animations', animationIndex];
+      const patternAndLayerCount =
+        Math.max(animation.patternX, 1) *
+        Math.max(animation.patternY, 1) *
+        Math.max(animation.patternZ, 1) *
+        animation.layers;
+      const expectedFrameCount =
+        patternAndLayerCount * Math.max(animation.phaseDurationsMs.length, 1);
       if (
         animation.startFrame + animation.frameCount > entry.atlasFrameCount ||
-        animation.phaseDurationsMs.length !== animation.frameCount
+        animation.frameCount !== expectedFrameCount
       ) {
         addAssetIssue(
           context,
           'ASSET_ANIMATION_INVALID',
           animationPath,
-          'Animation frames and phase durations must fit the atlas',
+          'Animation frame count must match patterns, layers, source phases, and the atlas',
           { key: entry.key },
         );
       }

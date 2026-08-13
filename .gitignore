@@ -15,6 +15,7 @@ blob-report/
 !.env.example
 assets/personal/
 personal-assets/
+apps/game/public/assets/personal/
 
 # Logs and tool caches
 *.log

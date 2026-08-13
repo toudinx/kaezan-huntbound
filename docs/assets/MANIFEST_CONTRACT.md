@@ -179,8 +179,11 @@ selection identity.
 }
 ```
 
-Animation timing is preserved as `[minMs, maxMs]` ranges. There must be one duration range per
-frame, and the frame window must fit inside `atlasFrameCount`; the contract does not invent timing.
+Animation timing is preserved as one `[minMs, maxMs]` range per source phase. `frameCount` is the
+source atlas sprite count and must equal
+`max(patternX, 1) * max(patternY, 1) * max(patternZ, 1) * layers * max(phaseDurationsMs.length, 1)`.
+An empty duration list therefore represents a static source group without inventing timing. The
+`startFrame + frameCount` window must fit inside `atlasFrameCount`.
 
 ### Profile catalog
 

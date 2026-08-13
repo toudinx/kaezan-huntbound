@@ -10,8 +10,10 @@
       "!coverage",
       "!test-results",
       "!playwright-report",
+      "!apps/game/public/assets/personal",
       "!packages/content/catalog/operations",
-      "!packages/content/src/generated"
+      "!packages/content/src/generated",
+      "!packages/test-fixtures/assets/pb02/expected"
     ]
   },
   "formatter": {

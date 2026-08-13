@@ -298,6 +298,39 @@ describe('asset manifest schemas', () => {
     }
   });
 
+  it('accepts atlas frame counts factored by patterns, layers, and source phases', () => {
+    const input = packManifest();
+    const entry = itemAt(input.entries, 0);
+    entry.atlasFrameCount = 432;
+    entry.animations = [
+      {
+        kind: 'idle',
+        patternX: 4,
+        patternY: 3,
+        patternZ: 2,
+        layers: 2,
+        startFrame: 0,
+        frameCount: 48,
+        phaseDurationsMs: [],
+      },
+      {
+        kind: 'moving',
+        patternX: 4,
+        patternY: 3,
+        patternZ: 2,
+        layers: 2,
+        startFrame: 48,
+        frameCount: 384,
+        phaseDurationsMs: Array.from(
+          { length: 8 },
+          () => [300, 300] as [number, number],
+        ),
+      },
+    ];
+
+    expect(validateAssetPackManifest(input)).toMatchObject({ ok: true });
+  });
+
   it('rejects product selection groups that carry personal assets', () => {
     const input = selectionManifest();
     itemAt(input.groups, 0).licenseClass = 'cipsoft-personal';
