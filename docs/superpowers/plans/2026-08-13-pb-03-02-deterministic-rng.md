@@ -186,4 +186,3 @@ Confirmar que não há \`Math.random\`, \`BigInt\`, \`Date\`, \`performance\`, t
 git add packages/simulation pnpm-lock.yaml docs/simulation/KERNEL_CONTRACT.md
 git commit -m "feat: seed deterministic kernel randomness"
 ~~~
-
