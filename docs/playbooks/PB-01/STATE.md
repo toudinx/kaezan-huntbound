@@ -4,9 +4,9 @@
 
 **Estado geral:** ready
 
-**Última atualização:** 2026-08-11
+**Última atualização:** 2026-08-12
 
-**Próxima task elegível:** `PB-01-03`
+**Próximas tasks elegíveis:** `PB-01-04` e `PB-01-05`
 
 ## Tasks
 
@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | PB-01-01 | done | `codex/pb01-01-content-contracts` | `0b465e4c0f2631bf37c1144a2fd7b2de34781a9b` | 22 testes; typecheck; architecture; Biome; format; diff check |
 | PB-01-02 | done | `codex/pb01-02-sqlite-catalog` | `429d98a2cfef393918d2e7a1efc8c05565acdf83` | 39 testes; migration/schema; round-trip; constraints; multi-slice; lifecycle; architecture; typecheck; Biome; format; diff check |
-| PB-01-03 | pending | `codex/pb01-03-curated-slice` | — | — |
+| PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
 | PB-01-04 | pending | `codex/pb01-04-xml-importers` | — | — |
 | PB-01-05 | pending | `codex/pb01-05-lua-importers` | — | — |
 | PB-01-06 | pending | `codex/pb01-06-materialize-slice` | — | — |
@@ -66,8 +66,9 @@ git diff --check -> exit 0
 Modelo/effort efetivos: GPT-5.6 Luna `xhigh`. Validador efetivo: gates automatizados; não houve
 gatilho objetivo para escalonamento a Sol/Claude.
 
-Nenhum banco, fixture Canary, parser, importer ou gameplay foi criado. PB-01-02 é a próxima task
-foi concluída no branch `codex/pb01-02-sqlite-catalog`; PB-01-03 é a próxima task elegível.
+PB-01-02 foi concluída no branch `codex/pb01-02-sqlite-catalog`; PB-01-03 foi concluída no branch
+`codex/pb01-03-curated-slice`. O source lock, a seleção e as fixtures estão prontos para PB-01-04 e
+PB-01-05; nenhuma delas foi iniciada.
 
 Evidência fresca de PB-01-02 no commit `429d98a2cfef393918d2e7a1efc8c05565acdf83`:
 
@@ -83,6 +84,29 @@ git ls-files '*.sqlite' '*.sqlite-wal' '*.sqlite-shm' -> sem saída
 
 O validador efetivo nesta sessão foi a suíte automatizada e os gates locais; nenhuma auditoria Sol
 adicional foi executada.
+
+PB-01-03 congelou o manifesto `fixture:pb-01-contract-coverage`, cinco raízes (Knight, Berserk,
+Rotworm, Amazon e Orc Shaman), Snake como dependência alcançável, e a política que projeta `knight` e
+`elite knight` para `vocation-family:huntbound:knight` sem criar alias de entidade. O source lock real
+confirmou os sete paths e hashes esperados no commit Canary `157e6f9e21318bd3033eea553fe9275b429faf72`,
+incluindo a licença GPL-2.0-only. As fixtures são sintéticas e nenhum arquivo em `references/` foi
+copiado ou versionado.
+
+Evidência fresca de PB-01-03 no commit `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a`:
+
+```text
+node tools/content-catalog/source/verifySourceLock.ts ... -> ok: true; files: 7
+corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts -> 46 passed
+corepack pnpm --filter @huntbound/content test -> 7 passed
+corepack pnpm --filter @huntbound/content typecheck -> exit 0
+corepack pnpm --filter @huntbound/test-fixtures typecheck -> exit 0
+corepack pnpm exec tsc --project tools/content-catalog/tsconfig.json --noEmit -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check ... -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+git check-ignore references/canary/data/XML/vocations.xml -> ignored
+```
 
 ## Bloqueios
 
