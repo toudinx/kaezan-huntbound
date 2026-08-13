@@ -62,9 +62,10 @@ export function diagnosticFromLuaError(error: unknown): ContentDiagnostic {
     ...(typeof rawLine === 'number' ? { line: rawLine } : {}),
     ...(typeof rawColumn === 'number' ? { column: rawColumn } : {}),
   };
-  const message = typeof error.message === 'string'
-    ? error.message
-    : 'Lua source is not valid';
+  const message =
+    typeof error.message === 'string'
+      ? error.message
+      : 'Lua source is not valid';
   return {
     ...createLuaDiagnostic('lua.syntax', message, location),
   };

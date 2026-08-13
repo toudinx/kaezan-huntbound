@@ -1,11 +1,10 @@
+import type { ContentDiagnostic } from '@huntbound/contracts';
 import type {
   BinaryExpression,
   Expression,
   Node,
   TableConstructorExpression,
 } from 'luaparse';
-
-import type { ContentDiagnostic } from '@huntbound/contracts';
 
 import { diagnosticAt } from './luaDiagnostics';
 
@@ -30,6 +29,10 @@ export type StaticValueResult =
 
 const symbolicConstants: Readonly<Record<string, string>> = {
   AREA_SQUARE1X1: 'AREA_SQUARE1X1',
+  BESTY_RACE_HUMAN: 'BESTY_RACE_HUMAN',
+  BESTY_RACE_HUMANOID: 'BESTY_RACE_HUMANOID',
+  BESTY_RACE_REPTILE: 'BESTY_RACE_REPTILE',
+  BESTY_RACE_VERMIN: 'BESTY_RACE_VERMIN',
   CALLBACK_PARAM_SKILLVALUE: 'CALLBACK_PARAM_SKILLVALUE',
   COMBAT_DEATHDAMAGE: 'death',
   COMBAT_DROWNDAMAGE: 'drown',
@@ -216,7 +219,11 @@ export function readRequiredString(
   if (!value.ok) return value;
   return typeof value.value === 'string' && value.value.trim().length > 0
     ? { ok: true, value: value.value.trim() }
-    : failure(expression, 'lua.invalid-value', `${field} must be a non-empty string`);
+    : failure(
+        expression,
+        'lua.invalid-value',
+        `${field} must be a non-empty string`,
+      );
 }
 
 export function readRequiredNumber(
@@ -227,5 +234,9 @@ export function readRequiredNumber(
   if (!value.ok) return value;
   return isFiniteNumber(value.value)
     ? { ok: true, value: value.value }
-    : failure(expression, 'lua.invalid-value', `${field} must be a finite number`);
+    : failure(
+        expression,
+        'lua.invalid-value',
+        `${field} must be a finite number`,
+      );
 }

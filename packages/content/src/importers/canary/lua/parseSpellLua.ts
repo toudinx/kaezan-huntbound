@@ -1,20 +1,21 @@
+import type { ContentDiagnostic } from '@huntbound/contracts';
 import type {
-  BinaryExpression,
   CallExpression,
   Expression,
   FunctionDeclaration,
-  Identifier,
-  MemberExpression,
   Node,
   Statement,
 } from 'luaparse';
-import type { ContentDiagnostic } from '@huntbound/contracts';
 
 import type { CanaryParseResult } from '../sourceTypes';
 import { parseLuaChunk } from './luaAst';
 import { diagnosticAt } from './luaDiagnostics';
-import { readRequiredNumber, readRequiredString, readStaticValue } from './staticValues';
 import type { CanarySpellDto } from './luaTypes';
+import {
+  readRequiredNumber,
+  readRequiredString,
+  readStaticValue,
+} from './staticValues';
 
 interface FormulaValues {
   readonly levelFactor: number;
@@ -25,7 +26,9 @@ interface FormulaValues {
 
 interface SpellState {
   readonly damageType: string | undefined;
-  readonly area: { readonly shape: 'square'; readonly radius: number } | undefined;
+  readonly area:
+    | { readonly shape: 'square'; readonly radius: number }
+    | undefined;
   readonly formula: FormulaValues | undefined;
   readonly sourceId: number | undefined;
   readonly displayName: string | undefined;
@@ -39,6 +42,27 @@ interface SpellState {
   readonly anchor: Statement | undefined;
 }
 
+const combatParameters = new Set([
+  'COMBAT_PARAM_BLOCKARMOR',
+  'COMBAT_PARAM_EFFECT',
+  'COMBAT_PARAM_TYPE',
+  'COMBAT_PARAM_USECHARGES',
+]);
+
+const combatDamageTypes = new Set([
+  'physical',
+  'energy',
+  'earth',
+  'fire',
+  'ice',
+  'holy',
+  'death',
+  'drown',
+  'lifeDrain',
+  'manaDrain',
+  'healing',
+]);
+
 function pushDiagnostic(
   diagnostics: ContentDiagnostic[],
   node: Node | undefined,
@@ -48,36 +72,18 @@ function pushDiagnostic(
   diagnostics.push(diagnosticAt(node, code, message));
 }
 
-function callMember(
-  expression: Expression,
-  baseName: string,
-  memberName: string,
-  indexer: '.' | ':',
-): expression is CallExpression & {
-  readonly base: MemberExpression & {
-    readonly base: { readonly type: 'Identifier'; readonly name: string };
-    readonly identifier: { readonly name: string };
-    readonly indexer: '.' | ':';
-  };
-} {
-  if (expression.type !== 'CallExpression') return false;
-  const base = expression.base;
-  return (
-    base.type === 'MemberExpression' &&
-    base.indexer === indexer &&
-    base.identifier.name === memberName &&
-    base.base.type === 'Identifier' &&
-    base.base.name === baseName
-  );
-}
-
 function readString(
   expression: Expression | undefined,
   field: string,
   diagnostics: ContentDiagnostic[],
 ): string | undefined {
   if (expression === undefined) {
-    pushDiagnostic(diagnostics, undefined, 'lua.missing-field', `${field} is required`);
+    pushDiagnostic(
+      diagnostics,
+      undefined,
+      'lua.missing-field',
+      `${field} is required`,
+    );
     return undefined;
   }
   const result = readRequiredString(expression, field);
@@ -94,7 +100,12 @@ function readNumber(
   diagnostics: ContentDiagnostic[],
 ): number | undefined {
   if (expression === undefined) {
-    pushDiagnostic(diagnostics, undefined, 'lua.missing-field', `${field} is required`);
+    pushDiagnostic(
+      diagnostics,
+      undefined,
+      'lua.missing-field',
+      `${field} is required`,
+    );
     return undefined;
   }
   const result = readRequiredNumber(expression, field);
@@ -113,22 +124,15 @@ function readNonNegativeInteger(
   const value = readNumber(expression, field, diagnostics);
   if (value === undefined) return undefined;
   if (!Number.isSafeInteger(value) || value < 0) {
-    pushDiagnostic(diagnostics, expression, 'lua.invalid-value', `${field} must be a non-negative integer`);
+    pushDiagnostic(
+      diagnostics,
+      expression,
+      'lua.invalid-value',
+      `${field} must be a non-negative integer`,
+    );
     return undefined;
   }
   return value;
-}
-
-function readCallNumber(
-  call: CallExpression,
-  field: string,
-  diagnostics: ContentDiagnostic[],
-): number | undefined {
-  if (call.arguments.length !== 1) {
-    pushDiagnostic(diagnostics, call, 'lua.invalid-value', `${field} expects one argument`);
-    return undefined;
-  }
-  return readNonNegativeInteger(call.arguments[0], field, diagnostics);
 }
 
 function readOneStaticString(
@@ -139,18 +143,28 @@ function readOneStaticString(
   return readString(expression, field, diagnostics);
 }
 
-function identifierIs(expression: Expression | undefined, name: string): boolean {
+function identifierIs(
+  expression: Expression | undefined,
+  name: string,
+): boolean {
   return expression?.type === 'Identifier' && expression.name === name;
 }
 
-function numericLiteral(expression: Expression | undefined): number | undefined {
-  return expression?.type === 'NumericLiteral' && Number.isFinite(expression.value)
+function numericLiteral(
+  expression: Expression | undefined,
+): number | undefined {
+  return expression?.type === 'NumericLiteral' &&
+    Number.isFinite(expression.value)
     ? expression.value
     : undefined;
 }
 
 function callGetLevel(expression: Expression | undefined): boolean {
-  if (expression?.type !== 'CallExpression' || expression.arguments.length !== 0) return false;
+  if (
+    expression?.type !== 'CallExpression' ||
+    expression.arguments.length !== 0
+  )
+    return false;
   const base = expression.base;
   return (
     base.type === 'MemberExpression' &&
@@ -162,18 +176,24 @@ function callGetLevel(expression: Expression | undefined): boolean {
 }
 
 function readLevelTerm(expression: Expression | undefined): number | undefined {
-  if (expression?.type !== 'BinaryExpression' || expression.operator !== '/') return undefined;
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '/')
+    return undefined;
   const denominator = numericLiteral(expression.right);
-  return identifierIs(expression.left, 'level') && denominator !== undefined && denominator !== 0
+  return identifierIs(expression.left, 'level') &&
+    denominator !== undefined &&
+    denominator !== 0
     ? 1 / denominator
     : undefined;
 }
 
-function readSkillAttackTerm(expression: Expression | undefined): {
-  readonly minSkillAttackFactor: number;
-  readonly maxSkillAttackFactor: number;
-} | undefined {
-  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*') return undefined;
+function readSkillAttackTerm(expression: Expression | undefined):
+  | {
+      readonly minSkillAttackFactor: number;
+      readonly maxSkillAttackFactor: number;
+    }
+  | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*')
+    return undefined;
   if (
     expression.left.type !== 'BinaryExpression' ||
     expression.left.operator !== '+' ||
@@ -190,8 +210,11 @@ function readSkillAttackTerm(expression: Expression | undefined): {
 
 function readFormulaAssignment(
   expression: Expression | undefined,
-): { readonly levelFactor: number; readonly skillAttackFactor: number } | undefined {
-  if (expression?.type !== 'BinaryExpression' || expression.operator !== '+') return undefined;
+):
+  | { readonly levelFactor: number; readonly skillAttackFactor: number }
+  | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '+')
+    return undefined;
   const levelFactor = readLevelTerm(expression.left);
   const skillAttack = readSkillAttackTerm(expression.right);
   if (levelFactor === undefined || skillAttack === undefined) return undefined;
@@ -202,7 +225,8 @@ function readFormulaReturn(
   expression: Expression | undefined,
   variable: string,
 ): number | undefined {
-  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*') return undefined;
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*')
+    return undefined;
   if (
     expression.left.type !== 'UnaryExpression' ||
     expression.left.operator !== '-' ||
@@ -221,12 +245,21 @@ function parseFormula(
   const expected = ['player', 'skill', 'attack', 'factor'];
   if (
     parameters.length !== expected.length ||
-    parameters.some((parameter, index) => parameter.type !== 'Identifier' || parameter.name !== expected[index])
+    parameters.some(
+      (parameter, index) =>
+        parameter.type !== 'Identifier' || parameter.name !== expected[index],
+    )
   ) {
-    pushDiagnostic(diagnostics, declaration, 'lua.invalid-formula', 'Formula parameters are not allowlisted');
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula parameters are not allowlisted',
+    );
     return undefined;
   }
-  const [levelStatement, minStatement, maxStatement, returnStatement] = declaration.body;
+  const [levelStatement, minStatement, maxStatement, returnStatement] =
+    declaration.body;
   if (
     levelStatement?.type !== 'LocalStatement' ||
     minStatement?.type !== 'LocalStatement' ||
@@ -234,7 +267,12 @@ function parseFormula(
     returnStatement?.type !== 'ReturnStatement' ||
     declaration.body.length !== 4
   ) {
-    pushDiagnostic(diagnostics, declaration, 'lua.invalid-formula', 'Formula body shape is not allowlisted');
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula body shape is not allowlisted',
+    );
     return undefined;
   }
   if (
@@ -243,7 +281,12 @@ function parseFormula(
     levelStatement.init.length !== 1 ||
     !callGetLevel(levelStatement.init[0])
   ) {
-    pushDiagnostic(diagnostics, levelStatement, 'lua.invalid-formula', 'Formula level lookup is not allowlisted');
+    pushDiagnostic(
+      diagnostics,
+      levelStatement,
+      'lua.invalid-formula',
+      'Formula level lookup is not allowlisted',
+    );
     return undefined;
   }
   const min =
@@ -258,11 +301,23 @@ function parseFormula(
     maxStatement.init.length === 1
       ? readFormulaAssignment(maxStatement.init[0])
       : undefined;
-  if (min === undefined || max === undefined || returnStatement.arguments.length !== 2) {
-    pushDiagnostic(diagnostics, declaration, 'lua.invalid-formula', 'Formula coefficients are not allowlisted');
+  if (
+    min === undefined ||
+    max === undefined ||
+    returnStatement.arguments.length !== 2
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula coefficients are not allowlisted',
+    );
     return undefined;
   }
-  const finalMultiplier = readFormulaReturn(returnStatement.arguments[0], 'min');
+  const finalMultiplier = readFormulaReturn(
+    returnStatement.arguments[0],
+    'min',
+  );
   const maxMultiplier = readFormulaReturn(returnStatement.arguments[1], 'max');
   if (
     finalMultiplier === undefined ||
@@ -270,7 +325,12 @@ function parseFormula(
     finalMultiplier !== maxMultiplier ||
     min.levelFactor !== max.levelFactor
   ) {
-    pushDiagnostic(diagnostics, returnStatement, 'lua.invalid-formula', 'Formula return expressions are not allowlisted');
+    pushDiagnostic(
+      diagnostics,
+      returnStatement,
+      'lua.invalid-formula',
+      'Formula return expressions are not allowlisted',
+    );
     return undefined;
   }
   return {
@@ -296,7 +356,8 @@ function isIgnoredCastCallback(declaration: FunctionDeclaration): boolean {
     return false;
   }
   const statement = declaration.body[0];
-  if (statement?.type !== 'ReturnStatement' || statement.arguments.length !== 1) return false;
+  if (statement?.type !== 'ReturnStatement' || statement.arguments.length !== 1)
+    return false;
   const expression = statement.arguments[0];
   return (
     expression?.type === 'CallExpression' &&
@@ -318,7 +379,12 @@ function readMethodArguments(
   diagnostics: ContentDiagnostic[],
 ): readonly Expression[] | undefined {
   if (call.arguments.length !== count) {
-    pushDiagnostic(diagnostics, call, 'lua.invalid-value', `${name} expects ${count} arguments`);
+    pushDiagnostic(
+      diagnostics,
+      call,
+      'lua.invalid-value',
+      `${name} expects ${count} arguments`,
+    );
     return undefined;
   }
   return call.arguments;
@@ -343,20 +409,77 @@ function parseSpellCall(
 ): void {
   const base = call.base;
   if (base.type !== 'MemberExpression' || base.base.type !== 'Identifier') {
-    pushDiagnostic(diagnostics, call, 'lua.unsupported-call', 'Only allowlisted method calls are supported');
+    pushDiagnostic(
+      diagnostics,
+      call,
+      'lua.unsupported-call',
+      'Only allowlisted method calls are supported',
+    );
     return;
   }
   if (base.base.name === 'combat') {
     if (base.indexer !== ':') {
-      pushDiagnostic(diagnostics, call, 'lua.unsupported-call', 'Combat calls must use method syntax');
+      pushDiagnostic(
+        diagnostics,
+        call,
+        'lua.unsupported-call',
+        'Combat calls must use method syntax',
+      );
       return;
     }
     if (base.identifier.name === 'setParameter') {
-      const args = readMethodArguments(call, 2, 'combat:setParameter', diagnostics);
+      const args = readMethodArguments(
+        call,
+        2,
+        'combat:setParameter',
+        diagnostics,
+      );
       if (args === undefined) return;
-      const parameter = readOneStaticString(args[0], 'combat parameter', diagnostics);
-      const value = readOneStaticString(args[1], 'combat parameter value', diagnostics);
-      if (parameter === 'COMBAT_PARAM_TYPE' && value !== undefined) state.damageType = value;
+      const parameter = readOneStaticString(
+        args[0],
+        'combat parameter',
+        diagnostics,
+      );
+      if (parameter === undefined) return;
+      if (!combatParameters.has(parameter)) {
+        pushDiagnostic(
+          diagnostics,
+          args[0],
+          'lua.invalid-value',
+          `Unsupported combat parameter ${parameter}`,
+        );
+        return;
+      }
+      const valueExpression = args[1];
+      if (valueExpression === undefined) {
+        pushDiagnostic(
+          diagnostics,
+          call,
+          'lua.invalid-value',
+          'combat:setParameter requires a value',
+        );
+        return;
+      }
+      const value = readStaticValue(valueExpression);
+      if (!value.ok) {
+        diagnostics.push(...value.diagnostics);
+        return;
+      }
+      if (parameter === 'COMBAT_PARAM_TYPE') {
+        if (
+          typeof value.value !== 'string' ||
+          !combatDamageTypes.has(value.value)
+        ) {
+          pushDiagnostic(
+            diagnostics,
+            valueExpression,
+            'lua.invalid-value',
+            'COMBAT_PARAM_TYPE requires a known combat damage type',
+          );
+        } else {
+          state.damageType = value.value;
+        }
+      }
       return;
     }
     if (base.identifier.name === 'setArea') {
@@ -368,50 +491,112 @@ function parseSpellCall(
         areaCall.base.type !== 'Identifier' ||
         areaCall.base.name !== 'createCombatArea'
       ) {
-        pushDiagnostic(diagnostics, call, 'lua.unsupported-call', 'Only createCombatArea is allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          call,
+          'lua.unsupported-call',
+          'Only createCombatArea is allowlisted',
+        );
         return;
       }
-      const area = readOneStaticString(areaCall.arguments[0], 'combat area', diagnostics);
+      const area = readOneStaticString(
+        areaCall.arguments[0],
+        'combat area',
+        diagnostics,
+      );
       if (area !== 'AREA_SQUARE1X1') {
-        pushDiagnostic(diagnostics, areaCall, 'lua.invalid-value', 'Only AREA_SQUARE1X1 is allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          areaCall,
+          'lua.invalid-value',
+          'Only AREA_SQUARE1X1 is allowlisted',
+        );
         return;
       }
       state.area = { shape: 'square', radius: 1 };
       return;
     }
     if (base.identifier.name === 'setCallback') {
-      const args = readMethodArguments(call, 2, 'combat:setCallback', diagnostics);
+      const args = readMethodArguments(
+        call,
+        2,
+        'combat:setCallback',
+        diagnostics,
+      );
       if (args === undefined) return;
-      const callbackParameter = readOneStaticString(args[0], 'callback parameter', diagnostics);
-      const callbackName = readOneStaticString(args[1], 'callback name', diagnostics);
-      if (callbackParameter !== 'CALLBACK_PARAM_SKILLVALUE' || callbackName !== 'onGetFormulaValues') {
-        pushDiagnostic(diagnostics, call, 'lua.invalid-value', 'Only the skill-value callback is allowlisted');
+      const callbackParameter = readOneStaticString(
+        args[0],
+        'callback parameter',
+        diagnostics,
+      );
+      const callbackName = readOneStaticString(
+        args[1],
+        'callback name',
+        diagnostics,
+      );
+      if (
+        callbackParameter !== 'CALLBACK_PARAM_SKILLVALUE' ||
+        callbackName !== 'onGetFormulaValues'
+      ) {
+        pushDiagnostic(
+          diagnostics,
+          call,
+          'lua.invalid-value',
+          'Only the skill-value callback is allowlisted',
+        );
       }
       return;
     }
-    pushDiagnostic(diagnostics, call, 'lua.unsupported-call', `Unsupported combat method ${base.identifier.name}`);
+    pushDiagnostic(
+      diagnostics,
+      call,
+      'lua.unsupported-call',
+      `Unsupported combat method ${base.identifier.name}`,
+    );
     return;
   }
   if (base.base.name !== 'spell' || base.indexer !== ':') {
-    pushDiagnostic(diagnostics, call, 'lua.unsupported-call', 'Only combat and spell methods are supported');
+    pushDiagnostic(
+      diagnostics,
+      call,
+      'lua.unsupported-call',
+      'Only combat and spell methods are supported',
+    );
     return;
   }
   const method = base.identifier.name;
   if (method === 'register') {
-    if (call.arguments.length !== 0) pushDiagnostic(diagnostics, call, 'lua.invalid-value', 'spell:register expects no arguments');
+    if (call.arguments.length !== 0)
+      pushDiagnostic(
+        diagnostics,
+        call,
+        'lua.invalid-value',
+        'spell:register expects no arguments',
+      );
     else state.registered = true;
     return;
   }
   if (method === 'vocation') {
     if (call.arguments.length === 0) {
-      pushDiagnostic(diagnostics, call, 'lua.invalid-value', 'spell:vocation expects at least one vocation');
+      pushDiagnostic(
+        diagnostics,
+        call,
+        'lua.invalid-value',
+        'spell:vocation expects at least one vocation',
+      );
       return;
     }
     for (const argument of call.arguments) {
       const raw = readString(argument, 'vocation', diagnostics);
       if (raw === undefined) continue;
       const name = raw.split(';', 1)[0]?.trim();
-      if (name === undefined || name.length === 0) pushDiagnostic(diagnostics, argument, 'lua.invalid-value', 'Vocation name must not be empty');
+      if (name === undefined || name.length === 0)
+        pushDiagnostic(
+          diagnostics,
+          argument,
+          'lua.invalid-value',
+          'Vocation name must not be empty',
+        );
       else state.vocationNames.push(name);
     }
     return;
@@ -430,12 +615,27 @@ function parseSpellCall(
   }
   if (method === 'isPremium' || method === 'needWeapon') {
     const args = readMethodArguments(call, 1, `spell:${method}`, diagnostics);
-    if (args !== undefined && args[0]?.type !== 'BooleanLiteral') pushDiagnostic(diagnostics, args[0], 'lua.invalid-value', `spell:${method} expects a boolean`);
+    if (args !== undefined && args[0]?.type !== 'BooleanLiteral')
+      pushDiagnostic(
+        diagnostics,
+        args[0],
+        'lua.invalid-value',
+        `spell:${method} expects a boolean`,
+      );
     return;
   }
-  if (method === 'id' || method === 'level' || method === 'mana' || method === 'cooldown' || method === 'groupCooldown') {
+  if (
+    method === 'id' ||
+    method === 'level' ||
+    method === 'mana' ||
+    method === 'cooldown' ||
+    method === 'groupCooldown'
+  ) {
     const args = readMethodArguments(call, 1, `spell:${method}`, diagnostics);
-    const value = args === undefined ? undefined : readNonNegativeInteger(args[0], `spell ${method}`, diagnostics);
+    const value =
+      args === undefined
+        ? undefined
+        : readNonNegativeInteger(args[0], `spell ${method}`, diagnostics);
     if (method === 'id') state.sourceId = value;
     else if (method === 'level') state.level = value;
     else if (method === 'mana') state.mana = value;
@@ -445,15 +645,25 @@ function parseSpellCall(
   }
   if (method === 'name' || method === 'words') {
     const args = readMethodArguments(call, 1, `spell:${method}`, diagnostics);
-    const value = args === undefined ? undefined : readString(args[0], `spell ${method}`, diagnostics);
+    const value =
+      args === undefined
+        ? undefined
+        : readString(args[0], `spell ${method}`, diagnostics);
     if (method === 'name') state.displayName = value;
     else state.words = value;
     return;
   }
-  pushDiagnostic(diagnostics, call, 'lua.unsupported-call', `Unsupported spell method ${method}`);
+  pushDiagnostic(
+    diagnostics,
+    call,
+    'lua.unsupported-call',
+    `Unsupported spell method ${method}`,
+  );
 }
 
-function collectSpell(lua: string):
+function collectSpell(
+  lua: string,
+):
   | { readonly ok: true; readonly state: SpellState }
   | { readonly ok: false; readonly diagnostics: readonly ContentDiagnostic[] } {
   const parsed = parseLuaChunk(lua);
@@ -461,7 +671,9 @@ function collectSpell(lua: string):
   const diagnostics: ContentDiagnostic[] = [];
   const mutable = {
     damageType: undefined as string | undefined,
-    area: undefined as { readonly shape: 'square'; readonly radius: number } | undefined,
+    area: undefined as
+      | { readonly shape: 'square'; readonly radius: number }
+      | undefined,
     sourceId: undefined as number | undefined,
     displayName: undefined as string | undefined,
     words: undefined as string | undefined,
@@ -480,47 +692,115 @@ function collectSpell(lua: string):
   for (const statement of parsed.value.body) {
     if (statement.type === 'LocalStatement') {
       if (statement.variables.length !== 1 || statement.init.length !== 1) {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Local declarations must bind one value');
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-statement',
+          'Local declarations must bind one value',
+        );
         continue;
       }
       const variable = statement.variables[0];
       const initializer = statement.init[0];
-      if (variable?.name === 'combat' && initializer?.type === 'CallExpression' && initializer.base.type === 'Identifier' && initializer.base.name === 'Combat' && initializer.arguments.length === 0) {
+      if (
+        variable?.name === 'combat' &&
+        initializer?.type === 'CallExpression' &&
+        initializer.base.type === 'Identifier' &&
+        initializer.base.name === 'Combat' &&
+        initializer.arguments.length === 0
+      ) {
         combatDeclared = true;
         anchor ??= statement;
         continue;
       }
-      if (variable?.name === 'spell' && initializer?.type === 'CallExpression' && initializer.base.type === 'Identifier' && initializer.base.name === 'Spell' && initializer.arguments.length === 1) {
-        const kind = readString(initializer.arguments[0], 'spell kind', diagnostics);
-        if (kind !== 'instant') pushDiagnostic(diagnostics, initializer, 'lua.invalid-value', 'Only instant spells are allowlisted');
+      if (
+        variable?.name === 'spell' &&
+        initializer?.type === 'CallExpression' &&
+        initializer.base.type === 'Identifier' &&
+        initializer.base.name === 'Spell' &&
+        initializer.arguments.length === 1
+      ) {
+        const kind = readString(
+          initializer.arguments[0],
+          'spell kind',
+          diagnostics,
+        );
+        if (kind !== 'instant')
+          pushDiagnostic(
+            diagnostics,
+            initializer,
+            'lua.invalid-value',
+            'Only instant spells are allowlisted',
+          );
         spellDeclared = true;
         anchor ??= statement;
         continue;
       }
-      pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Only combat and spell locals are allowlisted');
+      pushDiagnostic(
+        diagnostics,
+        statement,
+        'lua.unsupported-statement',
+        'Only combat and spell locals are allowlisted',
+      );
       continue;
     }
     if (statement.type === 'CallStatement') {
       if (statement.expression.type !== 'CallExpression') {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-call', 'Only regular call expressions are allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-call',
+          'Only regular call expressions are allowlisted',
+        );
       } else {
         parseSpellCall(statement.expression, mutable, diagnostics);
       }
       continue;
     }
     if (statement.type === 'FunctionDeclaration') {
-      if (statement.identifier?.type === 'Identifier' && statement.identifier.name === 'onGetFormulaValues') {
+      if (
+        statement.identifier?.type === 'Identifier' &&
+        statement.identifier.name === 'onGetFormulaValues'
+      ) {
         mutable.formula = parseFormula(statement, diagnostics);
       } else if (!isIgnoredCastCallback(statement)) {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Unexpected function declaration');
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-statement',
+          'Unexpected function declaration',
+        );
       }
       continue;
     }
-    pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', `Statement ${statement.type} is not allowlisted`);
+    pushDiagnostic(
+      diagnostics,
+      statement,
+      'lua.unsupported-statement',
+      `Statement ${statement.type} is not allowlisted`,
+    );
   }
-  if (!combatDeclared) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'Combat declaration is required');
-  if (!spellDeclared) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'Spell declaration is required');
-  if (!mutable.registered) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'spell:register() is required');
+  if (!combatDeclared)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'Combat declaration is required',
+    );
+  if (!spellDeclared)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'Spell declaration is required',
+    );
+  if (!mutable.registered)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'spell:register() is required',
+    );
   if (diagnostics.length > 0) return { ok: false, diagnostics };
   return {
     ok: true,
@@ -542,7 +822,9 @@ function collectSpell(lua: string):
   };
 }
 
-export function parseCanarySpellLua(lua: string): CanaryParseResult<CanarySpellDto> {
+export function parseCanarySpellLua(
+  lua: string,
+): CanaryParseResult<CanarySpellDto> {
   const collected = collectSpell(lua);
   if (!collected.ok) return collected;
   const state = collected.state;
@@ -560,9 +842,21 @@ export function parseCanarySpellLua(lua: string): CanaryParseResult<CanarySpellD
     ['formula', state.formula],
   ];
   for (const [field, value] of required) {
-    if (value === undefined) pushDiagnostic(diagnostics, state.anchor, 'lua.missing-field', `${field} is required`);
+    if (value === undefined)
+      pushDiagnostic(
+        diagnostics,
+        state.anchor,
+        'lua.missing-field',
+        `${field} is required`,
+      );
   }
-  if (state.vocationNames.length === 0) pushDiagnostic(diagnostics, state.anchor, 'lua.missing-field', 'At least one vocation is required');
+  if (state.vocationNames.length === 0)
+    pushDiagnostic(
+      diagnostics,
+      state.anchor,
+      'lua.missing-field',
+      'At least one vocation is required',
+    );
   if (diagnostics.length > 0) return { ok: false, diagnostics };
   return {
     ok: true,

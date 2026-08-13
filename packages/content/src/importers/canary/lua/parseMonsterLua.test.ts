@@ -81,7 +81,10 @@ monster.attacks = {
 }
 mType:register(monster)`;
 
-function diagnosticsOf<T>(result: { readonly ok: boolean; readonly diagnostics?: readonly T[] }) {
+function diagnosticsOf<T>(result: {
+  readonly ok: boolean;
+  readonly diagnostics?: readonly T[];
+}) {
   return result.ok ? [] : (result.diagnostics ?? []);
 }
 
@@ -133,11 +136,16 @@ describe('parseCanaryMonsterLua', () => {
         attacks: [
           expect.objectContaining({ kind: 'melee' }),
           expect.objectContaining({ kind: 'ranged', damageType: 'energy' }),
-          expect.objectContaining({
+          {
+            name: 'burst',
             kind: 'area',
-            radiusTiles: 1,
+            intervalMs: 3300,
+            chanceBasisPoints: 900,
             damageType: 'fire',
-          }),
+            minDamage: 4,
+            maxDamage: 26,
+            radiusTiles: 1,
+          },
         ],
         defenses: [
           expect.objectContaining({
@@ -172,6 +180,22 @@ describe('parseCanaryMonsterLua', () => {
     expect(result.ok ? result.value.conditions : []).toEqual([
       { kind: 'poison', totalDamage: 18, intervalMs: 3000 },
     ]);
+  });
+
+  it('rejects an immunity without its condition flag', () => {
+    const result = parseCanaryMonsterLua(
+      orcShamanFixture.replace(
+        '{ type = "invisible", condition = false }',
+        '{ type = "invisible" }',
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(diagnosticsOf(result)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'lua.missing-field' }),
+      ]),
+    );
   });
 
   it('rejects a creature without raceId', () => {
@@ -211,7 +235,10 @@ describe('parseCanaryMonsterLua', () => {
       expect(result.ok).toBe(false);
       expect(diagnosticsOf(result)).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ line: expect.any(Number), column: expect.any(Number) }),
+          expect.objectContaining({
+            line: expect.any(Number),
+            column: expect.any(Number),
+          }),
         ]),
       );
     }

@@ -29,6 +29,8 @@ spell:register()`;
 const realLikeFixture = `local combat = Combat()
 combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
 combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_HITAREA)
+combat:setParameter(COMBAT_PARAM_BLOCKARMOR, 1)
+combat:setParameter(COMBAT_PARAM_USECHARGES, 1)
 combat:setArea(createCombatArea(AREA_SQUARE1X1))
 
 function onGetFormulaValues(player, skill, attack, factor)
@@ -56,7 +58,10 @@ spell:groupCooldown(2 * 1000)
 spell:vocation("knight;true", "elite knight;true")
 spell:register()`;
 
-function diagnosticsOf<T>(result: { readonly ok: boolean; readonly diagnostics?: readonly T[] }) {
+function diagnosticsOf<T>(result: {
+  readonly ok: boolean;
+  readonly diagnostics?: readonly T[];
+}) {
   return result.ok ? [] : (result.diagnostics ?? []);
 }
 
@@ -110,7 +115,10 @@ describe('parseCanarySpellLua', () => {
   });
 
   it('rejects a formula whose return operator is changed', () => {
-    const invalid = fixture.replace('return -min * 1.2, -max * 1.2', 'return -min + 1.2, -max * 1.2');
+    const invalid = fixture.replace(
+      'return -min * 1.2, -max * 1.2',
+      'return -min + 1.2, -max * 1.2',
+    );
     const result = parseCanarySpellLua(invalid);
 
     expect(diagnosticsOf(result)).toEqual(
@@ -131,7 +139,9 @@ describe('parseCanarySpellLua', () => {
   });
 
   it('rejects unknown methods and arbitrary callback bodies', () => {
-    const unknownMethod = parseCanarySpellLua(fixture.replace('spell:mana(83)', 'spell:unknown(83)'));
+    const unknownMethod = parseCanarySpellLua(
+      fixture.replace('spell:mana(83)', 'spell:unknown(83)'),
+    );
     const arbitraryCallback = parseCanarySpellLua(
       fixture.replace(
         'local level = player:getLevel()',

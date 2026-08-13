@@ -1,22 +1,15 @@
+import type { ContentDiagnostic } from '@huntbound/contracts';
 import type {
-  AssignmentStatement,
   CallExpression,
   Expression,
   MemberExpression,
   Node,
   Statement,
-  TableConstructorExpression,
 } from 'luaparse';
-import type { ContentDiagnostic } from '@huntbound/contracts';
 
 import type { CanaryParseResult } from '../sourceTypes';
-import { diagnosticAt } from './luaDiagnostics';
 import { parseLuaChunk } from './luaAst';
-import {
-  readRequiredNumber,
-  readRequiredString,
-  readStaticValue,
-} from './staticValues';
+import { diagnosticAt } from './luaDiagnostics';
 import type {
   CanaryAttackDto,
   CanaryConditionDto,
@@ -24,6 +17,11 @@ import type {
   CanaryDefenseDto,
   CanarySummonDto,
 } from './luaTypes';
+import {
+  readRequiredNumber,
+  readRequiredString,
+  readStaticValue,
+} from './staticValues';
 
 interface TableShape {
   readonly named: ReadonlyMap<string, Expression>;
@@ -173,7 +171,12 @@ function readString(
   diagnostics: ContentDiagnostic[],
 ): string | undefined {
   if (expression === undefined) {
-    pushDiagnostic(diagnostics, undefined, 'lua.missing-field', `${field} is required`);
+    pushDiagnostic(
+      diagnostics,
+      undefined,
+      'lua.missing-field',
+      `${field} is required`,
+    );
     return undefined;
   }
   const result = readRequiredString(expression, field);
@@ -190,7 +193,12 @@ function readNumber(
   diagnostics: ContentDiagnostic[],
 ): number | undefined {
   if (expression === undefined) {
-    pushDiagnostic(diagnostics, undefined, 'lua.missing-field', `${field} is required`);
+    pushDiagnostic(
+      diagnostics,
+      undefined,
+      'lua.missing-field',
+      `${field} is required`,
+    );
     return undefined;
   }
   const result = readRequiredNumber(expression, field);
@@ -317,7 +325,10 @@ function readCallString(
 function readLoot(
   expression: Expression | undefined,
   diagnostics: ContentDiagnostic[],
-): readonly ({ readonly sourceId: string } | { readonly sourceName: string })[] {
+): readonly (
+  | { readonly sourceId: string }
+  | { readonly sourceName: string }
+)[] {
   if (expression === undefined) return [];
   const shape = tableShape(expression, 'loot', diagnostics);
   if (shape === undefined) return [];
@@ -329,17 +340,30 @@ function readLoot(
       'loot must contain entry tables only',
     );
   }
-  const result: ({ readonly sourceId: string } | { readonly sourceName: string })[] = [];
+  const result: (
+    | { readonly sourceId: string }
+    | { readonly sourceName: string }
+  )[] = [];
   for (const entryExpression of shape.values) {
     const entry = tableShape(entryExpression, 'loot entry', diagnostics);
     if (entry === undefined) continue;
     checkAllowedFields(entry, lootFields, 'loot', diagnostics);
-    const reference = requireOneField(entry, ['id', 'name'], 'loot reference', diagnostics);
+    const reference = requireOneField(
+      entry,
+      ['id', 'name'],
+      'loot reference',
+      diagnostics,
+    );
     if (reference === undefined) continue;
-    const chance = readInteger(entry.named.get('chance'), 'loot chance', diagnostics, {
-      min: 0,
-      max: 100_000,
-    });
+    const chance = readInteger(
+      entry.named.get('chance'),
+      'loot chance',
+      diagnostics,
+      {
+        min: 0,
+        max: 100_000,
+      },
+    );
     const minCount = entry.named.has('minCount')
       ? readInteger(entry.named.get('minCount'), 'loot minCount', diagnostics, {
           min: 1,
@@ -358,23 +382,30 @@ function readLoot(
       continue;
     }
     if (maxCount < minCount) {
-      if (maxCount < minCount) {
-        pushDiagnostic(
-          diagnostics,
-          entryExpression,
-          'lua.invalid-value',
-          'loot maxCount must be greater than or equal to minCount',
-        );
-      }
+      pushDiagnostic(
+        diagnostics,
+        entryExpression,
+        'lua.invalid-value',
+        'loot maxCount must be greater than or equal to minCount',
+      );
       continue;
     }
     if (entry.named.has('id')) {
-      const sourceId = readInteger(entry.named.get('id'), 'loot id', diagnostics, {
-        min: 0,
-      });
+      const sourceId = readInteger(
+        entry.named.get('id'),
+        'loot id',
+        diagnostics,
+        {
+          min: 0,
+        },
+      );
       if (sourceId !== undefined) result.push({ sourceId: String(sourceId) });
     } else {
-      const sourceName = readString(entry.named.get('name'), 'loot name', diagnostics);
+      const sourceName = readString(
+        entry.named.get('name'),
+        'loot name',
+        diagnostics,
+      );
       if (sourceName !== undefined) result.push({ sourceName });
     }
   }
@@ -388,7 +419,11 @@ function readCondition(
   const shape = tableShape(expression, 'condition', diagnostics);
   if (shape === undefined) return undefined;
   checkAllowedFields(shape, conditionFields, 'condition', diagnostics);
-  const type = readString(shape.named.get('type'), 'condition type', diagnostics);
+  const type = readString(
+    shape.named.get('type'),
+    'condition type',
+    diagnostics,
+  );
   const totalDamage = readNumber(
     shape.named.get('totalDamage'),
     'condition totalDamage',
@@ -400,7 +435,11 @@ function readCondition(
     diagnostics,
     { min: 1 },
   );
-  if (type !== 'poison' || totalDamage === undefined || intervalMs === undefined) {
+  if (
+    type !== 'poison' ||
+    totalDamage === undefined ||
+    intervalMs === undefined
+  ) {
     if (type !== undefined && type !== 'poison') {
       pushDiagnostic(
         diagnostics,
@@ -427,8 +466,16 @@ function readDamageRange(
   shape: TableShape,
   diagnostics: ContentDiagnostic[],
 ): { readonly minDamage: number; readonly maxDamage: number } | undefined {
-  const minDamage = readNumber(shape.named.get('minDamage'), 'minDamage', diagnostics);
-  const maxDamage = readNumber(shape.named.get('maxDamage'), 'maxDamage', diagnostics);
+  const minDamage = readNumber(
+    shape.named.get('minDamage'),
+    'minDamage',
+    diagnostics,
+  );
+  const maxDamage = readNumber(
+    shape.named.get('maxDamage'),
+    'maxDamage',
+    diagnostics,
+  );
   if (minDamage === undefined || maxDamage === undefined) return undefined;
   return {
     minDamage: Math.min(Math.abs(minDamage), Math.abs(maxDamage)),
@@ -456,22 +503,39 @@ function readAttack(
   if (shape === undefined) return undefined;
   checkAllowedFields(shape, attackFields, 'attack', diagnostics);
   const name = readString(shape.named.get('name'), 'attack name', diagnostics);
-  const intervalMs = readInteger(shape.named.get('interval'), 'attack interval', diagnostics, {
-    min: 0,
-  });
-  const chanceBasisPoints = readChance(shape.named.get('chance'), 'attack chance', diagnostics);
+  const intervalMs = readInteger(
+    shape.named.get('interval'),
+    'attack interval',
+    diagnostics,
+    {
+      min: 0,
+    },
+  );
+  const chanceBasisPoints = readChance(
+    shape.named.get('chance'),
+    'attack chance',
+    diagnostics,
+  );
   const damage = readDamageRange(shape, diagnostics);
   const damageType = shape.named.has('type')
     ? readString(shape.named.get('type'), 'attack type', diagnostics)
     : 'physical';
   const rangeTiles = shape.named.has('range')
-    ? readInteger(shape.named.get('range'), 'attack range', diagnostics, { min: 0 })
+    ? readInteger(shape.named.get('range'), 'attack range', diagnostics, {
+        min: 0,
+      })
     : undefined;
   const radiusTiles = shape.named.has('radius')
-    ? readInteger(shape.named.get('radius'), 'attack radius', diagnostics, { min: 0 })
+    ? readInteger(shape.named.get('radius'), 'attack radius', diagnostics, {
+        min: 0,
+      })
     : undefined;
   const projectile = shape.named.has('shootEffect')
-    ? readString(shape.named.get('shootEffect'), 'attack projectile', diagnostics)
+    ? readString(
+        shape.named.get('shootEffect'),
+        'attack projectile',
+        diagnostics,
+      )
     : undefined;
   const condition = shape.named.has('condition')
     ? readCondition(shape.named.get('condition') as Expression, diagnostics)
@@ -485,7 +549,12 @@ function readAttack(
   ) {
     return undefined;
   }
-  const kind = radiusTiles !== undefined ? 'area' : rangeTiles !== undefined ? 'ranged' : 'melee';
+  const kind =
+    radiusTiles !== undefined
+      ? 'area'
+      : rangeTiles !== undefined
+        ? 'ranged'
+        : 'melee';
   if (kind === 'ranged' && projectile === undefined) {
     pushDiagnostic(
       diagnostics,
@@ -502,9 +571,9 @@ function readAttack(
     chanceBasisPoints,
     damageType,
     ...damage,
-    ...(rangeTiles === undefined ? {} : { rangeTiles }),
-    ...(projectile === undefined ? {} : { projectile }),
-    ...(radiusTiles === undefined ? {} : { radiusTiles }),
+    ...(kind === 'ranged' && rangeTiles !== undefined ? { rangeTiles } : {}),
+    ...(kind === 'ranged' && projectile !== undefined ? { projectile } : {}),
+    ...(kind === 'area' && radiusTiles !== undefined ? { radiusTiles } : {}),
   };
   return { attack, ...(condition === undefined ? {} : { condition }) };
 }
@@ -517,16 +586,26 @@ function readDefense(
   if (shape === undefined) return undefined;
   checkAllowedFields(shape, defenseFields, 'defense action', diagnostics);
   const type = readString(shape.named.get('type'), 'defense type', diagnostics);
-  const intervalMs = readInteger(shape.named.get('interval'), 'defense interval', diagnostics, {
-    min: 0,
-  });
+  const intervalMs = readInteger(
+    shape.named.get('interval'),
+    'defense interval',
+    diagnostics,
+    {
+      min: 0,
+    },
+  );
   const chanceBasisPoints = readChance(
     shape.named.get('chance'),
     'defense chance',
     diagnostics,
   );
   const damage = readDamageRange(shape, diagnostics);
-  if (type !== 'healing' || intervalMs === undefined || chanceBasisPoints === undefined || damage === undefined) {
+  if (
+    type !== 'healing' ||
+    intervalMs === undefined ||
+    chanceBasisPoints === undefined ||
+    damage === undefined
+  ) {
     if (type !== undefined && type !== 'healing') {
       pushDiagnostic(
         diagnostics,
@@ -579,24 +658,55 @@ function readSummons(
   if (expression === undefined) return [];
   const outer = tableShape(expression, 'summon', diagnostics);
   if (outer === undefined) return [];
-  checkAllowedFields(outer, new Set(['maxSummons', 'summons']), 'summon', diagnostics);
+  checkAllowedFields(
+    outer,
+    new Set(['maxSummons', 'summons']),
+    'summon',
+    diagnostics,
+  );
   optionalStaticValidation(outer.named.get('maxSummons'), diagnostics);
   const summons = outer.named.get('summons');
   if (summons === undefined) return [];
   const entries = tableShape(summons, 'summons', diagnostics);
   if (entries === undefined) return [];
   if (entries.named.size > 0) {
-    pushDiagnostic(diagnostics, summons, 'lua.invalid-value', 'summons must contain entry tables only');
+    pushDiagnostic(
+      diagnostics,
+      summons,
+      'lua.invalid-value',
+      'summons must contain entry tables only',
+    );
   }
   return entries.values.flatMap((entryExpression) => {
     const entry = tableShape(entryExpression, 'summon entry', diagnostics);
     if (entry === undefined) return [];
     checkAllowedFields(entry, summonFields, 'summon entry', diagnostics);
-    const reference = requireOneField(entry, ['id', 'name'], 'summon reference', diagnostics);
-    const chanceBasisPoints = readChance(entry.named.get('chance'), 'summon chance', diagnostics);
-    const count = readInteger(entry.named.get('count'), 'summon count', diagnostics, { min: 1 });
-    readInteger(entry.named.get('interval'), 'summon interval', diagnostics, { min: 0 });
-    if (reference === undefined || chanceBasisPoints === undefined || count === undefined) return [];
+    const reference = requireOneField(
+      entry,
+      ['id', 'name'],
+      'summon reference',
+      diagnostics,
+    );
+    const chanceBasisPoints = readChance(
+      entry.named.get('chance'),
+      'summon chance',
+      diagnostics,
+    );
+    const count = readInteger(
+      entry.named.get('count'),
+      'summon count',
+      diagnostics,
+      { min: 1 },
+    );
+    readInteger(entry.named.get('interval'), 'summon interval', diagnostics, {
+      min: 0,
+    });
+    if (
+      reference === undefined ||
+      chanceBasisPoints === undefined ||
+      count === undefined
+    )
+      return [];
     const sourceId = entry.named.has('id')
       ? readInteger(entry.named.get('id'), 'summon id', diagnostics, { min: 0 })
       : undefined;
@@ -607,7 +717,9 @@ function readSummons(
     return [
       {
         creatureRef:
-          sourceId === undefined ? { sourceName: sourceName as string } : { sourceId: String(sourceId) },
+          sourceId === undefined
+            ? { sourceName: sourceName as string }
+            : { sourceId: String(sourceId) },
         count,
         chanceBasisPoints,
       },
@@ -627,9 +739,18 @@ function readElements(
     const entry = tableShape(entryExpression, 'element', diagnostics);
     if (entry === undefined) continue;
     checkAllowedFields(entry, elementFields, 'element', diagnostics);
-    const type = readString(entry.named.get('type'), 'element type', diagnostics);
-    const percent = readNumber(entry.named.get('percent'), 'element percent', diagnostics);
-    if (type !== undefined && percent !== undefined) elements[type] = percent / 100;
+    const type = readString(
+      entry.named.get('type'),
+      'element type',
+      diagnostics,
+    );
+    const percent = readNumber(
+      entry.named.get('percent'),
+      'element percent',
+      diagnostics,
+    );
+    if (type !== undefined && percent !== undefined)
+      elements[type] = percent / 100;
   }
   return elements;
 }
@@ -646,14 +767,33 @@ function readImmunities(
     const entry = tableShape(entryExpression, 'immunity', diagnostics);
     if (entry === undefined) continue;
     checkAllowedFields(entry, immunityFields, 'immunity', diagnostics);
-    const type = readString(entry.named.get('type'), 'immunity type', diagnostics);
-    const condition = readStaticValue(entry.named.get('condition') as Expression);
+    const type = readString(
+      entry.named.get('type'),
+      'immunity type',
+      diagnostics,
+    );
+    const conditionExpression = entry.named.get('condition');
+    if (conditionExpression === undefined) {
+      pushDiagnostic(
+        diagnostics,
+        entryExpression,
+        'lua.missing-field',
+        'immunity condition is required',
+      );
+      continue;
+    }
+    const condition = readStaticValue(conditionExpression);
     if (!condition.ok) {
       diagnostics.push(...condition.diagnostics);
       continue;
     }
     if (typeof condition.value !== 'boolean') {
-      pushDiagnostic(diagnostics, entry.named.get('condition'), 'lua.invalid-value', 'immunity condition must be boolean');
+      pushDiagnostic(
+        diagnostics,
+        entry.named.get('condition'),
+        'lua.invalid-value',
+        'immunity condition must be boolean',
+      );
     } else if (condition.value && type !== undefined) {
       immunities.push(type);
     }
@@ -661,7 +801,9 @@ function readImmunities(
   return immunities;
 }
 
-function collectMonster(lua: string):
+function collectMonster(
+  lua: string,
+):
   | { readonly ok: true; readonly state: MonsterState }
   | { readonly ok: false; readonly diagnostics: readonly ContentDiagnostic[] } {
   const parsed = parseLuaChunk(lua);
@@ -676,12 +818,21 @@ function collectMonster(lua: string):
   for (const statement of parsed.value.body) {
     if (statement.type === 'LocalStatement') {
       if (statement.variables.length !== 1 || statement.init.length !== 1) {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Local declarations must bind one value');
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-statement',
+          'Local declarations must bind one value',
+        );
         continue;
       }
       const variable = statement.variables[0];
       const initializer = statement.init[0];
-      if (variable?.name === 'monster' && initializer?.type === 'TableConstructorExpression' && initializer.fields.length === 0) {
+      if (
+        variable?.name === 'monster' &&
+        initializer?.type === 'TableConstructorExpression' &&
+        initializer.fields.length === 0
+      ) {
         hasMonster = true;
         anchor = statement;
         continue;
@@ -691,40 +842,93 @@ function collectMonster(lua: string):
         initializer !== undefined &&
         callMember(initializer, 'Game', 'createMonsterType', '.')
       ) {
-        displayName = readCallString(initializer, 'monster display name', diagnostics);
+        displayName = readCallString(
+          initializer,
+          'monster display name',
+          diagnostics,
+        );
         anchor ??= statement;
         continue;
       }
-      pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Only mType and monster locals are allowlisted');
+      pushDiagnostic(
+        diagnostics,
+        statement,
+        'lua.unsupported-statement',
+        'Only mType and monster locals are allowlisted',
+      );
       continue;
     }
 
     if (statement.type === 'AssignmentStatement') {
       const variable = statement.variables[0];
       const initializer = statement.init[0];
-      if (statement.variables.length !== 1 || statement.init.length !== 1 || variable === undefined || initializer === undefined) {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', 'Assignments must bind one member to one value');
+      if (
+        statement.variables.length !== 1 ||
+        statement.init.length !== 1 ||
+        variable === undefined ||
+        initializer === undefined
+      ) {
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-statement',
+          'Assignments must bind one member to one value',
+        );
         continue;
       }
       if (variable.type === 'IndexExpression') {
-        pushDiagnostic(diagnostics, variable, 'lua.computed-index', 'Computed mutation is not allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          variable,
+          'lua.computed-index',
+          'Computed mutation is not allowlisted',
+        );
         continue;
       }
-      if (variable.type !== 'MemberExpression' || variable.indexer !== ':' || variable.base.type !== 'Identifier') {
-        if (variable.type === 'MemberExpression' && variable.base.type === 'Identifier' && variable.base.name === 'monster' && variable.indexer === '.') {
+      if (
+        variable.type !== 'MemberExpression' ||
+        variable.indexer !== ':' ||
+        variable.base.type !== 'Identifier'
+      ) {
+        if (
+          variable.type === 'MemberExpression' &&
+          variable.base.type === 'Identifier' &&
+          variable.base.name === 'monster' &&
+          variable.indexer === '.'
+        ) {
           if (!allowedMonsterFields.has(variable.identifier.name)) {
-            pushDiagnostic(diagnostics, variable, 'lua.unsupported-field', `Unsupported monster field ${variable.identifier.name}`);
+            pushDiagnostic(
+              diagnostics,
+              variable,
+              'lua.unsupported-field',
+              `Unsupported monster field ${variable.identifier.name}`,
+            );
           } else if (fields.has(variable.identifier.name)) {
-            pushDiagnostic(diagnostics, variable, 'lua.duplicate-field', `Duplicate monster field ${variable.identifier.name}`);
+            pushDiagnostic(
+              diagnostics,
+              variable,
+              'lua.duplicate-field',
+              `Duplicate monster field ${variable.identifier.name}`,
+            );
           } else {
             fields.set(variable.identifier.name, initializer);
           }
           continue;
         }
-        pushDiagnostic(diagnostics, variable, 'lua.unsupported-statement', 'Only point assignments to monster are allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          variable,
+          'lua.unsupported-statement',
+          'Only point assignments to monster are allowlisted',
+        );
         continue;
       }
-      pushDiagnostic(diagnostics, variable, 'lua.unsupported-statement', 'Method mutation is not allowlisted');
+      pushDiagnostic(
+        diagnostics,
+        variable,
+        'lua.unsupported-statement',
+        'Method mutation is not allowlisted',
+      );
       continue;
     }
 
@@ -738,17 +942,45 @@ function collectMonster(lua: string):
       ) {
         registered = true;
       } else {
-        pushDiagnostic(diagnostics, statement, 'lua.unsupported-call', 'Only mType:register(monster) is allowlisted');
+        pushDiagnostic(
+          diagnostics,
+          statement,
+          'lua.unsupported-call',
+          'Only mType:register(monster) is allowlisted',
+        );
       }
       continue;
     }
 
-    pushDiagnostic(diagnostics, statement, 'lua.unsupported-statement', `Statement ${statement.type} is not allowlisted`);
+    pushDiagnostic(
+      diagnostics,
+      statement,
+      'lua.unsupported-statement',
+      `Statement ${statement.type} is not allowlisted`,
+    );
   }
 
-  if (!hasMonster) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'monster declaration is required');
-  if (displayName === undefined) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'monster display name is required');
-  if (!registered) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'mType:register(monster) is required');
+  if (!hasMonster)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'monster declaration is required',
+    );
+  if (displayName === undefined)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'monster display name is required',
+    );
+  if (!registered)
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'mType:register(monster) is required',
+    );
   return diagnostics.length > 0
     ? { ok: false, diagnostics }
     : { ok: true, state: { fields, anchor, displayName, registered } };
@@ -760,9 +992,22 @@ function readOutfit(
 ): number | undefined {
   const shape = tableShape(expression, 'outfit', diagnostics);
   if (shape === undefined) return undefined;
-  const allowed = new Set(['lookType', 'lookHead', 'lookBody', 'lookLegs', 'lookFeet', 'lookAddons', 'lookMount']);
+  const allowed = new Set([
+    'lookType',
+    'lookHead',
+    'lookBody',
+    'lookLegs',
+    'lookFeet',
+    'lookAddons',
+    'lookMount',
+  ]);
   checkAllowedFields(shape, allowed, 'outfit', diagnostics);
-  return readInteger(shape.named.get('lookType'), 'outfit lookType', diagnostics, { min: 0 });
+  return readInteger(
+    shape.named.get('lookType'),
+    'outfit lookType',
+    diagnostics,
+    { min: 0 },
+  );
 }
 
 export function parseCanaryMonsterLua(
@@ -774,22 +1019,52 @@ export function parseCanaryMonsterLua(
   const diagnostics: ContentDiagnostic[] = [];
 
   for (const [field, expression] of fields) {
-    if (ignoredMonsterFields.has(field)) optionalStaticValidation(expression, diagnostics);
+    if (ignoredMonsterFields.has(field))
+      optionalStaticValidation(expression, diagnostics);
   }
 
-  const sourceIdValue = readInteger(fields.get('raceId'), 'raceId', diagnostics, { min: 0 });
+  const sourceIdValue = readInteger(
+    fields.get('raceId'),
+    'raceId',
+    diagnostics,
+    { min: 0 },
+  );
   if (sourceIdValue === undefined && fields.get('raceId') === undefined) {
-    pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'raceId is required');
+    pushDiagnostic(
+      diagnostics,
+      anchor,
+      'lua.missing-field',
+      'raceId is required',
+    );
   }
-  const experience = readInteger(fields.get('experience'), 'experience', diagnostics, { min: 0 });
-  const health = readInteger(fields.get('health'), 'health', diagnostics, { min: 0 });
-  const speed = readInteger(fields.get('speed'), 'speed', diagnostics, { min: 0 });
+  const experience = readInteger(
+    fields.get('experience'),
+    'experience',
+    diagnostics,
+    { min: 0 },
+  );
+  const health = readInteger(fields.get('health'), 'health', diagnostics, {
+    min: 0,
+  });
+  const speed = readInteger(fields.get('speed'), 'speed', diagnostics, {
+    min: 0,
+  });
   const lookType = readOutfit(fields.get('outfit'), diagnostics);
-  const attacksShape = tableShape(fields.get('attacks'), 'attacks', diagnostics);
+  const attacksShape = tableShape(
+    fields.get('attacks'),
+    'attacks',
+    diagnostics,
+  );
   const attacks: CanaryAttackDto[] = [];
   const conditions: CanaryConditionDto[] = [];
   if (attacksShape !== undefined) {
-    if (attacksShape.named.size > 0) pushDiagnostic(diagnostics, fields.get('attacks'), 'lua.invalid-value', 'attacks must contain entry tables only');
+    if (attacksShape.named.size > 0)
+      pushDiagnostic(
+        diagnostics,
+        fields.get('attacks'),
+        'lua.invalid-value',
+        'attacks must contain entry tables only',
+      );
     for (const attackExpression of attacksShape.values) {
       const mapping = readAttack(attackExpression, diagnostics);
       if (mapping?.attack !== undefined) attacks.push(mapping.attack);
@@ -811,7 +1086,13 @@ export function parseCanaryMonsterLua(
     lookType === undefined ||
     fields.get('attacks') === undefined
   ) {
-    if (fields.get('attacks') === undefined) pushDiagnostic(diagnostics, anchor, 'lua.missing-field', 'attacks is required');
+    if (fields.get('attacks') === undefined)
+      pushDiagnostic(
+        diagnostics,
+        anchor,
+        'lua.missing-field',
+        'attacks is required',
+      );
   }
   if (diagnostics.length > 0) return { ok: false, diagnostics };
 
@@ -820,7 +1101,11 @@ export function parseCanaryMonsterLua(
     value: {
       sourceId: String(sourceIdValue),
       displayName: displayName as string,
-      stats: { health: health as number, experience: experience as number, speed: speed as number },
+      stats: {
+        health: health as number,
+        experience: experience as number,
+        speed: speed as number,
+      },
       lookType: lookType as number,
       attacks,
       defenses,

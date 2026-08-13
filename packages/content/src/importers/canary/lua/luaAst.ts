@@ -2,10 +2,7 @@ import type { Chunk, Node } from 'luaparse';
 import * as luaparse from 'luaparse';
 
 import type { CanaryParseResult } from '../sourceTypes';
-import {
-  diagnosticAt,
-  diagnosticFromLuaError,
-} from './luaDiagnostics';
+import { diagnosticFromLuaError } from './luaDiagnostics';
 
 export { diagnosticAt } from './luaDiagnostics';
 
@@ -17,6 +14,7 @@ export function parseLuaChunk(lua: string): CanaryParseResult<Chunk> {
         comments: false,
         locations: true,
         ranges: true,
+        encodingMode: 'pseudo-latin1',
         luaVersion: '5.3',
       }),
     };
