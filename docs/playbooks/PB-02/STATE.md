@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-02/README.md`
 
-**Estado geral:** ready
+**Estado geral:** blocked — auditoria PB-02-07 decidiu `REJECTED`
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-07
+**Próxima task elegível:** PB-02-FIX-01
 
 ## Tasks
 
@@ -18,7 +18,8 @@
 | PB-02-04 | done | `codex/pb02-04-asset-runtime` | `a11ea9d` | 36 testes; typecheck; Biome; diff check; provider relativo/concorrente/deduplicado |
 | PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
-| PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
+| PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
+| PB-02-FIX-01 | pending | — | — | — |
 
 ## Baseline congelado
 
@@ -287,10 +288,32 @@ automatizada local como validador. Não houve gatilho para escalonamento
 externo. PB-02-07 é agora a próxima task elegível; nenhuma parte dela foi
 antecipada.
 
+## PB-02-07 — auditoria integrada `REJECTED`
+
+A auditoria rodou a matriz completa sobre `af31d22` em worktree limpo. Determinismo, origem pessoal,
+provas negativas, boundaries, browser e política Git passaram; o relatório completo com comandos,
+exit codes e hashes está em [`artifacts/acceptance-report.md`](artifacts/acceptance-report.md).
+PB-02 permanece aberto e PB-03 não é elegível. Nenhum código foi alterado durante a auditoria.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A origem pessoal e os packs sintético/real foram verificados novamente
-na conclusão de PB-02-03; nenhum asset pessoal está rastreado.
+Dois blockers reproduzíveis, ambos de produto, abertos por PB-02-07 e endereçados por PB-02-FIX-01:
+
+1. **`build:product` distribui mídia `cipsoft-personal`.** O `publicDir` do Vite continua sendo
+   `apps/game/public`, então `dist/game/assets/personal` recebe as cinco mídias reais congeladas
+   (8 arquivos, 242324 bytes) mesmo com o build em exit 0. O guard valida o
+   catálogo do perfil, não o conteúdo emitido.
+2. **`verify` não é idempotente.** `biome.json` não exclui `apps/game/public/assets/test` nem
+   `apps/game/public/assets/product`; como `test`/`build` fazem stage dessas saídas e `format:check`
+   é o primeiro passo, a segunda execução consecutiva de `verify` falha. Provado: execução 1 exit 0,
+   execução 2 exit 1.
+
+Warnings não bloqueantes: `__huntboundAssetProbe` sobrevive ao tree-shaking nos bundles
+`personal`/`product` embora não seja instalado em runtime; aviso de chunk > 500 kB; worktree e branch
+de PB-02-06 continuam presentes em `af31d22` (sem divergência).
+
+A origem pessoal e os packs sintético/real foram verificados novamente nesta auditoria; nenhum asset
+pessoal está rastreado.
 
 ## Regra de atualização
 
