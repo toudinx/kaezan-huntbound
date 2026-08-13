@@ -4,9 +4,9 @@
 
 **Estado geral:** ready
 
-**Última atualização:** 2026-08-12
+**Última atualização:** 2026-08-13
 
-**Próxima task elegível:** `PB-01-05`
+**Próxima task elegível:** `PB-01-06`
 
 ## Tasks
 
@@ -16,7 +16,7 @@
 | PB-01-02 | done | `codex/pb01-02-sqlite-catalog` | `429d98a2cfef393918d2e7a1efc8c05565acdf83` | 39 testes; migration/schema; round-trip; constraints; multi-slice; lifecycle; architecture; typecheck; Biome; format; diff check |
 | PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
 | PB-01-04 | done | `codex/pb01-04-xml-importers` | `530cc31d7d132428346cece9c42b562d7829e219` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
-| PB-01-05 | pending | `codex/pb01-05-lua-importers` | — | — |
+| PB-01-05 | done | `codex/pb01-05-lua-importers` | `348dcd8` | 49 testes Lua; typecheck; architecture; Biome; format; diff check; prova negativa |
 | PB-01-06 | pending | `codex/pb01-06-materialize-slice` | — | — |
 | PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
 
@@ -129,8 +129,36 @@ git diff --check -> exit 0
 
 O ciclo RED/GREEN observou falha por adapter ausente antes de cada implementação e terminou com 27
 testes passando. O validador efetivo foi a suíte automatizada e os gates locais; não houve gatilho
-objetivo para escalonamento a Sol/Claude. PB-01-05 é a próxima task elegível; PB-01-06 continua
-dependente de PB-01-04 e PB-01-05.
+objetivo para escalonamento a Sol/Claude. PB-01-06 é a próxima task elegível e depende de PB-01-04 e
+PB-01-05.
+
+PB-01-05 implementou importadores Lua puros e estritos para Rotworm, Amazon, Orc Shaman, Snake e
+Berserk. O limite compartilhado usa `luaparse` com localização, valores estáticos e constantes
+allowlisted; os mappers rejeitam statements, chamadas, campos, operadores, funções e índices fora da
+whitelist. Dano é normalizado para magnitude positiva, chances de ações viram basis points, loot é
+validado na escala Canary, poison permanece declarativo, e a fórmula de Berserk vira coeficientes sem
+executar callback. Bestiary e parâmetros de combate sem consumidor são validados e ignorados somente
+por allowlist documentada em `docs/content/CANARY_LUA_MAPPING.md`.
+
+Evidência fresca do commit funcional `348dcd8`:
+
+```text
+corepack pnpm --filter @huntbound/content test -- src/importers/canary/lua -> 49 passed
+corepack pnpm --filter @huntbound/content typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/content docs/content/CANARY_LUA_MAPPING.md -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+negative production scan -> NO FORBIDDEN PRODUCTION TOKENS
+real source-lock smoke test (temporary, not versioned) -> 5 sources accepted; 51 tests passed
+```
+
+O ciclo RED/GREEN observou adapters ausentes antes de cada slice, depois cobriu AST, quatro formas
+de criatura, poison, summon, loot, elementos, imunidades, Berserk, fórmula e rejeições. A revisão
+real também exigiu os constantes Bestiary e os parâmetros `COMBAT_PARAM_BLOCKARMOR`/`USECHARGES`, que
+foram adicionados à whitelist sem ampliar o DTO. Nenhum gatilho objetivo para escalonamento a
+Sol/Claude ocorreu; o validador efetivo foi a suíte automatizada, o smoke test do source lock e os
+gates locais. PB-01-06 é elegível agora.
 
 ## Bloqueios
 
