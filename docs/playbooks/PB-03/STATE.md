@@ -120,8 +120,8 @@ scenario: fc89a05c 535ac971 733b1b1a 27af86d8 0fcb29a6 971986f7 ab6025df 6f30677
 ```
 ## PB-03-03 — handoff concluído
 
-PB-03-03 foi implementada na branch `codex/pb03-03-kernel-grid`. O commit funcional rebaseado é `0fe667b`
-(`feat: resolve deterministic grid movement`). `@huntbound/simulation` agora publica as direções
+PB-03-03 foi implementada na branch `codex/pb03-03-kernel-grid` nos commits `0fe667b` (`feat: resolve
+deterministic grid movement`) e `dd1c74d` (`fix: order simulation exports`). `@huntbound/simulation` agora publica as direções
 canônicas, deltas, tradução de coordenadas, custo de passo, grid estático, índice de ocupação e
 `resolveStep`. A resolução é pura e mantém a precedência `bounds` → `terrain` → `diagonal-corner`
 → `occupied`; ocupação por ator não impede corte de canto e terreno impede.
