@@ -15,7 +15,7 @@
 | PB-02-01 | done | `codex/pb02-01-asset-contracts` | `86f8921` | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | done | `codex/pb02-02-source-selection` | `ff0ea57` | 11 testes; locks real/sintético 5/5; typecheck; architecture; Biome; format; diff check |
 | PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
-| PB-02-04 | done | `codex/pb02-04-asset-runtime` | `PENDING_INTEGRATION` | 33 testes; typecheck; Biome; diff check; registry/provider transacional |
+| PB-02-04 | done | `codex/pb02-04-asset-runtime` | `f70528f` | 33 testes; typecheck; Biome; diff check; registry/provider transacional |
 | PB-02-05 | pending | `codex/pb02-05-profile-guards` | — | — |
 | PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
 | PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
