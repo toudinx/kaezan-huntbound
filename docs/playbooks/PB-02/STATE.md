@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-03
+**Próxima task elegível:** PB-02-04
 
 ## Tasks
 
@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | PB-02-01 | done | `codex/pb02-01-asset-contracts` | `86f8921` | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | done | `codex/pb02-02-source-selection` | `ff0ea57` | 11 testes; locks real/sintético 5/5; typecheck; architecture; Biome; format; diff check |
-| PB-02-03 | pending | `codex/pb02-03-deterministic-packer` | — | — |
+| PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
 | PB-02-04 | pending | `codex/pb02-04-asset-runtime` | — | — |
 | PB-02-05 | pending | `codex/pb02-05-profile-guards` | — | — |
 | PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
@@ -126,12 +126,59 @@ O modelo efetivo foi Codex baseado em GPT-5; foram usados `game-studio:web-game-
 `superpowers:test-driven-development`, `superpowers:systematic-debugging`,
 `superpowers:verification-before-completion` e `superpowers:finishing-a-development-branch`.
 O validador efetivo foi a matriz automatizada local; não houve gatilho objetivo para escalonamento.
-PB-02-03 é a próxima task serial elegível. PB-02-03/04 não foram iniciadas.
+Ao concluir PB-02-02, PB-02-03 tornou-se a próxima task serial elegível; nenhuma etapa posterior foi
+antecipada naquele commit.
+
+PB-02-03 implementou o packer Node determinístico com `build`, `build --check`, `verify-pack` e
+`source verify`, códigos de saída estáveis e diagnostics estruturados. A transformação propaga
+proveniência, apresentação e animação sem heurísticas, ordena entries/groups, serializa JSON
+canônico UTF-8/LF e endereça mídia pelo SHA-256 dos bytes originais. A materialização agrega
+divergências antes de escrever, deduplica mídia e promove um staging sibling por rename com backup
+e rollback. Um destino existente só pode ser substituído se for um pack íntegro do mesmo `packId`
+e tiver árvore exata; diretórios estranhos, packs aumentados/corrompidos, symlinks e alvos amplos são
+recusados antes de qualquer remoção.
+
+A execução contra o export congelado revelou um defeito no refinement de animação definido em
+PB-02-01: o `count` histórico representa todos os sprites do grupo, enquanto `phases` contém apenas
+as durações das fases. O contrato foi corrigido para exigir `count = patterns * layers * fases`, com
+uma fase implícita quando `phases` está vazio. Isso preserva literalmente os campos do exporter e
+permite os cinco assets reais sem inventar timing. `MANIFEST_CONTRACT.md`, o task card histórico e
+um teste de contrato realista registram a correção.
+
+Evidência fresca de PB-02-03 no commit funcional `83efda3`:
+
+```text
+corepack pnpm exec vitest run --config tools/asset-packer/vitest.config.ts -> 29 passed (8 files)
+corepack pnpm exec tsc --project tools/asset-packer/tsconfig.json --noEmit -> exit 0
+corepack pnpm verify -> exit 0; format, architecture, typecheck, 127 testes workspace/boundaries, build, content e Playwright 7/7
+synthetic build --check -> exit 0; 3 files, 3471 bytes, 1 media de 68 bytes
+synthetic pack.json SHA-256 -> 775d56f87b156349d9e81410d1703bac1499e1d332a2c1064dce498d18d97af5
+real source verify -> manifesto 808964 bytes, SHA-256 edf07a6edfc7c68128d8d0c712fbf0f2f66839e17399da62d9531598b3a05a94, files 5/5
+real build --check + verify-pack -> exit 0; 7 files, 241948 bytes, 5 mídias
+real pack.json SHA-256 -> a711c757874783d25da4242102abd681f6d07528bc2481af0139126a877dff9c
+git status --short --ignored -- apps/game/public/assets/personal -> !!
+git ls-files apps/game/public/assets/personal -> sem saída
+git diff --check -> exit 0
+```
+
+Os testes de falha cobrem corrupção agregada antes do staging, write failure, rollback de promoção,
+troca insegura do staging, destino não diretório, diretório não relacionado e pack válido com arquivo
+extra. A revisão independente encontrou os dois riscos de ownership do destino; ambos receberam RED,
+correção e re-revisão final sem achados bloqueantes ou importantes.
+
+Modelo/effort efetivos: Codex baseado em GPT-5; o alias Luna/xhigh não foi exposto nesta sessão.
+Foram usados `game-studio:web-game-foundations`, `superpowers:using-superpowers`,
+`superpowers:brainstorming`, `superpowers:writing-plans`, `superpowers:executing-plans`,
+`superpowers:using-git-worktrees`, `superpowers:test-driven-development`,
+`superpowers:systematic-debugging`, `superpowers:requesting-code-review`,
+`superpowers:verification-before-completion` e `superpowers:finishing-a-development-branch`. O modo
+de conclusão é serial: fast-forward em `main`, seguido de remoção da worktree e da branch. PB-02-04
+é a próxima task elegível; runtime/provider não foram antecipados.
 
 ## Bloqueios
 
-Nenhum bloqueio conhecido. A origem pessoal foi medida durante o planejamento e corresponde aos
-hashes registrados no README; a execução ainda precisa verificá-la novamente.
+Nenhum bloqueio conhecido. A origem pessoal e os packs sintético/real foram verificados novamente
+na conclusão de PB-02-03; nenhum asset pessoal está rastreado.
 
 ## Regra de atualização
 
