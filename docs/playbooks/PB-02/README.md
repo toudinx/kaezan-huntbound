@@ -5,7 +5,10 @@
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** ready — PB-01 está fechado e PB-02-01 é a próxima task elegível.
+**Status:** **fechado** em 2026-08-13 como `APPROVED_WITH_WARNINGS` pela auditoria integrada
+PB-02-07, no commit auditado `1134fc8`. As sete tasks e as duas correções `PB-02-FIX-01`/
+`PB-02-FIX-02` estão integradas. Warnings não bloqueantes estão priorizados em
+[`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). **PB-03 é elegível.**
 
 **Goal:** materializar um subset visual pessoal por stable keys, empacotá-lo deterministicamente e
 carregá-lo sob demanda no browser sem paths ou formatos do cliente vazando para consumidores.
@@ -141,13 +144,15 @@ revoga URLs de staging e preserva o estado anterior.
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-02-01](tasks/PB-02-01-definir-contratos-de-assets.md) | keys, schemas, diagnósticos e interfaces | PB-01 fechado | Luna `xhigh` | pending |
-| [PB-02-02](tasks/PB-02-02-congelar-origem-e-selecao.md) | source lock, seleção e fixture sintética | PB-02-01 | Luna `xhigh` | pending |
-| [PB-02-03](tasks/PB-02-03-materializar-packs-deterministicos.md) | packer transacional e golden pack | PB-02-02 | Luna `xhigh` | pending |
-| [PB-02-04](tasks/PB-02-04-implementar-provider-e-registry.md) | provider, registry, adapters e unload | PB-02-02 | Luna `xhigh` | pending |
-| [PB-02-05](tasks/PB-02-05-fechar-perfis-e-boundaries.md) | perfis, build guard, scripts e arquitetura | PB-02-03/04 | Sol `xhigh` | pending |
-| [PB-02-06](tasks/PB-02-06-validar-contrato-no-browser.md) | composition root, preload e browser QA | PB-02-05 | Luna `xhigh` | pending |
-| [PB-02-07](tasks/PB-02-07-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-02-06 | Opus 5/Sol | pending |
+| [PB-02-01](tasks/PB-02-01-definir-contratos-de-assets.md) | keys, schemas, diagnósticos e interfaces | PB-01 fechado | Luna `xhigh` | done |
+| [PB-02-02](tasks/PB-02-02-congelar-origem-e-selecao.md) | source lock, seleção e fixture sintética | PB-02-01 | Luna `xhigh` | done |
+| [PB-02-03](tasks/PB-02-03-materializar-packs-deterministicos.md) | packer transacional e golden pack | PB-02-02 | Luna `xhigh` | done |
+| [PB-02-04](tasks/PB-02-04-implementar-provider-e-registry.md) | provider, registry, adapters e unload | PB-02-02 | Luna `xhigh` | done |
+| [PB-02-05](tasks/PB-02-05-fechar-perfis-e-boundaries.md) | perfis, build guard, scripts e arquitetura | PB-02-03/04 | Sol `xhigh` | done |
+| [PB-02-06](tasks/PB-02-06-validar-contrato-no-browser.md) | composition root, preload e browser QA | PB-02-05 | Luna `xhigh` | done |
+| [PB-02-07](tasks/PB-02-07-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-02-06 | Opus 5/Sol | done |
+| [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | emissão isolada por perfil | PB-02-07 | Sol `xhigh` | done |
+| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | gate `verify` idempotente | PB-02-FIX-01 | Luna `xhigh` | done |
 
 PB-02-03 e PB-02-04 podem executar em paralelo após PB-02-02 porque seus paths funcionais não se
 sobrepõem. O padrão é serial. Se o supervisor ativar paralelismo, ambos removem worktrees limpas,
@@ -167,21 +172,25 @@ apaga as branches somente depois dos gates integrados.
 
 ## Critérios finais de aceite
 
-- [ ] Selection, source lock, pack e catálogo possuem schemas estritos e diagnósticos estruturados.
-- [ ] Os quatro namespaces numéricos usam adapters e índices separados.
-- [ ] O fixture contém exatamente as cinco entradas congeladas.
-- [ ] Source lock real confere com manifesto e PNGs externos sem persistir path absoluto.
-- [ ] Várias ausências são informadas em uma única validação.
-- [ ] Paths absolutos, traversal, categoria errada, mídia ausente e hash divergente falham.
-- [ ] Duas gerações limpas são byte-identical e staging falho preserva output válido.
-- [ ] Pack real permanece ignorado; zero mídia `cipsoft-personal` é rastreada.
-- [ ] `product` passa com `huntbound-test` e falha com dependência `cipsoft-personal`.
-- [ ] Provider instala packs atomicamente, resolve cinco keys e descarrega/revoga URLs.
-- [ ] Browser faz preload pelo catálogo, sem pack ID ou path de mídia hardcoded no consumidor.
-- [ ] `packages/simulation` permanece sem assets, DOM, Phaser ou paths de mídia.
-- [ ] Trilha sintética reproduzível e trilha pessoal local passam com evidência fresca.
-- [ ] `corepack pnpm verify` passa no resultado integrado.
-- [ ] Relatório de aceite decide a elegibilidade de PB-03.
+- [x] Selection, source lock, pack e catálogo possuem schemas estritos e diagnósticos estruturados.
+- [x] Os quatro namespaces numéricos usam adapters e índices separados.
+- [x] O fixture contém exatamente as cinco entradas congeladas.
+- [x] Source lock real confere com manifesto e PNGs externos sem persistir path absoluto.
+- [x] Várias ausências são informadas em uma única validação.
+- [x] Paths absolutos, traversal, categoria errada, mídia ausente e hash divergente falham.
+- [x] Duas gerações limpas são byte-identical e staging falho preserva output válido.
+- [x] Pack real permanece ignorado; zero mídia `cipsoft-personal` é rastreada.
+- [x] `product` passa com `huntbound-test` e falha com dependência `cipsoft-personal`.
+- [x] Provider instala packs atomicamente, resolve cinco keys e descarrega/revoga URLs.
+- [x] Browser faz preload pelo catálogo, sem pack ID ou path de mídia hardcoded no consumidor.
+- [x] `packages/simulation` permanece sem assets, DOM, Phaser ou paths de mídia.
+- [x] Trilha sintética reproduzível e trilha pessoal local passam com evidência fresca.
+- [x] `corepack pnpm verify` passa no resultado integrado.
+- [x] Relatório de aceite decide a elegibilidade de PB-03.
+
+Além dos sete task cards originais, o playbook fechou com duas correções: `PB-02-FIX-01` isolou a
+emissão de assets por perfil e `PB-02-FIX-02` tornou o gate `verify` idempotente. Ambas nasceram de
+blockers da própria auditoria.
 
 ## Fora de escopo
 

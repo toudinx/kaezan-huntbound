@@ -40,10 +40,12 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   seu fechamento foi revalidado por PB-00R.
 - [`PB-01 — Catálogo curado de conteúdo`](playbooks/PB-01/README.md) — **fechado** em 2026-08-13
   como `APPROVED_WITH_WARNINGS`; entrega chaves estáveis e bundle runtime determinístico.
-- [`PB-02 — Manifesto e asset pack pessoal`](playbooks/PB-02/README.md) — **planejado**; PB-02-01 é
-  a próxima task elegível e nenhum código de assets foi iniciado.
+- [`PB-02 — Manifesto e asset pack pessoal`](playbooks/PB-02/README.md) — **fechado** em 2026-08-13
+  como `APPROVED_WITH_WARNINGS`; entrega subset visual carregável por chaves estáveis, packs
+  determinísticos e perfil `product` que recusa assets `cipsoft-personal`. Warnings priorizados em
+  [`acceptance-report.md`](playbooks/PB-02/artifacts/acceptance-report.md).
 
-**Próxima task elegível: PB-02-01 — contratos de assets.** A ordem e a Definition of Ready estão em
+**Próximo playbook: PB-03 — kernel determinístico.** A ordem e a Definition of Ready estão em
 [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha

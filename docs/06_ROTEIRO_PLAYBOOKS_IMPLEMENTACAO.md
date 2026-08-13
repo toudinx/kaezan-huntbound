@@ -39,7 +39,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-00](playbooks/PB-00/README.md) | Workspace e shell browser | monorepo, Phaser/DOM shell, testes e CI local |
 | [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo — **fechado** |
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
-| [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **planejado; PB-02-01 elegível** |
+| [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | PB-03 | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay |
 | PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
@@ -59,9 +59,16 @@ PB-01 foi fechado em 2026-08-13 como `APPROVED_WITH_WARNINGS` pela auditoria int
 (`d9df3338743365710fed991c185976b9dbbd59e6d5f9d43a679550db8fa154f3`), reconstrução sem Canary e zero
 fonte Canary rastreada. Os warnings remanescentes são não bloqueantes e estão priorizados em
 [`playbooks/PB-01/artifacts/acceptance-report.md`](playbooks/PB-01/artifacts/acceptance-report.md).
-**PB-02 é o próximo a executar.** PB-00, PB-01 e PB-02 formam a primeira leva.
-Nenhum playbook de gameplay deve começar antes de eles fecharem os contratos que impedem paths, IDs
-e regras de vazarem entre camadas.
+PB-02 foi fechado em 2026-08-13 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-02-07, no
+commit `1134fc8`. A auditoria reprovou primeiro em `af31d22` por dois blockers de produto — o build
+`product` distribuía mídia `cipsoft-personal` e `verify` falhava na segunda execução consecutiva — e
+ambos foram corrigidos por `PB-02-FIX-01` e `PB-02-FIX-02` e reverificados. Os warnings remanescentes
+são não bloqueantes e estão priorizados em
+[`playbooks/PB-02/artifacts/acceptance-report.md`](playbooks/PB-02/artifacts/acceptance-report.md).
+
+**PB-03 é o próximo a executar.** PB-00, PB-01 e PB-02 formam a primeira leva e estão fechados;
+os contratos que impedem paths, IDs e regras de vazarem entre camadas estão no lugar, então o
+primeiro playbook de gameplay pode começar.
 
 ## PB-00 — Definition of Ready
 

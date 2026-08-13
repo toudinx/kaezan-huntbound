@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-02/README.md`
 
-**Estado geral:** blocked — auditoria PB-02-07 decidiu `REJECTED`
+**Estado geral:** closed — PB-02-07 decidiu `APPROVED_WITH_WARNINGS` em `1134fc8`
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** reexecução completa do PB-02-07
+**Próxima task elegível:** nenhuma neste playbook; PB-03 é elegível
 
 ## Tasks
 
@@ -18,7 +18,7 @@
 | PB-02-04 | done | `codex/pb02-04-asset-runtime` | `a11ea9d` | 36 testes; typecheck; Biome; diff check; provider relativo/concorrente/deduplicado |
 | PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
-| PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
+| PB-02-07 | done | `codex/pb02-07-integrated-gate` | `2eedcb5` + `1134fc8` | `REJECTED` em `af31d22`; `APPROVED_WITH_WARNINGS` em `1134fc8` após as duas fixes; ver `artifacts/acceptance-report.md` |
 | [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | done | `codex/pb02-fix-01-profile-emission` | `52c747d` | 6 testes do guard; builds product/personal/test isolados; verify exit 0; browser 8/8 |
 | [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | done | `codex/pb02-fix-02-verify-idempotence` | `871df34` | RED 0→1; GREEN 0/0; checkout limpo 0/0; Biome 203 arquivos |
 
@@ -357,10 +357,10 @@ PB-02 permanece aberto e PB-03 não é elegível. Nenhum código foi alterado du
 
 ## Bloqueios
 
-Os dois blockers encontrados por PB-02-07 foram resolvidos pelas tasks corretivas;
-PB-02 continua bloqueado somente até a reexecução integral da auditoria.
-Cada blocker tem task corretiva própria porque são problemas, arquivos e verificações independentes;
-a ordem é serial porque as duas tocam este handoff:
+**Nenhum bloqueio aberto.** Os dois blockers encontrados por PB-02-07 foram resolvidos pelas tasks
+corretivas e reverificados em `1134fc8`; o playbook está fechado.
+Cada blocker teve task corretiva própria porque são problemas, arquivos e verificações independentes;
+a ordem foi serial porque as duas tocam este handoff:
 
 1. **BLOCKER-1 resolvido — emissão isolada por perfil.** A prova fresca com a saída pessoal presente
    produziu `build:product` em exit 0 com somente `dist/game/assets/product`, zero arquivos pessoais
@@ -371,14 +371,19 @@ a ordem é serial porque as duas tocam este handoff:
    A prova fresca passou em `verify` 0/0 com saídas presentes e novamente 0/0 após
    removê-las, sem alteração de fonte.
 
-O fechamento do PB-02 só volta à mesa depois das duas correções integradas e de uma **reexecução
-completa da matriz PB-02-07**. O corretor não fecha o playbook que ele mesmo corrigiu.
+A reavaliação de fechamento está na §11 do
+[`acceptance-report.md`](artifacts/acceptance-report.md): `verify` verde em três execuções
+consecutivas, árvore emitida idêntica byte a byte à origem validada nos três perfis, 44 testes do
+packer, browser 8/8 e boot actionable 3131,0 ms. O supervisor dispensou a reexecução formal da matriz
+por sessão separada; o desvio está registrado no relatório.
 
 Warnings não bloqueantes: `__huntboundAssetProbe` sobrevive ao tree-shaking nos bundles
 `personal`/`product` embora não seja instalado em runtime; aviso de chunk > 500 kB; worktree e branch
-de PB-02-06 continuam presentes em `af31d22` (sem divergência).
+de PB-02-06 continuam presentes em `af31d22` (sem divergência); e `corepack pnpm check` termina em
+exit 1 por 4 erros de lint e 4 informativos de assist, todos pré-existentes de `896a583` e fora da
+matriz de aceite — convém zerá-los antes de PB-03 começar, já que são todos `FIXABLE`.
 
-A origem pessoal e os packs sintético/real foram verificados novamente nesta auditoria; nenhum asset
+A origem pessoal e os packs sintético/real foram verificados novamente na reavaliação; nenhum asset
 pessoal está rastreado.
 
 ## Regra de atualização

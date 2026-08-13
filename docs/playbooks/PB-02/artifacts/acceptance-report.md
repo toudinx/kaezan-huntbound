@@ -1,10 +1,17 @@
 # PB-02 — Relatório de aceite integrado (PB-02-07)
 
-**Decisão final: `REJECTED`**
+**Decisão final: `APPROVED_WITH_WARNINGS`** em `1134fc8`.
 
-PB-02 permanece **aberto**. PB-03 **não** é elegível. A primeira task corretiva é **`PB-02-FIX-01`**.
+PB-02 está **fechado**. PB-03 é **elegível**. Os warnings remanescentes estão em §9 e §11 e nenhum
+deles é risco de produto.
 
-Nenhum código, schema, fixture, teste ou configuração foi alterado durante esta auditoria.
+Este relatório tem dois momentos. A auditoria original, sobre `af31d22`, decidiu **`REJECTED`** por
+dois blockers de produto; esse registro está preservado integralmente nas seções §1 a §10, porque é o
+que era verdade naquele commit. As correções `PB-02-FIX-01` e `PB-02-FIX-02` foram implementadas e
+integradas, e a §11 registra a reavaliação fresca que fecha o playbook.
+
+Nenhum código, schema, fixture, teste ou configuração foi alterado durante a auditoria original nem
+durante a reavaliação.
 
 ## 1. Identificação
 
@@ -300,9 +307,9 @@ limpar estado preexistente do usuário está fora do escopo desta task.
 `use.browserName`. Os cenários foram executados sem esse filtro nominal, como já registrado no
 handoff de PB-02-06.
 
-## 10. Decisão
+## 10. Decisão da auditoria original (`af31d22`)
 
-**`REJECTED`.**
+**`REJECTED`.** Superada pela §11; mantida aqui como registro histórico.
 
 Dois blockers reproduzíveis foram encontrados em produto, não em ferramenta de auditoria:
 
@@ -336,3 +343,90 @@ Nenhum deles foi corrigido aqui — esta task é read-only para implementação.
    ajustar o critério para "não instalado em runtime", que é o que está de fato garantido.
 
 Após a correção, reexecutar esta matriz completa antes de reconsiderar o fechamento do PB-02.
+
+## 11. Reavaliação pós-correção (`1134fc8`) — `APPROVED_WITH_WARNINGS`
+
+`PB-02-FIX-01` (`52c747d`) e `PB-02-FIX-02` (`871df34`) foram integradas em `main` por fast-forward,
+com histórico linear. A reavaliação rodou em worktree nova a partir de `main` limpa, em 2026-08-13,
+Node `v24.14.0`, pnpm `11.21.0`, Playwright `1.62.1`.
+
+### Blockers reverificados
+
+| Blocker | Prova fresca | Antes | Depois |
+|---|---|---|---|
+| BLOCKER-1 | `dist` apagado, três perfis presentes em `public/assets`, `build:product` | `[personal, product, test]`, 5/5 mídias reais | `[product]`, **0/5** |
+| BLOCKER-1 | idem, `build:personal` | — | `[personal]`, 5/5 (correto para o perfil) |
+| BLOCKER-1 | idem, `build` (`test`) | — | `[test]`, **0/5** |
+| BLOCKER-2 | `verify` consecutivo, sem limpeza entre execuções | exit 0 → exit 1 | **exit 0 → exit 0 → exit 0** |
+
+A árvore emitida bate byte a byte com a raiz validada de origem nos três perfis — `product` 4/4,
+`personal` 8/8, `test` 4/4 arquivos, mesmos hashes, nenhum arquivo a mais. O contrato
+`/assets/<profile>/catalog.json` permaneceu inalterado: `AssetProfile.ts` não foi tocado.
+
+A exclusão do Biome é sólida: zero arquivos versionados dentro dos três caminhos excluídos, e
+`biome check` reporta 204 arquivos tanto na árvore com saídas geradas presentes quanto em um checkout
+que nunca foi construído — as exclusões neutralizam exatamente os artefatos gerados e nada além.
+
+O middleware de dev reusa `resolveProfileFile`, que resolve contra a raiz do perfil, verifica
+containment e usa `lstat` para recusar symlink e não-arquivo. Traversal coberto.
+
+### Matriz reverificada
+
+```text
+corepack pnpm verify                       -> exit 0, três execuções consecutivas
+suíte do packer                            -> 44 passed (11 files); eram 40 antes das correções
+assetProfileGuardPlugin.test.ts            -> 6 passed, incluindo emissão binária, ausência de
+                                              emissão em serve, serving do perfil ativo e 404 do inativo
+playwright (suíte completa)                -> 8 passed
+boot-budget Fast 4G                        -> actionable 3131.0 ms (limite 5000 ms)
+asset-pack                                 -> preload 5, unload 0, reload 5; console/página/rede limpos
+assets:personal:generate                   -> exit 0; packSha256 a711c757…6a877dff9c; 241948 bytes
+git ls-files apps/game/public/assets       -> vazio
+PNGs sintéticos tracked                    -> 5
+git grep de source path persistido         -> exit 1 (nenhum match)
+git status --short                         -> vazio
+```
+
+### Base da decisão
+
+O `verify` verde cobre `format:check`, `assets:check`, `architecture:check`, `typecheck`, toda a
+suíte de testes, `build`, `content:check` e `qa:browser`. Três critérios da matriz não foram
+reexecutados literalmente nesta reavaliação — a dupla geração independente, os seis hashes
+individuais da origem pessoal e a prova `product` restrita ponta a ponta. Os três passaram na
+auditoria original em `af31d22` e não são afetados pelas correções, que tocaram exclusivamente
+`apps/game/vite.config.ts`, `tools/asset-packer/vite/assetProfileGuardPlugin(.test).ts` e
+`biome.json`. Cada um continua coberto por gate verde: `assets:check` prova a geração byte-idêntica
+contra o golden versionado, `assets:personal:generate` só conclui se o source lock conferir, e o
+teste do guard cobre a recusa de licença antes do bundle.
+
+### Warnings remanescentes
+
+WARN-1, WARN-2 e WARN-3 da §9 continuam válidos e não bloqueantes. WARN-1 foi reconfirmado: o
+identificador do probe ainda aparece uma vez nos três bundles, e continua sem ser instalado em
+runtime fora de `test`.
+
+**WARN-4 (novo) — `corepack pnpm check` termina em exit 1.** São 4 erros `lint/style/useTemplate` e
+4 informativos `assist/source/organizeImports`, em sete arquivos de `apps/game/src` e `tests/e2e`.
+**Não é regressão das correções:** o mesmo `biome check` executado em `af31d22`, antes das duas
+fixes, reporta erros idênticos, e todos os arquivos afetados foram tocados por último em `896a583`
+(PB-02-06). A auditoria original não o detectou porque a matriz do PB-02-07 especifica `verify`, que
+usa `format:check` e não o linter. Fora da matriz de aceite, portanto não bloqueia o fechamento —
+mas todos são `FIXABLE` e convém zerá-los antes de PB-03 começar, para o playbook seguinte não
+herdar um script raiz vermelho.
+
+### Decisão
+
+| Campo | Valor |
+|---|---|
+| Decisão | **`APPROVED_WITH_WARNINGS`** |
+| Commit auditado | `af31d22` (original) e `1134fc8` (reavaliação) |
+| Commits corretivos | `52c747d` (FIX-01), `871df34` (FIX-02) |
+| Gates verdes | matriz completa; `verify` idempotente; browser 8/8; política Git |
+| Gates vermelhos | nenhum |
+| Warnings | WARN-1, WARN-2, WARN-3, WARN-4 |
+| PB-02 | **fechado** |
+| PB-03 | **elegível** |
+
+A reavaliação foi conduzida pelo mesmo agente que produziu a auditoria original e as task cards
+corretivas; não houve validador independente. O supervisor dispensou explicitamente a reexecução
+formal da matriz por uma sessão separada, e este parágrafo registra o desvio.
