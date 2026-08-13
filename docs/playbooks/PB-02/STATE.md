@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-FIX-01, seguida de PB-02-FIX-02 e da reexecução do PB-02-07
+**Próxima task elegível:** PB-02-FIX-02, seguida da reexecução do PB-02-07
 
 ## Tasks
 
@@ -19,7 +19,7 @@
 | PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
 | PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
-| [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | pending | `codex/pb02-fix-01-profile-emission` | — | — |
+| [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | done | `codex/pb02-fix-01-profile-emission` | — | 6 testes do guard; builds product/personal/test isolados; verify exit 0; browser 8/8 |
 | [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | pending | `codex/pb02-fix-02-verify-idempotence` | — | — |
 
 ## Baseline congelado
@@ -289,6 +289,33 @@ automatizada local como validador. Não houve gatilho para escalonamento
 externo. PB-02-07 é agora a próxima task elegível; nenhuma parte dela foi
 antecipada.
 
+## PB-02-FIX-01 — handoff concluído
+
+PB-02-FIX-01 foi implementado na branch `codex/pb02-fix-01-profile-emission`.
+`apps/game/vite.config.ts` usa `publicDir: false`; o plugin valida uma única vez,
+emite cada arquivo da raiz validada em `assets/<profile>/...` durante build e
+serve somente esse prefixo durante dev. O hook de emissão é desativado quando
+Vite resolve `command: 'serve'`, evitando `emitFile()` no modo de serving.
+
+Evidência fresca da correção:
+
+```text
+assetProfileGuardPlugin.test.ts -> 6 passed
+tools/asset-packer typecheck -> exit 0
+build:product com saída pessoal presente -> somente product; 4 arquivos product; 0 personal
+build:personal -> somente personal; 8 arquivos personal
+build (test) -> somente test; 4 arquivos test
+corepack pnpm exec playwright test asset-pack.spec.ts boot-budget.spec.ts -> 2 passed
+QA browser integrado pelo verify -> 8 passed; boot actionable 3195.2 ms
+corepack pnpm verify -> exit 0
+git ls-files apps/game/public/assets -> sem saída
+```
+
+Os testes de emissão materializam a saída em diretório temporário e comparam
+os quatro arquivos do fixture byte a byte com a raiz product. Os testes de dev
+confirmam serving do catálogo ativo e resposta 404 para perfil inativo.
+BLOCKER-1 está resolvido; BLOCKER-2 permanece aberto e é a próxima task.
+
 ## PB-02-07 — auditoria integrada `REJECTED`
 
 A auditoria rodou a matriz completa sobre `af31d22` em worktree limpo. Determinismo, origem pessoal,
@@ -298,16 +325,13 @@ PB-02 permanece aberto e PB-03 não é elegível. Nenhum código foi alterado du
 
 ## Bloqueios
 
-Dois blockers reproduzíveis, ambos de produto, abertos por PB-02-07. Cada um tem task corretiva
-própria porque são problemas, arquivos e verificações independentes; a ordem é serial porque as duas
-tocam este handoff:
+Um blocker de produto permanece aberto por PB-02-07; BLOCKER-1 foi resolvido por PB-02-FIX-01.
+Cada blocker tem task corretiva própria porque são problemas, arquivos e verificações independentes;
+a ordem é serial porque as duas tocam este handoff:
 
-1. **`build:product` distribui mídia `cipsoft-personal`.** O `publicDir` do Vite continua sendo
-   `apps/game/public`, então `dist/game/assets/personal` recebe as cinco mídias reais congeladas
-   (8 arquivos, 242324 bytes) mesmo com o build em exit 0. O guard valida o
-   catálogo do perfil, não o conteúdo emitido.
-   → [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md): `publicDir: false` e
-   emissão da árvore validada pelo próprio guard, preservando o contrato de URL.
+1. **BLOCKER-1 resolvido — emissão isolada por perfil.** A prova fresca com a saída pessoal presente
+   produziu `build:product` em exit 0 com somente `dist/game/assets/product`, zero arquivos pessoais
+   e zero das cinco mídias reais congeladas. A URL `/assets/<profile>/catalog.json` permaneceu igual.
 2. **`verify` não é idempotente.** `biome.json` não exclui `apps/game/public/assets/test` nem
    `apps/game/public/assets/product`; como `test`/`build` fazem stage dessas saídas e `format:check`
    é o primeiro passo, a segunda execução consecutiva de `verify` falha. Provado: execução 1 exit 0,

@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
     );
   }
   return {
+    publicDir: false,
     plugins: [
       assetProfileGuardPlugin({
         profile: mode as 'test' | 'personal' | 'product',

@@ -161,9 +161,11 @@ git grep -E "[A-Za-z]:[/\\]|frontend/public/assets/tibia" … -> exit 1 (nenhum 
 
 ## 9. Blockers e warnings
 
-### BLOCKER-1 — `build:product` distribui mídia `cipsoft-personal`
+### BLOCKER-1 — RESOLVIDO por PB-02-FIX-01: emissão isolada por perfil
 
-**Risco de produto e de licença. Bloqueia o fechamento.**
+**Risco histórico de produto e de licença. Resolvido na branch
+`codex/pb02-fix-01-profile-emission`; não altera a decisão histórica
+`REJECTED` deste relatório.**
 
 `apps/game/vite.config.ts` passa `publicDir` apenas para `assetProfileGuardPlugin`, que o usa para
 **validar** o perfil pedido. O `publicDir` do próprio Vite continua sendo o default
@@ -188,6 +190,28 @@ qualquer dependência transitiva `cipsoft-personal`; não há warning permissivo
 
 Só se manifesta quando `assets:personal:generate` já foi executado na máquina — que é exatamente o
 fluxo local-first previsto pelo playbook. Um checkout novo de CI não reproduz.
+
+#### Revalidação após PB-02-FIX-01
+
+`publicDir: false` foi configurado no Vite e o guard passou a emitir a árvore
+validada do perfil ativo, preservando `assets/<profile>/...`. A saída pessoal
+foi gerada localmente apenas para a prova e permaneceu fora do Git.
+
+```text
+assetProfileGuardPlugin.test.ts                         -> 6 passed
+build:product com personal presente                     -> exit 0; diretórios: product; personal: 0 arquivos
+build:personal                                           -> exit 0; diretórios: personal; 8 arquivos
+build (test)                                             -> exit 0; diretórios: test; 4 arquivos
+product: mídias reais cipsoft-personal no dist           -> 0 de 5
+árvore emitida product vs origem validada                -> 4 arquivos; bytes idênticos
+dev server: catálogo ativo                               -> 200; perfil inativo -> 404
+corepack pnpm exec playwright test asset-pack.spec.ts boot-budget.spec.ts -> 2 passed
+corepack pnpm verify                                     -> exit 0; QA browser 8 passed
+git ls-files apps/game/public/assets                     -> 0 linhas
+```
+
+O blocker de `verify` não é alterado por esta correção: `biome.json` continua
+fora do escopo e PB-02-FIX-02 permanece a próxima task.
 
 ### BLOCKER-2 — `verify` não é idempotente
 
