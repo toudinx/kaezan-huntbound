@@ -2,17 +2,17 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-02 fechado; nenhuma task de PB-03 iniciada
+**Estado geral:** ready — PB-03-01 concluída; PB-03-02 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-01.
+**Próxima task elegível:** PB-03-02.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-03-01 | pending | `codex/pb03-01-kernel-contracts` | — | — |
+| PB-03-01 | done | `codex/pb03-01-kernel-contracts` | `c09a4cc` | 37 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-02 | pending | `codex/pb03-02-kernel-random` | — | — |
 | PB-03-03 | pending | `codex/pb03-03-kernel-grid` | — | — |
 | PB-03-04 | pending | `codex/pb03-04-kernel-commands` | — | — |
@@ -52,7 +52,51 @@
 
 ## Handoffs
 
-Nenhum. O playbook ainda não iniciou.
+## PB-03-01 — handoff concluído
+
+PB-03-01 foi implementada na branch `codex/pb03-01-kernel-contracts`. O commit funcional integrado
+é `c09a4cc` (`feat: define deterministic kernel contracts`). `@huntbound/contracts` agora publica
+identidade branded, versões, tipos de cenário/comando/evento/snapshot/log, schemas Zod estritos,
+`commandPriority`, factories e os validadores estruturados do kernel. `packages/simulation` ficou
+inalterado.
+
+Exports efetivos incluem `TickIndexSchema`, `EntityIdSchema`, `SeedSchema`, `StreamLabelSchema` e
+suas factories; `SIMULATION_SCHEMA_VERSION`, `SIMULATION_RULES_VERSION`, `TICK_DURATION_MS` e
+`MAX_FRAME_DELTA_MS`; `KernelScenarioSchema`, `SimulationCommandSchema`,
+`SimulationCommandInputSchema`, `SimulationCommandRecordSchema`, `SimulationEventSchema`,
+`SimulationSnapshotSchema`, `SimulationCommandLogSchema`, os schemas auxiliares e
+`commandPriority`; `validateKernelScenario`, `validateSimulationSnapshot`,
+`validateSimulationCommandLog`, `simulationDiagnosticsFromZodError` e todos os tipos públicos de
+`packages/contracts/src/simulation/types.ts`.
+
+As invariantes cobertas incluem inteiros seguros, seed/label branded, strictness, ordem e unicidade de
+`blockedTiles`, referências de blueprint, posições iniciais, emissor permitido por comando,
+ordenação de streams/atores/comandos, sequência crescente do log, versões e diagnósticos ordenados por
+path/code. O contrato durável está em `docs/simulation/KERNEL_CONTRACT.md`.
+
+Evidência fresca:
+
+```text
+corepack pnpm --filter @huntbound/contracts test -> exit 0; 37 passed (4 files)
+corepack pnpm --filter @huntbound/contracts typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/contracts -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+```
+
+O ciclo TDD observou RED por módulos ausentes antes da implementação; após o GREEN, uma falha de
+export duplicado e avisos de formatação foram corrigidos sem ampliar o escopo. Não houve alteração de
+versões, comandos/eventos, floats, dependências novas, I/O ou contratos de conteúdo/assets.
+
+Modelo/effort efetivos: Codex baseado em GPT-5; o alias Luna/xhigh sugerido não é exposto nesta
+sessão. Skills usadas: `superpowers:using-superpowers`, `superpowers:brainstorming`,
+`superpowers:writing-plans`, `superpowers:using-git-worktrees`,
+`superpowers:test-driven-development` e `superpowers:verification-before-completion`. Validador
+efetivo: gates automatizados; não houve gatilho objetivo para escalonamento.
+
+Modo de conclusão: serial, com fast-forward em `main`, reverificação integrada e remoção da worktree
+e da branch temporárias. PB-03-02 é a próxima task elegível; RNG não foi antecipado.
 
 ## Bloqueios
 
