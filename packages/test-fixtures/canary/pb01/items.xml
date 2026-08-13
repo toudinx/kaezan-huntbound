@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+  <item id="9301" name="fixture shard" article="a" weight="0.4" />
+  <item id="9302" name="fixture tonic" article="a" weight="1.1" />
+  <item fromid="9310" toid="9312" name="fixture tile" article="a" weight="2.5" />
+</items>

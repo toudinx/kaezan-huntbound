@@ -1,0 +1,86 @@
+{
+  "key": "fixture:pb-01-contract-coverage",
+  "objective": "Prove the minimum curated content contract without selecting a hunt.",
+  "consumer": "PB-01 importer and contract coverage",
+  "roots": [
+    "vocation:tibia:knight",
+    "spell:tibia:berserk",
+    "creature:tibia:rotworm",
+    "creature:tibia:amazon",
+    "creature:tibia:orc-shaman"
+  ],
+  "dependencies": ["creature:tibia:snake"],
+  "projections": [
+    {
+      "entityKey": "vocation:tibia:knight",
+      "facets": ["identity", "progression"],
+      "consumer": "spell access and progression contract tests",
+      "rationale": "The root covers vocation family membership, gains, speed, and skill multipliers."
+    },
+    {
+      "entityKey": "spell:tibia:berserk",
+      "facets": ["identity", "spell"],
+      "consumer": "spell contract tests",
+      "rationale": "The root covers costs, cooldowns, area, formula, and vocation references."
+    },
+    {
+      "entityKey": "creature:tibia:rotworm",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "creature contract tests",
+      "rationale": "The root covers melee, defense, and mixed ID/name loot resolution."
+    },
+    {
+      "entityKey": "creature:tibia:amazon",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "creature contract tests",
+      "rationale": "The root covers melee and ranged physical combat with a projectile."
+    },
+    {
+      "entityKey": "creature:tibia:orc-shaman",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "creature contract tests",
+      "rationale": "The root covers elemental, area, healing, summon, and loot forms."
+    },
+    {
+      "entityKey": "creature:tibia:snake",
+      "facets": ["identity", "stats", "appearance", "combat", "conditions"],
+      "consumer": "summon and condition contract tests",
+      "rationale": "The dependency is needed as Orc Shaman's summon target and poison condition example; its loot is excluded."
+    }
+  ],
+  "dependencyMode": "reachable-only",
+  "curationState": "accepted",
+  "exportVersion": "1",
+  "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+  "sourceFiles": [
+    "data/XML/vocations.xml",
+    "data/items/items.xml",
+    "data/scripts/spells/attack/berserk.lua",
+    "data-otservbr-global/monster/vermins/rotworm.lua",
+    "data-otservbr-global/monster/humans/amazon.lua",
+    "data-otservbr-global/monster/humanoids/orc_shaman.lua",
+    "data-otservbr-global/monster/reptiles/snake.lua"
+  ],
+  "rootSourceIds": {
+    "vocation": ["4"],
+    "spell": ["80"],
+    "creature": ["26", "77", "6"]
+  },
+  "dependencySourceIds": {
+    "creature": ["28"]
+  },
+  "projectionPolicy": {
+    "vocationFamilyKey": "vocation-family:huntbound:knight",
+    "rawReferenceMappings": [
+      {
+        "rawReference": "knight",
+        "targetFamilyKey": "vocation-family:huntbound:knight"
+      },
+      {
+        "rawReference": "elite knight",
+        "targetFamilyKey": "vocation-family:huntbound:knight"
+      }
+    ],
+    "aliases": []
+  }
+}

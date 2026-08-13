@@ -1,0 +1,44 @@
+{
+  "sourceSystem": "canary",
+  "commit": "157e6f9e21318bd3033eea553fe9275b429faf72",
+  "license": "GPL-2.0-only",
+  "licensePath": "LICENSE",
+  "licenseSha256": "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b",
+  "files": [
+    {
+      "relativePath": "data/XML/vocations.xml",
+      "sha256": "693a179048d5d5c5af519459c8e542cd01013212af1cec88f7c8eb72634f4350",
+      "purpose": "vocations"
+    },
+    {
+      "relativePath": "data/items/items.xml",
+      "sha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+      "purpose": "items"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/berserk.lua",
+      "sha256": "819b628608268aebea355be46a1d86e73c24bdf26d1299aa7d3e9af71d10f89f",
+      "purpose": "spell"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/vermins/rotworm.lua",
+      "sha256": "f75ed297cd851013cde4e991113bf2d67ab9930852f20fb0c4e8d0937ddb176b",
+      "purpose": "creature"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/humans/amazon.lua",
+      "sha256": "9792a709311c8281217bffa343e2c9579a8ae631bd69f9c0a8665a6d469cca7b",
+      "purpose": "creature"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/humanoids/orc_shaman.lua",
+      "sha256": "cf3fee52b211b9f4b18dc7da2bfbf257e816542a320491b3817a883cfbe17864",
+      "purpose": "creature"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/reptiles/snake.lua",
+      "sha256": "e626dc3591330481f37e1e3703afe67bf89a93771c42ccbd46ad59f0690ca48b",
+      "purpose": "creature"
+    }
+  ]
+}
