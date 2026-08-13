@@ -125,6 +125,35 @@ O header e cada `SimulationCommandRecord` são validados antes de qualquer simul
 incompatível produz `SIM_VERSION_MISMATCH`; seed inválida produz `SIM_SEED_INVALID`; uma sequência
 repetida ou regressiva produz `SIM_COMMAND_DUPLICATE`.
 
+### Borda de comandos em `@huntbound/simulation`
+
+O `CommandBuffer` e a unica porta de entrada dos comandos externos. `enqueue` valida o envelope e a
+combinacao emissor/tipo antes de mutar o buffer; comandos com `tick < currentTick` retornam
+`SIM_TICK_IN_PAST`, e uma recusa nunca consome `sequence`. A primeira sequencia e `1` e cada aceite
+incrementa o contador global da run.
+
+Comandos aceitos saem de `drain(tick)` por `(tick, commandPriority(type), sequence)`. As prioridades
+sao `scenario/* = 0`, `actor/face = 1`, `actor/move-step = 2` e `actor/wait = 3`. `drain` remove o
+tick pedido e uma segunda chamada para o mesmo tick devolve lista vazia. `pending()` nao aplica
+comandos e expoe os registros ainda pendentes por `(tick, sequence)`, que e a ordem usada para
+snapshot. A duplicata de borda e o mesmo emissor, ator e tick com duas acoes concorrentes
+(`actor/move-step` ou `actor/wait`); o segundo retorna `SIM_COMMAND_DUPLICATE`. `actor/face` nao
+conflita, e emissores diferentes nao conflitam nesta camada.
+
+O encoder de `@huntbound/simulation` escreve somente comandos externos em JSONL. A primeira linha e
+o header; cada linha seguinte usa `kind: "command"`, os campos `tick`, `sequence`, `issuer`, `type`
+e um `payload` sem o campo `type`:
+
+```json
+{"kind":"command","tick":0,"sequence":1,"issuer":"scenario","type":"scenario/spawn-actor","payload":{"blueprintId":"hero","position":{"x":0,"y":0,"z":0},"facing":"s"}}
+```
+
+Cada linha e JSON canonico, com chaves recursivamente ordenadas por code unit, sem espacos, e o
+arquivo termina com exatamente um LF. O decoder parseia e valida todas as linhas, exige header,
+`kind` conhecido, ticks nao decrescentes e sequences estritamente crescentes; qualquer erro retorna
+diagnosticos sem aceitar parcialmente o log. Comandos internos gerados por sistemas nao entram no
+arquivo.
+
 ## Diagnósticos
 
 Os validadores públicos são:
@@ -143,4 +172,3 @@ execução do kernel.
 
 Zod é uma dependência exclusiva de `@huntbound/contracts`. O contrato não importa Node, DOM, Phaser,
 filesystem, fetch, Web Crypto, Blob ou qualquer outro pacote Huntbound.
-
