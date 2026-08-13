@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-06
+**Próxima task elegível:** PB-02-07
 
 ## Tasks
 
@@ -17,7 +17,7 @@
 | PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
 | PB-02-04 | done | `codex/pb02-04-asset-runtime` | `a11ea9d` | 36 testes; typecheck; Biome; diff check; provider relativo/concorrente/deduplicado |
 | PB-02-05 | done | `codex/pb02-05-profile-guards` | `cb75037` | profiles transitive; negative/positive product; verify 7/7 |
-| PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
+| PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
 | PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
 
 ## Baseline congelado
@@ -231,6 +231,61 @@ O validador efetivo foi a matriz automatizada local; foram usados `game-studio:w
 `superpowers:systematic-debugging` e `superpowers:verification-before-completion`. Não houve
 escalonamento para validador externo. PB-02-06 é a próxima task elegível para composição/provider no
 app e contrato browser; nenhum uso de provider foi antecipado.
+
+## PB-02-06 — handoff concluído
+
+PB-02-06 foi implementado na branch `codex/pb02-06-browser-contract` e o
+commit funcional é `896a583` (`feat: preload asset contract pack`). A
+composition root agora deriva o profile exclusivamente de
+`import.meta.env.MODE`, compõe somente o catálogo do profile, aguarda o
+preload e só então publica readiness e cria Phaser. Falha de preload mantém o
+shell bloqueado, publica o código/mensagem acionável e não cria o jogo.
+
+O runtime renderer-agnostic mantém a promise do provider, ordena as cinco
+stable keys, torna preload repetido/concurrente idempotente, chama
+`unloadAll()` e reutiliza a mesma instância no reload. O probe global só é
+instalado no profile `test` e expõe snapshots congelados, `unload()` e
+`reload()`; `personal` e `product` não o expõem.
+
+Evidência fresca de PB-02-06:
+
+```text
+corepack pnpm install --frozen-lockfile --config.strict-ssl=false -> exit 0; lockfile policy passed
+corepack pnpm --filter @huntbound/game test -> 36 passed (9 files)
+corepack pnpm --filter @huntbound/game typecheck -> exit 0
+corepack pnpm --filter @huntbound/game build -> exit 0; Vite test build
+corepack pnpm architecture:check -> exit 0
+corepack pnpm test -> exit 0; app 36 passed, root/boundary tests 13 passed, workspace packages green
+corepack pnpm verify -> exit 0; format, assets, architecture, typecheck, tests, build, content e QA browser
+asset-pack Playwright -> 1 passed; unload 0 e reload 5 stable keys; sem erros de console/página/rede
+QA browser integrado -> 8 passed; shell, asset-pack e boot-budget
+boot-budget Fast 4G -> actionable 3212.6 ms (limite 5000 ms)
+assets:stage:test -> packSha256 775d56f87b156349d9e81410d1703bac1499e1d332a2c1064dce498d18d97af5
+consumer scan -> somente AssetProfile.ts contém o catálogo permitido; sem media/pack/ID legado em consumidores
+git ls-files apps/game/public/assets -> sem saída
+```
+
+O contrato durável está em `docs/assets/BROWSER_ASSET_CONTRACT.md`; o design e
+plano específicos estão em `docs/superpowers/specs/2026-08-13-pb-02-06-browser-contract-design.md`
+e `docs/superpowers/plans/2026-08-13-pb-02-06-browser-contract.md`. Provider,
+packer, schema e guard não foram alterados.
+
+Desvios registrados: o registry local apresentou certificado inválido durante
+`pnpm install --lockfile-only`; a instalação congelada foi validada com
+`--config.strict-ssl=false`, sem alterar configuração versionada. O
+Playwright config não declara um projeto chamado `chromium`, embora use
+Chromium via `use.browserName`; por isso o cenário foi executado sem esse
+filtro nominal. A política de workspace exige versões exatas, então o app usa
+`@huntbound/assets` em `0.0.0` com link local no lockfile, seguindo o padrão de
+`packages/content`.
+
+Foram usados `superpowers:using-superpowers`, `superpowers:brainstorming`,
+`superpowers:using-git-worktrees`, `superpowers:writing-plans`,
+`superpowers:executing-plans`, `superpowers:test-driven-development`,
+`game-studio:web-game-foundations`, `game-studio:game-playtest` e a matriz
+automatizada local como validador. Não houve gatilho para escalonamento
+externo. PB-02-07 é agora a próxima task elegível; nenhuma parte dela foi
+antecipada.
 
 ## Bloqueios
 
