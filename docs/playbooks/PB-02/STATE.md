@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-04
+**Próxima task elegível:** PB-02-05
 
 ## Tasks
 
@@ -15,7 +15,7 @@
 | PB-02-01 | done | `codex/pb02-01-asset-contracts` | `86f8921` | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | done | `codex/pb02-02-source-selection` | `ff0ea57` | 11 testes; locks real/sintético 5/5; typecheck; architecture; Biome; format; diff check |
 | PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
-| PB-02-04 | pending | `codex/pb02-04-asset-runtime` | — | — |
+| PB-02-04 | done | `codex/pb02-04-asset-runtime` | `PENDING_INTEGRATION` | 33 testes; typecheck; Biome; diff check; registry/provider transacional |
 | PB-02-05 | pending | `codex/pb02-05-profile-guards` | — | — |
 | PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
 | PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
@@ -174,6 +174,27 @@ Foram usados `game-studio:web-game-foundations`, `superpowers:using-superpowers`
 `superpowers:verification-before-completion` e `superpowers:finishing-a-development-branch`. O modo
 de conclusão é serial: fast-forward em `main`, seguido de remoção da worktree e da branch. PB-02-04
 é a próxima task elegível; runtime/provider não foram antecipados.
+
+PB-02-04 implementou o runtime browser-safe em `@huntbound/assets`: `AssetPackRegistry` atômico com
+índices independentes por namespace, quatro adapters de manifest, `BrowserAssetTransport`, digest
+SHA-256 por Web Crypto, store de Blob/URL e `createFetchAssetProvider`. O provider valida catálogo,
+perfil, manifest, hash do pack, tamanho/hash das mídias e só instala depois de criar todas as URLs.
+Falhas parciais agregam diagnostics e revogam URLs de staging; conflitos preservam os packs já
+carregados; `loadPreloads`, unload seletivo e `unloadAll` estão cobertos.
+
+Evidência fresca de PB-02-04 nesta execução:
+
+```text
+corepack pnpm --filter @huntbound/assets test -> 33 passed (7 files)
+corepack pnpm --filter @huntbound/assets typecheck -> exit 0
+corepack pnpm exec biome check packages/assets -> exit 0
+```
+
+Os testes incluem JSON inválido, HTTP falho, IDs 131/26/3031/12/36, namespaces iguais sem colisão,
+duas mídias ausentes agregadas, tamanho/hash incorretos, falha na terceira URL, conflito de pack,
+idempotência e unload ownership. A implementação não importa Node, Phaser, filesystem ou packer.
+`docs/assets/ASSET_PROVIDER.md` registra a API e o lifecycle. O próximo integrador é PB-02-05 para
+perfis, build guard, scripts e boundaries; nenhum código do app/browser foi antecipado.
 
 ## Bloqueios
 
