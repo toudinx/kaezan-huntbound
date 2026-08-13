@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-12
 
-**Próximas tasks elegíveis:** `PB-01-04` e `PB-01-05`
+**Próxima task elegível:** `PB-01-05`
 
 ## Tasks
 
@@ -15,7 +15,7 @@
 | PB-01-01 | done | `codex/pb01-01-content-contracts` | `0b465e4c0f2631bf37c1144a2fd7b2de34781a9b` | 22 testes; typecheck; architecture; Biome; format; diff check |
 | PB-01-02 | done | `codex/pb01-02-sqlite-catalog` | `429d98a2cfef393918d2e7a1efc8c05565acdf83` | 39 testes; migration/schema; round-trip; constraints; multi-slice; lifecycle; architecture; typecheck; Biome; format; diff check |
 | PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
-| PB-01-04 | pending | `codex/pb01-04-xml-importers` | — | — |
+| PB-01-04 | done | `codex/pb01-04-xml-importers` | `f1154b5ef52989ed9c3029ab1f57ddcefaef43ad` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
 | PB-01-05 | pending | `codex/pb01-05-lua-importers` | — | — |
 | PB-01-06 | pending | `codex/pb01-06-materialize-slice` | — | — |
 | PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
@@ -107,6 +107,30 @@ corepack pnpm format:check -> exit 0
 git diff --check -> exit 0
 git check-ignore references/canary/data/XML/vocations.xml -> ignored
 ```
+
+PB-01-04 implementou adapters XML puros e seletivos para vocações e itens. Knight é resolvido
+exclusivamente pelo source ID `4`; itens aceitam seleção por ID, nome normalizado e um ID concreto
+dentro de range sem expandir o catálogo. Diagnósticos bloqueantes cobrem XML malformado, raiz
+inválida, ausência, duplicidade, número/range inválido, ambiguidade e atributos/campos fora da
+allowlist. O mapping está em `docs/content/CANARY_XML_MAPPING.md`; os adapters não são exportados
+pelo entrypoint runtime, não leem filesystem e não mantêm cache global. Fixtures sintéticas foram
+mantidas inline nos testes; nenhum XML Canary real foi copiado ou lido pelo adapter.
+
+Evidência fresca de PB-01-04 no commit `f1154b5ef52989ed9c3029ab1f57ddcefaef43ad`:
+
+```text
+corepack pnpm --filter @huntbound/content test -- src/importers/canary/xml -> 27 passed
+corepack pnpm --filter @huntbound/content typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/content docs/content/CANARY_XML_MAPPING.md -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+```
+
+O ciclo RED/GREEN observou falha por adapter ausente antes de cada implementação e terminou com 27
+testes passando. O validador efetivo foi a suíte automatizada e os gates locais; não houve gatilho
+objetivo para escalonamento a Sol/Claude. PB-01-05 é a próxima task elegível; PB-01-06 continua
+dependente de PB-01-04 e PB-01-05.
 
 ## Bloqueios
 
