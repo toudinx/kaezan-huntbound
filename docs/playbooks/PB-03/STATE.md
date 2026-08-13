@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-04 concluídas; PB-03-05 é a próxima task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-05 concluídas; PB-03-06 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-05.
+**Próxima task elegível:** PB-03-06.
 
 ## Tasks
 
@@ -16,7 +16,7 @@
 | PB-03-02 | done | `codex/pb03-02-kernel-random` | `4dbcc96` | 12 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` + `5e67e56` | 18 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
-| PB-03-05 | pending | `codex/pb03-05-kernel-tick-loop` | — | — |
+| PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | pending | `codex/pb03-06-kernel-replay` | — | — |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
@@ -197,9 +197,93 @@ Modo de conclusão: integração por merge explícito porque `main` avançou com
 seguida de reverificação integrada e remoção da worktree e da branch temporárias. PB-03-03 e PB-03-04 estão
 concluídas; PB-03-05 é a próxima task elegível.
 
+## PB-03-05 — handoff concluído
+
+PB-03-05 foi implementada na branch `codex/pb03-05-kernel-tick-loop`. O commit funcional integrado é
+`94571a4` (`feat: run the deterministic tick loop`). `@huntbound/simulation` agora publica
+`createSimulationKernel`, `SimulationKernel`, `WorldState`, `createEventJournal` e `EventJournal`.
+O modo foi serial: PB-03-02, PB-03-03 e PB-03-04 já estavam em `main`, então não houve integração de
+branches paralelas.
+
+Pipeline efetivo, sem exceção: `intake` → `apply` → `systems` → `flush`, com `systems` rodando
+`S1 lifecycle` → `S2 movement` → `S3 ai`. O `intake` drena o buffer externo do tick e as intents
+internas decididas em ticks anteriores. O `apply` muta `actor/face` na hora, enfileira spawn/despawn
+para S1 e intents de passo para S2, e rejeita sem mutar. `S1` materializa por `sequence`; `S2`
+resolve por `EntityId` com cooldown antes da geometria; `S3` percorre `wander` por `EntityId`,
+consome um `nextBelow(8)` do stream `ai` e enfileira intent para `currentTick + 1` em fila interna,
+fora do command log e sem consumir `sequence` externo. O `flush` fecha o journal do tick e avança o
+tick. A sequência de evento é global e crescente; `advance(n)` equivale a `n` `advanceOne()`.
+
+Os eventos de boot ficam no journal e saem na primeira chamada de `advanceOne()`, que executa o tick
+`0`; `state()` já reflete os atores iniciais antes de qualquer avanço.
+
+Decisões de semântica que a task não congelava e que ficam registradas em
+`docs/simulation/KERNEL_CONTRACT.md`, seção "Loop de tick":
+
+- passo bem-sucedido define `facing` igual à direção do passo; bloqueio não altera `facing`;
+- ator materializado por `scenario/spawn-actor` entra com `readyAtTick = currentTick`;
+- disponibilidade de célula de spawn é avaliada contra os atores vivos em `apply` mais as células
+  reservadas por spawns anteriores do mesmo tick; um despawn do mesmo tick ainda não liberou a
+  célula, porque a materialização acontece em S1;
+- empate de intents sobre o mesmo ator resolve a externa antes da interna;
+- `S3` decide com `currentTick >= readyAtTick`, isto é, cooldown avaliado no tick da decisão e não no
+  tick de aplicação.
+
+A regra executável `tools/architecture/simulation-boundaries.ts` reprova `Date`, `performance`,
+`Math.random`, `setTimeout`, `setInterval`, `setImmediate`, `queueMicrotask`, `crypto`, `globalThis`,
+`process` e qualquer import externo em `packages/simulation/src/**`; `vitest` é tolerado apenas em
+`*.test.ts`. Ela entrou em `architecture:check` e tem teste próprio em `node --test` com caso
+positivo, caso negativo, regressão de lexer e verificação do pacote real.
+
+Evidência fresca na worktree da task:
+
+```text
+corepack pnpm --filter @huntbound/simulation test -> exit 0; 79 passed (9 files)
+corepack pnpm --filter @huntbound/simulation typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/simulation tools/architecture -> exit 0
+corepack pnpm format:check -> exit 0; 237 files
+corepack pnpm typecheck -> exit 0
+corepack pnpm test -> exit 0; workspace tests green
+node --test tools/architecture/*-boundaries.test.ts check-boundaries.test.ts -> exit 0; 21 passed
+git diff --check -> exit 0
+```
+
+Ciclo TDD: RED por módulo ausente no boot; RED com 14 falhas na aplicação de comandos; RED com 6
+falhas na IA; RED com 3 falhas em `advance`. Os testes de ordem e cooldown do passo 6 passaram de
+primeira porque `S2` já existia do passo 5, então cada afirmação foi provada por mutação da produção
+— inverter a ordenação por `EntityId`, zerar `readyAtTick` e ignorar `despawning` derrubaram
+exatamente os testes previstos, e o mesmo foi feito para as duas propriedades do journal. O teste de
+reprodutibilidade por seed ganhou um contraexemplo com seed diferente.
+
+Defeito encontrado e corrigido durante o passo 12: a primeira versão de `simulation-boundaries.ts`
+usava o scanner de `typescript/unstable/ast`, que para no primeiro template literal e deixava o
+resto do arquivo sem verificação — um `Date.now() + Math.random()` injetado em `kernel.ts` passava
+sem diagnóstico. A regra passou a usar um lexer próprio que pula comentários, strings, template
+literals com interpolação e expressões regulares; a regressão está coberta por teste.
+
+Vetores de wander confirmados para a seed `0f1e2d3c4b5a6978`, derivados dos golden de RNG de
+PB-03-02: as quatro primeiras decisões do stream `ai` por `nextBelow(8)` sobre a ordem canônica são
+`nw`, `se`, `s`, `sw`.
+
+Modelo/effort efetivos: Claude Code/Opus 5; o alias Sol/xhigh sugerido não é exposto nesta sessão.
+Skills usadas: `superpowers:using-superpowers`, `superpowers:test-driven-development`,
+`superpowers:systematic-debugging` e `superpowers:verification-before-completion`. Validador
+efetivo: gates automatizados.
+
+Snapshot, restore, replay, CLI, fixtures golden, app e browser não foram antecipados. PB-03-06 é a
+próxima task elegível.
+
 ## Bloqueios
 
-Nenhum. Os warnings `FIXABLE` herdados de PB-02 estão listados em
+Nenhum bloqueio. Uma observação não bloqueante fica registrada: o script `test` da raiz enumera
+apenas `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`, de modo que
+`simulation-boundaries.test.ts` — como já acontecia com `content-boundaries.test.ts` — não roda no
+gate agregado. A regra em si roda em `architecture:check`, que é o critério de aceite. Corrigir o
+enumerador exigiria editar `package.json` da raiz, fora do escopo permitido de PB-03-05; fica para
+uma task com escopo de raiz.
+
+Os warnings `FIXABLE` herdados de PB-02 estão listados em
 `docs/playbooks/PB-02/artifacts/acceptance-report.md` §11; eles não bloqueiam PB-03 e não devem ser
 absorvidos por uma task deste playbook sem card próprio.
 
