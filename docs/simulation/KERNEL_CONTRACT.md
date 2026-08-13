@@ -200,3 +200,33 @@ execução do kernel.
 
 Zod é uma dependência exclusiva de `@huntbound/contracts`. O contrato não importa Node, DOM, Phaser,
 filesystem, fetch, Web Crypto, Blob ou qualquer outro pacote Huntbound.
+
+## Espaço e movimento
+
+O espaço do kernel é um grid inteiro estático. Cada posição tem `{ x, y, z }`; o cenário declara
+uma única camada `z`, `width`, `height` e a lista `blockedTiles`. Não há transição de andar,
+pathfinding, line of sight, área de efeito ou projétil em PB-03.
+
+As direções formam um conjunto fechado e são percorridas nesta ordem canônica:
+`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`. Seus deltas são, respectivamente, `(0,-1)`, `(1,-1)`,
+`(1,0)`, `(1,1)`, `(0,1)`, `(-1,1)`, `(-1,0)` e `(-1,-1)`. A coordenada `z` é preservada durante
+um passo.
+
+O terreno é estático e bloqueia somente as células declaradas em `blockedTiles`. A ocupação é um
+índice derivado da lista de `ActorState`; ela é reconstruída ao carregar o estado e não é
+serializada. Cada célula comporta no máximo um ator, conforme a validação do cenário e do snapshot.
+
+`resolveStep` é pura: não modifica o ator, o grid ou o índice. Ela calcula o destino e avalia as
+causas nesta precedência fixa:
+
+1. `bounds`, quando o destino está fora de `width`, `height` ou usa outro `z`;
+2. `terrain`, quando o destino está bloqueado;
+3. `diagonal-corner`, quando um dos dois vizinhos ortogonais do passo diagonal está bloqueado por
+   terreno;
+4. `occupied`, quando o destino está ocupado por outro ator.
+
+O teste de corte de canto considera somente terreno: um ator em um dos vizinhos ortogonais não
+impede o passo diagonal. O destino, porém, continua sujeito à verificação de ocupação. Passos
+ortogonais custam `baseTicks`; passos diagonais custam `Math.ceil(baseTicks * 3 / 2)` ticks. O
+`baseTicks` é o `stepCooldownTicks` do blueprint, e a decisão de `cooldown` pertence ao chamador,
+não à camada geométrica.
