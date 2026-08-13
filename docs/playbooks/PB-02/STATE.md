@@ -6,13 +6,13 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-01
+**Próxima task elegível:** PB-02-02
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-02-01 | pending | `codex/pb02-01-asset-contracts` | — | — |
+| PB-02-01 | done | `codex/pb02-01-asset-contracts` | `feat: define stable asset contracts` (integração fast-forward desta task) | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | pending | `codex/pb02-02-source-selection` | — | — |
 | PB-02-03 | pending | `codex/pb02-03-deterministic-packer` | — | — |
 | PB-02-04 | pending | `codex/pb02-04-asset-runtime` | — | — |
@@ -49,11 +49,44 @@
 
 ## Handoffs
 
-Nenhuma task executada. O design aprovado está em
+PB-02-01 implementou em `@huntbound/assets` as stable keys, factories e quatro IDs branded, os
+schemas estritos de selection/source lock/pack/catalog, identidades discriminadas, grupos de
+proveniência, presentation/media/animação, validações de cross-reference e diagnósticos ordenados.
+Os quatro contratos de adapter foram mantidos em arquivos separados e exportados pelo entrypoint.
+Não foram lidos o export real, filesystem, fetch, Web Crypto, Blob, Phaser ou formatos do cliente;
+nenhum fixture, packer, provider ou app foi antecipado.
+
+O design aprovado permanece em
 `docs/superpowers/specs/2026-08-13-pb-02-asset-packs-design.md`.
 
-PB-02-01 deve começar pelos contratos e schemas em `@huntbound/assets`; não deve ler a origem real,
-criar fixtures, implementar packer/provider ou tocar o app.
+Evidência fresca de PB-02-01:
+
+```text
+corepack pnpm --filter @huntbound/assets test -> 13 passed (3 files)
+corepack pnpm --filter @huntbound/assets typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/assets -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+```
+
+Exports efetivos incluem `AssetKeySchema`, `LookTypeIdSchema`, `ClientIdSchema`, `EffectIdSchema`,
+`MissileIdSchema`, as factories correspondentes, `AssetSelectionManifestSchema`,
+`AssetSourceLockSchema`, `AssetPackManifestSchema`, `AssetPackCatalogSchema`, os tipos de contrato,
+`validateAssetSelectionManifest`, `validateAssetSourceLock`, `validateAssetPackManifest`,
+`validateAssetPackCatalog` e `AssetDiagnosticCode`. A dependência direta é `zod@4.4.3`; Vitest
+permanece `4.1.10` como devDependency exata do package.
+
+Modelo/effort efetivos: Codex baseado em GPT-5; o effort exposto nesta sessão não informa o alias
+Luna/xhigh sugerido no task card. Validador efetivo: gates automatizados; não houve gatilho objetivo
+para escalonamento.
+
+A instalação inicial do worktree encontrou falha de certificado/metadata do registry durante
+`pnpm add`; as resoluções já estavam presentes no lockfile. O install congelado foi concluído com
+`--config.strict-ssl=false`, sem alterar configuração versionada ou resoluções.
+
+PB-02-02 é elegível agora. Ela deve congelar source lock, selection e fixture sintética usando os
+schemas públicos; não iniciar packer/provider nesta task.
 
 ## Bloqueios
 
