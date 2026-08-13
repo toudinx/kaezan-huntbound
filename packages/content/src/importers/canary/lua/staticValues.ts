@@ -6,7 +6,7 @@ import type {
   TableConstructorExpression,
 } from 'luaparse';
 
-import { diagnosticAt } from './luaDiagnostics';
+import { diagnosticAt } from './luaDiagnostics.ts';
 
 export interface LuaStaticObject {
   readonly [key: string]: LuaStaticValue;

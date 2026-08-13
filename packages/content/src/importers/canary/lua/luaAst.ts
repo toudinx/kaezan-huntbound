@@ -1,10 +1,10 @@
 import type { Chunk, Node } from 'luaparse';
 import * as luaparse from 'luaparse';
 
-import type { CanaryParseResult } from '../sourceTypes';
-import { diagnosticFromLuaError } from './luaDiagnostics';
+import type { CanaryParseResult } from '../sourceTypes.ts';
+import { diagnosticFromLuaError } from './luaDiagnostics.ts';
 
-export { diagnosticAt } from './luaDiagnostics';
+export { diagnosticAt } from './luaDiagnostics.ts';
 
 export function parseLuaChunk(lua: string): CanaryParseResult<Chunk> {
   try {

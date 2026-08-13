@@ -97,8 +97,8 @@ CREATE TABLE content_slice_entities (
   UNIQUE (slice_key, entity_guid, entity_kind),
   FOREIGN KEY (slice_key) REFERENCES content_slices (slice_key) ON DELETE RESTRICT,
   FOREIGN KEY (entity_guid) REFERENCES content_entities (guid) ON DELETE RESTRICT,
-  FOREIGN KEY (source_system, snapshot, source_path, source_id, source_sha256)
-    REFERENCES source_files (source_system, snapshot, source_path, source_id, source_sha256)
+  FOREIGN KEY (source_system, snapshot, source_path)
+    REFERENCES source_files (source_system, snapshot, source_path)
     ON DELETE RESTRICT
 );
 

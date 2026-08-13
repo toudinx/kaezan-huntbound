@@ -7,21 +7,22 @@ import type {
   Statement,
 } from 'luaparse';
 
-import type { CanaryParseResult } from '../sourceTypes';
-import { parseLuaChunk } from './luaAst';
-import { diagnosticAt } from './luaDiagnostics';
+import type { CanaryParseResult } from '../sourceTypes.ts';
+import { parseLuaChunk } from './luaAst.ts';
+import { diagnosticAt } from './luaDiagnostics.ts';
 import type {
   CanaryAttackDto,
   CanaryConditionDto,
   CanaryCreatureDto,
   CanaryDefenseDto,
+  CanaryLootEntryDto,
   CanarySummonDto,
-} from './luaTypes';
+} from './luaTypes.ts';
 import {
   readRequiredNumber,
   readRequiredString,
   readStaticValue,
-} from './staticValues';
+} from './staticValues.ts';
 
 interface TableShape {
   readonly named: ReadonlyMap<string, Expression>;
@@ -322,13 +323,10 @@ function readCallString(
   return readString(call.arguments[0], field, diagnostics);
 }
 
-function readLoot(
+function readLootEntries(
   expression: Expression | undefined,
   diagnostics: ContentDiagnostic[],
-): readonly (
-  | { readonly sourceId: string }
-  | { readonly sourceName: string }
-)[] {
+): readonly CanaryLootEntryDto[] {
   if (expression === undefined) return [];
   const shape = tableShape(expression, 'loot', diagnostics);
   if (shape === undefined) return [];
@@ -340,10 +338,7 @@ function readLoot(
       'loot must contain entry tables only',
     );
   }
-  const result: (
-    | { readonly sourceId: string }
-    | { readonly sourceName: string }
-  )[] = [];
+  const result: CanaryLootEntryDto[] = [];
   for (const entryExpression of shape.values) {
     const entry = tableShape(entryExpression, 'loot entry', diagnostics);
     if (entry === undefined) continue;
@@ -399,17 +394,40 @@ function readLoot(
           min: 0,
         },
       );
-      if (sourceId !== undefined) result.push({ sourceId: String(sourceId) });
+      if (sourceId !== undefined) {
+        result.push({
+          reference: { sourceId: String(sourceId) },
+          chancePerHundredThousand: chance,
+          minCount,
+          maxCount,
+        });
+      }
     } else {
       const sourceName = readString(
         entry.named.get('name'),
         'loot name',
         diagnostics,
       );
-      if (sourceName !== undefined) result.push({ sourceName });
+      if (sourceName !== undefined) {
+        result.push({
+          reference: { sourceName },
+          chancePerHundredThousand: chance,
+          minCount,
+          maxCount,
+        });
+      }
     }
   }
   return result;
+}
+
+function readLoot(
+  expression: Expression | undefined,
+  diagnostics: ContentDiagnostic[],
+): readonly CanaryLootEntryDto['reference'][] {
+  return readLootEntries(expression, diagnostics).map(
+    (entry) => entry.reference,
+  );
 }
 
 function readCondition(
@@ -1116,4 +1134,19 @@ export function parseCanaryMonsterLua(
       immunities,
     },
   };
+}
+
+export function parseCanaryMonsterLoot(
+  lua: string,
+): CanaryParseResult<readonly CanaryLootEntryDto[]> {
+  const collected = collectMonster(lua);
+  if (!collected.ok) return collected;
+  const diagnostics: ContentDiagnostic[] = [];
+  const value = readLootEntries(
+    collected.state.fields.get('loot'),
+    diagnostics,
+  );
+  return diagnostics.length > 0
+    ? { ok: false, diagnostics }
+    : { ok: true, value };
 }

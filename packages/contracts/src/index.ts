@@ -1,3 +1,3 @@
-export * from './content/diagnostics';
-export * from './content/identity';
-export * from './content/schemas';
+export * from './content/diagnostics.ts';
+export * from './content/identity.ts';
+export * from './content/schemas.ts';

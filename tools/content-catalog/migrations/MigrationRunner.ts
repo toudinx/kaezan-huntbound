@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import type Database from 'better-sqlite3';
 
-import { CatalogMigrationError } from '../database/catalogErrors';
+import { CatalogMigrationError } from '../database/catalogErrors.ts';
 
 export interface AppliedMigration {
   readonly id: number;

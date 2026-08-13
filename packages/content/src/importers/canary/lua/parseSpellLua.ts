@@ -7,15 +7,15 @@ import type {
   Statement,
 } from 'luaparse';
 
-import type { CanaryParseResult } from '../sourceTypes';
-import { parseLuaChunk } from './luaAst';
-import { diagnosticAt } from './luaDiagnostics';
-import type { CanarySpellDto } from './luaTypes';
+import type { CanaryParseResult } from '../sourceTypes.ts';
+import { parseLuaChunk } from './luaAst.ts';
+import { diagnosticAt } from './luaDiagnostics.ts';
+import type { CanarySpellDto } from './luaTypes.ts';
 import {
   readRequiredNumber,
   readRequiredString,
   readStaticValue,
-} from './staticValues';
+} from './staticValues.ts';
 
 interface FormulaValues {
   readonly levelFactor: number;

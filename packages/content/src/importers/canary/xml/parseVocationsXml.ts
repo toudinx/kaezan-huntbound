@@ -1,18 +1,18 @@
 import type { ContentDiagnostic } from '@huntbound/contracts';
 
-import type { CanaryParseResult } from '../sourceTypes';
+import type { CanaryParseResult } from '../sourceTypes.ts';
 import {
   createXmlDiagnostic,
   parseRequiredInteger,
   parseRequiredNumber,
   parseXmlRoot,
-} from './xmlDiagnostics';
+} from './xmlDiagnostics.ts';
 import {
   asXmlElements,
   type XmlElement,
   xmlAttribute,
   xmlAttributeNames,
-} from './xmlTypes';
+} from './xmlTypes.ts';
 
 export interface CanaryVocationDto {
   readonly sourceId: string;

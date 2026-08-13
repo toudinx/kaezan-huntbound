@@ -1,7 +1,7 @@
 import {
   createSqliteContentCatalog,
   type OpenContentCatalog,
-} from './SqliteContentCatalog';
+} from './SqliteContentCatalog.ts';
 
 export function openContentCatalog(
   path: string,

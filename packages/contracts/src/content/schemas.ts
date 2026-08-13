@@ -4,7 +4,7 @@ import {
   ContentGuidSchema,
   ContentKeySchema,
   VocationFamilyKeySchema,
-} from './identity';
+} from './identity.ts';
 
 const nonEmptyString = z.string().trim().min(1);
 const nonNegativeNumber = z.number().finite().nonnegative();

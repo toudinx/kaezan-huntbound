@@ -4,6 +4,8 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 import { createScanner, SyntaxKind } from 'typescript/unstable/ast';
 
+import { checkContentBoundaries } from './content-boundaries.ts';
+
 type DependencyMap = Record<string, string>;
 
 type ExternalRule = {
@@ -442,6 +444,7 @@ export async function checkBoundaries(
     }
   }
 
+  diagnostics.push(...(await checkContentBoundaries(root)));
   return diagnostics;
 }
 

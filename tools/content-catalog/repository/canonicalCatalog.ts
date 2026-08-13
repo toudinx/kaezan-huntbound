@@ -8,7 +8,7 @@ import {
   type ContentKey,
   createContentGuid,
   type EntityKind,
-} from '@huntbound/contracts';
+} from '../../../packages/contracts/src/index.ts';
 
 const facetOrder = ContentFacetSchema.options;
 
@@ -49,10 +49,6 @@ function entityKindFromKey(stableKey: string): EntityKind {
   return kind;
 }
 
-function sourceIdFromKey(stableKey: string): string {
-  return stableKey.split(':').at(-1) ?? fail(`invalid stable key ${stableKey}`);
-}
-
 function allEntities(bundle: CatalogContentBundle) {
   return [
     ...bundle.vocations.map((entity) => ({
@@ -80,11 +76,11 @@ function assertCanonicalIdentity(bundle: CatalogContentBundle): void {
     if (kind !== entity.kind) {
       fail(`${entity.stableKey} has child kind ${entity.kind}`);
     }
-    const sourceId = sourceIdFromKey(entity.stableKey);
-    if (entity.source.sourceId !== sourceId) {
-      fail(`${entity.stableKey} source tuple does not match sourceId`);
-    }
-    const expectedGuid = createContentGuid(kind, 'tibia', sourceId);
+    const expectedGuid = createContentGuid(
+      kind,
+      'tibia',
+      entity.source.sourceId,
+    );
     if (entity.guid !== expectedGuid) {
       fail(`${entity.stableKey} does not have its canonical GUID`);
     }

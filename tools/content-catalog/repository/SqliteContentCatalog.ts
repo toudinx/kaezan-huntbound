@@ -8,15 +8,15 @@ import type {
 } from '@huntbound/contracts';
 import type Database from 'better-sqlite3';
 
-import { CatalogError } from '../database/catalogErrors';
-import { openDatabase } from '../database/openDatabase';
-import { applyMigrations } from '../migrations/MigrationRunner';
+import { CatalogError } from '../database/catalogErrors.ts';
+import { openDatabase } from '../database/openDatabase.ts';
+import { applyMigrations } from '../migrations/MigrationRunner.ts';
 import {
   canonicalizeCatalogBundle,
   canonicalJson,
   facetPayloadHash,
   validatePersistableBundle,
-} from './canonicalCatalog';
+} from './canonicalCatalog.ts';
 
 const defaultMigrationsDirectory = fileURLToPath(
   new URL('../migrations', import.meta.url),
@@ -27,15 +27,13 @@ interface ContentCatalogReadPort {
   countRows(): Readonly<Record<string, number>>;
 }
 
-interface CuratedCatalogTransactionWriter {
+interface CatalogMutationTransaction {
   replaceCatalogBundle(bundle: CatalogContentBundle): void;
   listOrphanEntities(): readonly ContentGuid[];
 }
 
-interface CuratedCatalogWriter {
-  transaction<
-    Operation extends (tx: CuratedCatalogTransactionWriter) => unknown,
-  >(
+interface CatalogMutationRunner {
+  transaction<Operation extends (tx: CatalogMutationTransaction) => unknown>(
     operation: Operation &
       (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
         ? unknown
@@ -50,7 +48,7 @@ export interface OpenContentCatalog extends ContentCatalogReadPort {
 
 export interface OpenMutableContentCatalog
   extends OpenContentCatalog,
-    CuratedCatalogWriter {}
+    CatalogMutationRunner {}
 
 type CatalogEntity =
   | CatalogContentBundle['vocations'][number]
@@ -87,7 +85,7 @@ function allEntities(bundle: CatalogContentBundle): readonly CatalogEntity[] {
 }
 
 export class SqliteContentCatalog
-  implements OpenContentCatalog, CuratedCatalogWriter
+  implements OpenContentCatalog, CatalogMutationRunner
 {
   private readonly database: Database.Database;
   private readonly migrationsDirectory: string;
@@ -567,9 +565,7 @@ export class SqliteContentCatalog
     return canonicalizeCatalogBundle(bundle);
   }
 
-  transaction<
-    Operation extends (tx: CuratedCatalogTransactionWriter) => unknown,
-  >(
+  transaction<Operation extends (tx: CatalogMutationTransaction) => unknown>(
     operation: Operation &
       (Extract<ReturnType<Operation>, PromiseLike<unknown>> extends never
         ? unknown
@@ -586,7 +582,7 @@ export class SqliteContentCatalog
     const run = this.database.transaction(() => {
       this.transactionActive = true;
       let active = true;
-      const tx: CuratedCatalogTransactionWriter = {
+      const tx: CatalogMutationTransaction = {
         replaceCatalogBundle: (bundle) => {
           if (!active) {
             throw new CatalogError(

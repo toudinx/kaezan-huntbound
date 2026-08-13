@@ -9,7 +9,9 @@
       "!dist",
       "!coverage",
       "!test-results",
-      "!playwright-report"
+      "!playwright-report",
+      "!packages/content/catalog/operations",
+      "!packages/content/src/generated"
     ]
   },
   "formatter": {

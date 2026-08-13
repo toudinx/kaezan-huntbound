@@ -1,6 +1,4 @@
-import type { CuratedCatalogWriter } from '../../packages/content/src/application/internal/CuratedCatalogWriter';
-
-declare const writer: CuratedCatalogWriter;
+declare const writer: import('../../packages/content/src/application/internal/CuratedCatalogWriter.ts').CuratedCatalogWriter;
 
 writer.transaction(() => 1);
 

@@ -1,0 +1,1405 @@
+{
+  "contentVersion": "pb-01-contract-coverage-v1",
+  "creatures": [
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 45,
+          "minDamage": 0,
+          "name": "melee"
+        },
+        {
+          "chanceBasisPoints": 1500,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "ranged",
+          "maxDamage": 40,
+          "minDamage": 0,
+          "name": "combat",
+          "projectile": "throwingknife",
+          "rangeTiles": 5
+        }
+      ],
+      "conditions": [],
+      "defenses": [],
+      "displayName": "Amazon",
+      "guid": "9951ea01-6349-558a-8358-40a5899e38fd",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 137,
+      "loot": [
+        {
+          "chancePerHundredThousand": 80000,
+          "itemKey": "item:tibia:dagger",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 80000,
+          "itemKey": "item:tibia:skull",
+          "maxCount": 2,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 40000,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 20,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 30000,
+          "itemKey": "item:tibia:brown-bread",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 23000,
+          "itemKey": "item:tibia:sabre",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10000,
+          "itemKey": "item:tibia:girlish-hair-decoration",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 5200,
+          "itemKey": "item:tibia:protective-charm",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:torch",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 260,
+          "itemKey": "item:tibia:crystal-necklace",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 130,
+          "itemKey": "item:tibia:small-ruby",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.05,
+        "drown": 0,
+        "earth": 0,
+        "energy": 0,
+        "fire": 0,
+        "holy": 0,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": -0.05
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "77",
+        "sourcePath": "data-otservbr-global/monster/humans/amazon.lua",
+        "sourceSha256": "9792a709311c8281217bffa343e2c9579a8ae631bd69f9c0a8665a6d469cca7b",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:amazon",
+      "stats": {
+        "experience": 60,
+        "health": 110,
+        "speed": 86
+      },
+      "summons": []
+    },
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 15,
+          "minDamage": 0,
+          "name": "melee"
+        },
+        {
+          "chanceBasisPoints": 1500,
+          "damageType": "energy",
+          "intervalMs": 2000,
+          "kind": "ranged",
+          "maxDamage": 31,
+          "minDamage": 20,
+          "name": "combat",
+          "projectile": "energyball",
+          "rangeTiles": 7
+        },
+        {
+          "chanceBasisPoints": 500,
+          "damageType": "fire",
+          "intervalMs": 2000,
+          "kind": "area",
+          "maxDamage": 43,
+          "minDamage": 5,
+          "name": "combat",
+          "radiusTiles": 1,
+          "shape": "square"
+        }
+      ],
+      "conditions": [],
+      "defenses": [
+        {
+          "chanceBasisPoints": 6000,
+          "intervalMs": 2000,
+          "kind": "heal",
+          "maxAmount": 43,
+          "minAmount": 27
+        }
+      ],
+      "displayName": "Orc Shaman",
+      "guid": "0a8571b6-59d7-50b8-8286-1dfe0fd7f963",
+      "immunities": [
+        "invisible"
+      ],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 6,
+      "loot": [
+        {
+          "chancePerHundredThousand": 520,
+          "itemKey": "item:tibia:book",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 90000,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 5,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:wand-of-decay",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4850,
+          "itemKey": "item:tibia:spear",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 8750,
+          "itemKey": "item:tibia:chain-armor",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10600,
+          "itemKey": "item:tibia:corncob",
+          "maxCount": 2,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2100,
+          "itemKey": "item:tibia:orc-tooth",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10300,
+          "itemKey": "item:tibia:broken-shamanic-staff",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 6860,
+          "itemKey": "item:tibia:shamanic-hood",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4300,
+          "itemKey": "item:tibia:orc-leather",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:heavy-old-tome",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.05,
+        "drown": 0,
+        "earth": -0.1,
+        "energy": 0.5,
+        "fire": 0,
+        "holy": 0.1,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "6",
+        "sourcePath": "data-otservbr-global/monster/humanoids/orc_shaman.lua",
+        "sourceSha256": "cf3fee52b211b9f4b18dc7da2bfbf257e816542a320491b3817a883cfbe17864",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:orc-shaman",
+      "stats": {
+        "experience": 110,
+        "health": 115,
+        "speed": 70
+      },
+      "summons": [
+        {
+          "chanceBasisPoints": 2000,
+          "count": 3,
+          "creatureKey": "creature:tibia:snake"
+        }
+      ]
+    },
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 40,
+          "minDamage": 0,
+          "name": "melee"
+        }
+      ],
+      "conditions": [],
+      "defenses": [],
+      "displayName": "Rotworm",
+      "guid": "9a8dd398-e67b-5a98-be03-3406bd581cf9",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 26,
+      "loot": [
+        {
+          "chancePerHundredThousand": 71760,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 17,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 3000,
+          "itemKey": "item:tibia:sword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4500,
+          "itemKey": "item:tibia:mace",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 20000,
+          "itemKey": "item:tibia:meat",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 20120,
+          "itemKey": "item:tibia:ham",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 3000,
+          "itemKey": "item:tibia:worm",
+          "maxCount": 3,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10000,
+          "itemKey": "item:tibia:lump-of-dirt",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1890,
+          "itemKey": "item:tibia:legion-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": 0,
+        "drown": 0,
+        "earth": 0,
+        "energy": 0,
+        "fire": 0,
+        "holy": 0,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "26",
+        "sourcePath": "data-otservbr-global/monster/vermins/rotworm.lua",
+        "sourceSha256": "f75ed297cd851013cde4e991113bf2d67ab9930852f20fb0c4e8d0937ddb176b",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:rotworm",
+      "stats": {
+        "experience": 40,
+        "health": 65,
+        "speed": 58
+      },
+      "summons": []
+    },
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 8,
+          "minDamage": 0,
+          "name": "melee"
+        }
+      ],
+      "conditions": [
+        {
+          "intervalMs": 4000,
+          "kind": "poison",
+          "totalDamage": 15
+        }
+      ],
+      "defenses": [],
+      "displayName": "Snake",
+      "guid": "a6885227-b735-54a4-a56b-2ebe53d7ae43",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "conditions"
+      ],
+      "lookType": 28,
+      "loot": [],
+      "resistances": {
+        "death": 0,
+        "drown": 0,
+        "earth": 0.4,
+        "energy": 0.2,
+        "fire": -0.1,
+        "holy": 0,
+        "ice": -0.1,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "28",
+        "sourcePath": "data-otservbr-global/monster/reptiles/snake.lua",
+        "sourceSha256": "e626dc3591330481f37e1e3703afe67bf89a93771c42ccbd46ad59f0690ca48b",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:snake",
+      "stats": {
+        "experience": 10,
+        "health": 15,
+        "speed": 60
+      },
+      "summons": []
+    }
+  ],
+  "items": [
+    {
+      "aliases": [],
+      "displayName": "book",
+      "guid": "b88c6eba-dd05-56ed-9ba9-3ef19bbb6e7b",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "2824",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:book",
+      "weight": 1300
+    },
+    {
+      "aliases": [],
+      "displayName": "broken shamanic staff",
+      "guid": "fd3c90c2-d0e9-5229-b3f8-c3c0d97939ed",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11452",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:broken-shamanic-staff",
+      "weight": 128
+    },
+    {
+      "aliases": [],
+      "displayName": "brown bread",
+      "guid": "aa165cb5-c226-5d87-9ab4-5914d87c2e69",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3602",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:brown-bread",
+      "weight": 400
+    },
+    {
+      "aliases": [],
+      "displayName": "chain armor",
+      "guid": "5c55f130-4e11-5534-acee-75e75987d066",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3358",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:chain-armor",
+      "weight": 10000
+    },
+    {
+      "aliases": [],
+      "displayName": "corncob",
+      "guid": "95cca62a-acc8-5f9a-95fc-c41491b9fe9d",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3597",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:corncob",
+      "weight": 350
+    },
+    {
+      "aliases": [],
+      "displayName": "crystal necklace",
+      "guid": "79aafb96-5486-5fbc-a9b8-4e4dc781b4f4",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3008",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crystal-necklace",
+      "weight": 490
+    },
+    {
+      "aliases": [],
+      "displayName": "dagger",
+      "guid": "62920b08-9390-59b1-b6cf-d3dd39dec5cb",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3267",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dagger",
+      "weight": 950
+    },
+    {
+      "aliases": [],
+      "displayName": "girlish hair decoration",
+      "guid": "33858c73-a992-59c8-b38b-1c6c3171084d",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11443",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:girlish-hair-decoration",
+      "weight": 50
+    },
+    {
+      "aliases": [],
+      "displayName": "gold coin",
+      "guid": "78974d81-ae2d-5ba6-855e-04d1909ab11a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3031",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:gold-coin",
+      "weight": 10
+    },
+    {
+      "aliases": [],
+      "displayName": "ham",
+      "guid": "2d2e73ae-8e64-5bb2-a74e-8f208c3135a6",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3582",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:ham",
+      "weight": 2000
+    },
+    {
+      "aliases": [],
+      "displayName": "heavy old tome",
+      "guid": "1b946230-e40d-53e8-9d14-d1f5b5c440a8",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "23986",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:heavy-old-tome",
+      "weight": 1000
+    },
+    {
+      "aliases": [],
+      "displayName": "legion helmet",
+      "guid": "9ac9eaf4-f708-51fb-b487-b673d2b3f216",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3374",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:legion-helmet",
+      "weight": 3100
+    },
+    {
+      "aliases": [],
+      "displayName": "lump of dirt",
+      "guid": "de1fc1fa-f0fe-5661-8b55-9ad5ea2d43db",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "9692",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:lump-of-dirt",
+      "weight": 68
+    },
+    {
+      "aliases": [],
+      "displayName": "mace",
+      "guid": "a3fd722f-8cb4-50f0-9c6b-aa685e5ae879",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3286",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:mace",
+      "weight": 3800
+    },
+    {
+      "aliases": [],
+      "displayName": "meat",
+      "guid": "b7e65ad4-e993-56d3-b107-9fb3bbfc9ef1",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3577",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:meat",
+      "weight": 1300
+    },
+    {
+      "aliases": [],
+      "displayName": "orc leather",
+      "guid": "a6909d12-d58f-519e-a210-95ee032b89d3",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11479",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:orc-leather",
+      "weight": 50
+    },
+    {
+      "aliases": [],
+      "displayName": "orc tooth",
+      "guid": "227c47df-673a-5f37-9d0a-34fca2c7c5ea",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "10196",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:orc-tooth",
+      "weight": 100
+    },
+    {
+      "aliases": [],
+      "displayName": "protective charm",
+      "guid": "5a8300ad-7bff-5a20-8fb4-b3a518ca3dbf",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11444",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:protective-charm",
+      "weight": 120
+    },
+    {
+      "aliases": [],
+      "displayName": "sabre",
+      "guid": "92f5f3a0-41d3-58c3-b797-d87ac59169c0",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3273",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:sabre",
+      "weight": 2500
+    },
+    {
+      "aliases": [],
+      "displayName": "shamanic hood",
+      "guid": "008f3f02-e124-51cf-872a-6d7fc5678769",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11478",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:shamanic-hood",
+      "weight": 90
+    },
+    {
+      "aliases": [],
+      "displayName": "skull",
+      "guid": "fe5dbb69-12a4-5a4a-ade3-3a0eb7e266a9",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3114",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:skull",
+      "weight": 2180
+    },
+    {
+      "aliases": [],
+      "displayName": "small ruby",
+      "guid": "403dad1a-2cb4-5ecd-bd31-4b77f91247e2",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3030",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:small-ruby",
+      "weight": 10
+    },
+    {
+      "aliases": [],
+      "displayName": "spear",
+      "guid": "6661818c-03a4-56d1-9fcf-152594a64d83",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3277",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:spear",
+      "weight": 2000
+    },
+    {
+      "aliases": [],
+      "displayName": "sword",
+      "guid": "bf749ad4-7f98-5777-8b65-39a515150871",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3264",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:sword",
+      "weight": 3500
+    },
+    {
+      "aliases": [],
+      "displayName": "torch",
+      "guid": "377a1ce3-3b2c-58eb-9f25-ee2cb4271a26",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "2920",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:torch",
+      "weight": 500
+    },
+    {
+      "aliases": [],
+      "displayName": "wand of decay",
+      "guid": "bbf16d6e-5b90-5e2d-a2f8-5fd7e4cdc889",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3072",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:wand-of-decay",
+      "weight": 2300
+    },
+    {
+      "aliases": [],
+      "displayName": "worm",
+      "guid": "e07a7da6-7a7c-5d43-ae97-5408ab753283",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3492",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:worm",
+      "weight": 5
+    }
+  ],
+  "projectionAudits": [
+    {
+      "entityKey": "spell:tibia:berserk",
+      "rawReference": "knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    },
+    {
+      "entityKey": "spell:tibia:berserk",
+      "rawReference": "elite knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    }
+  ],
+  "schemaVersion": "1",
+  "slice": {
+    "consumer": "PB-01 importer and contract coverage",
+    "curationState": "accepted",
+    "dependencies": [
+      "creature:tibia:snake",
+      "item:tibia:book",
+      "item:tibia:broken-shamanic-staff",
+      "item:tibia:brown-bread",
+      "item:tibia:chain-armor",
+      "item:tibia:corncob",
+      "item:tibia:crystal-necklace",
+      "item:tibia:dagger",
+      "item:tibia:girlish-hair-decoration",
+      "item:tibia:gold-coin",
+      "item:tibia:ham",
+      "item:tibia:heavy-old-tome",
+      "item:tibia:legion-helmet",
+      "item:tibia:lump-of-dirt",
+      "item:tibia:mace",
+      "item:tibia:meat",
+      "item:tibia:orc-leather",
+      "item:tibia:orc-tooth",
+      "item:tibia:protective-charm",
+      "item:tibia:sabre",
+      "item:tibia:shamanic-hood",
+      "item:tibia:skull",
+      "item:tibia:small-ruby",
+      "item:tibia:spear",
+      "item:tibia:sword",
+      "item:tibia:torch",
+      "item:tibia:wand-of-decay",
+      "item:tibia:worm"
+    ],
+    "dependencyMode": "reachable-only",
+    "exportVersion": "1",
+    "key": "fixture:pb-01-contract-coverage",
+    "objective": "Prove the minimum curated content contract without selecting a hunt.",
+    "projections": [
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "creature:tibia:amazon",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers melee and ranged physical combat with a projectile."
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "creature:tibia:orc-shaman",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers elemental, area, healing, summon, and loot forms."
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "creature:tibia:rotworm",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers melee, defense, and mixed ID/name loot resolution."
+      },
+      {
+        "consumer": "summon and condition contract tests",
+        "entityKey": "creature:tibia:snake",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "conditions"
+        ],
+        "rationale": "The dependency is needed as Orc Shaman's summon target and poison condition example; its loot is excluded."
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:book",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:broken-shamanic-staff",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:brown-bread",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:chain-armor",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:corncob",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crystal-necklace",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dagger",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:girlish-hair-decoration",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:gold-coin",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:ham",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:heavy-old-tome",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:legion-helmet",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:lump-of-dirt",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:mace",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:meat",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:orc-leather",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:orc-tooth",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:protective-charm",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:sabre",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:shamanic-hood",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:skull",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:small-ruby",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:spear",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:sword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:torch",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:wand-of-decay",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:worm",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "spell contract tests",
+        "entityKey": "spell:tibia:berserk",
+        "facets": [
+          "identity",
+          "spell"
+        ],
+        "rationale": "The root covers costs, cooldowns, area, formula, and vocation references."
+      },
+      {
+        "consumer": "spell access and progression contract tests",
+        "entityKey": "vocation:tibia:knight",
+        "facets": [
+          "identity",
+          "progression"
+        ],
+        "rationale": "The root covers vocation family membership, gains, speed, and skill multipliers."
+      }
+    ],
+    "roots": [
+      "creature:tibia:amazon",
+      "creature:tibia:orc-shaman",
+      "creature:tibia:rotworm",
+      "spell:tibia:berserk",
+      "vocation:tibia:knight"
+    ],
+    "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+    "sourceFiles": [
+      "data-otservbr-global/monster/humanoids/orc_shaman.lua",
+      "data-otservbr-global/monster/humans/amazon.lua",
+      "data-otservbr-global/monster/reptiles/snake.lua",
+      "data-otservbr-global/monster/vermins/rotworm.lua",
+      "data/XML/vocations.xml",
+      "data/items/items.xml",
+      "data/scripts/spells/attack/berserk.lua"
+    ]
+  },
+  "spells": [
+    {
+      "aliases": [],
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight"
+      ],
+      "area": {
+        "radiusTiles": 1,
+        "shape": "square"
+      },
+      "cooldownMs": 4000,
+      "damageType": "physical",
+      "displayName": "Berserk",
+      "formula": {
+        "finalMultiplier": 1.1,
+        "kind": "skillAttack",
+        "levelFactor": 0.2,
+        "maxSkillAttackFactor": 1.5,
+        "minSkillAttackFactor": 0.5
+      },
+      "groupCooldownMs": 2000,
+      "guid": "48bec9e6-c6e6-5fd4-9d59-cc29a6478a4c",
+      "includedFacets": [
+        "identity",
+        "spell"
+      ],
+      "level": 35,
+      "mana": 115,
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "80",
+        "sourcePath": "data/scripts/spells/attack/berserk.lua",
+        "sourceSha256": "819b628608268aebea355be46a1d86e73c24bdf26d1299aa7d3e9af71d10f89f",
+        "system": "canary"
+      },
+      "stableKey": "spell:tibia:berserk",
+      "words": "exori"
+    }
+  ],
+  "vocationFamilies": [
+    {
+      "displayName": "Knight",
+      "key": "vocation-family:huntbound:knight",
+      "vocationKeys": [
+        "vocation:tibia:knight"
+      ]
+    }
+  ],
+  "vocations": [
+    {
+      "aliases": [],
+      "attackSpeedMs": 2000,
+      "baseSpeed": 110,
+      "displayName": "Knight",
+      "familyKey": "vocation-family:huntbound:knight",
+      "gainCapacity": 25,
+      "gainHp": 15,
+      "gainMana": 5,
+      "guid": "e3823a68-9f12-51e1-9b83-fde613163995",
+      "includedFacets": [
+        "identity",
+        "progression"
+      ],
+      "manaMultiplier": 3,
+      "skillMultipliers": {
+        "skill:0": 1.1,
+        "skill:1": 1.1,
+        "skill:2": 1.1,
+        "skill:3": 1.1,
+        "skill:4": 1.4,
+        "skill:5": 1.1,
+        "skill:6": 1.1
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "4",
+        "sourcePath": "data/XML/vocations.xml",
+        "sourceSha256": "693a179048d5d5c5af519459c8e542cd01013212af1cec88f7c8eb72634f4350",
+        "system": "canary"
+      },
+      "stableKey": "vocation:tibia:knight"
+    }
+  ]
+}

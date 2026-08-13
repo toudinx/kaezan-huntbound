@@ -33,6 +33,15 @@ export interface CanarySummonDto {
   readonly chanceBasisPoints: number;
 }
 
+export interface CanaryLootEntryDto {
+  readonly reference:
+    | { readonly sourceId: string }
+    | { readonly sourceName: string };
+  readonly chancePerHundredThousand: number;
+  readonly minCount: number;
+  readonly maxCount: number;
+}
+
 export interface CanaryCreatureDto {
   readonly sourceId: string;
   readonly displayName: string;

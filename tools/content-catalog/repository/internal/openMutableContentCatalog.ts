@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 import {
   createSqliteContentCatalog,
   type OpenMutableContentCatalog,
-} from '../SqliteContentCatalog';
+} from '../SqliteContentCatalog.ts';
+
+export type { OpenMutableContentCatalog } from '../SqliteContentCatalog.ts';
 
 const migrationsDirectory = fileURLToPath(
   new URL('../../migrations', import.meta.url),

@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** `PB-01-06`
+**Próxima task elegível:** `PB-01-07`
 
 ## Tasks
 
@@ -17,7 +17,7 @@
 | PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
 | PB-01-04 | done | `codex/pb01-04-xml-importers` | `530cc31d7d132428346cece9c42b562d7829e219` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
 | PB-01-05 | done | `codex/pb01-05-lua-importers` | `348dcd8` | 49 testes Lua; typecheck; architecture; Biome; format; diff check; prova negativa |
-| PB-01-06 | pending | `codex/pb01-06-materialize-slice` | — | — |
+| PB-01-06 | done | `codex/pb01-06-materialize-slice` | — | 53 testes content; 53 testes tooling; content check; rebuild/validate/export determinísticos; typecheck; build; architecture; Biome; format; diff check |
 | PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
 
 ## Baseline congelado
@@ -159,6 +159,39 @@ real também exigiu os constantes Bestiary e os parâmetros `COMBAT_PARAM_BLOCKA
 foram adicionados à whitelist sem ampliar o DTO. Nenhum gatilho objetivo para escalonamento a
 Sol/Claude ocorreu; o validador efetivo foi a suíte automatizada, o smoke test do source lock e os
 gates locais. PB-01-06 é elegível agora.
+
+PB-01-06 materializou o slice curado real por `ImportCanarySlice` e reconstrói o SQLite somente a
+partir da operação versionada. A closure final contém as cinco raízes congeladas, Snake como única
+dependência de criatura e 27 itens de loot justificados por Rotworm, Amazon e Orc Shaman. Snake tem
+facets `identity/stats/appearance/combat/conditions` e loot vazio. Berserk preserva `knight` e
+`elite knight` como duas auditorias cruas, projetadas somente para
+`vocation-family:huntbound:knight`; Elite Knight não foi materializada.
+
+O catálogo materializado tem 33 entidades, 33 vínculos de slice, 5 raízes, 78 projeções de facet,
+29 entradas de loot e 7 arquivos de origem. O runtime não contém provenance, aliases, snapshot,
+paths, hashes, auditorias ou referências cruas. O export determinístico tem SHA-256
+`d9df3338743365710fed991c185976b9dbbd59e6d5f9d43a679550db8fa154f3`. Duas passagens completas dos
+comandos de import check, rebuild, validate e generate produziram os mesmos artefatos; reimportação
+é no-op por bundle/row counts e falhas de validação preservam rollback.
+
+Evidência fresca de PB-01-06:
+
+```text
+corepack pnpm --filter @huntbound/content test -> 53 passed
+corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts -> 53 passed
+corepack pnpm typecheck -> exit 0
+corepack pnpm exec tsc --project tools/content-catalog/tsconfig.json --noEmit -> exit 0
+corepack pnpm build -> exit 0
+corepack pnpm content:check -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/content tools/content-catalog tools/architecture package.json -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+node --test tools/architecture/check-boundaries.test.ts tools/architecture/content-boundaries.test.ts -> 13 passed
+```
+
+O validador efetivo foi a suíte automatizada e os gates locais; nenhum gatilho objetivo para
+escalonamento ocorreu. PB-01-07 é a próxima task elegível.
 
 ## Bloqueios
 

@@ -1,7 +1,7 @@
 import type { ContentDiagnostic } from '@huntbound/contracts';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 
-import { asXmlElement, type XmlElement } from './xmlTypes';
+import { asXmlElement, type XmlElement } from './xmlTypes.ts';
 
 export type ParsedXmlValue<T> =
   | { readonly ok: true; readonly value: T }

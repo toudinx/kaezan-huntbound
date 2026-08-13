@@ -1,12 +1,12 @@
 import type { z } from 'zod';
 
-import type { ContentKey } from './identity';
+import type { ContentKey } from './identity.ts';
 import {
   type CatalogContentBundle,
   CatalogContentBundleSchema,
   type RuntimeContentBundle,
   RuntimeContentBundleSchema,
-} from './schemas';
+} from './schemas.ts';
 
 export interface ContentDiagnostic {
   readonly code: string;
