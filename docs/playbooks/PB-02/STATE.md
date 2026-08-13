@@ -6,7 +6,7 @@
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-02-FIX-02, seguida da reexecução do PB-02-07
+**Próxima task elegível:** reexecução completa do PB-02-07
 
 ## Tasks
 
@@ -20,7 +20,7 @@
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
 | PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
 | [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | done | `codex/pb02-fix-01-profile-emission` | `52c747d` | 6 testes do guard; builds product/personal/test isolados; verify exit 0; browser 8/8 |
-| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | pending | `codex/pb02-fix-02-verify-idempotence` | — | — |
+| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | done | `codex/pb02-fix-02-verify-idempotence` | — | RED 0→1; GREEN 0/0; checkout limpo 0/0; Biome 203 arquivos |
 
 ## Baseline congelado
 
@@ -316,6 +316,38 @@ os quatro arquivos do fixture byte a byte com a raiz product. Os testes de dev
 confirmam serving do catálogo ativo e resposta 404 para perfil inativo.
 BLOCKER-1 está resolvido; BLOCKER-2 permanece aberto e é a próxima task.
 
+## PB-02-FIX-02 — handoff concluído
+
+PB-02-FIX-02 foi implementado na branch `codex/pb02-fix-02-verify-idempotence`.
+`biome.json` agora exclui somente as árvores geradas `apps/game/public/assets/product`
+e `apps/game/public/assets/test`, mantendo as exclusões existentes de `personal` e
+`packages/test-fixtures/assets/pb02/expected`. Nenhuma regra, severidade ou
+`files.maxSize` do Biome foi alterada; o packer, o golden e os hashes congelados
+permanecem intactos.
+
+Evidência fresca da correção:
+
+```text
+RED, saídas ausentes: verify 1 -> exit 0; verify 2 -> exit 1
+RED, segunda execução: 205 arquivos; 2 JSON gerados reprovados; status Git limpo
+git ls-files apps/game/public/assets -> sem saída
+GREEN, worktree com saídas presentes: verify 1 -> exit 0; verify 2 -> exit 0
+GREEN, checkout limpo: verify 1 -> exit 0; verify 2 -> exit 0
+format:check nas execuções GREEN -> 203 arquivos; sem fixes
+packSha256 -> 775d56f87b156349d9e81410d1703bac1499e1d332a2c1064dce498d18d97af5
+Playwright -> 8 passed em cada execução GREEN
+```
+
+O `biome check .` foi executado após materializar `test` e `product`: ele confirmou
+que as duas árvores geradas não geram diagnósticos de formatação, mas ainda retorna
+exit 1 por 4 diagnósticos de lint/assist já existentes em sete arquivos-fonte. A
+checagem reportou 204 arquivos; o `format:check` efetivo permaneceu em exit 0 com
+203 arquivos. Nenhum arquivo-fonte foi excluído, e o `git ls-files` de assets
+continua vazio.
+
+BLOCKER-2 está resolvido. PB-02 permanece aberto até a reexecução completa da matriz
+PB-02-07; PB-03 continua não elegível.
+
 ## PB-02-07 — auditoria integrada `REJECTED`
 
 A auditoria rodou a matriz completa sobre `af31d22` em worktree limpo. Determinismo, origem pessoal,
@@ -325,19 +357,19 @@ PB-02 permanece aberto e PB-03 não é elegível. Nenhum código foi alterado du
 
 ## Bloqueios
 
-Um blocker de produto permanece aberto por PB-02-07; BLOCKER-1 foi resolvido por PB-02-FIX-01.
+Os dois blockers encontrados por PB-02-07 foram resolvidos pelas tasks corretivas;
+PB-02 continua bloqueado somente até a reexecução integral da auditoria.
 Cada blocker tem task corretiva própria porque são problemas, arquivos e verificações independentes;
 a ordem é serial porque as duas tocam este handoff:
 
 1. **BLOCKER-1 resolvido — emissão isolada por perfil.** A prova fresca com a saída pessoal presente
    produziu `build:product` em exit 0 com somente `dist/game/assets/product`, zero arquivos pessoais
    e zero das cinco mídias reais congeladas. A URL `/assets/<profile>/catalog.json` permaneceu igual.
-2. **`verify` não é idempotente.** `biome.json` não exclui `apps/game/public/assets/test` nem
-   `apps/game/public/assets/product`; como `test`/`build` fazem stage dessas saídas e `format:check`
-   é o primeiro passo, a segunda execução consecutiva de `verify` falha. Provado: execução 1 exit 0,
-   execução 2 exit 1.
-   → [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md): excluir as duas saídas
-   geradas do Biome, como `personal` e `expected` já são.
+2. **BLOCKER-2 resolvido — gate `verify` idempotente.** [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md)
+   excluiu as árvores geradas `apps/game/public/assets/test` e
+   `apps/game/public/assets/product` do Biome, como `personal` e `expected` já eram.
+   A prova fresca passou em `verify` 0/0 com saídas presentes e novamente 0/0 após
+   removê-las, sem alteração de fonte.
 
 O fechamento do PB-02 só volta à mesa depois das duas correções integradas e de uma **reexecução
 completa da matriz PB-02-07**. O corretor não fecha o playbook que ele mesmo corrigiu.

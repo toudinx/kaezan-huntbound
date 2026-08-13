@@ -210,10 +210,10 @@ corepack pnpm verify                                     -> exit 0; QA browser 8
 git ls-files apps/game/public/assets                     -> 0 linhas
 ```
 
-O blocker de `verify` não é alterado por esta correção: `biome.json` continua
-fora do escopo e PB-02-FIX-02 permanece a próxima task.
+O blocker de `verify` permanecia aberto naquele handoff; PB-02-FIX-02 é a
+correção registrada na revalidação abaixo.
 
-### BLOCKER-2 — `verify` não é idempotente
+### BLOCKER-2 — RESOLVIDO por PB-02-FIX-02: `verify` idempotente
 
 **Bloqueia o critério "`verify` passa no worktree e novamente em `main` após integração".**
 
@@ -236,6 +236,43 @@ pnpm verify  (execução 2) -> exit 1
 
 Os handoffs de PB-02-05 e PB-02-06 registram `verify` exit 0 porque cada um rodou o gate uma única
 vez sobre uma árvore em que essas saídas ainda não existiam.
+
+#### Revalidação após PB-02-FIX-02
+
+`biome.json` passou a excluir `apps/game/public/assets/test` e
+`apps/game/public/assets/product` de `files.includes`, mantendo as exclusões de
+`personal` e `packages/test-fixtures/assets/pb02/expected`. Nenhuma regra,
+severidade, `files.maxSize`, fonte versionada, formato canônico, golden ou hash
+congelado foi alterado.
+
+```text
+RED, saídas staged removidas:
+  verify 1 -> exit 0; format:check -> Checked 203 files
+  verify 2 -> exit 1; format:check -> Checked 205 files
+  arquivos reprovados -> apps/game/public/assets/test/catalog.json
+                          apps/game/public/assets/test/packs/pb-02-contract-coverage/pack.json
+  git ls-files apps/game/public/assets -> 0 linhas
+
+GREEN, worktree com saídas presentes:
+  verify 1 -> exit 0; format:check -> Checked 203 files
+  verify 2 -> exit 0; format:check -> Checked 203 files
+
+GREEN, após remover novamente test/product:
+  verify 1 -> exit 0; format:check -> Checked 203 files
+  verify 2 -> exit 0; format:check -> Checked 203 files
+
+Cada execução GREEN -> 7 testes Vitest raiz; 13 testes Node de boundaries;
+147 testes nos packages; 8 testes Playwright; packSha256 775d56f8...d97af5.
+```
+
+Para a prova de alcance, `assets:stage:product` materializou a árvore product e
+`corepack pnpm exec biome check .` reportou 204 arquivos sem diagnóstico de
+formatação nos artefatos gerados. O comando retornou exit 1 somente pelos 4
+diagnósticos de lint/assist pré-existentes em arquivos-fonte; `format:check`
+continuou em exit 0. Assim, a diferença observada na formatação é exatamente os
+2 JSON gerados que o RED expôs, e nenhum caminho com fonte versionada foi
+excluído. O blocker está resolvido, mas a decisão histórica `REJECTED` desta
+auditoria permanece inalterada.
 
 ### WARN-1 — `__huntboundAssetProbe` presente nos bundles `personal`/`product`
 

@@ -11,6 +11,8 @@
       "!test-results",
       "!playwright-report",
       "!apps/game/public/assets/personal",
+      "!apps/game/public/assets/product",
+      "!apps/game/public/assets/test",
       "!packages/content/catalog/operations",
       "!packages/content/src/generated",
       "!packages/test-fixtures/assets/pb02/expected"
