@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 import { createScanner, SyntaxKind } from 'typescript/unstable/ast';
 
+import { checkAssetBoundaries } from './asset-boundaries.ts';
 import { checkContentBoundaries } from './content-boundaries.ts';
 
 type DependencyMap = Record<string, string>;
@@ -112,6 +113,12 @@ function importSpecifiers(
       if (argument && isLiteralModuleSpecifier(argument.kind)) {
         add(argument);
       }
+      continue;
+    }
+    if (
+      token.kind === SyntaxKind.ImportKeyword &&
+      next?.kind === SyntaxKind.DotToken
+    ) {
       continue;
     }
 
@@ -348,7 +355,8 @@ export async function checkBoundaries(
       if (
         !dependency.startsWith('@huntbound/') &&
         externalRule?.allowedDependencies &&
-        !externalRule.allowedDependencies.includes(packageName(dependency))
+        !externalRule.allowedDependencies.includes(packageName(dependency)) &&
+        !packageInfo.manifest.devDependencies?.[dependency]
       ) {
         diagnostics.push(
           diagnostic(
@@ -427,7 +435,8 @@ export async function checkBoundaries(
 
         if (
           externalRule?.allowedDependencies &&
-          !externalRule.allowedDependencies.includes(dependency)
+          !externalRule.allowedDependencies.includes(dependency) &&
+          !packageInfo.manifest.devDependencies?.[dependency]
         ) {
           diagnostics.push(
             location(`is not permitted for ${packageInfo.name}.`),
@@ -445,6 +454,7 @@ export async function checkBoundaries(
   }
 
   diagnostics.push(...(await checkContentBoundaries(root)));
+  diagnostics.push(...(await checkAssetBoundaries(root)));
   return diagnostics;
 }
 

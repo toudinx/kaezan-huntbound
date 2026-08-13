@@ -7,7 +7,9 @@
     "dev": "vite",
     "test": "vitest run",
     "typecheck": "tsc --project tsconfig.json",
-    "build": "vite build"
+    "build": "vite build --mode test",
+    "build:personal": "vite build --mode personal",
+    "build:product": "vite build --mode product"
   },
   "dependencies": {
     "phaser": "4.2.1"

@@ -17,6 +17,11 @@
       "allowedDependencies": [],
       "forbidDomLibraries": ["phaser"],
       "forbidNodeBuiltins": true
+    },
+    "@huntbound/assets": {
+      "allowedDependencies": ["zod"],
+      "forbidDomLibraries": ["phaser"],
+      "forbidNodeBuiltins": true
     }
   }
 }

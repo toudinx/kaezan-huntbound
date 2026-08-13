@@ -16,6 +16,8 @@ blob-report/
 assets/personal/
 personal-assets/
 apps/game/public/assets/personal/
+apps/game/public/assets/product/
+apps/game/public/assets/test/
 
 # Logs and tool caches
 *.log

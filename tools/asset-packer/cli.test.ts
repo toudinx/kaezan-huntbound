@@ -22,11 +22,15 @@ interface CliResult {
 
 async function runCli(args: readonly string[]): Promise<CliResult> {
   return new Promise((resolveResult, reject) => {
-    const child = spawn(process.execPath, [cliPath, ...args], {
-      cwd: import.meta.dirname,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      windowsHide: true,
-    });
+    const child = spawn(
+      process.execPath,
+      ['--no-warnings', '--experimental-transform-types', cliPath, ...args],
+      {
+        cwd: import.meta.dirname,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
+      },
+    );
     let stdout = '';
     let stderr = '';
     child.stdout.setEncoding('utf8');

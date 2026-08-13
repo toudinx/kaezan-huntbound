@@ -1,0 +1,1 @@
+{"packs":[{"manifestPath":"packs/pb-02-contract-coverage/pack.json","packId":"asset-pack:fixture:pb-02-contract-coverage"}],"preloads":[{"packId":"asset-pack:fixture:pb-02-contract-coverage","requiredKeys":["creature:tibia:rotworm","effect:tibia:energy-hit","item:tibia:gold-coin","missile:tibia:energy-ball","outfit:tibia:knight"]}],"profile":"test","schemaVersion":"1"}
