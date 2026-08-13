@@ -15,7 +15,7 @@
 | PB-02-01 | done | `codex/pb02-01-asset-contracts` | `86f8921` | 13 testes; typecheck; architecture; Biome; format; diff check |
 | PB-02-02 | done | `codex/pb02-02-source-selection` | `ff0ea57` | 11 testes; locks real/sintético 5/5; typecheck; architecture; Biome; format; diff check |
 | PB-02-03 | done | `codex/pb02-03-deterministic-packer` | `83efda3` | 29 testes do packer; golden byte-idêntico; pack real 5/5; verify raiz e browser verdes |
-| PB-02-04 | done | `codex/pb02-04-asset-runtime` | `f70528f` | 33 testes; typecheck; Biome; diff check; registry/provider transacional |
+| PB-02-04 | done | `codex/pb02-04-asset-runtime` | `a11ea9d` | 36 testes; typecheck; Biome; diff check; provider relativo/concorrente/deduplicado |
 | PB-02-05 | pending | `codex/pb02-05-profile-guards` | — | — |
 | PB-02-06 | pending | `codex/pb02-06-browser-contract` | — | — |
 | PB-02-07 | pending | `codex/pb02-07-integrated-gate` | — | — |
@@ -185,7 +185,7 @@ carregados; `loadPreloads`, unload seletivo e `unloadAll` estão cobertos.
 Evidência fresca de PB-02-04 nesta execução:
 
 ```text
-corepack pnpm --filter @huntbound/assets test -> 33 passed (7 files)
+corepack pnpm --filter @huntbound/assets test -> 36 passed (7 files)
 corepack pnpm --filter @huntbound/assets typecheck -> exit 0
 corepack pnpm exec biome check packages/assets -> exit 0
 ```
@@ -195,6 +195,10 @@ duas mídias ausentes agregadas, tamanho/hash incorretos, falha na terceira URL,
 idempotência e unload ownership. A implementação não importa Node, Phaser, filesystem ou packer.
 `docs/assets/ASSET_PROVIDER.md` registra a API e o lifecycle. O próximo integrador é PB-02-05 para
 perfis, build guard, scripts e boundaries; nenhum código do app/browser foi antecipado.
+
+Uma revisão independente após a integração encontrou três riscos no provider: catálogo relativo,
+loads concorrentes e validação parcial de entries que compartilhavam mídia. Os três receberam RED,
+correção em `a11ea9d` e provas verdes; a suíte passou de 33 para 36 testes.
 
 ## Bloqueios
 
