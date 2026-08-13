@@ -112,6 +112,34 @@ As coleções têm ordem canônica parte do contrato:
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing` e `readyAtTick`.
 
+## Aleatoriedade
+
+`@huntbound/simulation` tem uma única fonte de aleatoriedade: `xoshiro128**`. A transição usa quatro
+palavras uint32, rotações explícitas, `>>> 0` e `Math.imul`; ela não usa `Math.random`, `BigInt`,
+`crypto`, relógio ou estado global.
+
+A `Seed` pública tem 16 dígitos hexadecimais minúsculos. Os oito dígitos superiores e inferiores são
+interpretados como duas palavras uint32 e cada metade avança o mixer `SplitMix32` duas vezes,
+produzindo `s0`, `s2` e `s1`, `s3`, respectivamente. O mixer incrementa por `0x9e3779b9` e aplica os
+finalizadores `0x21f0aaad` e `0x735a2d97`. Se a expansão produzir o estado absorvente zero, o mixer
+continua avançando até obter um estado não nulo.
+
+`createSeededRandom(seed, label)` deriva o stream inicial a partir do estado expandido. `derive(label)`
+calcula FNV-1a 32 do rótulo kebab-case e mistura esse hash com `s0`–`s3` do estado atual por
+`SplitMix32`. A operação não consome o pai; o mesmo rótulo sobre o mesmo estado produz o mesmo filho.
+Os streams do kernel são exatamente `movement`, `ai` e `scenario`.
+
+`nextUint32()` é a única primitiva que avança o estado e incrementa `drawCount`. `nextBelow(bound)`
+aceita um inteiro em `[1, 2^32]`, calcula a maior faixa múltipla de `bound` contida em `2^32`,
+descarta valores fora dessa faixa e só então aplica o módulo. Cada valor descartado também incrementa
+`drawCount`, portanto o contador audita exatamente o consumo do stream.
+
+O estado serializado é `{ label, s0, s1, s2, s3, drawCount }`. `KernelRandomStreams.serialize()`
+ordena os estados por `label`: `ai`, `movement`, `scenario`. Restaurar estado zero, label ausente,
+duplicado ou desconhecido é erro. Trocar o algoritmo, as constantes, a ordem da mistura ou a regra de
+rejeição altera a sequência observável e exige incremento de `SIMULATION_RULES_VERSION` com novos
+vetores golden.
+
 ## Command log
 
 `SimulationCommandLog` tem um header estrito:
@@ -143,4 +171,3 @@ execução do kernel.
 
 Zod é uma dependência exclusiva de `@huntbound/contracts`. O contrato não importa Node, DOM, Phaser,
 filesystem, fetch, Web Crypto, Blob ou qualquer outro pacote Huntbound.
-
