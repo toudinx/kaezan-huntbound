@@ -17,7 +17,7 @@
 | PB-01-03 | done | `codex/pb01-03-curated-slice` | `1ee75ca4ab43dc1d2ec1b3e8564e8f0d488e222a` | 46 testes de tooling; 7 testes de seleção; source lock real; typecheck; architecture; Biome; format; diff check |
 | PB-01-04 | done | `codex/pb01-04-xml-importers` | `530cc31d7d132428346cece9c42b562d7829e219` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
 | PB-01-05 | done | `codex/pb01-05-lua-importers` | `348dcd8` | 49 testes Lua; typecheck; architecture; Biome; format; diff check; prova negativa |
-| PB-01-06 | done | `codex/pb01-06-materialize-slice` | — | 53 testes content; 53 testes tooling; content check; rebuild/validate/export determinísticos; typecheck; build; architecture; Biome; format; diff check |
+| PB-01-06 | done | `codex/pb01-06-materialize-slice` | `e70603d` | 53 testes content; 53 testes tooling; content check; rebuild/validate/export determinísticos; typecheck; build; architecture; Biome; format; diff check |
 | PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
 
 ## Baseline congelado
