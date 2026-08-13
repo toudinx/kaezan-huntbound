@@ -3,7 +3,9 @@
 > **Para agentes:** execute uma task card por chat. O formato, o handoff e o ciclo automático de
 > integração/limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** ready
+**Status:** done — fechado em 2026-08-13 como `APPROVED_WITH_WARNINGS` pela auditoria integrada
+PB-01-07. Veredito, evidência e warnings em [`artifacts/acceptance-report.md`](artifacts/acceptance-report.md).
+**PB-02 está elegível.**
 
 **Objetivo:** criar a fundação própria de conteúdo do Huntbound: identidade durável, schemas
 TypeScript, catálogo SQLite reconstruível, migração Canary incremental e curada, exportação JSON
@@ -117,13 +119,13 @@ workspace. Nenhum servidor de banco, Docker ou instalação global é necessári
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-01-01](tasks/PB-01-01-definir-identidade-e-schemas.md) | identidade, schemas e diagnósticos | PB-00R fechado | Luna `xhigh` | pending |
-| [PB-01-02](tasks/PB-01-02-criar-catalogo-sqlite.md) | migrations, catálogo e repository transacional | PB-01-01 | Luna `xhigh` | pending |
-| [PB-01-03](tasks/PB-01-03-congelar-slice-e-proveniencia.md) | seleção curada, fixtures e source lock | PB-01-02 | Luna `xhigh` | pending |
-| [PB-01-04](tasks/PB-01-04-importar-vocacao-e-itens-xml.md) | importadores XML de Knight e itens | PB-01-03 | Luna `xhigh` | pending |
-| [PB-01-05](tasks/PB-01-05-importar-criaturas-e-spell-lua.md) | AST Lua para criaturas e Berserk | PB-01-03 | Luna `xhigh` | pending |
-| [PB-01-06](tasks/PB-01-06-materializar-e-exportar-slice.md) | serviço, dependency closure, DB, JSON e docs | PB-01-04/05 | Luna `xhigh` | pending |
-| [PB-01-07](tasks/PB-01-07-fechar-gate-integrado.md) | auditoria integrada e aceite | PB-01-06 | Claude Code/Opus 5 ou Sol `xhigh` | pending |
+| [PB-01-01](tasks/PB-01-01-definir-identidade-e-schemas.md) | identidade, schemas e diagnósticos | PB-00R fechado | Luna `xhigh` | done |
+| [PB-01-02](tasks/PB-01-02-criar-catalogo-sqlite.md) | migrations, catálogo e repository transacional | PB-01-01 | Luna `xhigh` | done |
+| [PB-01-03](tasks/PB-01-03-congelar-slice-e-proveniencia.md) | seleção curada, fixtures e source lock | PB-01-02 | Luna `xhigh` | done |
+| [PB-01-04](tasks/PB-01-04-importar-vocacao-e-itens-xml.md) | importadores XML de Knight e itens | PB-01-03 | Luna `xhigh` | done |
+| [PB-01-05](tasks/PB-01-05-importar-criaturas-e-spell-lua.md) | AST Lua para criaturas e Berserk | PB-01-03 | Luna `xhigh` | done |
+| [PB-01-06](tasks/PB-01-06-materializar-e-exportar-slice.md) | serviço, dependency closure, DB, JSON e docs | PB-01-04/05 | Luna `xhigh` | done |
+| [PB-01-07](tasks/PB-01-07-fechar-gate-integrado.md) | auditoria integrada e aceite | PB-01-06 | Claude Code/Opus 5 | done |
 
 PB-01-04 e PB-01-05 possuem paths funcionais independentes e podem ser executadas em paralelo por
 branches isoladas depois de PB-01-03. O fluxo padrão continua serial. Se o paralelismo for ativado,
@@ -145,21 +147,24 @@ introduzir nenhuma violação nova nos paths do PB-01.
 
 ## Critérios finais de aceite
 
-- [ ] GUIDs, stable keys, aliases e proveniência possuem schemas e constraints verificáveis.
-- [ ] O catálogo é reconstruído do zero por migrations e operações versionadas.
-- [ ] Foreign keys permanecem ligadas e importação inválida faz rollback integral.
-- [ ] O slice contém apenas raízes declaradas, facets aprovados e dependências alcançáveis; zero
+Todos verificados por PB-01-07 com evidência fresca; comandos, exit codes, contagens e hashes estão
+em [`artifacts/acceptance-report.md`](artifacts/acceptance-report.md).
+
+- [x] GUIDs, stable keys, aliases e proveniência possuem schemas e constraints verificáveis.
+- [x] O catálogo é reconstruído do zero por migrations e operações versionadas.
+- [x] Foreign keys permanecem ligadas e importação inválida faz rollback integral.
+- [x] O slice contém apenas raízes declaradas, facets aprovados e dependências alcançáveis; zero
   órfãos ou campos sem consumidor.
-- [ ] Parsers XML/Lua são estáticos, estritos e cobertos por RED/GREEN.
-- [ ] Nenhum arquivo Lua/XML real do Canary é rastreado no Git ou executado.
-- [ ] Os hashes do source lock conferem com o snapshot local congelado.
-- [ ] A mesma importação executada duas vezes não altera linhas.
-- [ ] Duas reconstruções limpas produzem JSON byte-identical e o mesmo golden SHA-256.
-- [ ] Documentação e bundle derivam da mesma visão consultada do catálogo.
-- [ ] Runtime consome somente `RuntimeContentBundle`/registry e não conhece provenance, aliases de
+- [x] Parsers XML/Lua são estáticos, estritos e cobertos por RED/GREEN.
+- [x] Nenhum arquivo Lua/XML real do Canary é rastreado no Git ou executado.
+- [x] Os hashes do source lock conferem com o snapshot local congelado.
+- [x] A mesma importação executada duas vezes não altera linhas.
+- [x] Duas reconstruções limpas produzem JSON byte-identical e o mesmo golden SHA-256.
+- [x] Documentação e bundle derivam da mesma visão consultada do catálogo.
+- [x] Runtime consome somente `RuntimeContentBundle`/registry e não conhece provenance, aliases de
   importação, tooling ou source paths.
-- [ ] `corepack pnpm verify` passa no resultado integrado.
-- [ ] PB-02 pode resolver chaves estáveis sem depender de Canary.
+- [x] `corepack pnpm verify` passa no resultado integrado.
+- [x] PB-02 pode resolver chaves estáveis sem depender de Canary.
 
 ## Fora de escopo
 

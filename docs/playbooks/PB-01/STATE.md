@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-01/README.md`
 
-**Estado geral:** ready
+**Estado geral:** done
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** `PB-01-07`
+**Próxima task elegível:** nenhuma — PB-01 fechado; `PB-02` é o próximo playbook elegível
 
 ## Tasks
 
@@ -18,7 +18,7 @@
 | PB-01-04 | done | `codex/pb01-04-xml-importers` | `530cc31d7d132428346cece9c42b562d7829e219` | 27 testes XML; typecheck; architecture; Biome; format; diff check |
 | PB-01-05 | done | `codex/pb01-05-lua-importers` | `348dcd8` | 49 testes Lua; typecheck; architecture; Biome; format; diff check; prova negativa |
 | PB-01-06 | done | `codex/pb01-06-materialize-slice` | `e70603d` | 53 testes content; 53 testes tooling; content check; rebuild/validate/export determinísticos; typecheck; build; architecture; Biome; format; diff check |
-| PB-01-07 | pending | `codex/pb01-07-integrated-gate` | — | — |
+| PB-01-07 | done | `codex/pb01-07-integrated-gate` | commit `docs: close PB-01 curated content gate` (o próprio commit desta linha, integrado por fast-forward na `main`) | `verify` exit 0; 10/10 provas controladas; 12/12 checagens de catálogo; determinismo byte a byte; rebuild sem Canary; licença e boundaries |
 
 ## Baseline congelado
 
@@ -193,9 +193,41 @@ node --test tools/architecture/check-boundaries.test.ts tools/architecture/conte
 O validador efetivo foi a suíte automatizada e os gates locais; nenhum gatilho objetivo para
 escalonamento ocorreu. PB-01-07 é a próxima task elegível.
 
+PB-01-07 auditou o PB-01 integrado em `codex/pb01-07-integrated-gate` com evidência fresca e fechou o
+gate como `APPROVED_WITH_WARNINGS`. A auditoria não alterou código, schema, conteúdo ou tooling, e
+nenhuma task `PB-01-FIX-01` foi necessária. O relatório completo está em
+`artifacts/acceptance-report.md`.
+
+Evidência fresca de PB-01-07:
+
+```text
+corepack pnpm install --frozen-lockfile -> exit 0
+corepack pnpm content:canary:check -> exit 0
+corepack pnpm content:catalog:rebuild -> exit 0
+corepack pnpm content:catalog:validate -> exit 0
+corepack pnpm content:generate:check -> exit 0
+determinismo: JSON/sha256/docs byte-idênticos após rebuild sem cache; golden d9df3338...f3
+rebuild/validate/generate sem references/ -> exit 0; content:canary:check sem references/ -> exit 1
+provas controladas -> 10/10 (source lock, sexta raiz, loot sem item, rollback, FK, órfão, Lua linha/coluna, idempotência)
+auditoria de catálogo -> 12/12 (33 entidades, 5 raízes, 78 facets, 29 loot, 0 órfãos, 0 aliases)
+git ls-files references -> sem saída; git check-ignore references/... -> ignored
+9 fixtures Lua/XML rastreadas, todas sintéticas; 0 coincidem byte a byte com as 7 fontes do lock
+licença GPL-2.0-only, hash 189b1af9...7b confere
+corepack pnpm architecture:check -> exit 0 (regra de writer reprova writer extra e volta a 0 após reverter)
+corepack pnpm verify -> exit 0
+git diff --check -> exit 0; git status --short -> vazio
+biome check (paths PB-01, 81 arquivos) -> exit 0; baseline conhecido segue em 1 erro fora do PB-01
+```
+
+Modelo/effort efetivos: Claude Code / Opus 5, reasoning alto. Validador independente indisponível
+nesta sessão e registrado como warning W1; a skill de rota `game-studio:web-game-foundations` não
+está instalada e também foi registrada. PB-01 está `done` e PB-02 é elegível.
+
 ## Bloqueios
 
-Nenhum bloqueio conhecido.
+Nenhum bloqueio conhecido. Warnings não bloqueantes de PB-01-07 (W1 validador independente, W2
+lacuna `import("…").Tipo` na regra de writer, W3 `format:check` varre `.cache/`) estão priorizados em
+`artifacts/acceptance-report.md`.
 
 ## Regra de atualização
 
