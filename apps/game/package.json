@@ -12,6 +12,7 @@
     "build:product": "vite build --mode product"
   },
   "dependencies": {
+    "@huntbound/assets": "0.0.0",
     "phaser": "4.2.1"
   },
   "devDependencies": {
