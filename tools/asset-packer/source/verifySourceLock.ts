@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import {
   type AssetSourceLock,
   validateAssetSourceLock,
-} from '@huntbound/assets';
+} from '../../../packages/assets/src/index.ts';
 
 import { verifyAssetSourceLock } from './sourceLock.ts';
 

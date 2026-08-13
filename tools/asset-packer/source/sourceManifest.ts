@@ -7,7 +7,7 @@ import type {
   AssetSelectionManifest,
   AssetSourceIdentity,
   AssetValidationResult,
-} from '@huntbound/assets';
+} from '../../../packages/assets/src/index.ts';
 
 export interface ArenaFableAnimationGroup {
   readonly kind: string;

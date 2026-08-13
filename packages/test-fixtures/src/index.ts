@@ -9,3 +9,14 @@ export const PB01_CANARY_FIXTURE_FILES = {
   invalidXml: 'canary/pb01/invalid.xml',
   invalidLua: 'canary/pb01/invalid.lua',
 } as const;
+
+export const PB02_SYNTHETIC_ASSET_FILES = {
+  manifest: 'assets/pb02/source/manifest.json',
+  selection: 'assets/pb02/selection.json',
+  sourceLock: 'assets/pb02/source-lock.json',
+  outfitKnight: 'assets/pb02/source/outfits/131.png',
+  creatureRotworm: 'assets/pb02/source/outfits/26.png',
+  goldCoin: 'assets/pb02/source/objects/3031.png',
+  energyHit: 'assets/pb02/source/effects/12.png',
+  energyBall: 'assets/pb02/source/missiles/36.png',
+} as const;

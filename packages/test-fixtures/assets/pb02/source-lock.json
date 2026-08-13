@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1",
+  "source": "huntbound-synthetic-fixture",
+  "sourceSnapshot": "pb02-synthetic-v1",
+  "manifest": {
+    "path": "manifest.json",
+    "sha256": "35ce637abe588a5989d08a112e99a53f04a34dfa4631d47cd65c6fc5137fbd5b",
+    "byteLength": 1901
+  },
+  "files": [
+    {
+      "key": "creature:tibia:rotworm",
+      "category": "creature",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 26
+      },
+      "path": "outfits/26.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "effect:tibia:energy-hit",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 12
+      },
+      "path": "effects/12.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:gold-coin",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3031
+      },
+      "path": "objects/3031.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "missile:tibia:energy-ball",
+      "category": "missile",
+      "sourceIdentity": {
+        "kind": "missileId",
+        "id": 36
+      },
+      "path": "missiles/36.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "outfit:tibia:knight",
+      "category": "outfit",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 131
+      },
+      "path": "outfits/131.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    }
+  ]
+}

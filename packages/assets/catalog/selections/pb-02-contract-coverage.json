@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "1",
+  "selectionId": "fixture:pb-02-contract-coverage",
+  "packId": "asset-pack:fixture:pb-02-contract-coverage",
+  "contentVersion": "pb-02-contract-coverage@1",
+  "buildProfiles": ["personal"],
+  "groups": [
+    {
+      "groupId": "arena-fable-tibia",
+      "source": "arena-fable-tibia-export",
+      "sourceSnapshot": "1b14dee3b22f6970333bef76031b473c7bcf917e",
+      "licenseClass": "cipsoft-personal",
+      "buildProfiles": ["personal"]
+    }
+  ],
+  "entries": [
+    {
+      "key": "outfit:tibia:knight",
+      "category": "outfit",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 131
+      },
+      "sourceGroupId": "arena-fable-tibia",
+      "consumer": "PB-02 browser contract fixture",
+      "rationale": "Covers a player outfit with layers and patterns.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "creature:tibia:rotworm",
+      "category": "creature",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 26
+      },
+      "sourceGroupId": "arena-fable-tibia",
+      "consumer": "PB-02 browser contract fixture",
+      "rationale": "Binds the PB-01 Rotworm appearance to a stable asset key.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:gold-coin",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3031
+      },
+      "sourceGroupId": "arena-fable-tibia",
+      "consumer": "PB-02 browser contract fixture",
+      "rationale": "Binds a PB-01 loot item to an object appearance.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "effect:tibia:energy-hit",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 12
+      },
+      "sourceGroupId": "arena-fable-tibia",
+      "consumer": "PB-02 browser contract fixture",
+      "rationale": "Covers an animated combat effect.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "missile:tibia:energy-ball",
+      "category": "missile",
+      "sourceIdentity": {
+        "kind": "missileId",
+        "id": 36
+      },
+      "sourceGroupId": "arena-fable-tibia",
+      "consumer": "PB-02 browser contract fixture",
+      "rationale": "Covers the Orc Shaman projectile represented in PB-01.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    }
+  ]
+}

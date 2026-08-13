@@ -11,7 +11,7 @@ import {
   type AssetSourceLockEntry,
   type AssetValidationResult,
   validateAssetSourceLock,
-} from '@huntbound/assets';
+} from '../../../packages/assets/src/index.ts';
 
 import {
   type ArenaFableSourceManifest,
