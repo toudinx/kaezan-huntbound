@@ -15,7 +15,7 @@
 | PB-03-01 | done | `codex/pb03-01-kernel-contracts` | `c09a4cc` | 37 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-02 | done | `codex/pb03-02-kernel-random` | `4dbcc96` | 12 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-03 | pending | `codex/pb03-03-kernel-grid` | — | — |
-| PB-03-04 | pending | `codex/pb03-04-kernel-commands` | — | — |
+| PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | pending | `codex/pb03-05-kernel-tick-loop` | — | — |
 | PB-03-06 | pending | `codex/pb03-06-kernel-replay` | — | — |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
@@ -143,6 +143,43 @@ efetivo: gates automatizados; não houve gatilho objetivo para escalonamento.
 
 Modo de conclusão: serial, com fast-forward em `main`, reverificação integrada e remoção da worktree e
 da branch temporárias. PB-03-03 é a próxima task elegível; grid, comandos e loop não foram antecipados.
+
+## PB-03-04 — handoff concluído
+
+PB-03-04 foi implementada na branch `codex/pb03-04-kernel-commands`. O commit funcional integrado é
+`d039c70` (`feat: add deterministic command buffer and log`). `@huntbound/simulation` agora publica
+`createCommandBuffer`, `restoreCommandBuffer`, `orderCommands`, `encodeCommandLog` e
+`decodeCommandLog`; a borda valida emissor/tipo/tick, atribui sequences monotônicas, ordena e drena
+comandos, detecta ações duplicadas e restaura pendências sem tocar no mundo.
+
+O command log é JSONL canônico com header e linhas achatadas de comando, newline final e decoder
+transacional. Comandos internos não são gravados. A implementação não adiciona relógio, aleatoriedade,
+filesystem, Node, DOM, tick loop, eventos, grid, snapshot, replay, CLI ou aplicação de estado.
+
+Evidência fresca:
+
+```text
+corepack pnpm --filter @huntbound/simulation test -> exit 0; 10 passed (2 files)
+corepack pnpm --filter @huntbound/simulation typecheck -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/simulation -> exit 0
+corepack pnpm format:check -> exit 0
+git diff --check -> exit 0
+corepack pnpm typecheck -> exit 0
+corepack pnpm test -> exit 0; workspace tests green
+```
+
+O primeiro RED falhou com módulo ausente; o ciclo de ordenação/restauração também observou a falha
+esperada antes da correção. Houve um ajuste operacional de `strict-ssl=false` apenas para atualizar
+o ambiente pnpm da worktree; nenhum arquivo de configuração foi alterado. Modelo/effort efetivos:
+Codex baseado em GPT-5; o alias Luna/xhigh sugerido não é exposto nesta sessão. Skills usadas:
+`superpowers:using-superpowers`, `superpowers:brainstorming`, `superpowers:writing-plans`,
+`superpowers:executing-plans`, `superpowers:using-git-worktrees`, `superpowers:test-driven-development`
+e `superpowers:verification-before-completion`. Validador efetivo: gates automatizados.
+
+Modo de conclusão: integração por merge explícito porque `main` avançou com PB-03-02 durante a execução,
+seguida de reverificação integrada e remoção da worktree e da branch temporárias. PB-03-03 continua sendo
+a próxima task elegível; grid não foi antecipado.
 
 ## Bloqueios
 
