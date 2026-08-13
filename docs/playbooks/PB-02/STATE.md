@@ -20,7 +20,7 @@
 | PB-02-06 | done | `codex/pb02-06-browser-contract` | `896a583` | runtime/probe; 36 testes; verify; browser 8/8; boot 3212,6 ms |
 | PB-02-07 | blocked | `codex/pb02-07-integrated-gate` | — | auditoria `REJECTED`; 2 blockers; ver `artifacts/acceptance-report.md` |
 | [PB-02-FIX-01](tasks/PB-02-FIX-01-emitir-somente-o-perfil-ativo.md) | done | `codex/pb02-fix-01-profile-emission` | `52c747d` | 6 testes do guard; builds product/personal/test isolados; verify exit 0; browser 8/8 |
-| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | done | `codex/pb02-fix-02-verify-idempotence` | — | RED 0→1; GREEN 0/0; checkout limpo 0/0; Biome 203 arquivos |
+| [PB-02-FIX-02](tasks/PB-02-FIX-02-tornar-o-gate-verify-idempotente.md) | done | `codex/pb02-fix-02-verify-idempotence` | `871df34` | RED 0→1; GREEN 0/0; checkout limpo 0/0; Biome 203 arquivos |
 
 ## Baseline congelado
 
