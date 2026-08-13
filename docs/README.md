@@ -45,6 +45,11 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   determinísticos e perfil `product` que recusa assets `cipsoft-personal`. Warnings priorizados em
   [`acceptance-report.md`](playbooks/PB-02/artifacts/acceptance-report.md).
 
+- [`PB-03 — Kernel determinístico`](playbooks/PB-03/README.md) — **planejado**; oito task cards e
+  design aprovado em
+  [`2026-08-13-pb-03-deterministic-kernel-design.md`](superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md).
+  PB-03-01 é a próxima task elegível.
+
 **Próximo playbook: PB-03 — kernel determinístico.** A ordem e a Definition of Ready estão em
 [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 

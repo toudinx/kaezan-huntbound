@@ -40,7 +40,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo — **fechado** |
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
-| PB-03 | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay |
+| [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **planejado; PB-03-01 elegível** |
 | PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
@@ -127,6 +127,38 @@ apps/game/public/assets/personal/packs/<fixture-hunt>/
 
 O gate deve carregar um cenário fixture, um outfit, uma criatura, um objeto, um efeito e um projétil
 sem path literal fora do manifesto.
+
+## PB-03 — Definition of Ready
+
+**Playbook modular:** `docs/playbooks/PB-03/README.md` — oito task cards, cada uma executável em um
+chat independente. Design aprovado em
+`docs/superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md`.
+
+- [x] A simulação usa fixed tick, RNG próprio seedado, ordenação explícita e estado serializável.
+- [x] `packages/simulation` não importa Phaser, DOM, Node, banco, relógio global nem pacote externo.
+- [x] O kernel é agnóstico de conteúdo: nada de vocação, criatura, item, spell, hunt ou asset.
+- [x] Eventos são a única saída observável; consumidores não leem o estado interno.
+- [x] O command log grava somente comandos externos; a IA é reproduzida pela seed.
+- [x] O estado serializado contém apenas inteiros, booleanos e strings.
+- [x] SHA-256 é calculado fora do kernel, sobre o JSON canônico.
+
+Parâmetros congelados: tick de `50 ms`, clamp de frame de `250 ms`, `SIMULATION_SCHEMA_VERSION = 1`,
+`SIMULATION_RULES_VERSION = 1`, RNG xoshiro128\*\* com streams `movement`, `ai` e `scenario`, e
+fixture `pb-03-kernel-coverage` com seed `0f1e2d3c4b5a6978` em 200 ticks.
+
+Entregáveis mínimos esperados do plano:
+
+```text
+packages/contracts/src/simulation/
+packages/simulation/src/{random,grid,commands,events,kernel,state,replay}/
+packages/test-fixtures/simulation/pb03/
+tools/replay/
+apps/game/src/simulation/
+```
+
+O gate deve provar que a mesma seed e o mesmo command log produzem snapshot canônico byte-idêntico em
+Node e no browser, que a retomada por snapshot intermediário converge para o mesmo resultado, e que
+alterar seed, comando ou versão de regras é detectado como divergência explícita.
 
 ## Contrato para escolher a primeira hunt
 
