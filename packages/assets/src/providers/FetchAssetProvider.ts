@@ -70,6 +70,28 @@ function isSha256(value: string): boolean {
   return /^[0-9a-f]{64}$/.test(value);
 }
 
+function resolveCatalogUrl(inputUrl: string): string {
+  try {
+    const locationHref = globalThis.location?.href;
+    return locationHref === undefined
+      ? new URL(inputUrl).toString()
+      : new URL(inputUrl, locationHref).toString();
+  } catch (error) {
+    throw new AssetProviderError(
+      'ASSET_PATH_UNSAFE',
+      'Asset catalog URL is unsafe',
+      [
+        createAssetDiagnostic(
+          'ASSET_PATH_UNSAFE',
+          ['catalogUrl'],
+          'Catalog URL cannot be resolved from the browser location',
+        ),
+      ],
+      error,
+    );
+  }
+}
+
 function resolveRelativeUrl(
   relativePath: string,
   baseUrl: string,
@@ -170,9 +192,14 @@ function errorFromValidation(
   return new AssetProviderError(code, message, result.diagnostics);
 }
 
-interface MediaReference {
+interface MediaEntryReference {
   readonly entry: AssetPackEntry;
   readonly entryIndex: number;
+}
+
+interface MediaReference {
+  readonly mediaSha256: string;
+  readonly entries: readonly MediaEntryReference[];
   readonly url: string;
 }
 
@@ -180,6 +207,7 @@ class FetchAssetProvider implements AssetProvider {
   readonly adapters: AssetIdAdapters;
   private readonly registry: AssetPackRegistry;
   private readonly loadedUrlStores = new Map<string, AssetMediaUrlStore>();
+  private readonly pendingLoads = new Map<string, Promise<void>>();
 
   constructor(
     private readonly catalog: AssetPackCatalog,
@@ -194,10 +222,27 @@ class FetchAssetProvider implements AssetProvider {
   }
 
   async loadPack(packId: string): Promise<void> {
+    const pending = this.pendingLoads.get(packId);
+    if (pending !== undefined) {
+      await pending;
+      return;
+    }
     if (this.registry.getInstalledPack(packId) !== undefined) {
       return;
     }
 
+    const load = this.loadPackInternal(packId);
+    this.pendingLoads.set(packId, load);
+    try {
+      await load;
+    } finally {
+      if (this.pendingLoads.get(packId) === load) {
+        this.pendingLoads.delete(packId);
+      }
+    }
+  }
+
+  private async loadPackInternal(packId: string): Promise<void> {
     const reference = this.catalog.packs.find((pack) => pack.packId === packId);
     if (reference === undefined) {
       const diagnostic = createAssetDiagnostic(
@@ -334,22 +379,29 @@ class FetchAssetProvider implements AssetProvider {
     const mediaUrlsBySha256 = new Map<string, string>();
     try {
       for (const reference of mediaReferences) {
-        const bytes = mediaBytes.value.get(reference.entry.media.sha256);
+        const bytes = mediaBytes.value.get(reference.mediaSha256);
         if (bytes === undefined) {
           throw new AssetProviderError(
             'ASSET_MEDIA_MISSING',
             'Asset media is unavailable after validation',
           );
         }
-        const existingUrl = mediaUrlsBySha256.get(reference.entry.media.sha256);
+        const existingUrl = mediaUrlsBySha256.get(reference.mediaSha256);
         if (existingUrl !== undefined) {
           continue;
+        }
+        const firstEntry = reference.entries[0];
+        if (firstEntry === undefined) {
+          throw new AssetProviderError(
+            'ASSET_MEDIA_MISSING',
+            'Asset media has no manifest entry',
+          );
         }
         let url: string;
         try {
           url = this.mediaUrlStore.create(
             bytes,
-            reference.entry.media.mimeType,
+            firstEntry.entry.media.mimeType,
           );
         } catch (error) {
           throw new AssetProviderError(
@@ -358,16 +410,16 @@ class FetchAssetProvider implements AssetProvider {
             [
               createAssetDiagnostic(
                 'ASSET_MEDIA_URL_CREATE_FAILED',
-                ['entries', reference.entryIndex, 'media'],
+                ['entries', firstEntry.entryIndex, 'media'],
                 'Unable to create a media URL for the asset entry',
-                { key: reference.entry.key, packId },
+                { key: firstEntry.entry.key, packId },
               ),
             ],
             error,
           );
         }
         createdUrls.push(url);
-        mediaUrlsBySha256.set(reference.entry.media.sha256, url);
+        mediaUrlsBySha256.set(reference.mediaSha256, url);
       }
 
       const installed = this.registry.install({
@@ -443,12 +495,17 @@ class FetchAssetProvider implements AssetProvider {
   ): readonly MediaReference[] {
     const references = new Map<string, MediaReference>();
     manifest.entries.forEach((entry, entryIndex) => {
-      if (references.has(entry.media.sha256)) {
+      const existing = references.get(entry.media.sha256);
+      if (existing !== undefined) {
+        references.set(entry.media.sha256, {
+          ...existing,
+          entries: [...existing.entries, { entry, entryIndex }],
+        });
         return;
       }
       references.set(entry.media.sha256, {
-        entry,
-        entryIndex,
+        mediaSha256: entry.media.sha256,
+        entries: [{ entry, entryIndex }],
         url: resolveRelativeUrl(
           entry.media.path,
           manifestUrl,
@@ -484,50 +541,58 @@ class FetchAssetProvider implements AssetProvider {
         continue;
       }
       if (result.status === 'rejected') {
-        diagnostics.push(
-          createAssetDiagnostic(
-            'ASSET_MEDIA_MISSING',
-            ['entries', reference.entryIndex, 'media', 'path'],
-            'Asset media could not be loaded',
-            { key: reference.entry.key, packId },
-          ),
-        );
-        continue;
-      }
-      const bytes = result.value.bytes;
-      if (bytes.byteLength !== reference.entry.media.byteLength) {
-        diagnostics.push(
-          createAssetDiagnostic(
-            'ASSET_MEDIA_SIZE_MISMATCH',
-            ['entries', reference.entryIndex, 'media', 'byteLength'],
-            'Asset media byte length does not match its manifest',
-            { key: reference.entry.key, packId },
-          ),
-        );
-      }
-      try {
-        const actualHash = await this.digest(bytes);
-        if (actualHash !== reference.entry.media.sha256) {
+        for (const { entry, entryIndex } of reference.entries) {
           diagnostics.push(
             createAssetDiagnostic(
-              'ASSET_MEDIA_HASH_MISMATCH',
-              ['entries', reference.entryIndex, 'media', 'sha256'],
-              'Asset media hash does not match its manifest',
-              { key: reference.entry.key, packId },
+              'ASSET_MEDIA_MISSING',
+              ['entries', entryIndex, 'media', 'path'],
+              'Asset media could not be loaded',
+              { key: entry.key, packId },
             ),
           );
         }
-      } catch {
-        diagnostics.push(
-          createAssetDiagnostic(
-            'ASSET_MEDIA_HASH_MISMATCH',
-            ['entries', reference.entryIndex, 'media', 'sha256'],
-            'Asset media hash could not be calculated',
-            { key: reference.entry.key, packId },
-          ),
-        );
+        continue;
       }
-      bytesByHash.set(reference.entry.media.sha256, bytes);
+      const bytes = result.value.bytes;
+      for (const { entry, entryIndex } of reference.entries) {
+        if (bytes.byteLength !== entry.media.byteLength) {
+          diagnostics.push(
+            createAssetDiagnostic(
+              'ASSET_MEDIA_SIZE_MISMATCH',
+              ['entries', entryIndex, 'media', 'byteLength'],
+              'Asset media byte length does not match its manifest',
+              { key: entry.key, packId },
+            ),
+          );
+        }
+      }
+      try {
+        const actualHash = await this.digest(bytes);
+        if (actualHash !== reference.mediaSha256) {
+          for (const { entry, entryIndex } of reference.entries) {
+            diagnostics.push(
+              createAssetDiagnostic(
+                'ASSET_MEDIA_HASH_MISMATCH',
+                ['entries', entryIndex, 'media', 'sha256'],
+                'Asset media hash does not match its manifest',
+                { key: entry.key, packId },
+              ),
+            );
+          }
+        }
+      } catch {
+        for (const { entry, entryIndex } of reference.entries) {
+          diagnostics.push(
+            createAssetDiagnostic(
+              'ASSET_MEDIA_HASH_MISMATCH',
+              ['entries', entryIndex, 'media', 'sha256'],
+              'Asset media hash could not be calculated',
+              { key: entry.key, packId },
+            ),
+          );
+        }
+      }
+      bytesByHash.set(reference.mediaSha256, bytes);
     }
     return diagnostics.length === 0
       ? { ok: true, value: bytesByHash }
@@ -557,11 +622,12 @@ class FetchAssetProvider implements AssetProvider {
 export async function createFetchAssetProvider(
   input: AssetProviderInput,
 ): Promise<AssetProvider> {
+  const catalogUrl = resolveCatalogUrl(input.catalogUrl);
   const transport: AssetTransport =
     input.transport ?? new BrowserAssetTransport();
   let rawCatalog: unknown;
   try {
-    rawCatalog = await transport.readJson(input.catalogUrl);
+    rawCatalog = await transport.readJson(catalogUrl);
   } catch (error) {
     if (error instanceof AssetProviderError) {
       throw error;
@@ -596,7 +662,7 @@ export async function createFetchAssetProvider(
   const digest = input.digestSha256 ?? defaultDigestSha256;
   return new FetchAssetProvider(
     catalog,
-    input.catalogUrl,
+    catalogUrl,
     input.profile,
     transport,
     mediaUrlStore,

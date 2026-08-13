@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   type AssetMediaUrlStore,
@@ -67,6 +67,7 @@ type PackSpec = {
   readonly packId: string;
   readonly entries?: readonly (typeof sourceEntries)[number][];
   readonly mediaCharacters?: readonly string[];
+  readonly mediaByteLengthOffsets?: readonly number[];
   readonly packHashCharacter?: string;
 };
 
@@ -127,6 +128,7 @@ class FakeMediaUrlStore implements AssetMediaUrlStore {
 
 async function createFixture(
   specs: readonly PackSpec[] = [{ packId: 'asset-pack:fixture:one' }],
+  requestedCatalogUrl = catalogUrl,
 ) {
   const transport = new FakeTransport();
   const mediaUrlStore = new FakeMediaUrlStore();
@@ -180,7 +182,9 @@ async function createFixture(
           media: {
             path: mediaPath,
             sha256: mediaSha256,
-            byteLength: mediaBytes.byteLength,
+            byteLength:
+              mediaBytes.byteLength +
+              (spec.mediaByteLengthOffsets?.[entryIndex] ?? 0),
             mimeType: 'image/png',
           },
           cellWidth: 1,
@@ -240,7 +244,7 @@ async function createFixture(
   const digestSha256 = async (bytes: Uint8Array): Promise<string> =>
     digestsByText.get(decoder.decode(bytes)) ?? digest('z');
   const provider = await createFetchAssetProvider({
-    catalogUrl,
+    catalogUrl: requestedCatalogUrl,
     profile: 'test',
     transport,
     mediaUrlStore,
@@ -266,6 +270,68 @@ function expectDiagnosticCode(
 }
 
 describe('fetch asset provider', () => {
+  it('resolves a relative catalog URL against the browser location', async () => {
+    vi.stubGlobal('location', { href: catalogUrl });
+    try {
+      const fixture = await createFixture(
+        [{ packId: 'asset-pack:fixture:one' }],
+        '/root/catalog.json',
+      );
+
+      await fixture.provider.loadPack('asset-pack:fixture:one');
+
+      expect(
+        fixture.provider.resolve(createAssetKey('outfit:tibia:knight')).key,
+      ).toBe('outfit:tibia:knight');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('shares an in-flight load when the same pack is requested concurrently', async () => {
+    const fixture = await createFixture();
+
+    await Promise.all([
+      fixture.provider.loadPack('asset-pack:fixture:one'),
+      fixture.provider.loadPack('asset-pack:fixture:one'),
+    ]);
+
+    expect(fixture.mediaUrlStore.created).toHaveLength(5);
+    expect(fixture.transport.jsonReads).toHaveLength(2);
+    expect(fixture.transport.byteReads).toHaveLength(6);
+  });
+
+  it('validates every entry that references a deduplicated media hash', async () => {
+    const fixture = await createFixture([
+      {
+        packId: 'asset-pack:fixture:one',
+        entries: [sourceEntries[0], sourceEntries[1]],
+        mediaCharacters: ['a', 'a'],
+        mediaByteLengthOffsets: [0, 1],
+      },
+    ]);
+
+    try {
+      await fixture.provider.loadPack('asset-pack:fixture:one');
+      throw new Error('Expected a duplicate media size mismatch to fail');
+    } catch (error) {
+      const providerError = expectDiagnosticCode(
+        error,
+        'ASSET_MEDIA_SIZE_MISMATCH',
+      );
+      expect(providerError.diagnostics).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'ASSET_MEDIA_SIZE_MISMATCH',
+            path: ['entries', 1, 'media', 'byteLength'],
+            key: 'creature:tibia:rotworm',
+          }),
+        ]),
+      );
+      expect(fixture.mediaUrlStore.created).toHaveLength(0);
+    }
+  });
+
   it('loads a complete pack, resolves all keys, and preloads required assets', async () => {
     const fixture = await createFixture();
 
