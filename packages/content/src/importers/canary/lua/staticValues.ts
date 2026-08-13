@@ -53,6 +53,7 @@ const symbolicConstants: Readonly<Record<string, string>> = {
   CONST_ANI_THROWINGKNIFE: 'throwingknife',
   CONST_ME_HITAREA: 'CONST_ME_HITAREA',
   CONST_ME_MAGIC_BLUE: 'CONST_ME_MAGIC_BLUE',
+  SOUND_EFFECT_TYPE_SPELL_BERSERK: 'SOUND_EFFECT_TYPE_SPELL_BERSERK',
 };
 
 function failure(
