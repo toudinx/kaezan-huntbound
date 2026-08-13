@@ -38,9 +38,12 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   [`acceptance-report.md`](playbooks/PB-00R/artifacts/acceptance-report.md).
 - [`PB-00 — Workspace e shell browser`](playbooks/PB-00/README.md) — histórico da fundação original;
   seu fechamento foi revalidado por PB-00R.
+- [`PB-01 — Catálogo curado de conteúdo`](playbooks/PB-01/README.md) — **fechado** em 2026-08-13
+  como `APPROVED_WITH_WARNINGS`; entrega chaves estáveis e bundle runtime determinístico.
+- [`PB-02 — Manifesto e asset pack pessoal`](playbooks/PB-02/README.md) — **planejado**; PB-02-01 é
+  a próxima task elegível e nenhum código de assets foi iniciado.
 
-**Próximo playbook elegível: PB-01 — Contratos e snapshot Canary.** Ainda não iniciado; a ordem e a
-Definition of Ready estão em
+**Próxima task elegível: PB-02-01 — contratos de assets.** A ordem e a Definition of Ready estão em
 [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha

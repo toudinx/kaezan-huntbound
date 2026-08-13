@@ -39,7 +39,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-00](playbooks/PB-00/README.md) | Workspace e shell browser | monorepo, Phaser/DOM shell, testes e CI local |
 | [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo — **fechado** |
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
-| PB-02 | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis |
+| [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **planejado; PB-02-01 elegível** |
 | PB-03 | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay |
 | PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
