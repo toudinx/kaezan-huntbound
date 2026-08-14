@@ -70,3 +70,18 @@ de máquina no repositório.
 
 `references/` permanece somente como entrada local do snapshot. Nenhum byte desse diretório é
 copiado para o repositório.
+
+## Correção de PB-04-04 — a caixa não é extraível deste snapshot
+
+A linha "Região localizável e extraível" do checklist acima afirma que `data-canary/world/canary.otbm`
+e `data-otservbr-global/world/otservbr-monster.xml` são o mesmo par, porque `config.lua.dist` declara
+`mapName = "otservbr"`. **Isso está incorreto.** `mapName` nomeia o mapa que o servidor carregaria —
+`otservbr.otbm` — e esse arquivo não existe no snapshot. O que o dump traz é `canary.otbm`, o mapa de
+demonstração do Canary, cujos tiles ficam em `x ∈ [256, 20479]` e `y ∈ [0, 20223]` e cujo companheiro
+`canary-monster.xml` é `<monsters />` vazio.
+
+Medido em 2026-08-14 pelo leitor de `tools/map-extractor`: nenhum dos 33 `.otbm` do snapshot cobre
+`x = 33002..33030`, `y = 31995..32027` nos andares `8` e `9`. A seleção continua congelada e válida
+contra o XML de spawn; o que falta é o mapa. `expectedDroppedTransitions` permanece `0` porque a
+extração real ainda não aconteceu. O bloqueio e as saídas possíveis estão em
+`docs/playbooks/PB-04/STATE.md`, bloqueio B1.

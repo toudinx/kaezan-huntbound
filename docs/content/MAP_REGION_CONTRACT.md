@@ -206,7 +206,7 @@ ou conteúdo mais novo que este build de `appearances.dat`. Nenhum deles carrega
 Quais ids ocorrem de fato no mapa só é conhecido após o recorte da região, então **PB-04-04** é
 responsável por confirmar que todo id da região extraída resolve na palette.
 
-### Política de regeneração
+### Política de regeneração da tabela de flags
 
 ```bash
 node tools/tile-flags/cli.ts build --source-root <canary> --output packages/content/src/generated/tile-flags.json
@@ -218,3 +218,160 @@ roda essa verificação a partir de `HUNTBOUND_CANARY_SOURCE` e **não** entra e
 `verify`, porque depende de um snapshot ausente em checkout limpo. O que entra no gate agregado é
 `corepack pnpm content:tileflags:sidecar`, comparação do sidecar contra o arquivo, que não precisa
 do snapshot e roda dentro de `content:check`.
+
+## Extração da região — PB-04-04
+
+`tools/map-extractor` converte offline o recorte congelado do OTBM em `MapRegion`,
+`TransitionTable`, `SpawnTable` e `HuntDefinition`. Nenhuma biblioteca de OTBM entra no workspace: o
+leitor é próprio, mínimo e decodifica somente o que a extração consome.
+
+### Formato OTBM lido
+
+O formato é o que `references/remeres-map-editor/source/filehandle.cpp` escreve:
+
+| Elemento | Bytes |
+|---|---|
+| Identificador de versão | 4 bytes no início do arquivo, ignorados |
+| Início de nó | `0xFE` |
+| Fim de nó | `0xFF` |
+| Escape | `0xFD` seguido do byte literal |
+| Tipo do nó | primeiro byte da faixa de propriedades, já desescapado |
+
+A árvore usada é `root → OTBM_MAP_DATA(2) → OTBM_TILE_AREA(4) → OTBM_TILE(5) | OTBM_HOUSETILE(14) →
+OTBM_ITEM(6)`. Uma `tile area` declara `u16 baseX`, `u16 baseY`, `u8 baseZ` e endereça seus tiles por
+offsets de um byte, isto é, cobre `256 × 256` tiles. `OTBM_HOUSETILE` traz `u32 houseid` entre os
+offsets e os atributos. Dentro do tile são lidos `OTBM_ATTR_TILE_FLAGS(3)`, pulado, e
+`OTBM_ATTR_ITEM(9)`, que em OTBM v2 é só o `u16` do id. Atributo de tile não previsto é erro
+nomeando o atributo, nunca um comprimento adivinhado.
+
+Regras congeladas do leitor:
+
+- **O escape vale dentro das propriedades.** `0xFD 0xFE` é `0xFE` literal e não abre nó; `0xFD 0xFF`
+  é `0xFF` literal e não fecha nó; `0xFD 0xFD` é `0xFD` literal. Escape no último byte do buffer é
+  arquivo truncado e lança erro, em vez de ler além do fim. Essa é a fonte clássica de corrupção
+  silenciosa e tem teste próprio.
+- **O mapa nunca vira árvore em memória.** `readOtbmTiles` percorre os nós por offset e descarta o
+  que cai fora da caixa. `readOtbmTree` existe só para fixtures pequenas.
+- **O descarte é por tile, não por área.** Uma `tile area` cujo canto está fora da caixa mas que
+  contém tiles dentro dela é processada; só a filtragem grosseira por interseção de área evita
+  descer nela.
+- **Só filhos diretos empilham no tile.** Um contêiner escreve seu conteúdo como neto do tile, e
+  esse conteúdo nunca entra na pilha da célula. `OTBM_TILE_ZONE(19)` também não é item.
+- Os itens saem na ordem do arquivo: primeiro os inlinados em `OTBM_ATTR_ITEM`, depois os nós
+  `OTBM_ITEM` filhos.
+
+### Classificação em camadas
+
+Para cada célula da caixa, em cada andar extraído:
+
+| Situação | Resultado |
+|---|---|
+| Primeiro item com `ground` | vira `ground` |
+| Item com `top` | vai para `objectsAbove` |
+| Demais itens | vão para `objectsBelow`, preservando o empilhamento |
+| Qualquer item com `blocking`, chão incluído | põe o índice em `collision` |
+| Nenhum item com `ground` | célula é **vazia**: entra em `collision`, não recebe objeto e seus itens não entram na palette |
+
+Colisão é exatamente `tile-flags.blocking`, isto é, `unpass`. `avoid`, `unmove`, `clip` e elevação
+continuam sem influenciar colisão.
+
+`ground` é denso e cada entrada precisa ser um índice válido de palette; o contrato proíbe sentinela
+negativa. A célula vazia é codificada pelo `serverId` **`0`**, que não é item real em Tibia e por
+isso é o único valor capaz de representar "vazio" sem afirmar um chão que não existe. Ele entra na
+palette **apenas** quando a região tem pelo menos uma célula vazia e, por ordenação, ocupa o índice
+`0`. Cada célula vazia emite `HUNT_EMPTY_TILE`, que é diagnóstico informativo e não bloqueia.
+
+Um `serverId` presente na região e ausente de `tile-flags.json` emite `HUNT_ID_MISMATCH` e **bloqueia
+a extração**, conforme a herança registrada por PB-04-03.
+
+### Destinos de transição
+
+Os destinos vêm de `Tile::queryDestination` em `references/canary/src/items/tile.cpp` e coincidem com
+a tabela congelada na spec:
+
+| `floorChange` | Destino |
+|---|---|
+| `down` | `(x, y, z + 1)` |
+| `north` | `(x, y - 1, z - 1)` |
+| `south` | `(x, y + 1, z - 1)` |
+| `east` | `(x + 1, y, z - 1)` |
+| `west` | `(x - 1, y, z - 1)` |
+| `southalt` | `(x, y + 2, z - 1)` |
+| `eastalt` | `(x + 2, y, z - 1)` |
+
+A spec listava `up (escada) → (x, y - 1, z - 1)`, valor que PB-04-03 provou não existir em Canary e
+removeu do vocabulário; geometricamente ele era idêntico a `north`. Em troca entraram `southalt` e
+`eastalt`, cujos deslocamentos de duas células saem da mesma função de Canary — a mesma autoridade
+que PB-04-03 usou para congelar o vocabulário. Ambos ocorrem de fato no snapshot (itens `855` e
+`856`).
+
+Regras congeladas:
+
+- `down` vence os valores de subida na mesma célula, como no `if / else if` de Canary; os valores de
+  subida acumulam seus deslocamentos.
+- Cada célula produz **no máximo uma** transição, então duas entradas nunca compartilham `from`.
+- Destino fora da região, em andar não extraído ou em célula de colisão **derruba** a transição,
+  incrementa `TransitionTable.dropped` e emite `HUNT_TRANSITION_DROPPED` com o `from` no `path`.
+- As entradas saem ordenadas por `from.z`, `from.y`, `from.x`.
+
+### Spawns e blueprints
+
+Um grupo entra na tabela quando seu **centro** está dentro da região e de um andar extraído; cada
+slot sobrevive quando sua posição absoluta também está. Slot fora da região vira
+`HUNT_SPAWN_OUT_OF_REGION`; criatura listada em `excludedCreatures` é omitida em silêncio; qualquer
+outra criatura fora da seleção vira `HUNT_UNKNOWN_CREATURE`. `spawntime` converte por
+`segundos * 1000 / 50` e um valor que não divide exatamente vira `HUNT_SPAWNTIME_NOT_DIVISIBLE`.
+Grupo que perde todos os slots é descartado, porque o schema exige pelo menos um.
+
+`maxLiveActors` é `min(64, total de slots)`. Os blueprints são mínimos porque PB-04 não tem combate:
+`player` é `inert` com `stepCooldownTicks` `2` e cada criatura é `wander` com `3`, os mesmos valores
+que o fixture PB-03 já exercitava. Derivar cooldown de estatística de criatura é trabalho de PB-05.
+`playerStart` é a célula caminhável mais próxima do centro do primeiro grupo de spawn, no andar
+desse grupo, com empate resolvido por `(y, x)`.
+
+O resultado passa obrigatoriamente por `validateHuntDefinition` antes de ser escrito. Falha de schema
+é falha da extração, nunca motivo para afrouxar o schema.
+
+### Formato e regeneração
+
+São quatro arquivos em `packages/content/src/generated/hunts/<hunt>/`, cada um com sidecar
+`.sha256`: `region.json` (`MapRegion`), `transitions.json` (`TransitionTable`), `spawns.json`
+(`SpawnTable`) e `hunt.json` (`HuntDefinition`). O JSON é canônico no mesmo padrão de
+`tile-flags.json`: chaves em ordem alfabética em todos os níveis, linha única sem indentação,
+somente inteiros seguros, booleanos, strings e `null`, e newline final. O Biome já não formata
+`packages/content/src/generated/**`.
+
+```bash
+node tools/map-extractor/cli.ts build --selection <selection.json> --source-root <canary> --tile-flags packages/content/src/generated/tile-flags.json --output packages/content/src/generated/hunts/<hunt>
+```
+
+`--check` não escreve, devolve exit `1` na primeira divergência e imprime o arquivo e o offset. A
+CLI recusa a escrita quando existe diagnóstico bloqueante e quando `TransitionTable.dropped` diverge
+de `expectedDroppedTransitions` da seleção. `corepack pnpm hunt:extract:check` roda a verificação a
+partir de `HUNTBOUND_CANARY_SOURCE` e fica **fora** de `check` e `verify`;
+`corepack pnpm hunt:extract:sidecar` compara os quatro sidecars sem precisar do snapshot e entra em
+`content:check` quando os artefatos existirem.
+
+### Bloqueio aberto: o mapa da hunt não está no snapshot
+
+A região congelada **ainda não foi extraída**. Medido em 2026-08-14 com o próprio leitor:
+
+- `data-canary/world/canary.otbm` tem `115541` tile areas em `x ∈ [256, 20479]`, `y ∈ [0, 20223]`.
+  Ele é o mapa de demonstração do Canary, não o mapa global; `data-canary/world/canary-monster.xml`
+  é `<monsters />` vazio e `canary-npc.xml` situa os spawns em `x ≈ 1943..5854`.
+- `otservbr-monster.xml` situa a hunt em `x = 33002..33030`, `y = 31995..32027`, andares `8` e `9`,
+  coordenadas do mapa global `otservbr.otbm`, que **não existe** no snapshot.
+- Nenhum dos 33 `.otbm` do snapshot cobre a caixa congelada nos andares `8` e `9`. Os únicos dois
+  com interseção em `x`/`y` — `world_changes/fury_gates/venore.otbm` e `.../edron.otbm` — têm só o
+  andar `7` e são remendos decorativos de uma área.
+
+Isto é, `config.lua.dist` declarar `mapName = "otservbr"` significa que o servidor carregaria
+`otservbr.otbm`; não significa que `canary.otbm` seja esse mapa. O par
+`canary.otbm` ↔ `otservbr-monster.xml` registrado em `docs/playbooks/PB-04/STATE.md` está incorreto.
+
+O leitor foi validado contra o arquivo real de 19,7 MB em uma janela povoada do próprio
+`canary.otbm` (`x = 4980..5029`, `y = 4980..5029`, andares `6` e `7`): `4159` tiles em `1,3 s`,
+`329` ids distintos, **nenhum ausente** de `tile-flags.json`, palette de `312`, `50` transições,
+`30` derrubadas, `1065` células vazias e `HuntDefinition` aprovada por `validateHuntDefinition`.
+Itens `855` (`southalt`) e `856` (`eastalt`) aparecem nessa janela, o que confirma que a geometria
+dos estados `_ALT` era necessária.
