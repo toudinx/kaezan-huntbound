@@ -2,12 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-06 e PB-03-06-FIX-01 concluídas; PB-03-07 é a próxima
-task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-07 concluídas; PB-03-08 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-07.
+**Próxima task elegível:** PB-03-08.
 
 ## Tasks
 
@@ -20,7 +19,7 @@ task elegível
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
 | PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `24f642b` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
-| PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
+| PB-03-07 | done | `codex/pb03-07-kernel-browser` | `be5bea3` | 45 testes game; typecheck; build; architecture; simulation:check; Playwright; verify; scan de regras; diff check |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
 ## Baseline congelado
@@ -474,6 +473,54 @@ Modelo/effort efetivos: Claude Code/Opus 5. Skills usadas: `superpowers:using-su
 não expõe alternativa frontier nesta sessão, desvio registrado conforme §Diversidade de revisão.
 
 `apps/game`, Playwright e Phaser não foram tocados, e PB-03-07 não foi iniciada.
+
+## PB-03-07 — handoff concluído
+
+PB-03-07 foi implementada na branch `codex/pb03-07-kernel-browser`. O commit funcional é `be5bea3`
+(`feat: prove kernel parity in the browser`). `apps/game` agora publica `createSimulationHost`, que
+converte timestamps injetados em ticks de 50 ms com backlog limitado a 250 ms por chamada, e um
+`__huntboundKernelProbe` instalado somente no build `test`. O probe valida cenário/log, executa o replay,
+serializa o snapshot canônico com LF final e calcula SHA-256 usando Web Crypto.
+
+O teste Playwright injeta `scenario.json` e `commands.jsonl` pelo processo Node e confirmou no Chromium:
+
+- `snapshot.golden.json` byte-idêntico;
+- SHA-256 `9d0c3a249b6e72daf0bce868824eb17a80b0cf4153ab05f6f7b7d50dae5f7260`;
+- `eventCount = 59` e `finalTick = 200`;
+- zero erro de console, página, resposta HTTP ou requisição.
+
+### Evidência fresca
+
+```text
+corepack pnpm --filter @huntbound/game test -> exit 0; 45 passed (11 files)
+corepack pnpm --filter @huntbound/game typecheck -> exit 0
+corepack pnpm --filter @huntbound/game build -> exit 0
+corepack pnpm architecture:check -> exit 0
+corepack pnpm simulation:check -> exit 0; hashes congelados confirmados
+corepack pnpm exec playwright test kernel-replay.spec.ts -> exit 0; 1 passed
+corepack pnpm verify -> exit 0; 9 E2E passed; workspace gates verdes
+git diff --check -> exit 0
+```
+
+O RED inicial falhou pelos módulos ausentes do host e do probe; o RED browser seguinte falhou porque o
+probe ainda não estava no grafo de `main.ts`. O typecheck também encontrou `node:fs` no teste unitário,
+que foi substituído por imports `?raw` do Vite. Depois desses ajustes, o ciclo GREEN ficou verde sem
+alterar kernel, fixture ou golden. O scan explícito
+`rg -n -e 'stepCooldown|diagonal|nextBelow|Math\.random|cooldown|move-step|direction|TICK_DURATION_MS|MAX_FRAME_DELTA_MS' apps/game/src -g '!**/*.test.ts'`
+encontrou somente as constantes e o acumulador em `SimulationHost.ts`; nenhuma regra vazou para o app.
+
+Desvio de composição registrado: `apps/game/src/main.ts` recebeu somente a importação/chamada do probe
+test-only para que ele entre no bundle servido por `vite preview`; nenhuma cena Phaser ou regra de
+simulação foi adicionada. `events.golden.jsonl` permaneceu byte-idêntico, com hash
+`31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4`.
+
+Modelo/effort efetivos: Codex baseado em GPT-5; o alias Luna/xhigh sugerido não é exposto nesta sessão.
+Skills usadas: `superpowers:using-superpowers`, `superpowers:brainstorming`,
+`superpowers:writing-plans`, `superpowers:using-git-worktrees`,
+`superpowers:test-driven-development` e `superpowers:verification-before-completion`. Validador
+efetivo: gates automatizados.
+
+PB-03-08 é a próxima task elegível. A auditoria integrada não foi iniciada.
 
 ## Bloqueios
 
