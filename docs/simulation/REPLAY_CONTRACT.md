@@ -83,6 +83,23 @@ digests `.sha256` contra os arquivos que eles descrevem.
 A distinção é deliberada: `1` significa "o documento foi lido e não corresponde a esta run";
 `2` significa "o documento não pôde ser lido".
 
+## Paridade no browser
+
+`apps/game` dirige um `SimulationKernel` por `createSimulationHost`. O host recebe timestamps da
+composition root por `advanceTo(nowMs)`, acumula o delta, consome no maximo `MAX_FRAME_DELTA_MS = 250`
+ms por chamada e nunca descarta o backlog. Cada tick consumido chama `kernel.advanceOne()`; o host nao
+interpola, desenha ou conhece Phaser. `reset(nowMs)` zera somente o acumulador.
+
+No build `test`, a composition root instala `__huntboundKernelProbe` de forma idempotente. O metodo
+`replay(scenarioJson, logText)` valida os dois documentos, executa `runReplay`, devolve o snapshot
+canonico com o LF final do arquivo, a contagem de eventos e o tick final, e calcula o SHA-256 com Web
+Crypto. O kernel nao calcula digest. Builds `personal` e `product` nao instalam o probe; entradas
+invalidas sao rejeitadas por `KernelProbeError` com diagnosticos `SimulationDiagnostic` estruturados.
+
+`tests/e2e/kernel-replay.spec.ts` injeta a fixture no processo browser e compara o snapshot byte a byte,
+o sidecar SHA-256, `eventCount = 59` e `finalTick = 200`. O mesmo cenario tambem exige console,
+pagina e rede sem erros.
+
 ## Gate
 
 ```text

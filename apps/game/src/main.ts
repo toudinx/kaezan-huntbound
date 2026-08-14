@@ -3,17 +3,18 @@ import './styles.css';
 import Phaser from 'phaser';
 
 import { AssetProviderError } from '../../../packages/assets/src/index.ts';
-import { createSceneBridge } from './bridge/SceneBridge';
 import {
   getAssetCatalogUrl,
   parseAppAssetProfile,
 } from './assets/AssetProfile';
-import { createAssetRuntime } from './assets/createAssetRuntime';
 import { installAssetRuntimeProbe } from './assets/AssetRuntimeProbe';
+import { createAssetRuntime } from './assets/createAssetRuntime';
+import { createSceneBridge } from './bridge/SceneBridge';
+import { installKernelProbe } from './index';
 import { createGame } from './phaser/createGame';
 import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
-import { createViewportController } from './runtime/ViewportController';
 import type { ShellSnapshot } from './runtime/ShellSnapshot';
+import { createViewportController } from './runtime/ViewportController';
 import { mountAppShell } from './ui/AppShell';
 
 interface ShellHmrData {
@@ -80,6 +81,9 @@ export async function bootstrapApp(
   }
 
   const profile = parseAppAssetProfile(import.meta.env.MODE);
+  if (profile === 'test') {
+    installKernelProbe();
+  }
   const catalogUrl = getAssetCatalogUrl(profile);
   const shellRoot = browserDocument.querySelector<HTMLElement>('#shell-root');
   const gameRoot = browserDocument.querySelector<HTMLElement>('#game-root');
