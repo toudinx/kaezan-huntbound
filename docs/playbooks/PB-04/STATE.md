@@ -22,7 +22,7 @@ resolução de B1; PB-04-06 já tem o kernel v3 de que precisa.
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | blocked | `codex/pb04-04-map-extractor` | (extrator) | `tools/map-extractor/**` verde; região congelada não extraída — mapa ausente do snapshot |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | pending | `codex/pb04-06-hunt-replay` | — | — |
+| PB-04-06 | blocked (parcial) | `codex/pb04-06-hunt-replay` | `5e98e91` | `buildHuntScenario` + `loadHuntDefinition` verdes; golden real bloqueado por B1 |
 | PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
 | PB-04-08 | pending | `codex/pb04-08-hunt-scene` | — | — |
 | PB-04-09 | pending | `codex/pb04-09-hunt-browser-qa` | — | — |
@@ -343,6 +343,36 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   TypeScript, Biome, CLI real de replay e `corepack pnpm verify` em duas execuções.
 - **Próximas tasks elegíveis:** nenhuma sem resolver B1. PB-04-06 tem o kernel de que precisa e fica
   bloqueada apenas pela região extraída.
+
+## PB-04-06 — handoff parcial, bloqueado por B1
+
+- **Status:** implementação da fronteira conteúdo/kernel concluída; a task permanece bloqueada para
+  o cenário real, replay golden e gate agregado porque PB-04-04 não entregou o mapa da seleção.
+- **Commit:** `5e98e91` (`feat: project hunts into kernel scenarios`).
+- **Artefatos entregues:** `packages/content/src/hunts/buildHuntScenario.ts`,
+  `loadHuntDefinition.ts`, `index.ts`, exports em `packages/content/src/index.ts` e
+  `buildHuntScenario.test.ts`.
+- **Comportamento:** colisão row-major vira `blockedTiles` em ordem `(y, x)`; transições são
+  preservadas; slots usam `center + offset` sem copiar `creatureKey`; `scenarioId` é
+  `scenario:${huntId}`; `scenarioRevision` é `huntRevision`; o jogador inicial usa facing `s`;
+  a saída passa por `validateKernelScenario`; `seed` permanece no replay e não entra no cenário.
+- **Provas:** RED por módulo ausente no runner de `@huntbound/content`, exit `1`; GREEN com `7/7`
+  testes novos, `60/60` testes do pacote content, typecheck do pacote e `biome check`, todos exit
+  `0`; `git diff --check`, exit `0`.
+- **Prova do bloqueio:** o extractor com `C:\Kaezan\kaezan-huntbound\references\canary` devolve
+  exit `1` com `HUNT_SCHEMA_INVALID` em `hunt.playerStart`/`playerStart` (não há célula caminhável
+  na caixa congelada). `packages/content/src/generated/hunts/venore-rotworm-cave/` continua
+  ausente; nenhum `scenario.json`, command log, golden ou hash foi fabricado.
+- **Não entregue deliberadamente:** fixture `pb-04-hunt-session`, cobertura de 600 ticks,
+  retomada `0..600`, quatro SHA-256, `hunt:check` e atualização do contrato de replay dependente
+  do cenário real.
+- **Skills/validador:** `using-superpowers`, `brainstorming`, `writing-plans`,
+  `using-git-worktrees`, `executing-plans`, `test-driven-development`; validação por Vitest,
+  TypeScript, Biome e extractor real contra o snapshot local. O modelo/effort efetivos não são
+  expostos pelo runtime desta sessão.
+- **Próxima ação elegível:** retomar PB-04-06 após PB-04-04 disponibilizar e versionar o mapa que
+  cobre `x=33002..33030`, `y=31995..32027`, andares `8` e `9`; então gerar e verificar os goldens
+  sem alterar esta projeção.
 
 ## Bloqueios
 
