@@ -41,7 +41,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
-| PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições — **elegível** |
+| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições — **planejado; PB-04-01 elegível** |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
@@ -172,6 +172,43 @@ O gate deve provar que a mesma seed e o mesmo command log produzem snapshot can�
 Node e no browser, que a retomada por snapshot intermediário converge para o mesmo resultado, e que
 alterar seed, comando ou versão de regras é detectado como divergência explícita.
 
+## PB-04 — Definition of Ready
+
+**Playbook modular:** `docs/playbooks/PB-04/README.md` — dez task cards, cada uma executável em um
+chat independente. Design aprovado em
+`docs/superpowers/specs/2026-08-14-pb-04-first-hunt-design.md`.
+
+- [x] A hunt é `hunt:tibia:venore-rotworm-cave`; Rotworm já existe no catálogo PB-01 e no pack PB-02.
+- [x] A região do mapa é convertida offline para JSON validado; OTBM nunca é formato de runtime.
+- [x] Colisão, camadas e transições derivam de `appearances.dat` e `items.xml`, não de constantes
+      escritas à mão.
+- [x] O kernel continua agnóstico de conteúdo; identidade Tibia é proibida por regra executável.
+- [x] Spawn e transição são sistemas do tick, não comandos: o command log segue gravando somente
+      comandos externos.
+- [x] Não há combate, pathfinding, click-to-move nem save; PB-04 entrega navegação, não luta.
+- [x] Nenhuma dependência externa nova entra no workspace.
+
+Parâmetros congelados: região de no máximo 3 andares e 96 × 96 tiles por andar, pack de no máximo
+512 entradas e 6 MB, no máximo 64 atores vivos, `SIMULATION_SCHEMA_VERSION = 3`,
+`SIMULATION_RULES_VERSION = 2`, stream RNG novo `spawn`, e fixture `pb-04-hunt-session` com seed
+`1a2b3c4d5e6f7a8b` em 600 ticks, com retomada em 313.
+
+Entregáveis mínimos esperados do plano:
+
+```text
+packages/contracts/src/hunt/
+packages/content/src/{hunts,generated/hunts}/
+packages/simulation/src/{grid,kernel}/
+packages/test-fixtures/hunt/pb04/
+tools/{tile-flags,map-extractor}/
+apps/game/src/{hunt,input}/
+```
+
+O gate deve provar que a região reextraída é byte-idêntica, que a sessão da hunt reproduz o mesmo
+SHA-256 em Node e no browser, que a retomada converge em todas as fronteiras, que o journal golden do
+PB-03 permaneceu byte-idêntico após o bump de schema, e que a hunt é jogável nos quatro viewports
+obrigatórios.
+
 ## Contrato para escolher a primeira hunt
 
 A escolha acontece no início do playbook PB-04 e fica congelada na spec daquele playbook. O autor
@@ -190,8 +227,11 @@ Checklist de seleção:
 - [ ] O pacote cabe no budget de carregamento definido pela ADR-001.
 
 Venore Rotworm Cave, Kha'labal Terramites Cave e Amazon Tower aparecem como candidatos de nível 8+
-e compatíveis com todas as vocações na página 17 do catálogo na data desta decisão. São exemplos,
-não escolhas obrigatórias.
+e compatíveis com todas as vocações na página 17 do catálogo na data desta decisão. Eram exemplos,
+não escolhas obrigatórias; a spec do PB-04 escolheu **Venore Rotworm Cave**, porque é a única
+candidata cuja criatura já existe tanto no catálogo PB-01 quanto no pack PB-02, e porque seus spawns
+se distribuem em dois andares, o que exercita transições sem inventar geometria. A execução do
+checklist acima pertence a PB-04-01 e fica congelada em `docs/content/PB-04-SELECTION.md`.
 
 ## Contratos transversais já fechados
 

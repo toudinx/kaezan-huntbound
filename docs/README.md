@@ -51,8 +51,14 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   byte em Node e no Chromium. Warnings priorizados em
   [`acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
 
-**Próximo playbook: PB-04 — primeira hunt ponta a ponta.** A ordem e a Definition of Ready estão em
-[`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
+- [`PB-04 — Primeira hunt ponta a ponta`](playbooks/PB-04/README.md) — **planejado** em 2026-08-14,
+  com PB-04-01 elegível; entrega a hunt `hunt:tibia:venore-rotworm-cave` navegável no browser, com
+  região real extraída offline, colisão e transições derivadas do snapshot, spawn determinístico,
+  câmera e input. Design em
+  [`2026-08-14-pb-04-first-hunt-design.md`](superpowers/specs/2026-08-14-pb-04-first-hunt-design.md).
+
+**Playbook em execução: PB-04 — primeira hunt ponta a ponta.** A ordem e a Definition of Ready estão
+em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha
 
