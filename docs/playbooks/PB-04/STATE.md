@@ -2,23 +2,23 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** em andamento — PB-04-01 concluída. PB-03 foi fechado em `7097b67` como
+**Estado geral:** em andamento — PB-04-01 e PB-04-02 concluídas. PB-03 foi fechado em `7097b67` como
 `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado `f885535`, sem
 blockers e sem task corretiva.
 
 **Última atualização:** 2026-08-14
 
-**Próxima task elegível:** PB-04-02.
+**Próximas tasks elegíveis:** PB-04-03 e PB-04-05, após a conclusão de PB-04-02.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-04-01 | done | `codex/pb04-01-hunt-selection` | `e6e3119` | `docs/content/PB-04-SELECTION.md` + CLI exit 0 no snapshot local |
-| PB-04-02 | pending | `codex/pb04-02-world-contracts` | — | — |
-| PB-04-03 | pending | `codex/pb04-03-tile-flags` | — | — |
+| PB-04-02 | done | `codex/pb04-02-world-contracts` | `d5352eb` | `packages/contracts/src/hunt/**` + `MAP_REGION_CONTRACT.md` |
+| PB-04-03 | eligible | `codex/pb04-03-tile-flags` | — | PB-04-02 contracts integrated |
 | PB-04-04 | pending | `codex/pb04-04-map-extractor` | — | — |
-| PB-04-05 | pending | `codex/pb04-05-kernel-floors-spawn` | — | — |
+| PB-04-05 | eligible | `codex/pb04-05-kernel-floors-spawn` | — | PB-04-02 contracts integrated |
 | PB-04-06 | pending | `codex/pb04-06-hunt-replay` | — | — |
 | PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
 | PB-04-08 | pending | `codex/pb04-08-hunt-scene` | — | — |
@@ -95,6 +95,40 @@ PB-04-01 acrescenta a seleção congelada, o validador e o relatório abaixo. A 
   `using-git-worktrees`, `executing-plans`, `test-driven-development` e
   `verification-before-completion`; validação por Vitest focado, Biome, TypeScript, CLI real e
   `corepack pnpm verify`.
+
+## PB-04-02 — handoff concluído
+
+- **Status:** done; implementação serial em worktree isolada, pronta para integração fast-forward.
+- **Commit da feature:** `d5352eb` (`feat: define hunt world contracts`). O plano foi registrado em
+  `793f6b5` (`docs: plan PB-04 world contracts`).
+- **Artefatos:** `packages/contracts/src/hunt/types.ts`, `schemas.ts`, `diagnostics.ts`, `index.ts`,
+  `worldContracts.test.ts`, `packages/contracts/src/index.ts` e
+  `docs/content/MAP_REGION_CONTRACT.md`.
+- **API publicada:** `MapRegion`, `TransitionTable`, `SpawnTable`, `HuntDefinition`,
+  `MapRegionSchema`, `TransitionTableSchema`, `SpawnTableSchema`, `HuntDefinitionSchema`,
+  `validateMapRegion` e `validateHuntDefinition`. `KernelBlueprint` reutiliza o
+  `ActorBlueprint` existente; nenhum arquivo de `packages/contracts/src/simulation/` foi alterado.
+- **RED/GREEN:** RED inicial do contrato por módulo ausente, exit `1`; GREEN final
+  `corepack pnpm --filter @huntbound/contracts exec vitest run src/hunt/worldContracts.test.ts`, exit
+  `0`, com `49/49` testes; typecheck do pacote, exit `0`.
+- **Gates:** `corepack pnpm --filter @huntbound/contracts test` exit `0` com `90/90` testes;
+  `architecture:check`, `biome check packages/contracts`, `format:check` e `git diff --check`, todos
+  exit `0`; `corepack pnpm verify` exit `0`, incluindo `9/9` testes browser e os digests do fixture
+  PB-03 preservados.
+- **Diagnósticos:** códigos novos mantidos na fronteira `hunt` para preservar sem alteração a união
+  de diagnósticos de PB-03; ordenação por `path`, depois `code`, depois `message`.
+- **Provas de mutação:** desabilitar temporariamente cada comparação derrubou o teste correspondente:
+  palette, floors, `objectsBelow`, `objectsAbove`, collision, ordem de `TransitionTable`, duplicata de
+  `from`, ordem de `SpawnTable` e centro duplicado. Cada mutação foi restaurada; o focused suite voltou
+  a `49/49`.
+- **Modelo/effort efetivos:** Codex/GPT-5 nesta sessão; effort efetivo não é exposto pela interface.
+  Modelo sugerido pelo roteiro: GPT-5.6 Luna `xhigh`.
+- **Skills e validador:** `using-superpowers`, `brainstorming`, `writing-plans`,
+  `using-git-worktrees`, `executing-plans`, `test-driven-development` e
+  `verification-before-completion`; validador independente por Vitest, TypeScript, Biome,
+  architecture gate e `corepack pnpm verify`.
+- **Próximas tasks elegíveis:** PB-04-03 e PB-04-05; PB-04-04 continua dependente de PB-04-03 e
+  responsável por reconciliar `expectedDroppedTransitions`.
 
 ## Bloqueios
 
