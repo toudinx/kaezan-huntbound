@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { SimulationEvent } from '../../../../packages/contracts/src/index.ts';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 import * as SceneBridgeModule from './SceneBridge';
 
@@ -27,6 +28,10 @@ function createBridge(initialSnapshot: ShellSnapshot) {
       getSnapshot(): ShellSnapshot;
       publish(next: ShellSnapshot): void;
       subscribe(listener: (snapshot: ShellSnapshot) => void): () => void;
+      publishEvents(events: readonly SimulationEvent[]): void;
+      subscribeEvents(
+        listener: (events: readonly SimulationEvent[]) => void,
+      ): () => void;
     }
   )(initialSnapshot);
 }
@@ -67,5 +72,26 @@ describe('SceneBridge', () => {
     bridge.publish(readySnapshot);
 
     expect(listener.mock.calls).toEqual([[bootingSnapshot]]);
+  });
+
+  it('publishes simulation events to event subscribers', () => {
+    const bridge = createBridge(bootingSnapshot);
+    const listener = vi.fn();
+    const simulationEvent = {
+      tick: 0,
+      sequence: 1,
+      payload: {
+        type: 'actor/spawned',
+        entityId: 1,
+        blueprintId: 'player',
+        position: { x: 0, y: 0, z: 0 },
+        facing: 's',
+      },
+    } as SimulationEvent;
+
+    bridge.subscribeEvents(listener);
+    bridge.publishEvents([simulationEvent]);
+
+    expect(listener).toHaveBeenCalledWith([simulationEvent]);
   });
 });
