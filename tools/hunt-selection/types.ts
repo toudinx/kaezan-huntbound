@@ -1,0 +1,49 @@
+export interface HuntSelectionRegion {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+  readonly floors: readonly number[];
+}
+
+export interface HuntSelectionExcludedCreature {
+  readonly name: string;
+  readonly reason: string;
+  readonly count: number;
+}
+
+export interface HuntSelection {
+  readonly key: string;
+  readonly displayName: string;
+  readonly sourceUrl: string;
+  readonly recommendedLevel: number;
+  readonly soloVocation: string;
+  readonly region: HuntSelectionRegion;
+  readonly creatures: readonly string[];
+  readonly excludedCreatures: readonly HuntSelectionExcludedCreature[];
+  readonly expectedSpawnGroups: number;
+  readonly expectedSpawnSlots: number;
+  readonly expectedDroppedTransitions: number;
+  readonly budget: {
+    readonly maxFloors: number;
+    readonly maxWidth: number;
+    readonly maxHeight: number;
+  };
+}
+
+export interface HuntSelectionDiagnostic {
+  readonly path: string;
+  readonly code: string;
+  readonly message: string;
+}
+
+export interface HuntSelectionReport {
+  readonly ok: boolean;
+  readonly width: number;
+  readonly height: number;
+  readonly floors: readonly number[];
+  readonly spawnGroups: number;
+  readonly spawnSlots: number;
+  readonly creatureNames: readonly string[];
+  readonly diagnostics: readonly HuntSelectionDiagnostic[];
+}
