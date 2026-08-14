@@ -1,0 +1,163 @@
+import type {
+  ActorState,
+  KernelScenario,
+  RandomStreamState,
+  SimulationCommandRecord,
+  SimulationDiagnostic,
+  SimulationSnapshot,
+  SimulationValidationResult,
+} from '@huntbound/contracts';
+import {
+  SIMULATION_RULES_VERSION,
+  SIMULATION_SCHEMA_VERSION,
+  validateSimulationSnapshot,
+} from '@huntbound/contracts';
+
+import {
+  createSimulationKernel,
+  type SimulationKernel,
+} from '../kernel/kernel.ts';
+import { readKernelState } from './kernelState.ts';
+
+function compareNumbers(left: number, right: number): number {
+  return left === right ? 0 : left < right ? -1 : 1;
+}
+
+function compareText(left: string, right: string): number {
+  return left === right ? 0 : left < right ? -1 : 1;
+}
+
+function byEntityId(left: ActorState, right: ActorState): number {
+  return compareNumbers(left.entityId, right.entityId);
+}
+
+function byLabel(left: RandomStreamState, right: RandomStreamState): number {
+  return compareText(left.label, right.label);
+}
+
+function byTickThenSequence(
+  left: SimulationCommandRecord,
+  right: SimulationCommandRecord,
+): number {
+  return (
+    compareNumbers(left.tick, right.tick) ||
+    compareNumbers(left.sequence, right.sequence)
+  );
+}
+
+/**
+ * Serializable state of a live kernel, in the frozen field order-independent
+ * shape. Terrain, occupancy and the scenario digest are deliberately absent:
+ * they are reconstructed from the scenario document at restore time.
+ */
+export function snapshotKernel(kernel: SimulationKernel): SimulationSnapshot {
+  const state = readKernelState(kernel);
+
+  return {
+    schemaVersion: SIMULATION_SCHEMA_VERSION,
+    rulesVersion: SIMULATION_RULES_VERSION,
+    scenarioId: state.scenarioId,
+    scenarioRevision: state.scenarioRevision,
+    seed: state.seed,
+    tick: state.tick,
+    nextEntityId: state.nextEntityId,
+    nextEventSequence: state.nextEventSequence,
+    nextCommandSequence: state.nextCommandSequence,
+    randomStreams: [...state.randomStreams].sort(byLabel),
+    actors: [...state.actors].sort(byEntityId),
+    pendingCommands: [...state.pendingCommands].sort(byTickThenSequence),
+  };
+}
+
+/**
+ * True when every AI decision already taken has also been applied, i.e. no
+ * internal intent is waiting for a tick that has not run yet. Only a quiescent
+ * kernel can be snapshotted and restored without losing decided AI intents.
+ */
+export function isKernelQuiescent(kernel: SimulationKernel): boolean {
+  return readKernelState(kernel).pendingInternalIntents === 0;
+}
+
+function diagnostic(
+  code: SimulationDiagnostic['code'],
+  message: string,
+  path: readonly (string | number)[],
+): SimulationDiagnostic {
+  return { code, message, path };
+}
+
+/**
+ * Rebuilds a kernel from a snapshot against the scenario it was taken from.
+ * The scenario is the authority for terrain and blueprints; the snapshot is the
+ * authority for actors, RNG state, sequences and pending commands.
+ */
+export function restoreSimulationKernel(
+  scenario: KernelScenario,
+  snapshot: SimulationSnapshot,
+): SimulationValidationResult<SimulationKernel> {
+  const validated = validateSimulationSnapshot(snapshot);
+  if (!validated.ok) {
+    return validated;
+  }
+
+  const value = validated.value;
+  const diagnostics: SimulationDiagnostic[] = [];
+
+  if (scenario.schemaVersion !== SIMULATION_SCHEMA_VERSION) {
+    diagnostics.push(
+      diagnostic(
+        'SIM_VERSION_MISMATCH',
+        `Expected scenario schemaVersion ${SIMULATION_SCHEMA_VERSION}, received ${scenario.schemaVersion}`,
+        ['scenario', 'schemaVersion'],
+      ),
+    );
+  }
+  if (value.scenarioId !== scenario.scenarioId) {
+    diagnostics.push(
+      diagnostic(
+        'SIM_SCENARIO_MISMATCH',
+        `Snapshot belongs to scenario ${value.scenarioId}, not ${scenario.scenarioId}`,
+        ['scenarioId'],
+      ),
+    );
+  }
+  if (value.scenarioRevision !== scenario.scenarioRevision) {
+    diagnostics.push(
+      diagnostic(
+        'SIM_SCENARIO_MISMATCH',
+        `Snapshot belongs to scenario revision ${value.scenarioRevision}, not ${scenario.scenarioRevision}`,
+        ['scenarioRevision'],
+      ),
+    );
+  }
+
+  if (diagnostics.length > 0) {
+    return { ok: false, diagnostics };
+  }
+
+  try {
+    return {
+      ok: true,
+      value: createSimulationKernel(scenario, value.seed, {
+        tick: value.tick,
+        nextEntityId: value.nextEntityId,
+        nextEventSequence: value.nextEventSequence,
+        nextCommandSequence: value.nextCommandSequence,
+        actors: value.actors,
+        randomStreams: value.randomStreams,
+        pendingCommands: value.pendingCommands,
+      }),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      diagnostics: [
+        diagnostic(
+          'SIM_SCHEMA_INVALID',
+          error instanceof Error ? error.message : String(error),
+          [],
+        ),
+      ],
+    };
+  }
+}

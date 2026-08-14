@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-05 concluídas; PB-03-06 é a próxima task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-06 concluídas; PB-03-07 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-06.
+**Próxima task elegível:** PB-03-07.
 
 ## Tasks
 
@@ -17,7 +17,7 @@
 | PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` + `5e67e56` | 18 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
-| PB-03-06 | pending | `codex/pb03-06-kernel-replay` | — | — |
+| PB-03-06 | done | `codex/pb03-06-kernel-replay` | `PENDING` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
@@ -274,9 +274,126 @@ efetivo: gates automatizados.
 Snapshot, restore, replay, CLI, fixtures golden, app e browser não foram antecipados. PB-03-06 é a
 próxima task elegível.
 
+## PB-03-06 — handoff concluído
+
+PB-03-06 foi implementada na branch `codex/pb03-06-kernel-replay`. `@huntbound/simulation` passa a
+publicar `encodeCanonicalJson`/`CanonicalJsonError`, `snapshotKernel`, `restoreSimulationKernel`,
+`isKernelQuiescent`, `runReplay`/`prepareReplayKernel`/`ReplayResult` e `encodeEventJournal`. O novo
+`tools/replay` traz `run`, `verify` e `hash`, e o gate `simulation:check` entrou em `check` e em
+`verify`, depois de `assets:check`.
+
+O contrato durável foi atualizado em `docs/simulation/KERNEL_CONTRACT.md` (seções "Snapshot",
+"Serialização canônica" e "Replay") e o novo `docs/simulation/REPLAY_CONTRACT.md` registra formato
+canônico, command log, CLI, exit codes, hashes congelados e a política de regeneração de golden.
+
+### Hashes congelados da fixture
+
+Fixture `pb-03-kernel-coverage`, revisão `1`, seed `0f1e2d3c4b5a6978`, `200` ticks, retomada em `117`:
+
+```text
+scenario.json          1f1fc443bda88d73d2d76f28e9486b515f1c310f14fa441feb40c5090206ba10
+commands.jsonl         08a6b65ae44f2b188803890c4b153c84a7d75b444d68b4a72b8e963995badac5
+snapshot.golden.json   bc8068569b0e13c379f50648027579e76bb269258ee317ceafab626d7fd4db38
+events.golden.jsonl    31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4
+```
+
+A run emite 59 eventos, cobre os seis tipos de evento e as cinco causas de bloqueio (`bounds`,
+`cooldown`, `diagonal-corner`, `occupied`, `terrain`), mais entidade inexistente, spawn e despawn.
+
+### Descoberta bloqueante para o supervisor: quiescência da retomada
+
+`S3 ai` decide no fim do tick `T` uma intent aplicada em `T + 1`. Essa fila interna **não tem campo
+no snapshot congelado** — `pendingCommands` carrega apenas comandos externos, e
+`SimulationSnapshotSchema` é `.strict()` em `@huntbound/contracts`. Consequência medida: restaurar
+uma fronteira com intent interna pendente perde a decisão e diverge no tick seguinte.
+
+A correlação foi medida em 24 fronteiras consecutivas e é exata: `pendingInternalIntents > 0` se e
+somente se a retomada diverge. Nada é silencioso hoje:
+
+- `isKernelQuiescent(kernel)` responde se a fronteira é restaurável;
+- `packages/simulation/src/state/snapshot.test.ts` prova os dois sentidos, incluindo um teste que
+  **prova a limitação** numa fronteira não quiescente;
+- `tools/replay` recusa retomada não quiescente com `SIM_REPLAY_DIVERGED` em vez de gerar golden
+  errado;
+- o tick `117` da fixture é quiescente, e isso é reverificado a cada execução dos testes.
+
+Fechar a lacuna de vez exige um campo novo no snapshot, isto é, alterar o schema congelado em
+PB-03-01 — fora do escopo permitido de PB-03-06, que não lista `packages/contracts`. Fica como
+decisão de supervisor: aceitar a restrição documentada ("retomada só em fronteira quiescente") ou
+abrir card para estender o snapshot com bump de `SIMULATION_SCHEMA_VERSION`.
+
+### Desvio de escopo declarado
+
+O escopo permitido da task não lista `packages/simulation/src/kernel/**`, mas `snapshotKernel` e
+`restoreSimulationKernel` precisam ler e reinjetar estado interno do kernel. Foi acrescentado um
+único costura mínimo e não semântico:
+
+- `packages/simulation/src/state/kernelState.ts` (novo, dentro do escopo) define o acessor por
+  símbolo e o tipo de restauração;
+- `kernel.ts` anexa esse acessor e aceita um terceiro parâmetro opcional de restauração;
+- `worldState.ts` ganhou `restoreWorld`.
+
+Nenhuma regra do kernel mudou: pipeline, precedências, cooldown, ordenações, consumo de RNG e
+eventos permanecem idênticos, e os 79 testes de PB-03-05 seguem verdes sem alteração.
+
+### Evidência fresca na worktree da task
+
+```text
+corepack pnpm --filter @huntbound/simulation test -> exit 0; 115 passed (12 files)
+node node_modules/vitest/vitest.mjs run --config tools/replay/vitest.config.ts -> exit 0; 29 passed (2 files)
+corepack pnpm --filter @huntbound/simulation typecheck -> exit 0
+corepack pnpm exec tsc --project tools/replay/tsconfig.json --noEmit -> exit 0
+corepack pnpm simulation:check -> exit 0 (duas execuções seguidas)
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/simulation tools/replay -> exit 0
+corepack pnpm format:check -> exit 0; 251 files
+git diff --check -> exit 0
+```
+
+### Ciclo TDD e defeitos encontrados
+
+RED por módulo ausente em cada um dos três blocos (encoder, snapshot/restore, replay), e RED com 17
+falhas na CLI antes de `cli.ts` existir.
+
+Dois achados reais durante o GREEN:
+
+1. A primeira asserção de sensibilidade a comando exigia que trocar `ne` por `se` mudasse o digest do
+   snapshot. Falhou legitimamente: as duas diagonais são recusadas pelo mesmo canto `(2,1)`, um passo
+   bloqueado não muta estado, e o snapshot é de fato idêntico. Quem enxerga a edição é o journal, via
+   `attempted`. O teste foi corrigido para afirmar o que é verdadeiro e dividido em dois casos —
+   comando que muda estado e comando bloqueado — o que documenta por que `verify` precisa comparar os
+   dois golden e não só o snapshot.
+2. A lacuna de quiescência descrita acima, encontrada por medição e não por suposição.
+
+### Notas operacionais
+
+`tools/replay` importa `packages/**` por caminho relativo, como `tools/asset-packer`: Node não aplica
+`paths` de tsconfig e o import por specifier falhava com `ERR_MODULE_NOT_FOUND`.
+
+`biome.json` ganhou `!packages/test-fixtures/simulation/pb03`, no mesmo padrão já usado pela árvore de
+assets de PB-02: o formatador reescreveria o JSON canônico e quebraria os digests.
+
+O script `test` da raiz passou a rodar também `vitest run --config tools/replay/vitest.config.ts`.
+Sem isso os 29 testes da ferramenta não entrariam em nenhum gate agregado, como já acontece com
+`tools/asset-packer`.
+
+Modelo/effort efetivos: Claude Code/Opus 5; o alias Sol/xhigh sugerido não é exposto nesta sessão.
+Skills usadas: `superpowers:using-superpowers`, `superpowers:test-driven-development`,
+`superpowers:using-git-worktrees`, `superpowers:systematic-debugging` e
+`superpowers:verification-before-completion`. Validador efetivo: gates automatizados.
+
+App, browser, Playwright e Phaser não foram tocados. PB-03-07 é a próxima task elegível.
+
 ## Bloqueios
 
-Nenhum bloqueio. Uma observação não bloqueante fica registrada: o script `test` da raiz enumera
+Nenhum bloqueio de execução. Uma decisão de supervisor fica aberta, descrita em detalhe no handoff
+de PB-03-06: a retomada por snapshot só é fiel em fronteira quiescente, porque a fila interna de
+intents de `S3 ai` não tem campo no snapshot congelado em PB-03-01. A restrição está documentada,
+testada nos dois sentidos e recusada explicitamente pela ferramenta; fechá-la de vez exige estender
+`SimulationSnapshotSchema` em `packages/contracts`, com bump de `SIMULATION_SCHEMA_VERSION`. PB-03-07
+não depende dessa decisão; PB-03-08 deveria fechá-la.
+
+Uma observação não bloqueante segue registrada: o script `test` da raiz enumera
 apenas `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`, de modo que
 `simulation-boundaries.test.ts` — como já acontecia com `content-boundaries.test.ts` — não roda no
 gate agregado. A regra em si roda em `architecture:check`, que é o critério de aceite. Corrigir o

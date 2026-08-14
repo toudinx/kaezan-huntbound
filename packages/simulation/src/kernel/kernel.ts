@@ -17,6 +17,7 @@ import type {
 import {
   type CommandAcceptance,
   createCommandBuffer,
+  restoreCommandBuffer,
 } from '../commands/commandBuffer.ts';
 import { createEventJournal } from '../events/journal.ts';
 import {
@@ -26,8 +27,20 @@ import {
   resolveStep,
   translate,
 } from '../grid/index.ts';
-import { createKernelRandomStreams } from '../random/index.ts';
-import { createWorld, type WorldState } from '../state/worldState.ts';
+import {
+  createKernelRandomStreams,
+  restoreKernelRandomStreams,
+} from '../random/index.ts';
+import {
+  KERNEL_STATE,
+  type KernelRestoreState,
+  type KernelStateCarrier,
+} from '../state/kernelState.ts';
+import {
+  createWorld,
+  restoreWorld,
+  type WorldState,
+} from '../state/worldState.ts';
 
 export interface SimulationKernel {
   readonly tick: TickIndex;
@@ -78,24 +91,39 @@ function compareIntents(left: MoveIntent, right: MoveIntent): number {
 export function createSimulationKernel(
   scenario: KernelScenario,
   seed: Seed,
+  restore?: KernelRestoreState,
 ): SimulationKernel {
-  const world = createWorld(scenario);
-  const journal = createEventJournal();
-  const buffer = createCommandBuffer();
+  const world =
+    restore === undefined
+      ? createWorld(scenario)
+      : restoreWorld(restore.actors, restore.nextEntityId, restore.tick);
+  const journal = createEventJournal(restore?.nextEventSequence);
+  const buffer =
+    restore === undefined
+      ? createCommandBuffer()
+      : restoreCommandBuffer(
+          restore.pendingCommands,
+          restore.nextCommandSequence,
+        );
   const grid = createStaticGrid(scenario);
-  const streams = createKernelRandomStreams(seed);
+  const streams =
+    restore === undefined
+      ? createKernelRandomStreams(seed)
+      : restoreKernelRandomStreams(restore.randomStreams);
   const blueprints = new Map<string, ActorBlueprint>(
     scenario.blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
   );
 
-  for (const actor of world.actors()) {
-    journal.emit(world.tick, {
-      type: 'actor/spawned',
-      entityId: actor.entityId,
-      blueprintId: actor.blueprintId,
-      position: actor.position,
-      facing: actor.facing,
-    });
+  if (restore === undefined) {
+    for (const actor of world.actors()) {
+      journal.emit(world.tick, {
+        type: 'actor/spawned',
+        entityId: actor.entityId,
+        blueprintId: actor.blueprintId,
+        position: actor.position,
+        facing: actor.facing,
+      });
+    }
   }
 
   const reject = (
@@ -327,10 +355,26 @@ export function createSimulationKernel(
     return events;
   };
 
-  return {
+  const kernel: SimulationKernel & KernelStateCarrier = {
     get tick() {
       return world.tick;
     },
+    [KERNEL_STATE]: () => ({
+      seed,
+      scenarioId: scenario.scenarioId,
+      scenarioRevision: scenario.scenarioRevision,
+      tick: world.tick,
+      nextEntityId: world.nextEntityId,
+      nextEventSequence: journal.nextSequence,
+      nextCommandSequence: buffer.nextSequence,
+      actors: world.state().actors,
+      randomStreams: streams.serialize(),
+      pendingCommands: buffer.pending(),
+      pendingInternalIntents: [...internalIntents.values()].reduce(
+        (total, queued) => total + queued.length,
+        0,
+      ),
+    }),
     advanceOne: runTick,
     advance(ticks) {
       if (!Number.isSafeInteger(ticks) || ticks < 0) {
@@ -346,4 +390,6 @@ export function createSimulationKernel(
     enqueue: (command) => buffer.enqueue(command, world.tick),
     state: () => world.state(),
   };
+
+  return kernel;
 }

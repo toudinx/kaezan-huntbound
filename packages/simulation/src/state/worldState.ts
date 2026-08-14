@@ -38,11 +38,11 @@ export function cloneActor(actor: ActorState): ActorState {
   };
 }
 
-export function createWorld(scenario: KernelScenario): MutableWorld {
+function createEmptyWorld(startEntityId: number, startTick: TickIndex) {
   const ordered: ActorState[] = [];
   const byEntityId = new Map<number, ActorState>();
-  let nextEntityId = 1;
-  let tick = 0 as TickIndex;
+  let nextEntityId = startEntityId;
+  let tick = startTick;
 
   const allocateEntityId = (): EntityId => {
     const entityId = nextEntityId as EntityId;
@@ -58,17 +58,7 @@ export function createWorld(scenario: KernelScenario): MutableWorld {
     }
   };
 
-  for (const initial of scenario.initialActors) {
-    insert({
-      entityId: allocateEntityId(),
-      blueprintId: initial.blueprintId,
-      position: initial.position,
-      facing: initial.facing,
-      readyAtTick: 0,
-    });
-  }
-
-  return {
+  const world: MutableWorld = {
     get tick() {
       return tick;
     },
@@ -110,4 +100,45 @@ export function createWorld(scenario: KernelScenario): MutableWorld {
       };
     },
   };
+
+  return world;
+}
+
+export function createWorld(scenario: KernelScenario): MutableWorld {
+  const world = createEmptyWorld(1, 0 as TickIndex);
+
+  for (const initial of scenario.initialActors) {
+    world.insert({
+      entityId: world.allocateEntityId(),
+      blueprintId: initial.blueprintId,
+      position: initial.position,
+      facing: initial.facing,
+      readyAtTick: 0,
+    });
+  }
+
+  return world;
+}
+
+export function restoreWorld(
+  actors: readonly ActorState[],
+  nextEntityId: number,
+  tick: TickIndex,
+): MutableWorld {
+  if (!Number.isSafeInteger(nextEntityId) || nextEntityId <= 0) {
+    throw new RangeError('nextEntityId must be a positive safe integer');
+  }
+
+  const world = createEmptyWorld(nextEntityId, tick);
+  for (const actor of [...actors].sort(
+    (left, right) => left.entityId - right.entityId,
+  )) {
+    if (actor.entityId >= nextEntityId) {
+      throw new RangeError(
+        `nextEntityId must exceed restored entityId ${actor.entityId}`,
+      );
+    }
+    world.insert(actor);
+  }
+  return world;
 }

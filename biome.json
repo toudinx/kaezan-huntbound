@@ -15,7 +15,8 @@
       "!apps/game/public/assets/test",
       "!packages/content/catalog/operations",
       "!packages/content/src/generated",
-      "!packages/test-fixtures/assets/pb02/expected"
+      "!packages/test-fixtures/assets/pb02/expected",
+      "!packages/test-fixtures/simulation/pb03"
     ]
   },
   "formatter": {

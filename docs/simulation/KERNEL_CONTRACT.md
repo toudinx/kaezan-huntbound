@@ -112,6 +112,65 @@ As coleções têm ordem canônica parte do contrato:
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing` e `readyAtTick`.
 
+### `snapshotKernel` e `restoreSimulationKernel`
+
+`snapshotKernel(kernel)` lê o estado vivo do kernel e devolve o snapshot já nas ordens canônicas.
+`restoreSimulationKernel(scenario, snapshot)` devolve `SimulationValidationResult<SimulationKernel>`
+e recusa, antes de construir qualquer coisa, snapshot que não passe no schema, que declare
+`schemaVersion`/`rulesVersion` divergente (`SIM_VERSION_MISMATCH`) ou que pertença a outro cenário ou
+outra revisão (`SIM_SCENARIO_MISMATCH`).
+
+O cenário é a autoridade sobre terreno e blueprints; o snapshot é a autoridade sobre atores, RNG,
+sequências e comandos pendentes. A ocupação é reconstruída a partir dos atores restaurados, nunca
+serializada. Um kernel restaurado não reemite os eventos de boot: ele continua o journal a partir de
+`nextEventSequence`.
+
+### Quiescência: a única fronteira restaurável
+
+`S3 ai` decide no fim do tick `T` uma intent que só será aplicada no tick `T + 1`, e essa fila
+interna **não tem campo no snapshot** — `pendingCommands` carrega apenas comandos externos. Uma
+fronteira com intent interna pendente perde essa decisão ao ser restaurada, e a divergência aparece
+no tick seguinte.
+
+O kernel expõe `isKernelQuiescent(kernel)`, verdadeiro quando nenhuma intent interna está pendente.
+**Restaurar só é fiel em fronteira quiescente.** A propriedade é provada nos dois sentidos em
+`packages/simulation/src/state/snapshot.test.ts`: uma fronteira quiescente converge byte a byte e uma
+fronteira não quiescente diverge. `tools/replay` recusa uma retomada não quiescente com
+`SIM_REPLAY_DIVERGED` em vez de produzir um golden silenciosamente errado.
+
+Fechar essa lacuna exigiria um campo novo no snapshot, isto é, alterar o schema congelado em
+`@huntbound/contracts`. Isso está fora do escopo de PB-03-06 e está registrado como pendência em
+`docs/playbooks/PB-03/STATE.md`.
+
+## Serialização canônica
+
+`encodeCanonicalJson(value)` produz JSON com chaves ordenadas por code unit UTF-16, sem espaço
+supérfluo e **sem newline final** — o newline pertence ao arquivo, não ao valor. Arrays preservam a
+ordem. Strings são escapadas por `JSON.stringify`, o que mantém caractere não ASCII literal em UTF-8
+e escapa surrogate solitário, de modo que a saída é sempre well-formed.
+
+O encoder recusa, com `CanonicalJsonError` carregando `code` e `path`:
+
+| Valor | Código |
+|---|---|
+| número não inteiro, `NaN`, `Infinity`, `-0`, inteiro não seguro | `SIM_STATE_NOT_INTEGER` |
+| `undefined`, função, símbolo, `bigint`, referência cíclica | `SIM_STATE_NOT_SERIALIZABLE` |
+
+O kernel não calcula SHA-256: `@huntbound/simulation` não importa Node nem toca Web Crypto. O digest
+dos bytes canônicos é responsabilidade de `tools/replay`.
+
+## Replay
+
+`runReplay(scenario, log)` valida cenário e log, confere cabeçalho contra o cenário, injeta cada
+comando do log na borda do kernel e avança `header.tickCount` ticks, devolvendo `{ snapshot, events }`.
+
+O kernel atribui `sequence` no intake. Se a sequência atribuída divergir da sequência gravada no log,
+o replay é recusado com `SIM_REPLAY_DIVERGED` em vez de continuar com um log que este kernel não
+teria produzido.
+
+O formato dos arquivos, os comandos da CLI, os exit codes e os hashes congelados estão em
+`docs/simulation/REPLAY_CONTRACT.md`.
+
 ## Aleatoriedade
 
 `@huntbound/simulation` tem uma única fonte de aleatoriedade: `xoshiro128**`. A transição usa quatro
