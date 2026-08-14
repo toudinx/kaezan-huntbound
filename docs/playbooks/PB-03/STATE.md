@@ -19,7 +19,7 @@
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
 | PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `24f642b` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
-| PB-03-07 | done | `codex/pb03-07-kernel-browser` | `be5bea3` | 45 testes game; typecheck; build; architecture; simulation:check; Playwright; verify; scan de regras; diff check |
+| PB-03-07 | done | `codex/pb03-07-kernel-browser` | `be5bea3` + `e671af2` | 48 testes game; typecheck; build; architecture; simulation:check; Playwright; verify; scan de regras; diff check |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
 ## Baseline congelado
@@ -482,6 +482,10 @@ converte timestamps injetados em ticks de 50 ms com backlog limitado a 250 ms po
 `__huntboundKernelProbe` instalado somente no build `test`. O probe valida cenário/log, executa o replay,
 serializa o snapshot canônico com LF final e calcula SHA-256 usando Web Crypto.
 
+A revisão independente não encontrou falhas críticas. O commit `e671af2` (`fix: harden browser simulation
+host`) trata subtração de timestamps que produz infinito como delta zero, prova o forwarding dos eventos
+do kernel e cobre log malformado com diagnóstico estruturado.
+
 O teste Playwright injeta `scenario.json` e `commands.jsonl` pelo processo Node e confirmou no Chromium:
 
 - `snapshot.golden.json` byte-idêntico;
@@ -492,7 +496,7 @@ O teste Playwright injeta `scenario.json` e `commands.jsonl` pelo processo Node 
 ### Evidência fresca
 
 ```text
-corepack pnpm --filter @huntbound/game test -> exit 0; 45 passed (11 files)
+corepack pnpm --filter @huntbound/game test -> exit 0; 48 passed (11 files)
 corepack pnpm --filter @huntbound/game typecheck -> exit 0
 corepack pnpm --filter @huntbound/game build -> exit 0
 corepack pnpm architecture:check -> exit 0
