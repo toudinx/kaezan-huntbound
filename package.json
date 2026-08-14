@@ -29,6 +29,7 @@
     "content:generate": "node tools/content-catalog/cli.ts generate",
     "content:generate:check": "node tools/content-catalog/cli.ts generate --check",
     "content:check": "corepack pnpm content:catalog:rebuild && corepack pnpm content:catalog:validate && corepack pnpm content:generate:check",
+    "hunt:selection:check": "node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/pb-04-venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE",
     "diagnostics:boot-stall": "node tools/diagnostics/runBootStallMatrix.ts",
     "check": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check && corepack pnpm content:check",
     "qa:browser": "corepack pnpm build && playwright test",
