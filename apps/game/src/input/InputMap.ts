@@ -46,20 +46,18 @@ function readDirection(value: unknown): Direction | undefined {
     : undefined;
 }
 
-function directionFromTarget(target: EventTarget | null): Direction | undefined {
+function directionFromTarget(
+  target: EventTarget | null,
+): Direction | undefined {
   if (target === null || typeof target !== 'object') {
     return undefined;
   }
 
   const candidate = target as EventTarget & {
-    closest?: (
-      selector: string,
-    ) =>
-      | {
-          readonly dataset?: { readonly huntDirection?: string };
-          getAttribute?: (name: string) => string | null;
-        }
-      | null;
+    closest?: (selector: string) => {
+      readonly dataset?: { readonly huntDirection?: string };
+      getAttribute?: (name: string) => string | null;
+    } | null;
   };
   const control = candidate.closest?.('[data-hunt-direction]');
   const value =
@@ -79,10 +77,7 @@ function directionFromAxes(
   return vertical < 0 ? 'ne' : 'se';
 }
 
-function axisValue(
-  heldKeys: ReadonlySet<string>,
-  axis: Axis,
-): AxisValue | 0 {
+function axisValue(heldKeys: ReadonlySet<string>, axis: Axis): AxisValue | 0 {
   let negative = false;
   let positive = false;
 

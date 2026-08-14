@@ -48,9 +48,21 @@ describe('createSimulationHost', () => {
 
     host.advanceTo(149);
     expect(host.tick).toBe(2);
+    expect(host.alpha).toBeCloseTo(0.98);
 
     host.advanceTo(150);
     expect(host.tick).toBe(3);
+    expect(host.alpha).toBe(0);
+  });
+
+  it('clamps alpha when the catch-up budget is still pending', () => {
+    const { kernel } = createKernelStub();
+    const host = createSimulationHost(kernel, 0);
+
+    host.advanceTo(600);
+
+    expect(host.tick).toBe(5);
+    expect(host.alpha).toBe(1);
   });
 
   it('limits work per call without discarding accumulated time', () => {

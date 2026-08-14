@@ -150,9 +150,7 @@ describe('HuntPresentation', () => {
     const presentation = createHuntPresentation({
       region: syntheticRegion(),
       playerBlueprintId: 'player',
-      actorKeys: new Map([
-        ['player', createAssetKey('outfit:tibia:knight')],
-      ]),
+      actorKeys: new Map([['player', createAssetKey('outfit:tibia:knight')]]),
     });
     presentation.handle([
       event(1, {
@@ -207,7 +205,11 @@ describe('HuntPresentation', () => {
 
     expect(() =>
       presentation.handle([
-        event(1, { type: 'actor/faced', entityId: 99 as EntityId, facing: 'n' }),
+        event(1, {
+          type: 'actor/faced',
+          entityId: 99 as EntityId,
+          facing: 'n',
+        }),
       ]),
     ).not.toThrow();
     expect(diagnostics).toHaveLength(1);

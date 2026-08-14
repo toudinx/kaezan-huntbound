@@ -26,14 +26,20 @@ function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum);
 }
 
-function edge(size: number, innerSize: number): { left: number; right: number } {
+function edge(
+  size: number,
+  innerSize: number,
+): { left: number; right: number } {
   const safeSize = nonNegative(size);
   const safeInnerSize = Math.min(nonNegative(innerSize), safeSize);
   const left = (safeSize - safeInnerSize) / 2;
   return { left, right: left + safeInnerSize };
 }
 
-function maxScroll(worldSize: number | undefined, viewportSize: number): number {
+function maxScroll(
+  worldSize: number | undefined,
+  viewportSize: number,
+): number {
   if (worldSize === undefined || !Number.isFinite(worldSize)) {
     return Number.POSITIVE_INFINITY;
   }
@@ -43,14 +49,8 @@ function maxScroll(worldSize: number | undefined, viewportSize: number): number 
 export function createCameraController(
   options: CameraControllerOptions,
 ): CameraController {
-  const horizontalDeadzone = edge(
-    options.viewportWidth,
-    options.deadzoneWidth,
-  );
-  const verticalDeadzone = edge(
-    options.viewportHeight,
-    options.deadzoneHeight,
-  );
+  const horizontalDeadzone = edge(options.viewportWidth, options.deadzoneWidth);
+  const verticalDeadzone = edge(options.viewportHeight, options.deadzoneHeight);
   const maximumScrollX = maxScroll(options.worldWidth, options.viewportWidth);
   const maximumScrollY = maxScroll(options.worldHeight, options.viewportHeight);
   let scrollX = 0;
@@ -88,8 +88,6 @@ export function createCameraController(
 }
 
 export function interpolate(from: number, to: number, alpha: number): number {
-  const normalizedAlpha = Number.isFinite(alpha)
-    ? clamp(alpha, 0, 1)
-    : 0;
+  const normalizedAlpha = Number.isFinite(alpha) ? clamp(alpha, 0, 1) : 0;
   return from + (to - from) * normalizedAlpha;
 }

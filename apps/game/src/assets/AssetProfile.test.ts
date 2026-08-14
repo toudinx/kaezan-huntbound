@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAssetCatalogUrl, parseAppAssetProfile } from './AssetProfile';
+import {
+  getAssetCatalogUrl,
+  getHuntAssetCatalogUrl,
+  parseAppAssetProfile,
+} from './AssetProfile';
 
 describe('AssetProfile', () => {
   it.each(['test', 'personal', 'product'] as const)(
@@ -21,10 +25,19 @@ describe('AssetProfile', () => {
     (profile) => {
       const url = getAssetCatalogUrl(profile);
 
-      expect(url).toBe('/assets/' + profile + '/catalog' + '.json');
+      expect(url).toBe(`/assets/${profile}/catalog.json`);
       expect(url.startsWith('/assets/')).toBe(true);
       expect(url.endsWith('/catalog' + '.json')).toBe(true);
       expect(url).not.toMatch(/[\\]|:\/\//);
+    },
+  );
+
+  it.each(['test', 'personal', 'product'] as const)(
+    'composes the PB-04 catalog route for %s',
+    (profile) => {
+      expect(getHuntAssetCatalogUrl(profile)).toBe(
+        `/assets/${profile}/pb04/catalog.json`,
+      );
     },
   );
 });

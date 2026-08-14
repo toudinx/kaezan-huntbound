@@ -4,6 +4,7 @@ import type { SceneBridge } from '../bridge/SceneBridge';
 import type { RuntimeLifecyclePort } from '../runtime/RuntimeLifecycle';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 import { BootScene } from './scenes/BootScene';
+import { HuntScene, type HuntSceneOptions } from './scenes/HuntScene';
 import { ShellScene } from './scenes/ShellScene';
 
 export interface GameRuntime {
@@ -14,13 +15,17 @@ export interface GameRuntime {
 export function createGame(
   parent: HTMLElement,
   bridge: SceneBridge,
+  huntOptions?: Omit<HuntSceneOptions, 'bridge'>,
 ): GameRuntime {
   let phaseBeforePause: Pick<ShellSnapshot, 'phase' | 'message'> | undefined;
+  const huntSceneOptions = huntOptions ? { ...huntOptions, bridge } : undefined;
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
     backgroundColor: '#060b16',
-    scene: [new BootScene(bridge), new ShellScene(bridge)],
+    scene: huntSceneOptions
+      ? [new BootScene(bridge, 'hunt'), new HuntScene(huntSceneOptions)]
+      : [new BootScene(bridge), new ShellScene(bridge)],
     scale: {
       mode: Phaser.Scale.RESIZE,
       width: '100%',

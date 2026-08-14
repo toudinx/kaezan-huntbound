@@ -10,6 +10,7 @@ import type { SimulationKernel } from '../../../../packages/simulation/src/index
 
 export interface SimulationHost {
   readonly tick: TickIndex;
+  readonly alpha: number;
   advanceTo(nowMs: number): readonly SimulationEvent[];
   reset(nowMs: number): void;
 }
@@ -37,6 +38,9 @@ export function createSimulationHost(
   return {
     get tick() {
       return kernel.tick;
+    },
+    get alpha() {
+      return Math.max(0, Math.min(accumulatedMs / TICK_DURATION_MS, 1));
     },
     advanceTo(nowMs) {
       if (Number.isFinite(nowMs)) {

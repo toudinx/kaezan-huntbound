@@ -15,3 +15,7 @@ export function parseAppAssetProfile(mode: string): AppAssetProfile {
 export function getAssetCatalogUrl(profile: AppAssetProfile): string {
   return `/assets/${profile}/catalog.json`;
 }
+
+export function getHuntAssetCatalogUrl(profile: AppAssetProfile): string {
+  return `/assets/${profile}/pb04/catalog.json`;
+}

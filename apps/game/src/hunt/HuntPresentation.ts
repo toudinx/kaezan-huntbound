@@ -1,4 +1,7 @@
-import { createAssetKey, type AssetKey } from '../../../../packages/assets/src/index.ts';
+import {
+  type AssetKey,
+  createAssetKey,
+} from '../../../../packages/assets/src/index.ts';
 import type {
   Direction,
   EntityId,
@@ -97,7 +100,11 @@ function tileKeyForPaletteIndex(
   }
 
   const clientId = region.palette[paletteIndex];
-  if (clientId === undefined || !Number.isSafeInteger(clientId) || clientId <= 0) {
+  if (
+    clientId === undefined ||
+    !Number.isSafeInteger(clientId) ||
+    clientId <= 0
+  ) {
     return undefined;
   }
 
@@ -146,14 +153,7 @@ export function buildFloorDrawCommands(
   const hasGround = (index: number): boolean => groundKeys[index] !== undefined;
 
   floor.ground.forEach((paletteIndex, index) => {
-    const command = tileCommand(
-      region,
-      z,
-      'ground',
-      index,
-      paletteIndex,
-      0,
-    );
+    const command = tileCommand(region, z, 'ground', index, paletteIndex, 0);
     if (command !== undefined) commands.push(command);
   });
 
@@ -237,8 +237,7 @@ export function createHuntPresentation(
 
   const actorFor = (
     entityId: EntityId,
-  ): MutablePresentationActorState | undefined =>
-    actorsById.get(entityId);
+  ): MutablePresentationActorState | undefined => actorsById.get(entityId);
 
   const handle = (events: readonly SimulationEvent[]): void => {
     for (const event of events) {
@@ -247,7 +246,9 @@ export function createHuntPresentation(
         case 'actor/spawned': {
           const key = options.actorKeys.get(payload.blueprintId);
           if (key === undefined) {
-            diagnose(`No presentation asset for blueprint ${payload.blueprintId}`);
+            diagnose(
+              `No presentation asset for blueprint ${payload.blueprintId}`,
+            );
             continue;
           }
           const state: MutablePresentationActorState = {

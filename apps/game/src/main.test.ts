@@ -72,6 +72,14 @@ class FakeElement {
   getAttribute(name: string) {
     return this.attributes.get(name) ?? null;
   }
+
+  addEventListener() {
+    return undefined;
+  }
+
+  removeEventListener() {
+    return undefined;
+  }
 }
 
 function createRoots() {
@@ -97,16 +105,16 @@ function createRoots() {
   };
 }
 
-function createRuntime(events: string[], shouldFail = false) {
+function createRuntime(events: string[], label: string, shouldFail = false) {
   return {
     preload: async () => {
-      events.push('preload:start');
+      events.push(`preload:${label}:start`);
       if (shouldFail) {
         const error = new Error('ASSET_MEDIA_HASH_MISMATCH: synthetic failure');
         throw error;
       }
       await Promise.resolve();
-      events.push('preload:end');
+      events.push(`preload:${label}:end`);
       return Array.from({ length: 5 }, (_, index) => ({
         key: `test:key-${index}`,
       }));
@@ -136,7 +144,8 @@ describe('main asset bootstrap', () => {
     const main = await loadBootstrapApp();
     vi.stubGlobal('document', roots.document);
     vi.stubGlobal('window', roots.window);
-    const runtime = createRuntime(harness.events);
+    let rootRuntime: ReturnType<typeof createRuntime> | undefined;
+    let huntRuntime: ReturnType<typeof createRuntime> | undefined;
     const bootstrapApp = main.bootstrapApp as unknown as (
       overrides: Record<string, unknown>,
     ) => Promise<void>;
@@ -145,27 +154,34 @@ describe('main asset bootstrap', () => {
       document: roots.document,
       window: roots.window,
       createAssetRuntime: (input: { profile: string; catalogUrl: string }) => {
-        harness.events.push(
-          'runtime:' + input.profile + ':' + input.catalogUrl,
-        );
+        const label = input.catalogUrl.includes('/pb04/') ? 'hunt' : 'root';
+        harness.events.push(`runtime:${label}`);
+        const runtime = createRuntime(harness.events, label);
+        if (label === 'hunt') huntRuntime = runtime;
+        else rootRuntime = runtime;
         return runtime;
       },
       installAssetRuntimeProbe: (profile: string, activeRuntime: unknown) => {
         harness.events.push(
-          'probe:' + profile + ':' + String(activeRuntime === runtime),
+          `probe:${profile}:${String(activeRuntime === rootRuntime)}`,
         );
         return undefined;
       },
     });
 
     expect(harness.events).toEqual([
-      'runtime:test:/assets/test/catalog.json',
+      'runtime:root',
+      'runtime:hunt',
       'shell',
-      'preload:start',
-      'preload:end',
+      'preload:root:start',
+      'preload:root:end',
+      'preload:hunt:start',
+      'preload:hunt:end',
       'probe:test:true',
       'game',
     ]);
+    expect(rootRuntime).toBeDefined();
+    expect(huntRuntime).toBeDefined();
     expect(roots.shellRoot.getAttribute('data-assets-ready')).toBe('true');
     expect(roots.shellRoot.getAttribute('data-assets-count')).toBe('5');
   });
@@ -175,7 +191,7 @@ describe('main asset bootstrap', () => {
     const main = await loadBootstrapApp();
     vi.stubGlobal('document', roots.document);
     vi.stubGlobal('window', roots.window);
-    const runtime = createRuntime(harness.events, true);
+    const runtime = createRuntime(harness.events, 'root', true);
     const bootstrapApp = main.bootstrapApp as unknown as (
       overrides: Record<string, unknown>,
     ) => Promise<void>;

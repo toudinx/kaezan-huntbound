@@ -1,8 +1,14 @@
 import type { SceneBridge } from '../bridge/SceneBridge';
+import type { InputMap } from '../input/InputMap';
 import type { ShellPhase, ShellSnapshot } from '../runtime/ShellSnapshot';
+import { mountDpad } from './Dpad';
 
 export interface AppShell {
   destroy(): void;
+}
+
+export interface AppShellOptions {
+  readonly input?: InputMap;
 }
 
 const phaseLabels: Record<ShellPhase, string> = {
@@ -21,6 +27,7 @@ function formatViewport(snapshot: ShellSnapshot): string {
 export function mountAppShell(
   root: HTMLElement,
   bridge: SceneBridge,
+  options: AppShellOptions = {},
 ): AppShell {
   const document = root.ownerDocument;
   const shell = document.createElement('section');
@@ -28,6 +35,7 @@ export function mountAppShell(
   const viewportPanel = document.createElement('aside');
   const status = document.createElement('p');
   const viewport = document.createElement('p');
+  const controls = document.createElement('div');
 
   shell.setAttribute('aria-label', 'Huntbound shell');
   shell.setAttribute('data-testid', 'app-shell');
@@ -37,11 +45,14 @@ export function mountAppShell(
   status.setAttribute('aria-live', 'polite');
   status.setAttribute('data-testid', 'shell-status');
   viewport.setAttribute('data-testid', 'shell-viewport');
+  controls.setAttribute('data-testid', 'hunt-controls');
 
   header.append(status);
   viewportPanel.append(viewport);
-  shell.append(header, viewportPanel);
+  shell.append(header, viewportPanel, controls);
   root.replaceChildren(shell);
+
+  const dpad = options.input ? mountDpad(controls, options.input) : undefined;
 
   const unsubscribe = bridge.subscribe((snapshot) => {
     shell.setAttribute('data-shell-phase', snapshot.phase);
@@ -60,6 +71,7 @@ export function mountAppShell(
 
       destroyed = true;
       unsubscribe();
+      dpad?.destroy();
       root.replaceChildren();
     },
   };

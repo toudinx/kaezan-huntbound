@@ -3,7 +3,10 @@ import Phaser from 'phaser';
 import type { SceneBridge } from '../../bridge/SceneBridge';
 
 export class BootScene extends Phaser.Scene {
-  constructor(private readonly bridge: SceneBridge) {
+  constructor(
+    private readonly bridge: SceneBridge,
+    private readonly nextScene: 'shell' | 'hunt' = 'shell',
+  ) {
     super('boot');
   }
 
@@ -19,6 +22,6 @@ export class BootScene extends Phaser.Scene {
       message: 'Starting renderer',
     });
 
-    this.scene.start('shell');
+    this.scene.start(this.nextScene);
   }
 }
