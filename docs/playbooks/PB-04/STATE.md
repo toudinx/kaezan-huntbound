@@ -9,8 +9,10 @@ PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
 
 **Última atualização:** 2026-08-14
 
-**Próximas tasks elegíveis:** PB-04-06, que agora tem a região e o kernel v3 de que precisa, e
-PB-04-07. Ver o achado W7 abaixo antes de fechar a cobertura do fixture de PB-04-06.
+**Atualização vigente:** PB-04-08 concluída em `codex/pb04-08-hunt-scene`, com implementação em
+`e97f72b`. A próxima task elegível é PB-04-09.
+
+**Próximas tasks elegíveis:** PB-04-09, responsável pelos screenshots e QA browser da hunt.
 
 ## Tasks
 
@@ -21,9 +23,9 @@ PB-04-07. Ver o achado W7 abaixo antes de fechar a cobertura do fixture de PB-04
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | done | `codex/pb04-04-extract-region` | (ver handoff) | região congelada em `packages/content/src/generated/hunts/venore-rotworm-cave/**`, `dropped=0`, `--check` exit 0 |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | eligible (parcial) | `codex/pb04-06-hunt-replay` | `5e98e91` | `buildHuntScenario` + `loadHuntDefinition` verdes; golden real destravado por B1 resolvido |
-| PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
-| PB-04-08 | pending | `codex/pb04-08-hunt-scene` | — | — |
+| PB-04-06 | done | `codex/pb04-06-hunt-replay` | `5e98e91` + região integrada | `hunt.json`/cenário real disponíveis e `hunt:check` verde |
+| PB-04-07 | done | `codex/pb04-07-hunt-assets` | `5ae830e` | pack PB-04 sintético, profiles e seleção de chaves verificados |
+| PB-04-08 | done | `codex/pb04-08-hunt-scene` | `e97f72b` | HuntScene, InputMap, câmera, projeção de camadas e bootstrap integrados |
 | PB-04-09 | pending | `codex/pb04-09-hunt-browser-qa` | — | — |
 | PB-04-10 | pending | `codex/pb04-10-integrated-gate` | — | — |
 
@@ -476,6 +478,42 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 - **Próxima ação elegível:** retomar PB-04-06 após PB-04-04 disponibilizar e versionar o mapa que
   cobre `x=33002..33030`, `y=31995..32027`, andares `8` e `9`; então gerar e verificar os goldens
   sem alterar esta projeção.
+
+## PB-04-08 — handoff concluido
+
+- **Status:** done; implementacao serial em worktree isolada, com fast-forward pendente. Branch
+  `codex/pb04-08-hunt-scene`; commit de implementacao `e97f72b` (`feat: render and drive the first
+  hunt`).
+- **Entrega:** `HuntScene` carrega `ResolvedAsset` por stable key, monta apenas o andar ativo na
+  ordem `ground -> objectsBelow -> actors -> objectsAbove`, reage a `SimulationEvent`, interpola
+  movimentos aceitos com o `SimulationHost.alpha`, troca andar do jogador e acompanha-o com camera
+  deadzone clampada. `InputMap` cobre WASD/setas, diagonais, repeticao por `drain()` e D-pad DOM
+  acessivel; `createHuntRuntime` usa `/assets/<profile>/pb04/catalog.json`.
+- **Composicao:** `main.ts` valida o `hunt.json` gerado, constroi o cenario com seed
+  `1a2b3c4d5e6f7a8b`, cria kernel/host, publica eventos no `SceneBridge` e preserva os probes
+  test-only do PB-03. O catalogo PB-02 continua em `/assets/<profile>/catalog.json`; o staging
+  adiciona PB-04 em subrota sem alterar a contagem legada de cinco assets.
+- **RED/GREEN:** suite de `@huntbound/game` verde com `66/66` testes em `15` arquivos; os novos
+  testes cobrem input, camera/interpolacao, camadas/eventos, D-pad, bootstrap e `alpha` do host.
+  `corepack pnpm test` verde: suites raiz `7`, replay `31`, tile-flags `79`, map-extractor `104`,
+  arquitetura `23`; pacotes contracts `112`, assets `44`, content `62` e simulation `155`.
+- **Gates:** `assets:check`, `assets:pb04:hunt:check`, `simulation:check`, `typecheck`,
+  `architecture:check`, `format:check`, `@huntbound/game build` e `git diff --check` terminaram
+  com exit `0`. O scan de regras pedido (`rg` em runtime, excluindo testes) nao encontrou
+  ocorrencias e terminou com exit `1` por conjunto vazio.
+- **QA browser:** `qa:browser` terminou com `4` testes funcionais verdes e `5` falhas somente de
+  screenshot no `shell.spec.ts`: os baselines legados esperam o grid do ShellScene, enquanto PB-04-08
+  agora mostra a hunt e o D-pad. Nenhum console/page error ocorreu. A atualizacao desses baselines e
+  os screenshots da hunt pertencem ao PB-04-09, portanto nao foram alterados nesta task.
+- **Verify agregado:** `corepack pnpm verify` terminou com exit `1` exclusivamente pelo mesmo
+  conjunto de cinco screenshots legados; format, assets, replay, arquitetura, typecheck, suites,
+  build e content checks anteriores terminaram com exit `0`.
+- **Skills e validador:** foram usados `using-superpowers`, `brainstorming`, `writing-plans`,
+  `using-git-worktrees`, `executing-plans`, `test-driven-development`, `phaser-2d-game`,
+  `game-ui-frontend` e `verification-before-completion`; validacao por Vitest, TypeScript, Biome,
+  gates de arquitetura/assets/replay e Playwright existente.
+- **Proxima task elegivel:** PB-04-09 — QA browser da hunt, incluindo screenshots, input touch e
+  paridade/medicao que o card anterior deixa fora de escopo.
 
 ## Bloqueios
 
