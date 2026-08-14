@@ -19,7 +19,7 @@ task elegível
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
-| PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `PENDING_COMMIT` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
+| PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `24f642b` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
@@ -393,7 +393,7 @@ App, browser, Playwright e Phaser não foram tocados. PB-03-07 é a próxima tas
 ## PB-03-06-FIX-01 — handoff concluído
 
 PB-03-06-FIX-01 foi implementada na branch `codex/pb03-06-fix-01-pending-intents`. O commit funcional
-integrado é `PENDING_COMMIT`. `restoreSimulationKernel` passou a ser fiel em **qualquer** fronteira:
+integrado é `24f642b`. `restoreSimulationKernel` passou a ser fiel em **qualquer** fronteira:
 `SimulationSnapshot` ganhou `pendingIntents`, `SIMULATION_SCHEMA_VERSION` subiu para `2` e
 `SIMULATION_RULES_VERSION` permanece `1`.
 
