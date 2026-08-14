@@ -43,6 +43,9 @@
 
 - Tasks 01–04 e 07 usam GPT-5.6 Luna `xhigh` por padrão; gatilhos de escalonamento seguem a política.
 - PB-03-05 e PB-03-06 usam GPT-5.6 Sol `xhigh` por atravessarem subsistemas e congelarem o golden.
+- PB-03-06-FIX-01 usa Claude Opus 5 ou GPT-5.6 Sol `xhigh`. Luna está excluída em qualquer effort
+  porque a task altera schema congelado, critério de implementação complexa e gatilho de
+  escalonamento na política de modelos. Validador prefere modelo frontier diferente do implementador.
 - PB-03-08 usa Claude Code/Opus 5, com fallback GPT-5.6 Sol `xhigh`, e prefere validador diferente.
 - Fluxo padrão é serial com fast-forward automático e limpeza.
 - PB-03-02/03/04 só entram em paralelo por ativação explícita do supervisor. Nesse modo não editam o

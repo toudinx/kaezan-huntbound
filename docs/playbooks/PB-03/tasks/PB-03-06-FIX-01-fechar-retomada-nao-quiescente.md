@@ -4,9 +4,17 @@
 
 **Classe da tarefa:** correção de contrato — reabre um schema congelado e recongela o golden
 
-**Modelo sugerido:** GPT-5.6 Sol `xhigh`
+**Modelo sugerido:** Claude Opus 5 via Claude Code. Alternativa equivalente, se exposta na sessão:
+GPT-5.6 Sol `xhigh`.
 
-**Validador sugerido:** Claude Code/Opus 5, preferencialmente diferente do implementador de PB-03-06
+**GPT-5.6 Luna está excluída**, em qualquer effort: a task altera schema congelado, o que é ao mesmo
+tempo critério de implementação complexa (`docs/08_POLITICA_MODELOS_AGENTES.md`, §Classificação
+obrigatória) e gatilho de escalonamento (§Escalonamento Luna-first). Effort mais alto não muda a
+classe da tarefa.
+
+**Validador sugerido:** modelo frontier diferente do implementador — GPT-5.6 Sol quando o
+implementador for Opus 5. Se a plataforma não oferecer alternativa, registrar o desvio em `STATE.md`
+com modelo, effort e motivo, conforme §Diversidade de revisão.
 
 **Rota:** `superpowers:test-driven-development` + `superpowers:systematic-debugging` +
 `superpowers:verification-before-completion`.
@@ -215,7 +223,7 @@ commit integrado, limpeza e PB-03-07 como próxima task. Não toque no app.
 ## Prompt copiável para novo chat
 
 ```text
-Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol e effort xhigh.
+Trabalhe em C:\Kaezan\kaezan-huntbound com Claude Opus 5 via Claude Code.
 Use obrigatoriamente superpowers:test-driven-development, superpowers:systematic-debugging e
 superpowers:verification-before-completion.
 
