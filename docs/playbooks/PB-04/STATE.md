@@ -485,6 +485,28 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   `dropped=0`. Detalhe no handoff "PB-04-04 — concluída" acima.
 - **W7 (não bloqueante):** a hunt extraída só tem transições descendo. Pertence a PB-04-06; detalhe
   acima.
+- **W8 (não bloqueante, armadilha de contagem):** `region.palette` tem `138` entradas mas **`137`
+  ids reais** — o índice `0` é o marcador de vazio `serverId 0`, que não é item e não tem `clientId`,
+  sprite nem chave de pack. Todo consumidor da palette precisa filtrar o `0` antes de contar ou
+  resolver. A regra virou normativa em `docs/content/MAP_REGION_CONTRACT.md`. Já causou um erro de
+  contagem em PB-04-07 (`68` faltantes relatados contra `67` reais).
+- **B2 (bloqueante, PB-04-07):** a origem pessoal de mídia cobre apenas `70` dos `137` ids reais da
+  palette; **`67` faltam** — `15` deles são tiles de chão, e a camada `ground` usa `48` ids
+  distintos dos quais só `33` têm sprite. Isso dispara a condição de parada declarada no card
+  ("se algum `clientId` da palette não existir no manifesto de origem"), e parar sem gerar
+  placeholder foi o comportamento correto.
+
+  A origem **existe** e está congelada: `C:\Kaezan\kaezan-arena-fable\frontend\public\assets\tibia`,
+  cujo `manifest.json` bate byte a byte com o lock do PB-02
+  (`808 964` bytes, `edf07a6edfc7c68128d8d0c712fbf0f2f66839e17399da62d9531598b3a05a94`). O que
+  faltava era só apontar `HUNTBOUND_PERSONAL_ASSET_SOURCE` para ela — mas isso **não** destrava:
+  o export é um recorte curado com `1534` objetos (contra `42107` em `appearances.dat`), e os tiles
+  desta hunt nunca foram exportados.
+
+  Destravar B2 é reexportar a mídia no projeto `kaezan-arena-fable` incluindo os `67` ids, o que é
+  trabalho **fora** deste repositório. O profile `test` não depende disso: ele usa a fixture
+  sintética 1×1 para todas as chaves, então a seleção derivada da palette, o pack `test`, os gates
+  de teto e a recusa do profile `product` podem ser entregues antes.
 - ~~Warning W3 herdado da auditoria PB-03-08: o script `test` da raiz enumera apenas
   `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`.~~ **Fechado por PB-04-05
   em 2026-08-14:** o enumerador passou a incluir `content-boundaries.test.ts` e

@@ -281,6 +281,14 @@ isso é o único valor capaz de representar "vazio" sem afirmar um chão que nã
 palette **apenas** quando a região tem pelo menos uma célula vazia e, por ordenação, ocupa o índice
 `0`. Cada célula vazia emite `HUNT_EMPTY_TILE`, que é diagnóstico informativo e não bloqueia.
 
+> **Regra para todo consumidor da palette.** `serverId 0` é marcador de vazio, **não é um item** e
+> **não tem `clientId`, sprite, chave estável ou entrada de pack**. Quem deriva chaves, mídia ou
+> render a partir de `region.palette` — PB-04-07 e PB-04-08 — precisa **filtrar o valor `0`** antes
+> de contar ou resolver. Ignorar essa regra produz um `tile:tibia:0` inexistente e infla toda
+> contagem de cobertura em exatamente um. Na região congelada isso significa `138` entradas de
+> palette mas **`137` ids reais**. No render, a célula com índice `0` é buraco: nada é desenhado e
+> ela já está em `collision`.
+
 Um `serverId` presente na região e ausente de `tile-flags.json` emite `HUNT_ID_MISMATCH` e **bloqueia
 a extração**, conforme a herança registrada por PB-04-03.
 
