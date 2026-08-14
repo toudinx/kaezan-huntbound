@@ -108,3 +108,113 @@ segmentos numéricos comparados numericamente), depois por código e, por fim, p
 
 Schemas são estritos em todos os níveis. Um campo não declarado em região, andar, transição,
 grupo, slot ou hunt produz `SIM_SCHEMA_INVALID`.
+
+## Tabela de flags de tile — PB-04-03
+
+`packages/content/src/generated/tile-flags.json` é a tabela versionada de flags por `serverId`,
+derivada do snapshot local por `tools/tile-flags`. Ela cobre **todos** os `serverId` declarados em
+`appearances.dat`, não apenas os da região, para que mudar a bounding box não obrigue a regerá-la.
+
+### Origem de cada campo
+
+`appearances.dat` é protobuf puro; os números de campo vêm de
+`references/canary/src/protobuf/appearances.proto` e são lidos por um decodificador próprio e
+mínimo (`tools/tile-flags/proto.ts`), sem nenhuma biblioteca de protobuf no workspace.
+
+| Campo | Origem | Número | Semântica |
+|---|---|---|---|
+| `serverId` | `Appearance.id` | `1` | identidade do objeto |
+| `ground` | `AppearanceFlags.bank` | `1` | presença da mensagem `AppearanceFlagBank` |
+| `blocking` | `AppearanceFlags.unpass` | `13` | bloqueia passagem |
+| `clip` | `AppearanceFlags.clip` | `2` | desenhado sobre o chão |
+| `bottom` | `AppearanceFlags.bottom` | `3` | camada inferior |
+| `top` | `AppearanceFlags.top` | `4` | desenhado acima do ator |
+| `unmove` | `AppearanceFlags.unmove` | `14` | não movível |
+| `avoid` | `AppearanceFlags.avoid` | `16` | evitado por pathfinding |
+| `elevation` | `AppearanceFlags.height.elevation` | `27` → `1` | elevação; ausente vale `0` |
+| `floorChange` | `items.xml`, atributo `floorchange` | — | mudança de andar; ausente vale `null` |
+
+Somente a coleção `Appearances.object` (campo `1`) é lida. `outfit`, `effect` e `missile` são
+ignoradas na tabela de tiles. Flag ausente vale `false`; flag presente com valor `0` também vale
+`false`. Campo desconhecido dentro de `AppearanceFlags` é pulado por wire type e não corrompe as
+flags conhecidas.
+
+### Colisão
+
+**Colisão é exatamente `unpass`.** `avoid`, `unmove`, `clip` e `elevation` são registrados na
+tabela para consumo futuro, mas **não** participam da decisão de colisão nesta versão. Qualquer
+task que queira ampliar a regra precisa de decisão de supervisor e bump explícito.
+
+### Vocabulário de `floorchange`
+
+O conjunto aceito é exatamente o `TileStatesMap` de
+`references/canary/src/items/functions/item/item_parse.hpp`:
+
+| Valor | Estado em Canary |
+|---|---|
+| `down` | `TILESTATE_FLOORCHANGE_DOWN` |
+| `north` | `TILESTATE_FLOORCHANGE_NORTH` |
+| `south` | `TILESTATE_FLOORCHANGE_SOUTH` |
+| `southalt` | `TILESTATE_FLOORCHANGE_SOUTH_ALT` |
+| `east` | `TILESTATE_FLOORCHANGE_EAST` |
+| `eastalt` | `TILESTATE_FLOORCHANGE_EAST_ALT` |
+| `west` | `TILESTATE_FLOORCHANGE_WEST` |
+
+`southalt` e `eastalt` são estados distintos em Canary, **não** apelidos de `south`/`east`: em
+`src/items/tile.cpp` eles são consultados no tile de baixo durante a subida. O snapshot usa os dois
+em cinco itens de escada (`855`, `856`, `7888`, `20255`, `20256`).
+
+Canary **não** define `up`; o valor não ocorre em `items.xml` e não pertence ao conjunto. Um valor
+fora da tabela acima é erro nomeando o id e o valor, nunca uma transição silenciosamente descartada.
+
+Faixas `fromid`/`toid` expandem para todos os ids da faixa. O mesmo id declarado duas vezes com
+valores diferentes é erro; com o mesmo valor é tolerado. Um `floorchange` cujo id não existe em
+`appearances.dat` é erro, não vira entrada órfã.
+
+### Formato canônico
+
+O JSON é canônico e reprodutível byte a byte a partir do mesmo snapshot:
+
+- chaves em ordem alfabética, no topo e em cada entrada;
+- sem espaço supérfluo — uma única linha, sem indentação;
+- somente inteiros, booleanos, strings e `null`; nenhum float;
+- `entries` estritamente ordenado por `serverId`;
+- newline final.
+
+O sidecar `tile-flags.sha256` guarda o SHA-256 do arquivo em hexadecimal minúsculo com newline
+final. O Biome não formata `packages/content/src/generated/**`; o arquivo **nunca** é reformatado à
+mão.
+
+### Identidade `serverId == clientId`
+
+A resolução de asset do PB-02 por `clientId` depende de `serverId == clientId`. O snapshot não traz
+`items.otb`, isto é, não existe tabela de tradução: identidade é o único mapeamento possível.
+`tools/tile-flags/cli.ts verify-ids` prova o que a pipeline realmente consome e falha com
+`HUNT_ID_MISMATCH`, nomeando o `serverId` e o que foi encontrado, quando:
+
+- um id com `floorchange` não existe em `appearances.object`;
+- uma identidade congelada pelo PB-02 não existe na coleção correspondente
+  (`clientId` → `object`, `lookType` → `outfit`, `effectId` → `effect`, `missileId` → `missile`).
+
+Medido no snapshot `157e6f9e` em 2026-08-14: `42107` objetos em `appearances.dat`, `37526` ids em
+`items.xml`, `32937` resolvidos, `434` ids com `floorchange` — **todos resolvidos** — e as cinco
+identidades do PB-02 presentes, `3031` entre elas. Nenhum diagnóstico.
+
+Os `4589` ids de `items.xml` sem objeto correspondente **não** são divergência de identidade, e sim
+ausência: `4203` são `RESERVED SPRITE` e `386` são itens depreciados, `empty sprite`, `unknown item`
+ou conteúdo mais novo que este build de `appearances.dat`. Nenhum deles carrega `floorchange`.
+Quais ids ocorrem de fato no mapa só é conhecido após o recorte da região, então **PB-04-04** é
+responsável por confirmar que todo id da região extraída resolve na palette.
+
+### Política de regeneração
+
+```bash
+node tools/tile-flags/cli.ts build --source-root <canary> --output packages/content/src/generated/tile-flags.json
+```
+
+Regenerar exige o snapshot e reescreve JSON e sidecar juntos. `--check` não escreve nada, devolve
+exit `1` na divergência e imprime o primeiro offset divergente. `corepack pnpm content:tileflags:check`
+roda essa verificação a partir de `HUNTBOUND_CANARY_SOURCE` e **não** entra em `check` nem em
+`verify`, porque depende de um snapshot ausente em checkout limpo. O que entra no gate agregado é
+`corepack pnpm content:tileflags:sidecar`, comparação do sidecar contra o arquivo, que não precisa
+do snapshot e roda dentro de `content:check`.

@@ -16,6 +16,11 @@
       "purpose": "items"
     },
     {
+      "relativePath": "data/items/appearances.dat",
+      "sha256": "aa44a154f30c7ed59acc25f246286396e4043851ef0b54ef3cf3951e46d1ce50",
+      "purpose": "items"
+    },
+    {
       "relativePath": "data/scripts/spells/attack/berserk.lua",
       "sha256": "819b628608268aebea355be46a1d86e73c24bdf26d1299aa7d3e9af71d10f89f",
       "purpose": "spell"
