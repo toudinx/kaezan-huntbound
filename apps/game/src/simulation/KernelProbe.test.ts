@@ -80,4 +80,25 @@ describe('KernelProbe', () => {
       });
     }
   });
+
+  it('reports malformed command logs with structured diagnostics', async () => {
+    vi.stubEnv('MODE', 'test');
+    installKernelProbe();
+    const probe = target.__huntboundKernelProbe;
+
+    expect(probe).toBeDefined();
+    if (!probe) {
+      throw new Error('Expected a test kernel probe.');
+    }
+
+    await expect(probe.replay(scenarioJson, '')).rejects.toMatchObject({
+      code: 'SIM_SCHEMA_INVALID',
+      diagnostics: [
+        expect.objectContaining({
+          code: 'SIM_SCHEMA_INVALID',
+          path: ['text'],
+        }),
+      ],
+    });
+  });
 });

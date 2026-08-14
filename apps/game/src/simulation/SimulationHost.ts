@@ -41,7 +41,7 @@ export function createSimulationHost(
     advanceTo(nowMs) {
       if (Number.isFinite(nowMs)) {
         const deltaMs = nowMs - lastNowMs;
-        if (deltaMs > 0) {
+        if (Number.isFinite(deltaMs) && deltaMs > 0) {
           accumulatedMs += deltaMs;
           lastNowMs = nowMs;
         } else if (deltaMs === 0) {

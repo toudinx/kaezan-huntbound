@@ -13,7 +13,7 @@ interface KernelStub {
   readonly kernel: SimulationKernel;
 }
 
-function createKernelStub(): KernelStub {
+function createKernelStub(events: readonly SimulationEvent[] = []): KernelStub {
   let tick = 0 as TickIndex;
   const calls: number[] = [];
   const kernel = {
@@ -23,7 +23,7 @@ function createKernelStub(): KernelStub {
     advanceOne(): readonly SimulationEvent[] {
       calls.push(tick);
       tick = (tick + 1) as TickIndex;
-      return [];
+      return events;
     },
   } as unknown as SimulationKernel;
 
@@ -67,6 +67,14 @@ describe('createSimulationHost', () => {
     expect(host.tick).toBe(12);
   });
 
+  it('forwards events emitted by each consumed kernel tick', () => {
+    const event = { marker: 'tick-event' } as unknown as SimulationEvent;
+    const { kernel } = createKernelStub([event]);
+    const host = createSimulationHost(kernel, 0);
+
+    expect(host.advanceTo(50)).toEqual([event]);
+  });
+
   it('treats backward and non-finite timestamps as zero delta', () => {
     const { kernel } = createKernelStub();
     const host = createSimulationHost(kernel, 100);
@@ -78,6 +86,15 @@ describe('createSimulationHost', () => {
 
     host.advanceTo(150);
     expect(host.tick).toBe(1);
+  });
+
+  it('treats a finite timestamp subtraction overflow as zero delta', () => {
+    const { kernel } = createKernelStub();
+    const host = createSimulationHost(kernel, -Number.MAX_VALUE);
+
+    host.advanceTo(Number.MAX_VALUE);
+
+    expect(host.tick).toBe(0);
   });
 
   it('resets accumulated time without changing the kernel', () => {
