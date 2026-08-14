@@ -332,6 +332,34 @@ desse grupo, com empate resolvido por `(y, x)`.
 O resultado passa obrigatoriamente por `validateHuntDefinition` antes de ser escrito. Falha de schema
 é falha da extração, nunca motivo para afrouxar o schema.
 
+### Proveniência: origem de todos os IDs da palette
+
+Todo `serverId` que aparece numa região extraída rastreia até arquivos **congelados por hash** em
+`packages/content/src/sources/canary-157e6f9e.json`:
+
+| Camada | Origem | `purpose` no lock |
+|---|---|---|
+| Geometria: quais ids ocupam quais células | o OTBM | `map` |
+| Criaturas: quais grupos e slots existem | `otservbr-monster.xml` | `spawn` |
+| Semântica: `ground`, `blocking`, `top`, `floorChange` de cada id | `tile-flags.json`, derivado de `appearances.dat` e `items.xml` | `appearances` e `items` |
+
+O extrator **não** conhece nenhum caminho de mapa: ele localiza o OTBM e a declaração de spawn pelo
+`purpose` no source lock e recusa a extração quando o arquivo falta, quando o `purpose` aparece
+duas vezes, quando o caminho escapa da raiz do snapshot ou quando o SHA-256 do arquivo diverge do
+congelado. Apontar a extração para outro mapa é edição do source lock, nunca edição de código.
+
+```bash
+node tools/map-extractor/cli.ts sources --source-root <canary>
+```
+
+`corepack pnpm hunt:sources:check` roda essa verificação a partir de `HUNTBOUND_CANARY_SOURCE`. O
+resumo de `build` publica os três digests consumidos (`map`, `spawn` e `tileFlags`), então cada
+conjunto de quatro sidecars nasce com a cadeia de proveniência registrada.
+
+Os `purpose` `appearances`, `map` e `spawn` são lidos apenas pelo extrator e pela tabela de flags. A
+fatia curada do PB-01 importa somente `vocations`, `items`, `spell` e `creature`, e é exatamente
+esse subconjunto que `importCanarySlice` compara com `sourceFiles` da seleção congelada.
+
 ### Formato e regeneração
 
 São quatro arquivos em `packages/content/src/generated/hunts/<hunt>/`, cada um com sidecar
@@ -368,6 +396,12 @@ A região congelada **ainda não foi extraída**. Medido em 2026-08-14 com o pr�
 Isto é, `config.lua.dist` declarar `mapName = "otservbr"` significa que o servidor carregaria
 `otservbr.otbm`; não significa que `canary.otbm` seja esse mapa. O par
 `canary.otbm` ↔ `otservbr-monster.xml` registrado em `docs/playbooks/PB-04/STATE.md` está incorreto.
+
+**Resolver o bloqueio é uma edição de duas linhas no source lock**, não de código: colocar
+`otservbr.otbm` sob a raiz do snapshot e trocar `relativePath` e `sha256` da entrada `purpose: "map"`
+em `packages/content/src/sources/canary-157e6f9e.json`. Depois disso,
+`corepack pnpm hunt:sources:check` confirma a proveniência e `corepack pnpm hunt:extract` produz os
+quatro arquivos.
 
 O leitor foi validado contra o arquivo real de 19,7 MB em uma janela povoada do próprio
 `canary.otbm` (`x = 4980..5029`, `y = 4980..5029`, andares `6` e `7`): `4159` tiles em `1,3 s`,

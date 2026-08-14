@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   mkdirSync,
   mkdtempSync,
@@ -85,8 +86,47 @@ let root = '';
 let sourceRoot = '';
 let selectionPath = '';
 let tileFlagsPath = '';
+let sourceLockPath = '';
+let mapPath = '';
+let spawnPath = '';
 let output = '';
 let captured: Captured;
+
+function sha256Of(path: string): string {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+/** Rewrites the fixture lock so it matches whatever is on disk right now. */
+function writeSourceLock(
+  overrides: {
+    readonly mapRelativePath?: string;
+    readonly mapSha256?: string;
+  } = {},
+) {
+  writeFileSync(
+    sourceLockPath,
+    JSON.stringify({
+      sourceSystem: 'canary',
+      commit: '157e6f9e21318bd3033eea553fe9275b429faf72',
+      license: 'GPL-2.0-only',
+      licensePath: 'LICENSE',
+      licenseSha256: 'a'.repeat(64),
+      files: [
+        {
+          relativePath:
+            overrides.mapRelativePath ?? 'data-canary/world/canary.otbm',
+          sha256: overrides.mapSha256 ?? sha256Of(mapPath),
+          purpose: 'map',
+        },
+        {
+          relativePath: 'data-otservbr-global/world/otservbr-monster.xml',
+          sha256: sha256Of(spawnPath),
+          purpose: 'spawn',
+        },
+      ],
+    }),
+  );
+}
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'map-extractor-'));
@@ -95,15 +135,15 @@ beforeEach(() => {
   mkdirSync(join(sourceRoot, 'data-otservbr-global', 'world'), {
     recursive: true,
   });
-  writeFileSync(
-    join(sourceRoot, 'data-canary', 'world', 'canary.otbm'),
-    encodeOtbmMap(areas()),
+  mapPath = join(sourceRoot, 'data-canary', 'world', 'canary.otbm');
+  spawnPath = join(
+    sourceRoot,
+    'data-otservbr-global',
+    'world',
+    'otservbr-monster.xml',
   );
-  writeFileSync(
-    join(sourceRoot, 'data-otservbr-global', 'world', 'otservbr-monster.xml'),
-    spawnXml,
-    'latin1',
-  );
+  writeFileSync(mapPath, encodeOtbmMap(areas()));
+  writeFileSync(spawnPath, spawnXml, 'latin1');
 
   selectionPath = join(root, 'selection.json');
   writeFileSync(selectionPath, JSON.stringify(selection));
@@ -112,6 +152,8 @@ beforeEach(() => {
     tileFlagsPath,
     JSON.stringify(tileFlagsTable([tileFlags(GROUND, { ground: true })])),
   );
+  sourceLockPath = join(root, 'source-lock.json');
+  writeSourceLock();
 
   output = join(root, 'out');
   captured = { out: [], err: [], usage: 0 };
@@ -129,6 +171,8 @@ function buildArgs(check = false): readonly string[] {
     selectionPath,
     '--source-root',
     sourceRoot,
+    '--source-lock',
+    sourceLockPath,
     '--tile-flags',
     tileFlagsPath,
     '--output',
@@ -228,6 +272,94 @@ describe('runMapExtractorCli', () => {
     expect(captured.err.join(' ')).toContain('spawns');
   });
 
+  it('reports the provenance of every source it consumed', () => {
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
+
+    const summary = JSON.parse(captured.out.join('')) as {
+      sources: {
+        map: { relativePath: string; sha256: string };
+        spawn: { relativePath: string; sha256: string };
+        tileFlags: { sha256: string };
+      };
+    };
+    expect(summary.sources.map.relativePath).toBe(
+      'data-canary/world/canary.otbm',
+    );
+    expect(summary.sources.map.sha256).toBe(sha256Of(mapPath));
+    expect(summary.sources.spawn.relativePath).toBe(
+      'data-otservbr-global/world/otservbr-monster.xml',
+    );
+    expect(summary.sources.spawn.sha256).toBe(sha256Of(spawnPath));
+    expect(summary.sources.tileFlags.sha256).toBe(sha256Of(tileFlagsPath));
+  });
+
+  it('reads the map the lock names, not a hard-coded path', () => {
+    const moved = join(
+      sourceRoot,
+      'data-otservbr-global',
+      'world',
+      'otservbr.otbm',
+    );
+    writeFileSync(moved, readFileSync(mapPath));
+    rmSync(mapPath);
+    writeSourceLock({
+      mapRelativePath: 'data-otservbr-global/world/otservbr.otbm',
+      mapSha256: sha256Of(moved),
+    });
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
+    expect(captured.out.join('')).toContain(
+      'data-otservbr-global/world/otservbr.otbm',
+    );
+  });
+
+  it('refuses to extract when the map digest disagrees with the lock', () => {
+    writeSourceLock({ mapSha256: 'b'.repeat(64) });
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_HASH_MISMATCH');
+    expect(() => readFileSync(join(output, 'hunt.json'), 'utf8')).toThrow();
+  });
+
+  it('refuses to extract when the snapshot has no locked map', () => {
+    rmSync(mapPath);
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_MISSING');
+  });
+
+  it('verifies the locked hunt sources on their own', () => {
+    expect(
+      runMapExtractorCli(
+        [
+          'sources',
+          '--source-root',
+          sourceRoot,
+          '--source-lock',
+          sourceLockPath,
+        ],
+        io(captured),
+      ),
+    ).toBe(0);
+    expect(captured.out.join('')).toContain('data-canary/world/canary.otbm');
+
+    writeSourceLock({ mapSha256: 'c'.repeat(64) });
+    captured = { out: [], err: [], usage: 0 };
+    expect(
+      runMapExtractorCli(
+        [
+          'sources',
+          '--source-root',
+          sourceRoot,
+          '--source-lock',
+          sourceLockPath,
+        ],
+        io(captured),
+      ),
+    ).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_HASH_MISMATCH');
+  });
+
   it('prints usage and exits 2 on an unknown command', () => {
     expect(runMapExtractorCli(['frobnicate'], io(captured))).toBe(2);
     expect(captured.usage).toBe(1);
@@ -244,6 +376,8 @@ describe('runMapExtractorCli', () => {
             selectionPath,
             '--source-root-env',
             'HUNTBOUND_CANARY_SOURCE',
+            '--source-lock',
+            sourceLockPath,
             '--tile-flags',
             tileFlagsPath,
             '--output',

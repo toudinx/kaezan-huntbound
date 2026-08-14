@@ -159,6 +159,71 @@ function lock() {
 describe('importCanarySlice', () => {
   const cleanups: Array<() => void> = [];
 
+  /** The slice only ever reads the catalog purposes. */
+  function importWith(lockValue: Parameters<typeof importCanarySlice>[1]) {
+    const writer = {
+      transaction(
+        operation: (tx: {
+          replaceCatalogBundle(bundle: unknown): void;
+          listOrphanEntities(): readonly string[];
+        }) => unknown,
+      ) {
+        return operation({
+          replaceCatalogBundle: () => undefined,
+          listOrphanEntities: () => [],
+        });
+      },
+    } as unknown as CuratedCatalogWriter;
+    return importCanarySlice(selection(), lockValue, {
+      readSource: (path) => sources[path] ?? '',
+      writer,
+    });
+  }
+
+  it('ignores locked appearances, map and spawn files, which the slice never imports', () => {
+    const base = lock();
+    const withHuntSources = {
+      ...base,
+      files: [
+        ...base.files,
+        {
+          relativePath: 'data/items/appearances.dat',
+          sha256: 'e'.repeat(64),
+          purpose: 'appearances' as const,
+        },
+        {
+          relativePath: 'data-canary/world/canary.otbm',
+          sha256: 'b'.repeat(64),
+          purpose: 'map' as const,
+        },
+        {
+          relativePath: 'data-otservbr-global/world/otservbr-monster.xml',
+          sha256: 'c'.repeat(64),
+          purpose: 'spawn' as const,
+        },
+      ],
+    };
+
+    expect(importWith(withHuntSources).diagnostics).toEqual([]);
+  });
+
+  it('still rejects a catalog file that the selection does not declare', () => {
+    const base = lock();
+    const withStray = {
+      ...base,
+      files: [
+        ...base.files,
+        {
+          relativePath: 'data-otservbr-global/monster/vermins/worm.lua',
+          sha256: 'd'.repeat(64),
+          purpose: 'creature' as const,
+        },
+      ],
+    };
+
+    expect(() => importWith(withStray)).toThrow(/invalid frozen slice/);
+  });
+
   afterEach(() => {
     while (cleanups.length > 0) cleanups.pop()?.();
   });

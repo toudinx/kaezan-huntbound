@@ -166,6 +166,11 @@ function keyMappings(selection: SelectionManifest): Map<string, ContentKey> {
   return result;
 }
 
+/** Purposes the curated slice actually imports. */
+const catalogPurposes = new Set<SourceSnapshotLock['files'][number]['purpose']>(
+  ['vocations', 'items', 'spell', 'creature'],
+);
+
 function metadataLookup(
   lock: SourceSnapshotLock,
   purpose: SourceSnapshotLock['files'][number]['purpose'],
@@ -313,7 +318,12 @@ export function importCanarySlice(
 } {
   const input = selectionInput(selection);
   const diagnostics = [...validateSliceSelection(selection)];
-  const lockPaths = lock.files.map((file) => file.relativePath);
+  // The slice reads only the catalog purposes. PB-04-04 locks the map and the
+  // spawn declaration for the region extractor; those never enter the slice and
+  // must not make the frozen selection look inconsistent.
+  const lockPaths = lock.files
+    .filter((file) => catalogPurposes.has(file.purpose))
+    .map((file) => file.relativePath);
   if (
     lockPaths.length !== input.sourceFiles.length ||
     lockPaths.some((path) => !input.sourceFiles.includes(path))

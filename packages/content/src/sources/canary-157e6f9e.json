@@ -18,7 +18,17 @@
     {
       "relativePath": "data/items/appearances.dat",
       "sha256": "aa44a154f30c7ed59acc25f246286396e4043851ef0b54ef3cf3951e46d1ce50",
-      "purpose": "items"
+      "purpose": "appearances"
+    },
+    {
+      "relativePath": "data-canary/world/canary.otbm",
+      "sha256": "a3a1389bc7e8ba63080858023fba0eaded5253b6f6bd3d66b0f3c5112c987361",
+      "purpose": "map"
+    },
+    {
+      "relativePath": "data-otservbr-global/world/otservbr-monster.xml",
+      "sha256": "7043c114cfea10d5a2a329d1fdff04866e801a5af0b559421eafd49983ff98c7",
+      "purpose": "spawn"
     },
     {
       "relativePath": "data/scripts/spells/attack/berserk.lua",

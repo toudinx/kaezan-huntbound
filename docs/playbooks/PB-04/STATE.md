@@ -205,6 +205,36 @@ PB-04-01 acrescenta a seleção congelada, o validador e o relatório abaixo. A 
   seleção; e o encaixe de `hunt:extract:sidecar` em `content:check`, que não pode entrar em gate
   sem artefato.
 
+## PB-04-04 — proveniência da região (complemento)
+
+Segunda entrega da task, sobre o commit do extrator. O objetivo foi **dar origem congelada a todos
+os IDs da palette** e reduzir B1 a uma troca de duas linhas.
+
+- **Source lock:** `packages/content/src/sources/canary-157e6f9e.json` ganhou
+  `data-canary/world/canary.otbm` (`purpose: "map"`,
+  `a3a1389bc7e8ba63080858023fba0eaded5253b6f6bd3d66b0f3c5112c987361`) e
+  `data-otservbr-global/world/otservbr-monster.xml` (`purpose: "spawn"`,
+  `7043c114cfea10d5a2a329d1fdff04866e801a5af0b559421eafd49983ff98c7`). A união de `purpose` passou a
+  aceitar `appearances`, `map` e `spawn`.
+- **O extrator não conhece mais caminho de mapa.** `tools/map-extractor/sources.ts` localiza o OTBM e
+  a declaração de spawn pelo `purpose` no lock e recusa a extração com `HUNT_SOURCE_NOT_LOCKED`,
+  `HUNT_SOURCE_AMBIGUOUS`, `HUNT_SOURCE_MISSING`, `HUNT_SOURCE_PATH_INVALID` ou
+  `HUNT_SOURCE_HASH_MISMATCH`. O resumo de `build` publica os digests de `map`, `spawn` e
+  `tileFlags`.
+- **Gate novo:** `corepack pnpm hunt:sources:check` (exige `HUNTBOUND_CANARY_SOURCE`, fora de `check`
+  e `verify`). Contra o snapshot real: exit `0`, os dois digests acima confirmados.
+- **Defeito pré-existente corrigido:** `content:canary:check` falhava **em `main` antes desta
+  entrega** com `source-lock.selection-mismatch`. A causa era PB-04-03 ter trancado
+  `appearances.dat` com `purpose: "items"` sem acrescentá-lo a `sourceFiles` da seleção congelada do
+  PB-01 — o que PB-04-03 registrou como adiado por escopo. `appearances.dat` passou a ter
+  `purpose: "appearances"` e `importCanarySlice` passa a comparar `sourceFiles` apenas com os
+  `purpose` que a fatia curada realmente importa. `content:canary:check` agora sai `0`.
+- **RED/GREEN:** `resolveHuntSources` e as novas rotas da CLI entraram RED por ausência; o invariante
+  da fatia entrou RED pela entrada `map`/`spawn` rejeitada. Final `100/100` em `9` arquivos na suíte
+  do extrator e `4/4` em `ImportCanarySlice.test.ts`.
+- **Não muda:** B1 continua aberto e a região continua não extraída. Nenhum arquivo em
+  `packages/content/src/generated/hunts/**` foi produzido.
+
 ### B1 — o mapa da hunt não existe no snapshot (bloqueante)
 
 Medido em 2026-08-14 com o próprio leitor, sobre os 33 `.otbm` do snapshot:
@@ -225,8 +255,9 @@ carregaria, não o que o dump contém.
 
 Isso é a condição de parada declarada da task, e a decisão é de supervisor. As saídas possíveis:
 
-1. acrescentar `otservbr.otbm` ao snapshot local e rerodar `corepack pnpm hunt:extract`, sem tocar
-   em código — é o caminho que preserva PB-04-01 inteiro;
+1. acrescentar `otservbr.otbm` sob a raiz do snapshot e trocar `relativePath` e `sha256` da entrada
+   `purpose: "map"` do source lock; em seguida `corepack pnpm hunt:sources:check` e
+   `corepack pnpm hunt:extract`. **Nenhuma linha de código muda** — preserva PB-04-01 inteiro;
 2. reabrir PB-04-01 e reselecionar a hunt dentro de `canary.otbm`, o que reescreve
    `packages/content/src/selections/pb-04-venore-rotworm-cave.json`, `docs/content/PB-04-SELECTION.md`
    e a hunt escolhida na spec — e exige uma tabela de spawn, que `canary-monster.xml` não tem.

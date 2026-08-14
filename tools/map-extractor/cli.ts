@@ -2,11 +2,14 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import type { SourceSnapshotLock } from '../../packages/content/src/application/sourceLockTypes.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import type { TileFlagsTable } from '../tile-flags/types.ts';
 import { extractHunt } from './extract.ts';
 import type { HuntFileName } from './output.ts';
 import { encodeHuntFiles, HUNT_FILE_NAMES } from './output.ts';
+import type { ResolvedHuntSource } from './sources.ts';
+import { resolveHuntSources } from './sources.ts';
 import { isBlockingDiagnostic } from './types.ts';
 
 interface MapExtractorCliIo {
@@ -16,8 +19,9 @@ interface MapExtractorCliIo {
 }
 
 const usageText = `Usage:
-  node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root <path> --tile-flags <path> --output <dir>
-  node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE --tile-flags <path> --output <dir>
+  node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root <path> [--source-lock <path>] --tile-flags <path> --output <dir>
+  node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE [--source-lock <path>] --tile-flags <path> --output <dir>
+  node tools/map-extractor/cli.ts sources --source-root <path> [--source-lock <path>]
   node tools/map-extractor/cli.ts sidecar-check --output <dir>`;
 
 const processIo: MapExtractorCliIo = {
@@ -42,8 +46,14 @@ type Command =
       readonly check: boolean;
       readonly selection: string;
       readonly sourceRoot: string;
+      readonly sourceLock: string;
       readonly tileFlags: string;
       readonly output: string;
+    }
+  | {
+      readonly kind: 'sources';
+      readonly sourceRoot: string;
+      readonly sourceLock: string;
     }
   | { readonly kind: 'sidecar-check'; readonly output: string };
 
@@ -100,6 +110,7 @@ function parseCommand(args: readonly string[]): Command | undefined {
         '--selection',
         '--source-root',
         '--source-root-env',
+        '--source-lock',
         '--tile-flags',
         '--output',
       ]),
@@ -117,7 +128,30 @@ function parseCommand(args: readonly string[]): Command | undefined {
     ) {
       return undefined;
     }
-    return { kind: 'build', check, selection, sourceRoot, tileFlags, output };
+    return {
+      kind: 'build',
+      check,
+      selection,
+      sourceRoot,
+      sourceLock: requiredValue(values, '--source-lock') ?? defaultSourceLock(),
+      tileFlags,
+      output,
+    };
+  }
+
+  if (head === 'sources') {
+    const values = parseOptions(
+      rest,
+      new Set(['--source-root', '--source-root-env', '--source-lock']),
+    );
+    if (values === undefined) return undefined;
+    const sourceRoot = resolveSourceRoot(values);
+    if (sourceRoot === undefined) return undefined;
+    return {
+      kind: 'sources',
+      sourceRoot,
+      sourceLock: requiredValue(values, '--source-lock') ?? defaultSourceLock(),
+    };
   }
 
   if (head === 'sidecar-check') {
@@ -152,18 +186,24 @@ function firstDivergence(expected: string, actual: string) {
   };
 }
 
-function readSnapshot(sourceRoot: string) {
-  const root = resolve(sourceRoot);
-  const otbm = readFileSync(join(root, 'data-canary', 'world', 'canary.otbm'));
-  // The spawn XML is ISO-8859-1; latin1 round-trips its bytes exactly.
-  const monsterXml = readFileSync(
-    join(root, 'data-otservbr-global', 'world', 'otservbr-monster.xml'),
-    'latin1',
+/** The content source lock that freezes the snapshot this repo extracts from. */
+function defaultSourceLock(): string {
+  return join(
+    resolve(import.meta.dirname, '../..'),
+    'packages',
+    'content',
+    'src',
+    'sources',
+    'canary-157e6f9e.json',
   );
-  return {
-    otbm: new Uint8Array(otbm.buffer, otbm.byteOffset, otbm.byteLength),
-    monsterXml,
-  };
+}
+
+function readSourceLock(path: string): SourceSnapshotLock {
+  return JSON.parse(readFileSync(resolve(path), 'utf8')) as SourceSnapshotLock;
+}
+
+function provenanceOf(source: ResolvedHuntSource) {
+  return { relativePath: source.relativePath, sha256: source.sha256 };
 }
 
 function jsonPath(output: string, name: HuntFileName) {
@@ -181,14 +221,25 @@ function runBuild(
   const selection = JSON.parse(
     readFileSync(resolve(command.selection), 'utf8'),
   ) as HuntSelection;
-  const tileFlags = JSON.parse(
-    readFileSync(resolve(command.tileFlags), 'utf8'),
-  ) as TileFlagsTable;
-  const snapshot = readSnapshot(command.sourceRoot);
+  const tileFlagsText = readFileSync(resolve(command.tileFlags), 'utf8');
+  const tileFlags = JSON.parse(tileFlagsText) as TileFlagsTable;
+
+  const sources = resolveHuntSources(
+    readSourceLock(command.sourceLock),
+    command.sourceRoot,
+  );
+  if (!sources.ok) {
+    io.stderr({
+      command: 'build',
+      reason: 'source-lock',
+      diagnostics: sources.diagnostics,
+    });
+    return 1;
+  }
 
   const { hunt, diagnostics } = extractHunt(
-    snapshot.otbm,
-    snapshot.monsterXml,
+    sources.map.bytes,
+    sources.spawn.text,
     tileFlags,
     selection,
   );
@@ -228,6 +279,14 @@ function runBuild(
     ),
     emptyTiles: diagnostics.filter((item) => item.code === 'HUNT_EMPTY_TILE')
       .length,
+    // Every palette id traces back to these files: geometry from the locked
+    // map, creatures from the locked spawn declaration, and id semantics from
+    // tile-flags.json, itself derived from the locked appearances.dat/items.xml.
+    sources: {
+      map: provenanceOf(sources.map),
+      spawn: provenanceOf(sources.spawn),
+      tileFlags: { sha256: sha256Hex(tileFlagsText) },
+    },
     sha256: Object.fromEntries(
       HUNT_FILE_NAMES.map((name) => [
         name,
@@ -289,6 +348,31 @@ function runBuild(
   return 0;
 }
 
+function runSources(
+  command: Extract<Command, { kind: 'sources' }>,
+  io: MapExtractorCliIo,
+): number {
+  const sources = resolveHuntSources(
+    readSourceLock(command.sourceLock),
+    command.sourceRoot,
+  );
+  if (!sources.ok) {
+    io.stderr({
+      command: 'sources',
+      reason: 'source-lock',
+      diagnostics: sources.diagnostics,
+    });
+    return 1;
+  }
+  io.stdout({
+    command: 'sources',
+    ok: true,
+    map: provenanceOf(sources.map),
+    spawn: provenanceOf(sources.spawn),
+  });
+  return 0;
+}
+
 function runSidecarCheck(output: string, io: MapExtractorCliIo): number {
   const digests: Record<string, string> = {};
   for (const name of HUNT_FILE_NAMES) {
@@ -321,9 +405,9 @@ export function runMapExtractorCli(
   }
 
   try {
-    return command.kind === 'build'
-      ? runBuild(command, io)
-      : runSidecarCheck(command.output, io);
+    if (command.kind === 'build') return runBuild(command, io);
+    if (command.kind === 'sources') return runSources(command, io);
+    return runSidecarCheck(command.output, io);
   } catch (error) {
     io.stderr({
       kind: 'invalid-input',

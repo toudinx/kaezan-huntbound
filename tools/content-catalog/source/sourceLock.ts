@@ -5,10 +5,24 @@ import { isAbsolute, posix, relative, resolve, sep } from 'node:path';
 
 import type { ContentDiagnostic } from '@huntbound/contracts';
 
+/**
+ * `appearances`, `map` and `spawn` were added by PB-04-04. They are locked for
+ * the tile flags table and the region extractor, not for the curated slice, so
+ * they carry the same frozen provenance without joining the catalog import.
+ */
+export type LockedSourcePurpose =
+  | 'vocations'
+  | 'items'
+  | 'spell'
+  | 'creature'
+  | 'appearances'
+  | 'map'
+  | 'spawn';
+
 export interface LockedSourceFile {
   readonly relativePath: string;
   readonly sha256: string;
-  readonly purpose: 'vocations' | 'items' | 'spell' | 'creature';
+  readonly purpose: LockedSourcePurpose;
 }
 
 export interface SourceSnapshotLock {
