@@ -2,13 +2,13 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** em andamento — PB-04-01 e PB-04-02 concluídas. PB-03 foi fechado em `7097b67` como
-`APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado `f885535`, sem
-blockers e sem task corretiva.
+**Estado geral:** em andamento — PB-04-01, PB-04-02 e PB-04-03 concluídas. PB-03 foi fechado em
+`7097b67` como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado
+`f885535`, sem blockers e sem task corretiva.
 
 **Última atualização:** 2026-08-14
 
-**Próximas tasks elegíveis:** PB-04-03 e PB-04-05, após a conclusão de PB-04-02.
+**Próximas tasks elegíveis:** PB-04-04 e PB-04-05.
 
 ## Tasks
 
@@ -16,8 +16,8 @@ blockers e sem task corretiva.
 |---|---|---|---|---|
 | PB-04-01 | done | `codex/pb04-01-hunt-selection` | `e6e3119` | `docs/content/PB-04-SELECTION.md` + CLI exit 0 no snapshot local |
 | PB-04-02 | done | `codex/pb04-02-world-contracts` | `d5352eb` | `packages/contracts/src/hunt/**` + `MAP_REGION_CONTRACT.md` |
-| PB-04-03 | eligible | `codex/pb04-03-tile-flags` | — | PB-04-02 contracts integrated |
-| PB-04-04 | pending | `codex/pb04-04-map-extractor` | — | — |
+| PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
+| PB-04-04 | eligible | `codex/pb04-04-map-extractor` | — | PB-04-03 tile flags integrated |
 | PB-04-05 | eligible | `codex/pb04-05-kernel-floors-spawn` | — | PB-04-02 contracts integrated |
 | PB-04-06 | pending | `codex/pb04-06-hunt-replay` | — | — |
 | PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
@@ -129,6 +129,59 @@ PB-04-01 acrescenta a seleção congelada, o validador e o relatório abaixo. A 
   architecture gate e `corepack pnpm verify`.
 - **Próximas tasks elegíveis:** PB-04-03 e PB-04-05; PB-04-04 continua dependente de PB-04-03 e
   responsável por reconciliar `expectedDroppedTransitions`.
+
+## PB-04-03 — handoff concluído
+
+- **Status:** done; conclusão serial em worktree isolada, integrada por fast-forward.
+- **Commit da feature:** `53d6d09` (`feat: derive tile flags from the local snapshot`).
+- **Artefatos:** `tools/tile-flags/**` (`proto.ts`, `appearances.ts`, `items.ts`, `floorChanges.ts`,
+  `table.ts`, `identity.ts`, `cli.ts`, `types.ts`, `testing/protoFixture.ts`),
+  `packages/content/src/generated/tile-flags.json` + `.sha256`,
+  `packages/content/src/sources/canary-157e6f9e.json` e `docs/content/MAP_REGION_CONTRACT.md`.
+- **Tabela gerada:** `42107` entradas, `6 363 102` bytes, JSON canônico de linha única.
+  `sha256` do arquivo `a373f0d11a2fee973d672f25e3bcc472d04aaaf6c839209e21176e97b461dbe6`;
+  `appearancesSha256` `aa44a154f30c7ed59acc25f246286396e4043851ef0b54ef3cf3951e46d1ce50`;
+  `itemsXmlSha256` `b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8`, idêntico ao
+  que o source lock já registrava — a leitura em `latin1` preserva os bytes originais.
+- **RED/GREEN:** cada módulo entrou RED por ausência (`proto`, `appearances`, `floorChanges`,
+  `table`, `identity`, `cli`) e saiu GREEN; final `79/79` testes em `6` arquivos.
+- **Provas de mutação:** cinco mutações derrubaram testes e foram revertidas — colisão lendo
+  `unmove` no lugar de `unpass` (`3` falhas), valor de `floorchange` desconhecido aceito (`2`),
+  `floorchange` órfão tolerado (`1`), `entries` sem ordenação (`1`) e gate de identidade sempre `ok`
+  (`3`). Suite restaurada em `79/79`.
+- **Comandos e exit codes:** `vitest run --config tools/tile-flags/vitest.config.ts` `0`;
+  `tsc --project tools/tile-flags/tsconfig.json` `0`; `biome check tools/tile-flags packages/content`
+  `0`; `format:check` `0`; `git diff --check` `0`; CLI `build` `0`; `build --check` `0` na segunda
+  execução, sem escrita; `verify-ids` `0`; `content:check` `0`; `corepack pnpm verify` `0` com `9/9`
+  testes browser.
+- **Identidade `serverId == clientId`:** provada e sem diagnóstico. `42107` objetos em
+  `appearances.dat`, `37526` ids em `items.xml`, `32937` resolvidos, `434` ids com `floorchange` —
+  todos resolvidos — e as cinco identidades congeladas pelo PB-02 presentes na coleção correta
+  (`3031` em `object`, `131` e `26` em `outfit`, `12` em `effect`, `36` em `missile`). O snapshot não
+  traz `items.otb`, logo não existe tabela de tradução e identidade é o único mapeamento possível.
+- **Decisão de supervisor registrada:** o conjunto congelado de `floorchange` da task card divergia
+  do snapshot. `items.xml` usa `southalt` e `eastalt` em cinco itens de escada (`855`, `856`, `7888`,
+  `20255`, `20256`), e Canary os trata como estados distintos (`TILESTATE_FLOORCHANGE_SOUTH_ALT` /
+  `_EAST_ALT` em `item_parse.hpp`), não como apelidos. Canary também **não** define `up`, que não
+  ocorre no XML. Por decisão do supervisor o vocabulário passou a ser exatamente o `TileStatesMap`:
+  `down`, `north`, `south`, `southalt`, `east`, `eastalt`, `west`. `up` foi removido da união.
+- **Herança para PB-04-04:** `4589` ids de `items.xml` não têm objeto em `appearances.dat` — `4203`
+  `RESERVED SPRITE` e `386` depreciados/`empty sprite`/`unknown item`/conteúdo mais novo. **Nenhum
+  deles carrega `floorchange`**, então não afetam a tabela. Isso é ausência, não divergência de
+  identidade. Quais ids ocorrem de fato no mapa só é conhecido após o recorte; **PB-04-04 deve
+  confirmar que todo `serverId` da região extraída resolve na palette** e reportar qualquer ausência
+  como bloqueio.
+- **Gates novos:** `content:tileflags:check` (exige `HUNTBOUND_CANARY_SOURCE`, fora de `check` e
+  `verify`) e `content:tileflags:sidecar`, que entra em `content:check` e não precisa do snapshot. A
+  suíte `tools/tile-flags` foi acrescentada ao script `test` da raiz, então entra no gate agregado.
+- **Escopo:** `purpose` de `appearances.dat` no source lock ficou `items` porque ampliar a união de
+  `purpose` exigiria tocar `tools/content-catalog/**`, fora do escopo desta task.
+- **Modelo/effort efetivos:** Claude Opus 5 nesta sessão. Modelo sugerido pelo roteiro: GPT-5.6 Sol
+  `xhigh`.
+- **Skills e validador:** `using-superpowers`, `test-driven-development` e
+  `verification-before-completion`; validação por Vitest focado, mutação dirigida, TypeScript, Biome,
+  CLI real contra o snapshot e `corepack pnpm verify`.
+- **Próximas tasks elegíveis:** PB-04-04 e PB-04-05.
 
 ## Bloqueios
 
