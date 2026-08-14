@@ -30,7 +30,7 @@
     "content:generate:check": "node tools/content-catalog/cli.ts generate --check",
     "content:tileflags:check": "node --no-warnings --experimental-transform-types tools/tile-flags/cli.ts build --check --source-root-env HUNTBOUND_CANARY_SOURCE --output packages/content/src/generated/tile-flags.json",
     "content:tileflags:sidecar": "node --no-warnings --experimental-transform-types tools/tile-flags/cli.ts sidecar-check --output packages/content/src/generated/tile-flags.json",
-    "content:check": "corepack pnpm content:catalog:rebuild && corepack pnpm content:catalog:validate && corepack pnpm content:generate:check && corepack pnpm content:tileflags:sidecar",
+    "content:check": "corepack pnpm content:catalog:rebuild && corepack pnpm content:catalog:validate && corepack pnpm content:generate:check && corepack pnpm content:tileflags:sidecar && corepack pnpm hunt:extract:sidecar",
     "hunt:selection:check": "node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/hunts/venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE",
     "hunt:sources:check": "node --no-warnings --experimental-transform-types tools/map-extractor/cli.ts sources --selections packages/content/src/selections/hunts --source-root-env HUNTBOUND_CANARY_SOURCE",
     "hunt:extract": "node --no-warnings --experimental-transform-types tools/map-extractor/cli.ts build-all --selections packages/content/src/selections/hunts --source-root-env HUNTBOUND_CANARY_SOURCE --tile-flags packages/content/src/generated/tile-flags.json --output-root packages/content/src/generated/hunts",

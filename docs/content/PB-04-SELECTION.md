@@ -71,7 +71,16 @@ de máquina no repositório.
 `references/` permanece somente como entrada local do snapshot. Nenhum byte desse diretório é
 copiado para o repositório.
 
-## Correção de PB-04-04 — a caixa não é extraível deste snapshot
+## Resultado de PB-04-04 — a caixa foi extraída
+
+Medição final em 2026-08-14, de `data-otservbr-global/world/otservbr.otbm` (`a80de1dd…`):
+`1914` células, palette de `138`, `105` células vazias, `4` transições e **`0` derrubadas**,
+`8` grupos e `12` slots de Rotworm. `expectedDroppedTransitions` permanece `0` porque a medição
+confirmou `0` — a caixa congelada não perde nenhuma travessia no recorte.
+
+A seção abaixo fica como histórico do diagnóstico que levou à instalação do mapa.
+
+## Diagnóstico de PB-04-04 — a caixa não era extraível do snapshot original
 
 A linha "Região localizável e extraível" do checklist acima afirma que `data-canary/world/canary.otbm`
 e `data-otservbr-global/world/otservbr-monster.xml` são o mesmo par, porque `config.lua.dist` declara

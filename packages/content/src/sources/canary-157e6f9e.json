@@ -26,6 +26,11 @@
       "purpose": "map"
     },
     {
+      "relativePath": "data-otservbr-global/world/otservbr.otbm",
+      "sha256": "a80de1dda6a9aca3956a9d5b7fb2e0caebb451570d26853fc21beb40d5f31da2",
+      "purpose": "map"
+    },
+    {
       "relativePath": "data-otservbr-global/world/otservbr-monster.xml",
       "sha256": "7043c114cfea10d5a2a329d1fdff04866e801a5af0b559421eafd49983ff98c7",
       "purpose": "spawn"

@@ -2,16 +2,15 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** bloqueado em PB-04-04 pelo bloqueio B1 — o mapa que contém a hunt congelada não
-está no snapshot local. O extrator foi entregue e está verde; a região não foi extraída. PB-04-01,
-PB-04-02, PB-04-03 e PB-04-05 concluídas. PB-03 foi fechado em
+**Estado geral:** em andamento — **B1 resolvido** e a região real extraída e congelada. PB-04-01,
+PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
 `7097b67` como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado
 `f885535`, sem blockers e sem task corretiva.
 
 **Última atualização:** 2026-08-14
 
-**Próximas tasks elegíveis:** nenhuma sem resolver B1. PB-04-04, PB-04-06 e PB-04-07 dependem da
-resolução de B1; PB-04-06 já tem o kernel v3 de que precisa.
+**Próximas tasks elegíveis:** PB-04-06, que agora tem a região e o kernel v3 de que precisa, e
+PB-04-07. Ver o achado W7 abaixo antes de fechar a cobertura do fixture de PB-04-06.
 
 ## Tasks
 
@@ -20,9 +19,9 @@ resolução de B1; PB-04-06 já tem o kernel v3 de que precisa.
 | PB-04-01 | done | `codex/pb04-01-hunt-selection` | `e6e3119` | `docs/content/PB-04-SELECTION.md` + CLI exit 0 no snapshot local |
 | PB-04-02 | done | `codex/pb04-02-world-contracts` | `d5352eb` | `packages/contracts/src/hunt/**` + `MAP_REGION_CONTRACT.md` |
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
-| PB-04-04 | blocked | `codex/pb04-04-map-extractor` | (extrator) | `tools/map-extractor/**` verde; região congelada não extraída — mapa ausente do snapshot |
+| PB-04-04 | done | `codex/pb04-04-extract-region` | (ver handoff) | região congelada em `packages/content/src/generated/hunts/venore-rotworm-cave/**`, `dropped=0`, `--check` exit 0 |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | blocked (parcial) | `codex/pb04-06-hunt-replay` | `5e98e91` | `buildHuntScenario` + `loadHuntDefinition` verdes; golden real bloqueado por B1 |
+| PB-04-06 | eligible (parcial) | `codex/pb04-06-hunt-replay` | `5e98e91` | `buildHuntScenario` + `loadHuntDefinition` verdes; golden real destravado por B1 resolvido |
 | PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
 | PB-04-08 | pending | `codex/pb04-08-hunt-scene` | — | — |
 | PB-04-09 | pending | `codex/pb04-09-hunt-browser-qa` | — | — |
@@ -266,7 +265,48 @@ custo de acrescentar mapas novos.
   `tools/hunt-selection`.
 - **Não muda:** B1 continua aberto e a região continua não extraída.
 
-### B1 — o mapa da hunt não existe no snapshot (bloqueante)
+## PB-04-04 — concluída: região real extraída
+
+Quarta e última entrega da task. **B1 resolvido sem nenhuma linha de código**, exatamente pelo
+caminho que o complemento 2 preparou.
+
+- **Origem do mapa:** `otservbr.otbm` já existia na máquina, em quatro cópias byte-idênticas
+  (`184 776 037` bytes, `a80de1dd…`), vindas da distribuição `canary-3.4.1`. Nenhum download. O
+  arquivo foi instalado em `references/canary/data-otservbr-global/world/otservbr.otbm` — que é
+  gitignored — e congelado no source lock com `purpose: "map"`. A seleção já o nomeava.
+- **Pareamento verificado:** o `otservbr-monster.xml` de `3.4.1` difere globalmente do snapshot
+  `157e6f9e`, mas é **idêntico dentro da caixa congelada**: os mesmos `8` grupos, `12` slots de
+  Rotworm, `spawntime="90"`, `4` em `z = 8` e `8` em `z = 9`. Por isso o XML já congelado foi
+  mantido e os números de PB-04-01 seguem intactos.
+- **Região extraída:** `1914` células (`29 × 33 × 2`), palette de `138`, `105` células vazias,
+  `4` transições, **`0` derrubadas**, `8` grupos e `12` slots. `expectedDroppedTransitions` era `0`
+  e a medição confirmou `0` — nenhuma reconciliação foi necessária.
+- **Hashes congelados:** `region.json` `74bbd94a62c646be4115b1fa9ddf7ceced8dfba8cd3e7f90e2188a11e2a860f5`;
+  `transitions.json` `3520964782905a4d7b00cf52398ff43a831a22a770a55d4c58f2e0d92a9bd2e7`;
+  `spawns.json` `aa8b2062e0c9eb638f748b296d9d2e1b4675f3bc2538b218d1ce883cc869e3b5`;
+  `hunt.json` `24e3b97e4d5b1fa53aba7c2f107d9b42d32735f0b1e6c35eb2850fd57c29bdb9`.
+- **Gate novo em `content:check`:** `hunt:extract:sidecar` entrou no gate agregado agora que os
+  artefatos existem; ele não precisa do snapshot.
+- **Comandos e exit codes:** `hunt:sources:check` `0`; `hunt:extract` `0`; `hunt:extract:check` `0`
+  na segunda execução, sem escrita; `hunt:extract:sidecar` `0`; `content:check` `0`;
+  `content:canary:check` `0`; `hunt:selection:check` `0`; `corepack pnpm verify` `0` antes e depois
+  da integração.
+- **Escopo:** nenhum byte de `references/` entrou no repositório; só o JSON derivado, que a spec
+  autoriza explicitamente a versionar.
+
+### W7 — a hunt só desce (não bloqueante, pertence a PB-04-06)
+
+O único item com `floorchange` dentro da caixa é o `385`, valor `down`, e **as quatro transições vão
+de `z = 8` para `z = 9`**. Não há tile de subida porque, neste trecho, a volta em Tibia é feita por
+script de ação (escada/corda), não por `floorchange` — ação não é geometria e não pertence a esta
+extração. Nada foi derrubado, então os critérios de aceite de PB-04-04 estão satisfeitos.
+
+O impacto é na cobertura obrigatória do fixture `pb-04-hunt-session`, que a spec descreve como "uma
+transição em cada sentido". **PB-04-06 precisa decidir** entre usar `scenario/teleport-actor` para o
+retorno ou reescrever essa linha de cobertura. Encolher ou deslocar a caixa não resolve: não existe
+tile de subida por `floorchange` nas redondezas.
+
+### B1 — o mapa da hunt não existia no snapshot (resolvido em 2026-08-14)
 
 Medido em 2026-08-14 com o próprio leitor, sobre os 33 `.otbm` do snapshot:
 
@@ -439,8 +479,12 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 
 ## Bloqueios
 
-- **B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot. Detalhe, medição e
-  saídas possíveis no handoff de PB-04-04 acima. Bloqueia PB-04-04, PB-04-06 e PB-04-07.
+- ~~**B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot.~~ **Resolvido em
+  2026-08-14:** `otservbr.otbm` foi instalado no snapshot local a partir da distribuição
+  `canary-3.4.1` já presente na máquina e congelado no source lock; a região foi extraída com
+  `dropped=0`. Detalhe no handoff "PB-04-04 — concluída" acima.
+- **W7 (não bloqueante):** a hunt extraída só tem transições descendo. Pertence a PB-04-06; detalhe
+  acima.
 - ~~Warning W3 herdado da auditoria PB-03-08: o script `test` da raiz enumera apenas
   `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`.~~ **Fechado por PB-04-05
   em 2026-08-14:** o enumerador passou a incluir `content-boundaries.test.ts` e

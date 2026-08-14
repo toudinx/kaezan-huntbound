@@ -415,9 +415,56 @@ partir de `HUNTBOUND_CANARY_SOURCE` e fica **fora** de `check` e `verify`;
 `corepack pnpm hunt:extract:sidecar` compara os quatro sidecars sem precisar do snapshot e entra em
 `content:check` quando os artefatos existirem.
 
-### Bloqueio aberto: o mapa da hunt não está no snapshot
+### Região congelada — `hunt:tibia:venore-rotworm-cave`
 
-A região congelada **ainda não foi extraída**. Medido em 2026-08-14 com o próprio leitor:
+Extraída em 2026-08-14 de `data-otservbr-global/world/otservbr.otbm`
+(`a80de1dd…`) e `data-otservbr-global/world/otservbr-monster.xml` (`7043c114…`), com
+`tile-flags.json` (`a373f0d1…`):
+
+| Medida | Valor |
+|---|---:|
+| Células (`29 × 33 × 2`) | `1914` |
+| Palette | `138` |
+| Células vazias (`HUNT_EMPTY_TILE`) | `105` |
+| Transições | `4` |
+| Transições derrubadas | `0` |
+| Grupos de spawn | `8` |
+| Slots de spawn | `12` |
+
+Hashes congelados dos quatro arquivos:
+
+| Arquivo | SHA-256 |
+|---|---|
+| `region.json` | `74bbd94a62c646be4115b1fa9ddf7ceced8dfba8cd3e7f90e2188a11e2a860f5` |
+| `transitions.json` | `3520964782905a4d7b00cf52398ff43a831a22a770a55d4c58f2e0d92a9bd2e7` |
+| `spawns.json` | `aa8b2062e0c9eb638f748b296d9d2e1b4675f3bc2538b218d1ce883cc869e3b5` |
+| `hunt.json` | `24e3b97e4d5b1fa53aba7c2f107d9b42d32735f0b1e6c35eb2850fd57c29bdb9` |
+
+`expectedDroppedTransitions` da seleção era `0` e a medição confirmou `0`: **nenhuma transição foi
+derrubada**, então nenhuma reconciliação foi necessária e nenhuma travessia se perdeu no recorte.
+
+**As quatro transições descem.** O único item com `floorchange` dentro da caixa é o `385`, valor
+`down`, e todas as quatro entradas vão de `z = 8` para `z = 9`. Não existe tile de subida na caixa
+porque, neste trecho, a volta em Tibia é feita por script de ação (escada/corda), não por
+`floorchange` — e ação não é geometria, logo não pertence a esta extração. Isso é registro para
+**PB-04-06**, cuja cobertura de fixture pede "uma transição em cada sentido": ou a sessão usa
+`scenario/teleport-actor` para voltar, ou a cobertura precisa ser reescrita. Não é derrubada de
+transição e não afeta os critérios de aceite desta task.
+
+### Procedência do mapa
+
+O mapa veio da distribuição `canary-3.4.1` presente na máquina, enquanto o resto do snapshot está em
+`157e6f9e`. O `otservbr-monster.xml` das duas versões **difere globalmente mas é idêntico dentro da
+caixa congelada**: ambos declaram os mesmos `8` grupos e `12` slots de Rotworm, `spawntime="90"`,
+`4` em `z = 8` e `8` em `z = 9`. Por isso o XML já congelado no lock foi mantido, e os números
+medidos por PB-04-01 continuam valendo sem alteração.
+
+### Bloqueio resolvido: o mapa da hunt não estava no snapshot
+
+**Resolvido em 2026-08-14** instalando `otservbr.otbm` no snapshot e congelando-o no source lock;
+nenhuma linha de código mudou. O registro abaixo fica como histórico do diagnóstico.
+
+Medido em 2026-08-14 com o próprio leitor, antes da instalação:
 
 - `data-canary/world/canary.otbm` tem `115541` tile areas em `x ∈ [256, 20479]`, `y ∈ [0, 20223]`.
   Ele é o mapa de demonstração do Canary, não o mapa global; `data-canary/world/canary-monster.xml`
@@ -432,8 +479,8 @@ Isto é, `config.lua.dist` declarar `mapName = "otservbr"` significa que o servi
 `otservbr.otbm`; não significa que `canary.otbm` seja esse mapa. O par
 `canary.otbm` ↔ `otservbr-monster.xml` registrado em `docs/playbooks/PB-04/STATE.md` está incorreto.
 
-A seleção da hunt **já declara o mapa que precisa** — `data-otservbr-global/world/otservbr.otbm` —
-então o pipeline falha nomeando exatamente o arquivo ausente em vez de ler o mapa errado em
+A seleção da hunt **já declarava o mapa que precisava** — `data-otservbr-global/world/otservbr.otbm`
+— então o pipeline falhava nomeando exatamente o arquivo ausente em vez de ler o mapa errado em
 silêncio:
 
 ```text
@@ -441,9 +488,9 @@ sources.map  HUNT_SOURCE_NOT_LOCKED
 The content source lock does not freeze the selected map: data-otservbr-global/world/otservbr.otbm
 ```
 
-**Resolver o bloqueio é colocar o arquivo no snapshot e acrescentar uma entrada ao source lock**,
-sem tocar em código. Depois disso, `corepack pnpm hunt:sources:check` confirma a proveniência e
-`corepack pnpm hunt:extract` produz os quatro arquivos.
+A resolução foi colocar o arquivo no snapshot e acrescentar uma entrada ao source lock, **sem tocar
+em código**: `corepack pnpm hunt:sources:check` confirmou a proveniência e
+`corepack pnpm hunt:extract` produziu os quatro arquivos.
 
 O leitor foi validado contra o arquivo real de 19,7 MB em uma janela povoada do próprio
 `canary.otbm` (`x = 4980..5029`, `y = 4980..5029`, andares `6` e `7`): `4159` tiles em `1,3 s`,
