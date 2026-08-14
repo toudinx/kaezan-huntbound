@@ -17,7 +17,7 @@
 | PB-03-03 | done | `codex/pb03-03-kernel-grid` | `4408f23` + `5e67e56` | 18 testes; typecheck; architecture; Biome; format; diff check |
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
-| PB-03-06 | done | `codex/pb03-06-kernel-replay` | `PENDING` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
+| PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
@@ -276,7 +276,8 @@ próxima task elegível.
 
 ## PB-03-06 — handoff concluído
 
-PB-03-06 foi implementada na branch `codex/pb03-06-kernel-replay`. `@huntbound/simulation` passa a
+PB-03-06 foi implementada na branch `codex/pb03-06-kernel-replay`. O commit funcional integrado é
+`aced4bb` (`feat: reproduce deterministic kernel replay`). `@huntbound/simulation` passa a
 publicar `encodeCanonicalJson`/`CanonicalJsonError`, `snapshotKernel`, `restoreSimulationKernel`,
 `isKernelQuiescent`, `runReplay`/`prepareReplayKernel`/`ReplayResult` e `encodeEventJournal`. O novo
 `tools/replay` traz `run`, `verify` e `hash`, e o gate `simulation:check` entrou em `check` e em
