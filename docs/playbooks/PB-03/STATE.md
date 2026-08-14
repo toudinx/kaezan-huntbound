@@ -2,11 +2,12 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-06 concluídas; PB-03-06-FIX-01 é a próxima task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-06 e PB-03-06-FIX-01 concluídas; PB-03-07 é a próxima
+task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-06-FIX-01, que precede PB-03-07.
+**Próxima task elegível:** PB-03-07.
 
 ## Tasks
 
@@ -18,7 +19,7 @@
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
-| PB-03-06-FIX-01 | pending | `codex/pb03-06-fix-01-pending-intents` | — | — |
+| PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `PENDING_COMMIT` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
@@ -30,7 +31,7 @@
 - PB-01: `closed`. PB-02: `closed` em `1134fc8` como `APPROVED_WITH_WARNINGS`; fechamento
   documental em `1e33e63`.
 - `TICK_DURATION_MS = 50`, `MAX_FRAME_DELTA_MS = 250`.
-- `SIMULATION_SCHEMA_VERSION = 1`, `SIMULATION_RULES_VERSION = 1`.
+- `SIMULATION_SCHEMA_VERSION = 2` desde PB-03-06-FIX-01; `SIMULATION_RULES_VERSION = 1`.
 - Cenário do fixture: `pb-03-kernel-coverage`, revisão `1`, grid 16×16 em `z = 7`.
 - Seed do fixture: `0f1e2d3c4b5a6978`. Ticks: `200`, retomada em `117`.
 - RNG: xoshiro128\*\* com seeding SplitMix32 e derivação FNV-1a 32; streams `movement`, `ai` e
@@ -389,26 +390,98 @@ Skills usadas: `superpowers:using-superpowers`, `superpowers:test-driven-develop
 
 App, browser, Playwright e Phaser não foram tocados. PB-03-07 é a próxima task elegível.
 
+## PB-03-06-FIX-01 — handoff concluído
+
+PB-03-06-FIX-01 foi implementada na branch `codex/pb03-06-fix-01-pending-intents`. O commit funcional
+integrado é `PENDING_COMMIT`. `restoreSimulationKernel` passou a ser fiel em **qualquer** fronteira:
+`SimulationSnapshot` ganhou `pendingIntents`, `SIMULATION_SCHEMA_VERSION` subiu para `2` e
+`SIMULATION_RULES_VERSION` permanece `1`.
+
+`@huntbound/contracts` publica `PendingIntentState` e `PendingIntentStateSchema`. O campo é ordenado
+estritamente por `(tick, entityId)` — ordenação estrita é o que garante unicidade do par, já que um
+par repetido compara igual e nunca cabe numa lista ordenada. `tick` é o tick de aplicação e o schema
+recusa `tick < snapshot.tick` com `SIM_TICK_IN_PAST`.
+
+`KernelStateAccess.pendingInternalIntents` passou de contagem a lista, `KernelRestoreState` recebe
+`pendingIntents` e `createSimulationKernel` reidrata a fila interna. `isKernelQuiescent` saiu do
+código e da superfície pública, e `buildReplayArtifacts` não recusa mais retomada por quiescência.
+
+### Hashes congelados da fixture
+
+```text
+scenario.json          056d869682ba13241f7444ae2df39bc68100c867b1ee71d2dca973fec370b3f1
+commands.jsonl         c1e815c663dcddf0d2d651bdf0b136d4e2a50f85f66912f2114f78dab0ce0d9c
+snapshot.golden.json   9d0c3a249b6e72daf0bce868824eb17a80b0cf4153ab05f6f7b7d50dae5f7260
+events.golden.jsonl    31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4
+```
+
+`events.golden.jsonl` está **byte-idêntico** ao de PB-03-06, confirmado tanto pelo digest quanto por
+`git diff` vazio no arquivo e no seu sidecar. O critério que separa mudança de formato de mudança de
+semântica foi satisfeito, e nenhum golden foi regerado para fazer teste passar. O snapshot golden do
+tick `200` carrega de fato uma intent pendente (`{"direction":"nw","entityId":4,"tick":200}`), então
+o campo novo é exercitado pelo próprio golden.
+
+### Segundo defeito encontrado pela varredura
+
+O RED varreu as fronteiras `0..24` e reportou duas classes distintas de divergência, não uma:
+
+- ticks `1, 7, 13, 17, 18, 19, 23` divergiam em journal **e** snapshot — o defeito de `pendingIntents`;
+- tick `0` divergia **só** no journal, com snapshot final convergente.
+
+O tick `0` é um defeito separado: os eventos de boot eram emitidos pelo construtor e só drenados pelo
+primeiro `advanceOne()`, então um snapshot tirado antes do primeiro tick registrava
+`nextEventSequence` como se eles tivessem saído, mas os eventos ficavam num journal que nenhum campo
+do snapshot carrega. Corrigido movendo a emissão para o próprio tick `0`, com predicado
+`world.tick === 0`, exato porque o tick `0` os emite e nenhum tick posterior pode.
+
+A saída de eventos é idêntica em todos os casos — mesmos payloads, mesmas sequences, mesmo tick — e
+`events.golden.jsonl` não mudou, o que confirma que a mudança é de momento de emissão e não de regra.
+Isso vai além do único campo congelado pela task, mas é o que a fronteira `0` do critério de aceite
+exige, e está declarado aqui como desvio consciente e não semântico.
+
+### Invariante que dispensa `order`, provada e não assumida
+
+Em `packages/simulation/src/kernel/ai.test.ts`, dois testes:
+
+- `S3` percorre cada ator no máximo uma vez por tick e enfileira sempre para `currentTick + 1`, logo
+  dois intents internos nunca compartilham `(tick, entityId)`;
+- o empate entre intent externa e interna do mesmo ator é resolvido por `sourceRank`, com a externa
+  primeiro.
+
+Os dois passaram de primeira, então cada um foi provado por mutação da produção: enfileirar o intent
+duas vezes derrubou o primeiro (`22` contra `44` pares distintos), e inverter o desempate de
+`sourceRank` derrubou o segundo (`facing` `nw` em vez de `e`). A ordenação de `pendingIntents` no
+schema também foi verificada por mutação: desligar a checagem faz o teste de ordenação falhar.
+
+### Evidência fresca na worktree da task
+
+```text
+corepack pnpm --filter @huntbound/contracts test -> exit 0; 41 passed (4 files)
+corepack pnpm --filter @huntbound/simulation test -> exit 0; 118 passed (12 files)
+corepack pnpm exec vitest run --config tools/replay/vitest.config.ts -> exit 0; 31 passed (2 files)
+corepack pnpm --filter @huntbound/contracts typecheck -> exit 0
+corepack pnpm --filter @huntbound/simulation typecheck -> exit 0
+corepack pnpm exec tsc --project tools/replay/tsconfig.json --noEmit -> exit 0
+corepack pnpm simulation:check -> exit 0 (duas execuções seguidas)
+corepack pnpm architecture:check -> exit 0
+corepack pnpm exec biome check packages/contracts packages/simulation tools/replay -> exit 0
+corepack pnpm verify -> exit 0 (duas execuções seguidas, árvore inalterada entre elas)
+```
+
+Modelo/effort efetivos: Claude Code/Opus 5. Skills usadas: `superpowers:using-superpowers`,
+`superpowers:test-driven-development`, `superpowers:systematic-debugging` e
+`superpowers:verification-before-completion`. Validador efetivo: gates automatizados; a plataforma
+não expõe alternativa frontier nesta sessão, desvio registrado conforme §Diversidade de revisão.
+
+`apps/game`, Playwright e Phaser não foram tocados, e PB-03-07 não foi iniciada.
+
 ## Bloqueios
 
-Nenhum bloqueio de execução. A decisão aberta por PB-03-06 — retomada fiel só em fronteira
-quiescente — foi **decidida em 2026-08-13: corrigir o contrato**, e não aceitar a restrição.
-
-Motivo: a spec aprovada lista "serializa e restaura estado sem perda" como objetivo do kernel, então
-um restore que descarta intents de IA já decididas é defeito, não desenho. A correção sai agora
-porque o raio de alcance é mínimo — nada fora da própria ferramenta de PB-03 consome snapshot — e
-porque PB-03-07 compara um snapshot produzido no browser contra estes golden: mudar o schema depois
-obrigaria a refazer parte daquela paridade contra hashes novos. Save/resume de playbooks posteriores
-também precisa de snapshot em tick arbitrário.
-
-A correção está cardificada em
-`docs/playbooks/PB-03/tasks/PB-03-06-FIX-01-fechar-retomada-nao-quiescente.md` e **precede
-PB-03-07**. Ela serializa `pendingIntents` no snapshot, sobe `SIMULATION_SCHEMA_VERSION` para `2` e
-mantém `SIMULATION_RULES_VERSION` em `1`; o critério que separa mudança de formato de mudança de
-semântica é `events.golden.jsonl` permanecer byte-idêntico.
-
-Até lá, a mitigação de PB-03-06 continua válida e não mente: `isKernelQuiescent` reporta a fronteira,
-o teste prova a limitação nos dois sentidos e `tools/replay` recusa retomada não quiescente.
+Nenhum bloqueio de execução. O bloqueio aberto por PB-03-06 — retomada fiel só em fronteira
+quiescente — está **fechado por PB-03-06-FIX-01**: o snapshot serializa `pendingIntents`,
+`SIMULATION_SCHEMA_VERSION` está em `2`, `SIMULATION_RULES_VERSION` continua `1` e
+`events.golden.jsonl` permaneceu byte-idêntico, que era o critério de que a mudança é de formato.
+`isKernelQuiescent` deixou de existir e `tools/replay` não recusa mais retomada por quiescência.
 
 Uma observação não bloqueante segue registrada: o script `test` da raiz enumera
 apenas `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`, de modo que

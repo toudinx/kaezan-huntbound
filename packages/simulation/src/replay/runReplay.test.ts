@@ -12,11 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { at, kernelScenario, TEST_SEED } from '../kernel/testScenarios.ts';
 import { encodeCanonicalJson } from '../state/canonicalJson.ts';
-import {
-  isKernelQuiescent,
-  restoreSimulationKernel,
-  snapshotKernel,
-} from '../state/snapshot.ts';
+import { restoreSimulationKernel, snapshotKernel } from '../state/snapshot.ts';
 import { encodeEventJournal } from './eventJournalFile.ts';
 import { prepareReplayKernel, runReplay } from './runReplay.ts';
 
@@ -193,22 +189,22 @@ describe('runReplay', () => {
     );
   });
 
-  it('converges when the run is split at a quiescent boundary and resumed', () => {
+  it('converges when the run is split at a boundary that owes an AI intent', () => {
     const straight = valueOrThrow(runReplay(scenario, log()));
 
     const kernel = valueOrThrow(prepareReplayKernel(scenario, log()));
-    kernel.advance(11);
-    expect(isKernelQuiescent(kernel)).toBe(true);
+    kernel.advance(13);
     const head = snapshotKernel(kernel);
+    expect(head.pendingIntents.length).toBeGreaterThan(0);
 
     const resumed = valueOrThrow(restoreSimulationKernel(scenario, head));
-    const tail = resumed.advance(9);
+    const tail = resumed.advance(7);
 
     expect(encodeCanonicalJson(snapshotKernel(resumed))).toBe(
       encodeCanonicalJson(straight.snapshot),
     );
     expect(encodeEventJournal(tail)).toBe(
-      encodeEventJournal(straight.events.filter((event) => event.tick >= 11)),
+      encodeEventJournal(straight.events.filter((event) => event.tick >= 13)),
     );
   });
 });

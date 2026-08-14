@@ -27,7 +27,6 @@ export {
   encodeCanonicalJson,
 } from './state/canonicalJson.ts';
 export {
-  isKernelQuiescent,
   restoreSimulationKernel,
   snapshotKernel,
 } from './state/snapshot.ts';

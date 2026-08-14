@@ -8,7 +8,7 @@ grid, aplicação de comandos, loop de tick, snapshot/restore ou replay.
 
 | Constante | Valor |
 | --- | ---: |
-| `SIMULATION_SCHEMA_VERSION` | `1` |
+| `SIMULATION_SCHEMA_VERSION` | `2` |
 | `SIMULATION_RULES_VERSION` | `1` |
 | `TICK_DURATION_MS` | `50` |
 | `MAX_FRAME_DELTA_MS` | `250` |
@@ -100,17 +100,38 @@ hash do cenário. O formato contém:
 ```text
 schemaVersion, rulesVersion, scenarioId, scenarioRevision, seed, tick,
 nextEntityId, nextEventSequence, nextCommandSequence,
-randomStreams, actors, pendingCommands
+randomStreams, actors, pendingCommands, pendingIntents
 ```
 
 As coleções têm ordem canônica parte do contrato:
 
 - `randomStreams` por `label`, sem duplicatas;
 - `actors` por `entityId`, sem duplicatas;
-- `pendingCommands` por `(tick, sequence)`.
+- `pendingCommands` por `(tick, sequence)`;
+- `pendingIntents` por `(tick, entityId)`, estritamente, sem duplicatas.
 
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing` e `readyAtTick`.
+
+### `pendingIntents`
+
+`S3 ai` decide no fim do tick `T` uma intent aplicada no tick `T + 1`. Essa fila é interna: ela não
+passa pelo command log e `pendingCommands` carrega apenas comandos externos. `pendingIntents` é o
+campo que a serializa, e é ele que torna `restoreSimulationKernel` fiel em **qualquer** fronteira.
+
+`PendingIntentState` guarda exatamente `tick`, `entityId` e `direction`. `tick` é o tick de
+aplicação e satisfaz `tick >= snapshot.tick`; o schema reprova `SIM_TICK_IN_PAST` caso contrário.
+
+Não existe campo `order`, e a omissão é consequência de duas invariantes provadas em
+`packages/simulation/src/kernel/ai.test.ts`:
+
+- `S3` percorre cada ator no máximo uma vez por tick e enfileira sempre para `currentTick + 1`, logo
+  dois intents internos nunca compartilham `(tick, entityId)`;
+- o único empate real é entre intent externa e interna do mesmo ator, e ele é desempatado por
+  `sourceRank`, com a externa primeiro — nunca pelo contador de inserção.
+
+Por isso o contador interno `internalOrder` não precisa ser restaurado, e a chave `(tick, entityId)`
+basta para ordenar a coleção de forma total.
 
 ### `snapshotKernel` e `restoreSimulationKernel`
 
@@ -121,26 +142,27 @@ e recusa, antes de construir qualquer coisa, snapshot que não passe no schema, 
 outra revisão (`SIM_SCENARIO_MISMATCH`).
 
 O cenário é a autoridade sobre terreno e blueprints; o snapshot é a autoridade sobre atores, RNG,
-sequências e comandos pendentes. A ocupação é reconstruída a partir dos atores restaurados, nunca
-serializada. Um kernel restaurado não reemite os eventos de boot: ele continua o journal a partir de
-`nextEventSequence`.
+sequências, comandos pendentes e intents internas pendentes. A ocupação é reconstruída a partir dos
+atores restaurados, nunca serializada. Um kernel restaurado em tick maior que zero não reemite os
+eventos de boot: ele continua o journal a partir de `nextEventSequence`.
 
-### Quiescência: a única fronteira restaurável
+### Fidelidade em qualquer fronteira
 
-`S3 ai` decide no fim do tick `T` uma intent que só será aplicada no tick `T + 1`, e essa fila
-interna **não tem campo no snapshot** — `pendingCommands` carrega apenas comandos externos. Uma
-fronteira com intent interna pendente perde essa decisão ao ser restaurada, e a divergência aparece
-no tick seguinte.
+Retomar em **qualquer** fronteira `0..N` converge para o mesmo snapshot final e para a mesma cauda de
+eventos que um run direto. A propriedade é provada por varredura, não por amostragem: o teste em
+`packages/simulation/src/state/snapshot.test.ts` retoma em cada fronteira do intervalo e exige que os
+eventos drenados antes do snapshot, seguidos dos eventos drenados depois dele, sejam o run inteiro.
 
-O kernel expõe `isKernelQuiescent(kernel)`, verdadeiro quando nenhuma intent interna está pendente.
-**Restaurar só é fiel em fronteira quiescente.** A propriedade é provada nos dois sentidos em
-`packages/simulation/src/state/snapshot.test.ts`: uma fronteira quiescente converge byte a byte e uma
-fronteira não quiescente diverge. `tools/replay` recusa uma retomada não quiescente com
-`SIM_REPLAY_DIVERGED` em vez de produzir um golden silenciosamente errado.
+Duas condições sustentam isso:
 
-Fechar essa lacuna exigiria um campo novo no snapshot, isto é, alterar o schema congelado em
-`@huntbound/contracts`. Isso está fora do escopo de PB-03-06 e está registrado como pendência em
-`docs/playbooks/PB-03/STATE.md`.
+- as intents internas decididas viajam no snapshot em `pendingIntents`;
+- os eventos de boot pertencem ao tick `0` e são emitidos **pelo tick `0`**, não pelo construtor.
+  Emiti-los antes deixaria-os num journal não drenado que nenhum campo do snapshot carrega, e um
+  snapshot tirado antes do primeiro tick os perderia. O predicado é `world.tick === 0`, exato porque
+  o tick `0` os emite e nenhum tick posterior pode: um kernel retomado em `0` ainda os deve, um
+  kernel retomado depois nunca deve.
+
+`isKernelQuiescent` não existe mais, e `tools/replay` não recusa retomada por quiescência.
 
 ## Serialização canônica
 
@@ -300,8 +322,10 @@ existe para teste e para o snapshot de PB-03-06 e devolve uma cópia, nunca uma 
 
 Os atores de `initialActors` recebem `EntityId` `1..n` na ordem de declaração, `readyAtTick` `0` e o
 `nextEntityId` fica em `n + 1`. O tick inicial é `0`. O boot emite um `actor/spawned` por ator
-inicial, em ordem de `EntityId`, começando na sequência `1`; esses eventos ficam no journal e saem
-na primeira chamada de `advanceOne()`, que é a que executa o tick `0`.
+inicial, em ordem de `EntityId`, começando na sequência `1`; esses eventos são emitidos pelo próprio
+tick `0`, antes do `intake`, e saem na primeira chamada de `advanceOne()`. Emitir no construtor
+produziria os mesmos eventos, mas deixaria um journal não drenado que o snapshot não carrega — ver
+"Fidelidade em qualquer fronteira".
 
 ### Fases
 

@@ -1,5 +1,6 @@
 import type {
   ActorState,
+  PendingIntentState,
   RandomStreamState,
   Seed,
   SimulationCommandRecord,
@@ -25,11 +26,11 @@ export interface KernelStateAccess {
   readonly randomStreams: readonly RandomStreamState[];
   readonly pendingCommands: readonly SimulationCommandRecord[];
   /**
-   * Number of AI intents already decided for ticks that have not run yet. They
-   * live outside the command log and outside the snapshot, so a boundary with
-   * `pendingInternalIntents > 0` cannot be restored faithfully.
+   * AI intents already decided for ticks that have not run yet. They live
+   * outside the command log, so the snapshot carries them itself: dropping
+   * them would lose a decision and diverge on the next tick.
    */
-  readonly pendingInternalIntents: number;
+  readonly pendingInternalIntents: readonly PendingIntentState[];
 }
 
 /** State handed back to `createSimulationKernel` when resuming a snapshot. */
@@ -41,6 +42,7 @@ export interface KernelRestoreState {
   readonly actors: readonly ActorState[];
   readonly randomStreams: readonly RandomStreamState[];
   readonly pendingCommands: readonly SimulationCommandRecord[];
+  readonly pendingIntents: readonly PendingIntentState[];
 }
 
 export const KERNEL_STATE: unique symbol = Symbol('huntbound.kernel.state');

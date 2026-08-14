@@ -5,6 +5,7 @@ import type {
   EntityId,
   GridPosition,
   KernelScenario,
+  PendingIntentState,
   Seed,
   SimulationCommandInput,
   SimulationCommandRecord,
@@ -114,7 +115,21 @@ export function createSimulationKernel(
     scenario.blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
   );
 
-  if (restore === undefined) {
+  /**
+   * The boot events belong to tick `0` and are emitted by tick `0`, not by the
+   * constructor: a kernel snapshotted before its first tick would otherwise
+   * strand them in an undrained journal, and no snapshot field carries those.
+   * `world.tick === 0` is exact, because tick `0` emits them and no later tick
+   * can, so a kernel resumed at tick `0` still owes them and one resumed later
+   * never does.
+   */
+  let bootPending = world.tick === 0;
+
+  const emitBootEvents = (): void => {
+    if (!bootPending) {
+      return;
+    }
+    bootPending = false;
     for (const actor of world.actors()) {
       journal.emit(world.tick, {
         type: 'actor/spawned',
@@ -124,7 +139,7 @@ export function createSimulationKernel(
         facing: actor.facing,
       });
     }
-  }
+  };
 
   const reject = (
     tick: TickIndex,
@@ -149,7 +164,23 @@ export function createSimulationKernel(
   const internalIntents = new Map<number, MoveIntent[]>();
   let internalOrder = 0;
 
+  const queueInternalIntent = (
+    tick: number,
+    entityId: EntityId,
+    direction: Direction,
+  ): void => {
+    const queued = internalIntents.get(tick) ?? [];
+    queued.push({ entityId, direction, sourceRank: 1, order: internalOrder });
+    internalOrder += 1;
+    internalIntents.set(tick, queued);
+  };
+
+  for (const intent of restore?.pendingIntents ?? []) {
+    queueInternalIntent(intent.tick, intent.entityId, intent.direction);
+  }
+
   const runTick = (): readonly SimulationEvent[] => {
+    emitBootEvents();
     const currentTick = world.tick;
     const lifecycle: PendingLifecycle[] = [];
     const intents: MoveIntent[] = [...(internalIntents.get(currentTick) ?? [])];
@@ -330,15 +361,7 @@ export function createSimulationKernel(
           continue;
         }
 
-        const queued = internalIntents.get(nextTick) ?? [];
-        queued.push({
-          entityId: actor.entityId,
-          direction,
-          sourceRank: 1,
-          order: internalOrder,
-        });
-        internalOrder += 1;
-        internalIntents.set(nextTick, queued);
+        queueInternalIntent(nextTick, actor.entityId, direction);
       }
     };
 
@@ -370,9 +393,15 @@ export function createSimulationKernel(
       actors: world.state().actors,
       randomStreams: streams.serialize(),
       pendingCommands: buffer.pending(),
-      pendingInternalIntents: [...internalIntents.values()].reduce(
-        (total, queued) => total + queued.length,
-        0,
+      pendingInternalIntents: [...internalIntents.entries()].flatMap(
+        ([tick, queued]) =>
+          queued.map(
+            (intent): PendingIntentState => ({
+              tick: tick as TickIndex,
+              entityId: intent.entityId,
+              direction: intent.direction,
+            }),
+          ),
       ),
     }),
     advanceOne: runTick,

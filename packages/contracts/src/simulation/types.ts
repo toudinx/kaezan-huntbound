@@ -132,6 +132,16 @@ export interface ActorState {
   readonly readyAtTick: number;
 }
 
+/**
+ * A move intent already decided for a tick that has not run yet. `tick` is the
+ * tick the intent is applied on, never earlier than the snapshot tick.
+ */
+export interface PendingIntentState {
+  readonly tick: TickIndex;
+  readonly entityId: EntityId;
+  readonly direction: Direction;
+}
+
 export interface SimulationSnapshot {
   readonly schemaVersion: number;
   readonly rulesVersion: number;
@@ -145,6 +155,7 @@ export interface SimulationSnapshot {
   readonly randomStreams: readonly RandomStreamState[];
   readonly actors: readonly ActorState[];
   readonly pendingCommands: readonly SimulationCommandRecord[];
+  readonly pendingIntents: readonly PendingIntentState[];
 }
 
 export interface SimulationCommandLogHeader {

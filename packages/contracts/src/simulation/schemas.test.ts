@@ -8,6 +8,10 @@ import {
   validateSimulationSnapshot,
 } from './diagnostics';
 import {
+  SIMULATION_RULES_VERSION,
+  SIMULATION_SCHEMA_VERSION,
+} from './identity';
+import {
   ActorBlueprintSchema,
   commandPriority,
   KernelScenarioSchema,
@@ -29,7 +33,7 @@ function at<T>(values: readonly T[], index: number): T {
 
 function createScenario() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     scenarioId: 'pb-03-kernel-coverage',
     scenarioRevision: 1,
     width: 4,
@@ -62,7 +66,7 @@ function createCommandLog() {
   return {
     header: {
       kind: 'header',
-      schemaVersion: 1,
+      schemaVersion: 2,
       rulesVersion: 1,
       scenarioId: 'pb-03-kernel-coverage',
       scenarioRevision: 1,
@@ -97,7 +101,7 @@ function createCommandLog() {
 
 function createSnapshot() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     rulesVersion: 1,
     scenarioId: 'pb-03-kernel-coverage',
     scenarioRevision: 1,
@@ -139,6 +143,10 @@ function createSnapshot() {
         issuer: 'player',
         command: { type: 'actor/wait', entityId: 1 },
       },
+    ],
+    pendingIntents: [
+      { tick: 0, entityId: 2, direction: 'nw' },
+      { tick: 1, entityId: 1, direction: 'e' },
     ],
   };
 }
@@ -322,6 +330,62 @@ describe('simulation schemas', () => {
     const decimalState = createSnapshot();
     at(decimalState.randomStreams, 0).s0 = 1.5;
     expectSchemaInvalid(validateSimulationSnapshot(decimalState));
+  });
+
+  it('requires pendingIntents to be ordered by (tick, entityId) without duplicates', () => {
+    const unordered = createSnapshot();
+    unordered.pendingIntents = [
+      { tick: 1, entityId: 1, direction: 'e' },
+      { tick: 0, entityId: 2, direction: 'nw' },
+    ];
+    expectSchemaInvalid(validateSimulationSnapshot(unordered));
+
+    const sameTickUnordered = createSnapshot();
+    sameTickUnordered.pendingIntents = [
+      { tick: 1, entityId: 2, direction: 'nw' },
+      { tick: 1, entityId: 1, direction: 'e' },
+    ];
+    expectSchemaInvalid(validateSimulationSnapshot(sameTickUnordered));
+
+    const duplicated = createSnapshot();
+    duplicated.pendingIntents = [
+      { tick: 1, entityId: 1, direction: 'e' },
+      { tick: 1, entityId: 1, direction: 'nw' },
+    ];
+    const duplicateResult = validateSimulationSnapshot(duplicated);
+    expectSchemaInvalid(duplicateResult);
+    expect(
+      duplicateResult.ok
+        ? []
+        : duplicateResult.diagnostics.map((item) => item.message),
+    ).toContain(
+      'pendingIntents[1]: pendingIntents must not repeat a (tick, entityId) pair',
+    );
+  });
+
+  it('rejects a pending intent scheduled before the snapshot tick', () => {
+    const past = createSnapshot();
+    past.tick = 4;
+    past.pendingIntents = [{ tick: 3, entityId: 1, direction: 'e' }];
+    expectSchemaInvalid(validateSimulationSnapshot(past), 'SIM_TICK_IN_PAST');
+  });
+
+  it('rejects a pending intent with an unknown direction or a decimal tick', () => {
+    const unknownDirection = createSnapshot();
+    unknownDirection.pendingIntents = [
+      { tick: 1, entityId: 1, direction: 'north' },
+    ];
+    expectSchemaInvalid(validateSimulationSnapshot(unknownDirection));
+
+    const decimalTick = createSnapshot();
+    decimalTick.pendingIntents = [{ tick: 1.5, entityId: 1, direction: 'e' }];
+    expectSchemaInvalid(validateSimulationSnapshot(decimalTick));
+  });
+
+  it('pins the schema version at 2 and leaves the rules version at 1', () => {
+    // pendingIntents changed the snapshot format, not the kernel semantics.
+    expect(SIMULATION_SCHEMA_VERSION).toBe(2);
+    expect(SIMULATION_RULES_VERSION).toBe(1);
   });
 
   it('rejects non-increasing command sequences and decreasing ticks in logs', () => {

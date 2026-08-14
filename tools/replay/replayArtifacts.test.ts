@@ -4,6 +4,12 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { validateKernelScenario } from '../../packages/contracts/src/index.ts';
+import {
+  decodeCommandLog,
+  prepareReplayKernel,
+  snapshotKernel,
+} from '../../packages/simulation/src/index.ts';
 import { buildReplayArtifacts, sha256Hex } from './replayArtifacts.ts';
 
 const fixtureRoot = resolve(
@@ -190,5 +196,57 @@ describe('buildReplayArtifacts', () => {
 
     expect(built.value.snapshotText).toBe(straight.value.snapshotText);
     expect(built.value.eventsText).toBe(straight.value.eventsText);
+  });
+
+  it('resumes at a boundary that still owes a decided AI intent', async () => {
+    const { scenarioText, logText } = await fixtures();
+    const scenario = validateKernelScenario(
+      JSON.parse(scenarioText) as unknown,
+    );
+    const log = decodeCommandLog(logText);
+    expect(scenario.ok && log.ok).toBe(true);
+    if (!scenario.ok || !log.ok) return;
+
+    // Tick 117 is quiescent, so it never exercised the pending intents. Tick 13
+    // does: the tool used to refuse it with SIM_REPLAY_DIVERGED.
+    const probe = prepareReplayKernel(scenario.value, log.value);
+    expect(probe.ok).toBe(true);
+    if (!probe.ok) return;
+    probe.value.advance(13);
+    expect(snapshotKernel(probe.value).pendingIntents).not.toEqual([]);
+
+    const built = buildReplayArtifacts(scenarioText, logText, {
+      resumeAtTick: 13,
+    });
+    const straight = buildReplayArtifacts(scenarioText, logText);
+
+    expect(built.ok).toBe(true);
+    expect(straight.ok).toBe(true);
+    if (!built.ok || !straight.ok) return;
+    expect(built.value.snapshotText).toBe(straight.value.snapshotText);
+    expect(built.value.eventsText).toBe(straight.value.eventsText);
+  });
+
+  it('resumes at every boundary of the first stretch of the run', async () => {
+    const { scenarioText, logText } = await fixtures();
+    const straight = buildReplayArtifacts(scenarioText, logText);
+    expect(straight.ok).toBe(true);
+    if (!straight.ok) return;
+
+    const diverged: number[] = [];
+    for (let boundary = 0; boundary <= 24; boundary += 1) {
+      const built = buildReplayArtifacts(scenarioText, logText, {
+        resumeAtTick: boundary,
+      });
+      if (
+        !built.ok ||
+        built.value.snapshotText !== straight.value.snapshotText ||
+        built.value.eventsText !== straight.value.eventsText
+      ) {
+        diverged.push(boundary);
+      }
+    }
+
+    expect(diverged).toEqual([]);
   });
 });

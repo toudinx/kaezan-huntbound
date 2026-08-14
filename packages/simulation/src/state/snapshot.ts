@@ -1,6 +1,7 @@
 import type {
   ActorState,
   KernelScenario,
+  PendingIntentState,
   RandomStreamState,
   SimulationCommandRecord,
   SimulationDiagnostic,
@@ -45,6 +46,16 @@ function byTickThenSequence(
   );
 }
 
+function byTickThenEntityId(
+  left: PendingIntentState,
+  right: PendingIntentState,
+): number {
+  return (
+    compareNumbers(left.tick, right.tick) ||
+    compareNumbers(left.entityId, right.entityId)
+  );
+}
+
 /**
  * Serializable state of a live kernel, in the frozen field order-independent
  * shape. Terrain, occupancy and the scenario digest are deliberately absent:
@@ -66,16 +77,8 @@ export function snapshotKernel(kernel: SimulationKernel): SimulationSnapshot {
     randomStreams: [...state.randomStreams].sort(byLabel),
     actors: [...state.actors].sort(byEntityId),
     pendingCommands: [...state.pendingCommands].sort(byTickThenSequence),
+    pendingIntents: [...state.pendingInternalIntents].sort(byTickThenEntityId),
   };
-}
-
-/**
- * True when every AI decision already taken has also been applied, i.e. no
- * internal intent is waiting for a tick that has not run yet. Only a quiescent
- * kernel can be snapshotted and restored without losing decided AI intents.
- */
-export function isKernelQuiescent(kernel: SimulationKernel): boolean {
-  return readKernelState(kernel).pendingInternalIntents === 0;
 }
 
 function diagnostic(
@@ -146,6 +149,7 @@ export function restoreSimulationKernel(
         actors: value.actors,
         randomStreams: value.randomStreams,
         pendingCommands: value.pendingCommands,
+        pendingIntents: value.pendingIntents,
       }),
     };
   } catch (error) {

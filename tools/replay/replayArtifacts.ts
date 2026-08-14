@@ -10,7 +10,6 @@ import {
   decodeCommandLog,
   encodeCanonicalJson,
   encodeEventJournal,
-  isKernelQuiescent,
   prepareReplayKernel,
   restoreSimulationKernel,
   runReplay,
@@ -155,16 +154,6 @@ function buildSplitRun(
   }
 
   const head = prepared.value.advance(resumeAtTick);
-  if (!isKernelQuiescent(prepared.value)) {
-    return invalidInput([
-      diagnostic(
-        'SIM_REPLAY_DIVERGED',
-        `Tick ${resumeAtTick} still owes a decided AI intent, so it cannot be snapshotted and resumed faithfully`,
-        ['resumeAtTick'],
-      ),
-    ]);
-  }
-
   const restored = restoreSimulationKernel(
     scenario,
     snapshotKernel(prepared.value),

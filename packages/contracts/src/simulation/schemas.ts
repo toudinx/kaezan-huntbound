@@ -445,6 +445,27 @@ export const ActorStateSchema = z
   })
   .strict();
 
+export const PendingIntentStateSchema = z
+  .object({
+    tick: TickIndexSchema,
+    entityId: EntityIdSchema,
+    direction: DirectionSchema,
+  })
+  .strict();
+
+function comparePendingIntents(
+  left: { readonly tick: number; readonly entityId: number },
+  right: { readonly tick: number; readonly entityId: number },
+) {
+  if (left.tick !== right.tick) {
+    return left.tick < right.tick ? -1 : 1;
+  }
+  if (left.entityId !== right.entityId) {
+    return left.entityId < right.entityId ? -1 : 1;
+  }
+  return 0;
+}
+
 function compareSnapshotCommands(
   left: { readonly tick: number; readonly sequence: number },
   right: { readonly tick: number; readonly sequence: number },
@@ -472,6 +493,7 @@ export const SimulationSnapshotSchema = z
     randomStreams: z.array(RandomStreamStateSchema).readonly(),
     actors: z.array(ActorStateSchema).readonly(),
     pendingCommands: z.array(SimulationCommandRecordSchema).readonly(),
+    pendingIntents: z.array(PendingIntentStateSchema).readonly(),
   })
   .strict()
   .superRefine((snapshot, context) => {
@@ -522,6 +544,41 @@ export const SimulationSnapshotSchema = z
         );
       }
     }
+
+    snapshot.pendingIntents.forEach((intent, index) => {
+      if (intent.tick < snapshot.tick) {
+        addSimulationIssue(
+          context,
+          'SIM_TICK_IN_PAST',
+          ['pendingIntents', index, 'tick'],
+          'pendingIntents cannot be scheduled before the snapshot tick',
+        );
+      }
+
+      const previous = snapshot.pendingIntents[index - 1];
+      if (previous === undefined) {
+        return;
+      }
+
+      // Strict ordering is what makes the pair unique: a repeated pair sorts
+      // equal, so it can never appear in a correctly ordered list.
+      const order = comparePendingIntents(previous, intent);
+      if (order === 0) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['pendingIntents', index],
+          'pendingIntents must not repeat a (tick, entityId) pair',
+        );
+      } else if (order > 0) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['pendingIntents', index],
+          'pendingIntents must be strictly ordered by (tick, entityId)',
+        );
+      }
+    });
 
     const actorCells = new Set<string>();
     snapshot.actors.forEach((actor, index) => {

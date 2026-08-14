@@ -1,6 +1,6 @@
 # PB-03-06-FIX-01 — Fechar retomada não quiescente
 
-**Status inicial:** pending
+**Status inicial:** done
 
 **Classe da tarefa:** correção de contrato — reabre um schema congelado e recongela o golden
 
@@ -126,7 +126,7 @@ export interface SimulationSnapshot {
 
 ## Execução RED/GREEN
 
-- [ ] **1. Criar branch e worktree isolada.**
+- [x] **1. Criar branch e worktree isolada.**
 
 ```powershell
 git branch codex/pb03-06-fix-01-pending-intents main
@@ -134,35 +134,35 @@ git worktree add C:\Kaezan\kaezan-huntbound-pb03-06-fix-01 codex/pb03-06-fix-01-
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb03-06-fix-01 install --frozen-lockfile
 ```
 
-- [ ] **2. Escrever o teste RED que expõe o defeito como defeito.**
+- [x] **2. Escrever o teste RED que expõe o defeito como defeito.**
 
 Em `packages/simulation/src/state/snapshot.test.ts`, substituir o teste que hoje *prova a limitação*
 por um que exige fidelidade: para um cenário com wanderer, retomar em **cada** fronteira `0..N` e
 exigir snapshot final e cauda de eventos idênticos ao run direto. Esse teste falha hoje exatamente
 nas fronteiras não quiescentes, e é ele que teria pego o defeito original.
 
-- [ ] **3. Provar a invariante que justifica omitir `order`.**
+- [x] **3. Provar a invariante que justifica omitir `order`.**
 
 Teste dedicado: dois intents internos nunca compartilham `(tick, entityId)`; e intent externa e
 interna do mesmo ator no mesmo tick são desempatadas por `sourceRank`, com a externa primeiro.
 
-- [ ] **4. Estender contrato e schema; obter GREEN.**
+- [x] **4. Estender contrato e schema; obter GREEN.**
 
 `PendingIntentState`, `PendingIntentStateSchema`, campo `pendingIntents` em `SimulationSnapshot` e em
 `SimulationSnapshotSchema` com ordenação estrita e unicidade de `(tick, entityId)`, e
 `SIMULATION_SCHEMA_VERSION = 2`.
 
-- [ ] **5. Expor e restaurar as intents no kernel.**
+- [x] **5. Expor e restaurar as intents no kernel.**
 
 `KernelStateAccess.pendingInternalIntents` passa de contagem a lista; `KernelRestoreState` recebe
 `pendingIntents`; `createSimulationKernel` reidrata `internalIntents`. Remover `isKernelQuiescent`.
 
-- [ ] **6. Simplificar `tools/replay`.**
+- [x] **6. Simplificar `tools/replay`.**
 
 `buildReplayArtifacts` perde a recusa por quiescência. O teste de retomada passa a cobrir uma
 fronteira comprovadamente **não** quiescente, além de `117`.
 
-- [ ] **7. Recongelar a fixture.**
+- [x] **7. Recongelar a fixture.**
 
 Atualizar `schemaVersion` para `2` em `scenario.json` e no header de `commands.jsonl`, e regerar:
 
@@ -173,12 +173,12 @@ node --no-warnings --experimental-transform-types tools/replay/cli.ts run --scen
 Conferir que `events.golden.jsonl` **não** mudou. Se mudou, parar e investigar: houve mudança
 semântica não intencional.
 
-- [ ] **8. Documentar.**
+- [x] **8. Documentar.**
 
 `KERNEL_CONTRACT.md`: remover a seção “Quiescência” e descrever `pendingIntents`.
 `REPLAY_CONTRACT.md`: nova tabela de hashes, `SIMULATION_SCHEMA_VERSION = 2` e nota de migração.
 
-- [ ] **9. Executar gates.**
+- [x] **9. Executar gates.**
 
 ```powershell
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb03-06-fix-01 --filter @huntbound/contracts test
@@ -192,22 +192,22 @@ corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb03-06-fix-01 verify
 
 Rode `verify` duas vezes seguidas e comprove exit 0 nas duas.
 
-- [ ] **10. Handoff, commit, integração e limpeza.**
+- [x] **10. Handoff, commit, integração e limpeza.**
 
 Registrar os quatro novos SHA-256 em `STATE.md` e em `REPLAY_CONTRACT.md`, e fechar o bloqueio
 aberto por PB-03-06. Integrar por fast-forward, reverificar e remover worktree e branch.
 
 ## Critérios de aceite
 
-- [ ] Retomar em qualquer fronteira `0..N` converge no mesmo snapshot final e na mesma cauda de
+- [x] Retomar em qualquer fronteira `0..N` converge no mesmo snapshot final e na mesma cauda de
       eventos, provado por teste que varre todas as fronteiras.
-- [ ] A invariante que dispensa `order` está provada por teste, não assumida.
-- [ ] `pendingIntents` é ordenado por `(tick, entityId)`, sem duplicata, e o schema reprova violação.
-- [ ] `SIMULATION_SCHEMA_VERSION = 2` e `SIMULATION_RULES_VERSION = 1`.
-- [ ] `events.golden.jsonl` permanece byte-idêntico ao de PB-03-06.
-- [ ] `isKernelQuiescent` não existe mais e `tools/replay` não recusa por quiescência.
-- [ ] Os quatro SHA-256 novos estão em `STATE.md` e em `REPLAY_CONTRACT.md`.
-- [ ] `verify` é idempotente em duas execuções seguidas.
+- [x] A invariante que dispensa `order` está provada por teste, não assumida.
+- [x] `pendingIntents` é ordenado por `(tick, entityId)`, sem duplicata, e o schema reprova violação.
+- [x] `SIMULATION_SCHEMA_VERSION = 2` e `SIMULATION_RULES_VERSION = 1`.
+- [x] `events.golden.jsonl` permanece byte-idêntico ao de PB-03-06.
+- [x] `isKernelQuiescent` não existe mais e `tools/replay` não recusa por quiescência.
+- [x] Os quatro SHA-256 novos estão em `STATE.md` e em `REPLAY_CONTRACT.md`.
+- [x] `verify` é idempotente em duas execuções seguidas.
 
 ## Condições de parada
 

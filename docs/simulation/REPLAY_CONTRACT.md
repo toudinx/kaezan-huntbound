@@ -26,18 +26,18 @@ de assets de PB-02: o formatador reescreveria o JSON canônico e quebraria os di
 Os campos e as ordens canônicas estão em `docs/simulation/KERNEL_CONTRACT.md`, seção "Snapshot".
 O snapshot não contém terreno, ocupação nem hash do cenário.
 
-**Retomada só é fiel em fronteira quiescente.** `S3 ai` decide no fim do tick `T` uma intent aplicada
-em `T + 1`, e essa fila interna não tem campo no snapshot. `isKernelQuiescent(kernel)` responde se a
-fronteira é restaurável; `tools/replay` recusa uma retomada não quiescente com `SIM_REPLAY_DIVERGED`.
-A fronteira congelada da fixture, o tick `117`, é quiescente, e isso é verificado a cada execução dos
-testes de `tools/replay`.
+**Retomada é fiel em qualquer fronteira.** As intents decididas por `S3 ai` no fim do tick `T` para o
+tick `T + 1` viajam no snapshot em `pendingIntents`, então `buildReplayArtifacts` não recusa mais
+retomada por quiescência e `isKernelQuiescent` não existe. A fronteira congelada da fixture continua
+sendo o tick `117`; os testes de `tools/replay` cobrem também o tick `13`, que comprovadamente deve
+uma intent decidida, e varrem todas as fronteiras de `0` a `24`.
 
 ## Command log
 
 JSONL. Primeira linha é o cabeçalho:
 
 ```text
-{"kind":"header","rulesVersion":1,"scenarioId":"...","scenarioRevision":1,"schemaVersion":1,"seed":"...","tickCount":200}
+{"kind":"header","rulesVersion":1,"scenarioId":"...","scenarioRevision":1,"schemaVersion":2,"seed":"...","tickCount":200}
 ```
 
 As demais linhas são comandos achatados:
@@ -95,14 +95,29 @@ seguidas devolvem `0`.
 ## Hashes congelados
 
 Fixture `pb-03-kernel-coverage`, revisão `1`, seed `0f1e2d3c4b5a6978`, `200` ticks, retomada em `117`,
-`SIMULATION_SCHEMA_VERSION = 1`, `SIMULATION_RULES_VERSION = 1`:
+`SIMULATION_SCHEMA_VERSION = 2`, `SIMULATION_RULES_VERSION = 1`:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `1f1fc443bda88d73d2d76f28e9486b515f1c310f14fa441feb40c5090206ba10` |
-| `commands.jsonl` | `08a6b65ae44f2b188803890c4b153c84a7d75b444d68b4a72b8e963995badac5` |
-| `snapshot.golden.json` | `bc8068569b0e13c379f50648027579e76bb269258ee317ceafab626d7fd4db38` |
+| `scenario.json` | `056d869682ba13241f7444ae2df39bc68100c867b1ee71d2dca973fec370b3f1` |
+| `commands.jsonl` | `c1e815c663dcddf0d2d651bdf0b136d4e2a50f85f66912f2114f78dab0ce0d9c` |
+| `snapshot.golden.json` | `9d0c3a249b6e72daf0bce868824eb17a80b0cf4153ab05f6f7b7d50dae5f7260` |
 | `events.golden.jsonl` | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
+
+### Migração de `SIMULATION_SCHEMA_VERSION` `1` para `2`
+
+A versão `2` acrescenta `pendingIntents` ao snapshot e nada mais. Os três documentos que declaram
+`schemaVersion` — `scenario.json`, o header de `commands.jsonl` e `snapshot.golden.json` — mudaram de
+hash apenas por carregar o número novo, e o snapshot também por ganhar o campo.
+
+`events.golden.jsonl` permanece **byte-idêntico** ao de PB-03-06, com o mesmo
+`31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4`. Esse é o critério que separa
+mudança de formato de mudança de semântica, e é por isso que `SIMULATION_RULES_VERSION` continua `1`.
+Se o journal tivesse mudado, a mudança não seria de formato e a migração teria de parar.
+
+Um snapshot escrito na versão `1` não é migrado automaticamente: falta-lhe `pendingIntents`, o schema
+é `.strict()`, e `validateSimulationSnapshot` o recusa com `SIM_VERSION_MISMATCH`. Reproduzir uma run
+antiga significa reexecutar o command log, que é a fonte de verdade.
 
 ## Cobertura da fixture
 

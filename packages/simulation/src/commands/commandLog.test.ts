@@ -68,7 +68,7 @@ describe('command log JSONL', () => {
     const encoded = encodeCommandLog(log);
 
     expect(encoded).toBe(
-      '{"kind":"header","rulesVersion":1,"scenarioId":"training-yard","scenarioRevision":2,"schemaVersion":1,"seed":"0123456789abcdef","tickCount":4}\n' +
+      '{"kind":"header","rulesVersion":1,"scenarioId":"training-yard","scenarioRevision":2,"schemaVersion":2,"seed":"0123456789abcdef","tickCount":4}\n' +
         '{"issuer":"scenario","kind":"command","payload":{"blueprintId":"hero","facing":"s","position":{"x":1,"y":2,"z":0}},"sequence":1,"tick":0,"type":"scenario/spawn-actor"}\n' +
         '{"issuer":"player","kind":"command","payload":{"direction":"e","entityId":7},"sequence":2,"tick":1,"type":"actor/face"}\n',
     );

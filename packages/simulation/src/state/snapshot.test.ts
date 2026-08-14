@@ -15,11 +15,7 @@ import {
   TEST_SEED,
 } from '../kernel/testScenarios.ts';
 import { encodeCanonicalJson } from './canonicalJson.ts';
-import {
-  isKernelQuiescent,
-  restoreSimulationKernel,
-  snapshotKernel,
-} from './snapshot.ts';
+import { restoreSimulationKernel, snapshotKernel } from './snapshot.ts';
 
 const SNAPSHOT_KEYS = [
   'actors',
@@ -27,6 +23,7 @@ const SNAPSHOT_KEYS = [
   'nextEntityId',
   'nextEventSequence',
   'pendingCommands',
+  'pendingIntents',
   'randomStreams',
   'rulesVersion',
   'scenarioId',
@@ -128,41 +125,68 @@ describe('snapshotKernel', () => {
   });
 });
 
+const SWEEP_TICKS = 24;
+
+/**
+ * Splitting a run at `boundary` must be indistinguishable from not splitting
+ * it: the events the split kernel drained before the snapshot, followed by the
+ * events the restored kernel drains after it, must be the whole run, and the
+ * two runs must end on the same state.
+ */
+function resumeReport(boundary: number): string[] {
+  const scenario = crowdedScenario();
+  const straight = createSimulationKernel(scenario, TEST_SEED);
+  const straightEvents = straight.advance(SWEEP_TICKS);
+
+  const split = createSimulationKernel(scenario, TEST_SEED);
+  const head = split.advance(boundary);
+  const resumed = restoredOrThrow(scenario, snapshotKernel(split));
+  const tail = resumed.advance(SWEEP_TICKS - boundary);
+
+  const problems: string[] = [];
+  if (eventText([...head, ...tail]) !== eventText(straightEvents)) {
+    problems.push(`tick ${boundary}: event journal differs`);
+  }
+  if (
+    encodeCanonicalJson(snapshotKernel(resumed)) !==
+    encodeCanonicalJson(snapshotKernel(straight))
+  ) {
+    problems.push(`tick ${boundary}: final snapshot differs`);
+  }
+  return problems;
+}
+
 describe('restoreSimulationKernel', () => {
-  it('resumes a quiescent boundary identically to an uninterrupted run', () => {
-    const scenario = crowdedScenario();
-    const straight = createSimulationKernel(scenario, TEST_SEED);
-    straight.advance(11);
-    const straightTail = straight.advance(9);
+  it('resumes every boundary identically to an uninterrupted run', () => {
+    const problems: string[] = [];
+    for (let boundary = 0; boundary <= SWEEP_TICKS; boundary += 1) {
+      problems.push(...resumeReport(boundary));
+    }
 
-    const split = createSimulationKernel(scenario, TEST_SEED);
-    split.advance(11);
-    expect(isKernelQuiescent(split)).toBe(true);
-    const resumed = restoredOrThrow(scenario, snapshotKernel(split));
-    const resumedTail = resumed.advance(9);
-
-    expect(eventText(resumedTail)).toBe(eventText(straightTail));
-    expect(encodeCanonicalJson(snapshotKernel(resumed))).toBe(
-      encodeCanonicalJson(snapshotKernel(straight)),
-    );
+    expect(problems).toEqual([]);
   });
 
-  it('cannot resume a boundary that still owes a decided AI intent', () => {
-    // The frozen snapshot carries pendingCommands, which are external only.
-    // An intent decided by S3 at tick T for tick T + 1 has no field to live in,
-    // so tick 1 of this scenario is not restorable. The limitation is proved
-    // here on purpose: a silent divergence would be far worse than a known one.
+  it('resumes a boundary that still owes a decided AI intent', () => {
+    // S3 decides at the end of tick T an intent applied at T + 1, so tick 1 of
+    // this scenario owes a decision. The snapshot carries it in pendingIntents;
+    // without that field the resumed run silently loses the decision.
+    expect(resumeReport(1)).toEqual([]);
+  });
+
+  it('replays the boot spawn events when a tick-zero snapshot is resumed', () => {
+    // The boot events belong to tick 0, so they are emitted by tick 0 and not
+    // by the constructor. Emitting them earlier would strand them in an
+    // undrained journal that no snapshot field can carry.
     const scenario = crowdedScenario();
     const straight = createSimulationKernel(scenario, TEST_SEED);
-    straight.advance(1);
-    const straightTail = straight.advance(8);
+    const firstTick = straight.advance(1);
 
-    const split = createSimulationKernel(scenario, TEST_SEED);
-    split.advance(1);
-    expect(isKernelQuiescent(split)).toBe(false);
-    const resumed = restoredOrThrow(scenario, snapshotKernel(split));
+    const resumed = restoredOrThrow(
+      scenario,
+      snapshotKernel(createSimulationKernel(scenario, TEST_SEED)),
+    );
 
-    expect(eventText(resumed.advance(8))).not.toBe(eventText(straightTail));
+    expect(eventText(resumed.advance(1))).toBe(eventText(firstTick));
   });
 
   it('rebuilds the occupancy index so a blocked step is still blocked', () => {
