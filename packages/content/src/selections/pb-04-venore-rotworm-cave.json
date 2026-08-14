@@ -1,0 +1,24 @@
+{
+  "key": "hunt:tibia:venore-rotworm-cave",
+  "displayName": "Venore Rotworm Cave",
+  "sourceUrl": "https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave",
+  "recommendedLevel": 8,
+  "soloVocation": "vocation:tibia:knight",
+  "region": {
+    "minX": 33002,
+    "minY": 31995,
+    "maxX": 33030,
+    "maxY": 32027,
+    "floors": [8, 9]
+  },
+  "creatures": ["creature:tibia:rotworm"],
+  "excludedCreatures": [],
+  "expectedSpawnGroups": 8,
+  "expectedSpawnSlots": 12,
+  "expectedDroppedTransitions": 0,
+  "budget": {
+    "maxFloors": 3,
+    "maxWidth": 96,
+    "maxHeight": 96
+  }
+}
