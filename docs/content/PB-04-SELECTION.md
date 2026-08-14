@@ -56,7 +56,7 @@ Com o snapshot local presente, a execução foi:
 
 ```powershell
 node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check `
-  --selection packages/content/src/selections/pb-04-venore-rotworm-cave.json `
+  --selection packages/content/src/selections/hunts/venore-rotworm-cave.json `
   --source-root C:\Kaezan\kaezan-huntbound\references\canary
 ```
 
@@ -80,8 +80,24 @@ e `data-otservbr-global/world/otservbr-monster.xml` são o mesmo par, porque `co
 demonstração do Canary, cujos tiles ficam em `x ∈ [256, 20479]` e `y ∈ [0, 20223]` e cujo companheiro
 `canary-monster.xml` é `<monsters />` vazio.
 
-Medido em 2026-08-14 pelo leitor de `tools/map-extractor`: nenhum dos 33 `.otbm` do snapshot cobre
-`x = 33002..33030`, `y = 31995..32027` nos andares `8` e `9`. A seleção continua congelada e válida
-contra o XML de spawn; o que falta é o mapa. `expectedDroppedTransitions` permanece `0` porque a
-extração real ainda não aconteceu. O bloqueio e as saídas possíveis estão em
-`docs/playbooks/PB-04/STATE.md`, bloqueio B1.
+Medido em 2026-08-14 pelo leitor de `tools/map-extractor`: nenhum dos 32 `.otbm` do snapshot cobre
+`x = 33002..33030`, `y = 31995..32027` nos andares `8` e `9`. A varredura completa dos 32 mapas
+(1 940 292 tiles) contra as 1703 áreas de spawn de criaturas do catálogo PB-01 encontrou apenas dois
+remendos de 236 e 255 tiles num único andar, com três Snakes cada — nenhuma hunt viável. A seleção
+continua congelada e válida contra o XML de spawn; o que falta é o mapa.
+`expectedDroppedTransitions` permanece `0` porque a extração real ainda não aconteceu. O bloqueio e
+as saídas possíveis estão em `docs/playbooks/PB-04/STATE.md`, bloqueio B1.
+
+A seleção passou a declarar explicitamente as fontes de que depende, e por isso o pipeline falha
+nomeando o arquivo ausente em vez de ler o mapa errado:
+
+```json
+"source": {
+  "map": "data-otservbr-global/world/otservbr.otbm",
+  "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+}
+```
+
+O arquivo mudou de `packages/content/src/selections/pb-04-venore-rotworm-cave.json` para
+`packages/content/src/selections/hunts/venore-rotworm-cave.json`: o diretório `hunts/` é varrido
+inteiro por `hunt:extract` e `hunt:sources:check`, então acrescentar uma hunt não exige script novo.

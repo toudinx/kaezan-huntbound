@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import type { SourceSnapshotLock } from '../../packages/content/src/application/sourceLockTypes.ts';
@@ -20,9 +20,11 @@ interface MapExtractorCliIo {
 
 const usageText = `Usage:
   node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root <path> [--source-lock <path>] --tile-flags <path> --output <dir>
-  node tools/map-extractor/cli.ts build [--check] --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE [--source-lock <path>] --tile-flags <path> --output <dir>
-  node tools/map-extractor/cli.ts sources --source-root <path> [--source-lock <path>]
-  node tools/map-extractor/cli.ts sidecar-check --output <dir>`;
+  node tools/map-extractor/cli.ts build-all [--check] --selections <dir> --source-root <path> [--source-lock <path>] --tile-flags <path> --output-root <dir>
+  node tools/map-extractor/cli.ts sources --selections <dir> --source-root <path> [--source-lock <path>]
+  node tools/map-extractor/cli.ts sidecar-check --output <dir>
+
+--source-root may be replaced by --source-root-env HUNTBOUND_CANARY_SOURCE.`;
 
 const processIo: MapExtractorCliIo = {
   stdout(value) {
@@ -51,7 +53,17 @@ type Command =
       readonly output: string;
     }
   | {
+      readonly kind: 'build-all';
+      readonly check: boolean;
+      readonly selections: string;
+      readonly sourceRoot: string;
+      readonly sourceLock: string;
+      readonly tileFlags: string;
+      readonly outputRoot: string;
+    }
+  | {
       readonly kind: 'sources';
+      readonly selections: string;
       readonly sourceRoot: string;
       readonly sourceLock: string;
     }
@@ -139,16 +151,60 @@ function parseCommand(args: readonly string[]): Command | undefined {
     };
   }
 
+  if (head === 'build-all') {
+    const check = rest[0] === '--check';
+    const values = parseOptions(
+      check ? rest.slice(1) : rest,
+      new Set([
+        '--selections',
+        '--source-root',
+        '--source-root-env',
+        '--source-lock',
+        '--tile-flags',
+        '--output-root',
+      ]),
+    );
+    if (values === undefined) return undefined;
+    const selections = requiredValue(values, '--selections');
+    const sourceRoot = resolveSourceRoot(values);
+    const tileFlags = requiredValue(values, '--tile-flags');
+    const outputRoot = requiredValue(values, '--output-root');
+    if (
+      selections === undefined ||
+      sourceRoot === undefined ||
+      tileFlags === undefined ||
+      outputRoot === undefined
+    ) {
+      return undefined;
+    }
+    return {
+      kind: 'build-all',
+      check,
+      selections,
+      sourceRoot,
+      sourceLock: requiredValue(values, '--source-lock') ?? defaultSourceLock(),
+      tileFlags,
+      outputRoot,
+    };
+  }
+
   if (head === 'sources') {
     const values = parseOptions(
       rest,
-      new Set(['--source-root', '--source-root-env', '--source-lock']),
+      new Set([
+        '--selections',
+        '--source-root',
+        '--source-root-env',
+        '--source-lock',
+      ]),
     );
     if (values === undefined) return undefined;
     const sourceRoot = resolveSourceRoot(values);
-    if (sourceRoot === undefined) return undefined;
+    const selections = requiredValue(values, '--selections');
+    if (sourceRoot === undefined || selections === undefined) return undefined;
     return {
       kind: 'sources',
+      selections,
       sourceRoot,
       sourceLock: requiredValue(values, '--source-lock') ?? defaultSourceLock(),
     };
@@ -206,6 +262,29 @@ function provenanceOf(source: ResolvedHuntSource) {
   return { relativePath: source.relativePath, sha256: source.sha256 };
 }
 
+function readSelection(path: string): HuntSelection {
+  return JSON.parse(readFileSync(resolve(path), 'utf8')) as HuntSelection;
+}
+
+/** `hunt:tibia:venore-rotworm-cave` writes into `venore-rotworm-cave/`. */
+function huntSlug(selection: HuntSelection): string {
+  const slug = selection.key.split(':').at(-1) ?? selection.key;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error(
+      `Hunt key does not end in a kebab-case slug: ${selection.key}`,
+    );
+  }
+  return slug;
+}
+
+/** Every hunt selection in a directory, in a stable order. */
+function huntSelectionPaths(directory: string): readonly string[] {
+  return readdirSync(resolve(directory))
+    .filter((entry) => entry.endsWith('.json'))
+    .sort((left, right) => left.localeCompare(right))
+    .map((entry) => join(resolve(directory), entry));
+}
+
 function jsonPath(output: string, name: HuntFileName) {
   return join(resolve(output), `${name}.json`);
 }
@@ -218,19 +297,19 @@ function runBuild(
   command: Extract<Command, { kind: 'build' }>,
   io: MapExtractorCliIo,
 ): number {
-  const selection = JSON.parse(
-    readFileSync(resolve(command.selection), 'utf8'),
-  ) as HuntSelection;
+  const selection = readSelection(command.selection);
   const tileFlagsText = readFileSync(resolve(command.tileFlags), 'utf8');
   const tileFlags = JSON.parse(tileFlagsText) as TileFlagsTable;
 
   const sources = resolveHuntSources(
     readSourceLock(command.sourceLock),
     command.sourceRoot,
+    selection.source,
   );
   if (!sources.ok) {
     io.stderr({
       command: 'build',
+      huntId: selection.key,
       reason: 'source-lock',
       diagnostics: sources.diagnostics,
     });
@@ -348,28 +427,61 @@ function runBuild(
   return 0;
 }
 
+/** Extracts every hunt in the selections directory into its own folder. */
+function runBuildAll(
+  command: Extract<Command, { kind: 'build-all' }>,
+  io: MapExtractorCliIo,
+): number {
+  for (const selectionPath of huntSelectionPaths(command.selections)) {
+    const selection = readSelection(selectionPath);
+    const status = runBuild(
+      {
+        kind: 'build',
+        check: command.check,
+        selection: selectionPath,
+        sourceRoot: command.sourceRoot,
+        sourceLock: command.sourceLock,
+        tileFlags: command.tileFlags,
+        output: join(resolve(command.outputRoot), huntSlug(selection)),
+      },
+      io,
+    );
+    if (status !== 0) return status;
+  }
+  return 0;
+}
+
 function runSources(
   command: Extract<Command, { kind: 'sources' }>,
   io: MapExtractorCliIo,
 ): number {
-  const sources = resolveHuntSources(
-    readSourceLock(command.sourceLock),
-    command.sourceRoot,
-  );
-  if (!sources.ok) {
-    io.stderr({
-      command: 'sources',
-      reason: 'source-lock',
-      diagnostics: sources.diagnostics,
+  const lock = readSourceLock(command.sourceLock);
+  const hunts: unknown[] = [];
+
+  for (const selectionPath of huntSelectionPaths(command.selections)) {
+    const selection = readSelection(selectionPath);
+    const sources = resolveHuntSources(
+      lock,
+      command.sourceRoot,
+      selection.source,
+    );
+    if (!sources.ok) {
+      io.stderr({
+        command: 'sources',
+        huntId: selection.key,
+        reason: 'source-lock',
+        diagnostics: sources.diagnostics,
+      });
+      return 1;
+    }
+    hunts.push({
+      huntId: selection.key,
+      map: provenanceOf(sources.map),
+      spawn: provenanceOf(sources.spawn),
     });
-    return 1;
   }
-  io.stdout({
-    command: 'sources',
-    ok: true,
-    map: provenanceOf(sources.map),
-    spawn: provenanceOf(sources.spawn),
-  });
+
+  io.stdout({ command: 'sources', ok: true, hunts });
   return 0;
 }
 
@@ -406,6 +518,7 @@ export function runMapExtractorCli(
 
   try {
     if (command.kind === 'build') return runBuild(command, io);
+    if (command.kind === 'build-all') return runBuildAll(command, io);
     if (command.kind === 'sources') return runSources(command, io);
     return runSidecarCheck(command.output, io);
   } catch (error) {

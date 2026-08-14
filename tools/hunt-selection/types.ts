@@ -12,10 +12,24 @@ export interface HuntSelectionExcludedCreature {
   readonly count: number;
 }
 
+/**
+ * Snapshot files this hunt is extracted from, as paths relative to the snapshot
+ * root and frozen by the content source lock.
+ *
+ * Declaring them per hunt is what lets several hunts come from several maps: the
+ * pipeline never assumes a single global map, and adding a hunt is a selection
+ * file plus its lock entries, never a code change.
+ */
+export interface HuntSelectionSource {
+  readonly map: string;
+  readonly spawns: string;
+}
+
 export interface HuntSelection {
   readonly key: string;
   readonly displayName: string;
   readonly sourceUrl: string;
+  readonly source: HuntSelectionSource;
   readonly recommendedLevel: number;
   readonly soloVocation: string;
   readonly region: HuntSelectionRegion;

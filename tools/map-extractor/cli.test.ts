@@ -26,6 +26,10 @@ const selection = {
   key: 'hunt:tibia:test-cave',
   displayName: 'Test Cave',
   sourceUrl: 'https://example.invalid/hunt',
+  source: {
+    map: 'data-canary/world/canary.otbm',
+    spawns: 'data-otservbr-global/world/otservbr-monster.xml',
+  },
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {
@@ -293,24 +297,25 @@ describe('runMapExtractorCli', () => {
     expect(summary.sources.tileFlags.sha256).toBe(sha256Of(tileFlagsPath));
   });
 
-  it('reads the map the lock names, not a hard-coded path', () => {
-    const moved = join(
-      sourceRoot,
-      'data-otservbr-global',
-      'world',
-      'otservbr.otbm',
-    );
+  it('reads the map the selection names, not a hard-coded path', () => {
+    const relativePath = 'data-otservbr-global/world/otservbr.otbm';
+    const moved = join(sourceRoot, ...relativePath.split('/'));
     writeFileSync(moved, readFileSync(mapPath));
     rmSync(mapPath);
     writeSourceLock({
-      mapRelativePath: 'data-otservbr-global/world/otservbr.otbm',
+      mapRelativePath: relativePath,
       mapSha256: sha256Of(moved),
     });
+    writeFileSync(
+      selectionPath,
+      JSON.stringify({
+        ...selection,
+        source: { ...selection.source, map: relativePath },
+      }),
+    );
 
     expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
-    expect(captured.out.join('')).toContain(
-      'data-otservbr-global/world/otservbr.otbm',
-    );
+    expect(captured.out.join('')).toContain(relativePath);
   });
 
   it('refuses to extract when the map digest disagrees with the lock', () => {
@@ -328,11 +333,102 @@ describe('runMapExtractorCli', () => {
     expect(captured.err.join(' ')).toContain('HUNT_SOURCE_MISSING');
   });
 
-  it('verifies the locked hunt sources on their own', () => {
+  it('refuses to extract a map the lock does not freeze', () => {
+    writeFileSync(
+      selectionPath,
+      JSON.stringify({
+        ...selection,
+        source: { ...selection.source, map: 'data-canary/world/other.otbm' },
+      }),
+    );
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_NOT_LOCKED');
+    expect(captured.err.join(' ')).toContain('other.otbm');
+  });
+
+  it('extracts every hunt in a selections directory into its own folder', () => {
+    const selections = join(root, 'hunts');
+    mkdirSync(selections, { recursive: true });
+    writeFileSync(join(selections, 'first.json'), JSON.stringify(selection));
+    writeFileSync(
+      join(selections, 'second.json'),
+      JSON.stringify({ ...selection, key: 'hunt:tibia:second-cave' }),
+    );
+    const outputRoot = join(root, 'hunts-out');
+
+    expect(
+      runMapExtractorCli(
+        [
+          'build-all',
+          '--selections',
+          selections,
+          '--source-root',
+          sourceRoot,
+          '--source-lock',
+          sourceLockPath,
+          '--tile-flags',
+          tileFlagsPath,
+          '--output-root',
+          outputRoot,
+        ],
+        io(captured),
+      ),
+    ).toBe(0);
+
+    for (const slug of ['test-cave', 'second-cave']) {
+      expect(
+        readFileSync(join(outputRoot, slug, 'hunt.json'), 'utf8'),
+      ).toContain(slug);
+    }
+  });
+
+  it('fails build-all when one hunt in the directory fails', () => {
+    const selections = join(root, 'hunts');
+    mkdirSync(selections, { recursive: true });
+    writeFileSync(join(selections, 'first.json'), JSON.stringify(selection));
+    writeFileSync(
+      join(selections, 'broken.json'),
+      JSON.stringify({
+        ...selection,
+        key: 'hunt:tibia:broken-cave',
+        source: { ...selection.source, map: 'data-canary/world/absent.otbm' },
+      }),
+    );
+
+    expect(
+      runMapExtractorCli(
+        [
+          'build-all',
+          '--selections',
+          selections,
+          '--source-root',
+          sourceRoot,
+          '--source-lock',
+          sourceLockPath,
+          '--tile-flags',
+          tileFlagsPath,
+          '--output-root',
+          join(root, 'hunts-out'),
+        ],
+        io(captured),
+      ),
+    ).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_NOT_LOCKED');
+    expect(captured.err.join(' ')).toContain('broken-cave');
+  });
+
+  it('verifies the provenance of every hunt in a selections directory', () => {
+    const selections = join(root, 'hunts');
+    mkdirSync(selections, { recursive: true });
+    writeFileSync(join(selections, 'first.json'), JSON.stringify(selection));
+
     expect(
       runMapExtractorCli(
         [
           'sources',
+          '--selections',
+          selections,
           '--source-root',
           sourceRoot,
           '--source-lock',
@@ -342,22 +438,7 @@ describe('runMapExtractorCli', () => {
       ),
     ).toBe(0);
     expect(captured.out.join('')).toContain('data-canary/world/canary.otbm');
-
-    writeSourceLock({ mapSha256: 'c'.repeat(64) });
-    captured = { out: [], err: [], usage: 0 };
-    expect(
-      runMapExtractorCli(
-        [
-          'sources',
-          '--source-root',
-          sourceRoot,
-          '--source-lock',
-          sourceLockPath,
-        ],
-        io(captured),
-      ),
-    ).toBe(1);
-    expect(captured.err.join(' ')).toContain('HUNT_SOURCE_HASH_MISMATCH');
+    expect(captured.out.join('')).toContain('hunt:tibia:test-cave');
   });
 
   it('prints usage and exits 2 on an unknown command', () => {

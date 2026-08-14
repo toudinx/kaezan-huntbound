@@ -31,6 +31,10 @@ const selection: HuntSelection = {
   key: 'hunt:tibia:test',
   displayName: 'Test',
   sourceUrl: 'https://example.invalid/test',
+  source: {
+    map: 'data-otservbr-global/world/otservbr.otbm',
+    spawns: 'data-otservbr-global/world/otservbr-monster.xml',
+  },
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {

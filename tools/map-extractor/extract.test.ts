@@ -25,6 +25,10 @@ const selection: HuntSelection = {
   key: 'hunt:tibia:venore-rotworm-cave',
   displayName: 'Venore Rotworm Cave',
   sourceUrl: 'https://example.invalid/hunt',
+  source: {
+    map: 'data-otservbr-global/world/otservbr.otbm',
+    spawns: 'data-otservbr-global/world/otservbr-monster.xml',
+  },
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {

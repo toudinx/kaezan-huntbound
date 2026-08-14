@@ -339,26 +339,61 @@ Todo `serverId` que aparece numa região extraída rastreia até arquivos **cong
 
 | Camada | Origem | `purpose` no lock |
 |---|---|---|
-| Geometria: quais ids ocupam quais células | o OTBM | `map` |
-| Criaturas: quais grupos e slots existem | `otservbr-monster.xml` | `spawn` |
+| Geometria: quais ids ocupam quais células | o OTBM da hunt | `map` |
+| Criaturas: quais grupos e slots existem | a declaração de spawn da hunt | `spawn` |
 | Semântica: `ground`, `blocking`, `top`, `floorChange` de cada id | `tile-flags.json`, derivado de `appearances.dat` e `items.xml` | `appearances` e `items` |
 
-O extrator **não** conhece nenhum caminho de mapa: ele localiza o OTBM e a declaração de spawn pelo
-`purpose` no source lock e recusa a extração quando o arquivo falta, quando o `purpose` aparece
-duas vezes, quando o caminho escapa da raiz do snapshot ou quando o SHA-256 do arquivo diverge do
-congelado. Apontar a extração para outro mapa é edição do source lock, nunca edição de código.
+**Cada hunt declara suas próprias fontes.** A seleção carrega um bloco `source` com os caminhos
+relativos à raiz do snapshot:
 
-```bash
-node tools/map-extractor/cli.ts sources --source-root <canary>
+```json
+"source": {
+  "map": "data-otservbr-global/world/otservbr.otbm",
+  "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+}
 ```
 
-`corepack pnpm hunt:sources:check` roda essa verificação a partir de `HUNTBOUND_CANARY_SOURCE`. O
-resumo de `build` publica os três digests consumidos (`map`, `spawn` e `tileFlags`), então cada
+Nada é global: várias hunts podem vir de vários mapas ao mesmo tempo, e o lock congela quantos
+mapas forem necessários. O extrator não conhece nenhum caminho de mapa — ele lê o que a seleção
+nomeia e exige que o lock congele exatamente aquele caminho, recusando a extração com:
+
+| Código | Situação |
+|---|---|
+| `HUNT_SOURCE_NOT_LOCKED` | a seleção nomeia um arquivo que o lock não congela |
+| `HUNT_SOURCE_MISSING` | o lock congela o arquivo, mas ele não está no snapshot |
+| `HUNT_SOURCE_HASH_MISMATCH` | o arquivo existe com conteúdo diferente do congelado |
+| `HUNT_SOURCE_PATH_INVALID` | o caminho é absoluto ou escapa da raiz do snapshot |
+| `HUNT_SOURCE_AMBIGUOUS` | o lock congela o mesmo caminho duas vezes |
+
+O resumo de `build` publica os três digests consumidos (`map`, `spawn` e `tileFlags`), então cada
 conjunto de quatro sidecars nasce com a cadeia de proveniência registrada.
 
 Os `purpose` `appearances`, `map` e `spawn` são lidos apenas pelo extrator e pela tabela de flags. A
 fatia curada do PB-01 importa somente `vocations`, `items`, `spell` e `creature`, e é exatamente
 esse subconjunto que `importCanarySlice` compara com `sourceFiles` da seleção congelada.
+
+### Acrescentar uma hunt nova
+
+Três passos, **nenhuma linha de código**:
+
+1. escrever `packages/content/src/selections/hunts/<slug>.json` com `key`, `source`, `region`,
+   `creatures` e `budget`, e validá-la com
+   `node tools/hunt-selection/cli.ts check --selection <arquivo> --source-root <canary>`;
+2. acrescentar ao source lock o mapa (`purpose: "map"`) e a declaração de spawn
+   (`purpose: "spawn"`) que a seleção nomeia, com os SHA-256 medidos — se já estiverem lá, nada a
+   fazer;
+3. rodar `corepack pnpm hunt:extract`.
+
+O diretório de saída vem do `key`: `hunt:tibia:venore-rotworm-cave` escreve em
+`packages/content/src/generated/hunts/venore-rotworm-cave/`. Os comandos operam sobre **todas** as
+hunts do diretório de seleções:
+
+```bash
+node tools/map-extractor/cli.ts sources --selections packages/content/src/selections/hunts --source-root <canary>
+node tools/map-extractor/cli.ts build-all --selections packages/content/src/selections/hunts --source-root <canary> --tile-flags packages/content/src/generated/tile-flags.json --output-root packages/content/src/generated/hunts
+```
+
+`build-all --check` verifica todas sem escrever e para na primeira divergência, nomeando a hunt.
 
 ### Formato e regeneração
 
@@ -397,11 +432,18 @@ Isto é, `config.lua.dist` declarar `mapName = "otservbr"` significa que o servi
 `otservbr.otbm`; não significa que `canary.otbm` seja esse mapa. O par
 `canary.otbm` ↔ `otservbr-monster.xml` registrado em `docs/playbooks/PB-04/STATE.md` está incorreto.
 
-**Resolver o bloqueio é uma edição de duas linhas no source lock**, não de código: colocar
-`otservbr.otbm` sob a raiz do snapshot e trocar `relativePath` e `sha256` da entrada `purpose: "map"`
-em `packages/content/src/sources/canary-157e6f9e.json`. Depois disso,
-`corepack pnpm hunt:sources:check` confirma a proveniência e `corepack pnpm hunt:extract` produz os
-quatro arquivos.
+A seleção da hunt **já declara o mapa que precisa** — `data-otservbr-global/world/otservbr.otbm` —
+então o pipeline falha nomeando exatamente o arquivo ausente em vez de ler o mapa errado em
+silêncio:
+
+```text
+sources.map  HUNT_SOURCE_NOT_LOCKED
+The content source lock does not freeze the selected map: data-otservbr-global/world/otservbr.otbm
+```
+
+**Resolver o bloqueio é colocar o arquivo no snapshot e acrescentar uma entrada ao source lock**,
+sem tocar em código. Depois disso, `corepack pnpm hunt:sources:check` confirma a proveniência e
+`corepack pnpm hunt:extract` produz os quatro arquivos.
 
 O leitor foi validado contra o arquivo real de 19,7 MB em uma janela povoada do próprio
 `canary.otbm` (`x = 4980..5029`, `y = 4980..5029`, andares `6` e `7`): `4159` tiles em `1,3 s`,

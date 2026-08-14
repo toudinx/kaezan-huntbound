@@ -62,6 +62,10 @@ async function createFixture() {
     key: 'hunt:tibia:venore-rotworm-cave',
     displayName: 'Venore Rotworm Cave',
     sourceUrl: 'https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave',
+    source: {
+      map: 'data-otservbr-global/world/otservbr.otbm',
+      spawns: 'data-otservbr-global/world/otservbr-monster.xml',
+    },
     recommendedLevel: 8,
     soloVocation: 'vocation:tibia:knight',
     region: { minX: 100, minY: 200, maxX: 100, maxY: 200, floors: [8] },
@@ -159,7 +163,7 @@ describe('hunt selection CLI', () => {
     ) as { scripts: Record<string, string> };
 
     expect(packageJson.scripts['hunt:selection:check']).toBe(
-      'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/pb-04-venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE',
+      'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/hunts/venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE',
     );
     expect(packageJson.scripts.check).not.toContain('hunt:selection:check');
     expect(packageJson.scripts.verify).not.toContain('hunt:selection:check');

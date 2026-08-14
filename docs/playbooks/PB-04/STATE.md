@@ -235,6 +235,37 @@ os IDs da palette** e reduzir B1 a uma troca de duas linhas.
 - **Não muda:** B1 continua aberto e a região continua não extraída. Nenhum arquivo em
   `packages/content/src/generated/hunts/**` foi produzido.
 
+## PB-04-04 — pipeline multi-hunt (complemento 2)
+
+Terceira entrega da task. Decisão de supervisor delegada ao executor, otimizando escalabilidade e
+custo de acrescentar mapas novos.
+
+- **Cada hunt declara suas fontes.** `HuntSelection` ganhou `source: { map, spawns }`, caminhos
+  relativos à raiz do snapshot, validados por `validateHuntSelection` com `HUNT_SOURCE_INVALID`.
+  O `purpose` do lock deixou de ser um seletor global: várias hunts podem vir de vários mapas, e o
+  lock congela quantos forem necessários.
+- **Layout escalável.** A seleção foi movida para
+  `packages/content/src/selections/hunts/venore-rotworm-cave.json`. O diretório é varrido inteiro por
+  `build-all` e por `sources`, e o diretório de saída vem do `key` da hunt, então acrescentar uma
+  hunt **não exige script novo nem linha de código**: seleção + entradas no lock + `hunt:extract`.
+- **Comandos:** `hunt:extract` e `hunt:extract:check` passaram a usar
+  `build-all --selections … --output-root …`; `hunt:sources:check` verifica a proveniência de todas
+  as hunts.
+- **A falha agora é precisa.** Contra o snapshot real, `hunt:sources:check` sai `1` com
+  `sources.map HUNT_SOURCE_NOT_LOCKED: The content source lock does not freeze the selected map:
+  data-otservbr-global/world/otservbr.otbm`, nomeando a hunt. O pipeline não lê mais um mapa que
+  ninguém pediu — que foi a causa raiz de B1 ter passado despercebido por PB-04-01 e PB-04-03.
+- **Varredura exaustiva registrada:** os 32 `.otbm` do snapshot foram lidos inteiros
+  (`1 940 292` tiles) e cruzados com as `1703` áreas de spawn de criaturas do catálogo PB-01.
+  Cobertura total: `world_changes/fury_gates/thais.otbm` (255 tiles, 1 grupo, 3 Snakes, andar 7) e
+  `world_changes/fury_gates/venore.otbm` (236 tiles, 3 grupos, 3 Snakes, andar 7). **Não existe hunt
+  viável neste snapshot**, o que fecha a hipótese de reselecionar a caixa dentro do que já está
+  presente.
+- **RED/GREEN:** `resolveHuntSources` por caminho, `build-all`, `sources --selections` e a validação
+  de `source` entraram RED e saíram GREEN. Final `104/104` no extrator e `16/16` em
+  `tools/hunt-selection`.
+- **Não muda:** B1 continua aberto e a região continua não extraída.
+
 ### B1 — o mapa da hunt não existe no snapshot (bloqueante)
 
 Medido em 2026-08-14 com o próprio leitor, sobre os 33 `.otbm` do snapshot:
@@ -255,12 +286,13 @@ carregaria, não o que o dump contém.
 
 Isso é a condição de parada declarada da task, e a decisão é de supervisor. As saídas possíveis:
 
-1. acrescentar `otservbr.otbm` sob a raiz do snapshot e trocar `relativePath` e `sha256` da entrada
-   `purpose: "map"` do source lock; em seguida `corepack pnpm hunt:sources:check` e
-   `corepack pnpm hunt:extract`. **Nenhuma linha de código muda** — preserva PB-04-01 inteiro;
-2. reabrir PB-04-01 e reselecionar a hunt dentro de `canary.otbm`, o que reescreve
-   `packages/content/src/selections/pb-04-venore-rotworm-cave.json`, `docs/content/PB-04-SELECTION.md`
-   e a hunt escolhida na spec — e exige uma tabela de spawn, que `canary-monster.xml` não tem.
+1. colocar `otservbr.otbm` em `data-otservbr-global/world/` sob a raiz do snapshot e acrescentar a
+   entrada correspondente (`purpose: "map"`, com o SHA-256 medido) ao source lock; em seguida
+   `corepack pnpm hunt:sources:check` e `corepack pnpm hunt:extract`. **Nenhuma linha de código
+   muda** — a seleção já nomeia esse arquivo — e preserva PB-04-01 inteiro. É a saída recomendada;
+2. ~~reselecionar a hunt dentro de um mapa presente~~ — **descartado com medição**: a varredura dos
+   32 mapas contra as 1703 áreas de spawn do catálogo achou só dois remendos de um andar com três
+   Snakes cada. Não há hunt viável a reselecionar.
 
 ### Evidência de que o extrator está correto
 

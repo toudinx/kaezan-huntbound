@@ -28,6 +28,7 @@ interface ParsedSpawn {
 }
 
 interface SelectionData {
+  readonly source: { readonly map: unknown; readonly spawns: unknown };
   readonly region: {
     readonly minX: number;
     readonly minY: number;
@@ -95,7 +96,10 @@ function selectionData(input: unknown): SelectionData {
       })
     : [];
 
+  const rawSource = isRecord(root.source) ? root.source : {};
+
   return {
+    source: { map: rawSource.map, spawns: rawSource.spawns },
     region: {
       minX: asIntegerOrZero(rawRegion.minX),
       minY: asIntegerOrZero(rawRegion.minY),
@@ -265,6 +269,52 @@ function regionContains(
   );
 }
 
+const windowsDrivePattern = /^[a-zA-Z]:/;
+
+/**
+ * A hunt names the snapshot files it comes from, so several hunts can come from
+ * several maps. Both paths are relative to the snapshot root and are frozen by
+ * the content source lock, which the extractor verifies.
+ */
+function sourceDiagnostics(
+  source: SelectionData['source'],
+): readonly HuntSelectionDiagnostic[] {
+  const out: HuntSelectionDiagnostic[] = [];
+  const check = (value: unknown, field: 'map' | 'spawns', label: string) => {
+    const path = `source.${field}`;
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      out.push(diagnostic(path, 'HUNT_SOURCE_INVALID', label));
+      return;
+    }
+    if (
+      value.includes('\\') ||
+      value.startsWith('/') ||
+      value.startsWith('../') ||
+      windowsDrivePattern.test(value)
+    ) {
+      out.push(
+        diagnostic(
+          path,
+          'HUNT_SOURCE_INVALID',
+          `Source path must be relative to the snapshot root: ${value}`,
+        ),
+      );
+    }
+  };
+
+  check(
+    source.map,
+    'map',
+    'Selection must name the snapshot map it is extracted from',
+  );
+  check(
+    source.spawns,
+    'spawns',
+    'Selection must name the snapshot spawn declaration',
+  );
+  return out;
+}
+
 export function validateHuntSelection(
   selection: unknown,
   monsterXml: string,
@@ -279,7 +329,9 @@ export function validateHuntSelection(
     data.region.maxY >= data.region.minY
       ? data.region.maxY - data.region.minY + 1
       : 0;
-  const diagnostics: HuntSelectionDiagnostic[] = [];
+  const diagnostics: HuntSelectionDiagnostic[] = [
+    ...sourceDiagnostics(data.source),
+  ];
 
   if (width > data.budget.maxWidth) {
     diagnostics.push(

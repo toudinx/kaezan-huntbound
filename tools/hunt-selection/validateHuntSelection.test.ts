@@ -24,12 +24,17 @@ function selection(
     }[];
     expectedSpawnGroups: number;
     expectedSpawnSlots: number;
+    source: { map?: string; spawns?: string };
   }> = {},
 ) {
   return {
     key: 'hunt:tibia:venore-rotworm-cave',
     displayName: 'Venore Rotworm Cave',
     sourceUrl: 'https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave',
+    source: {
+      map: 'data-otservbr-global/world/otservbr.otbm',
+      spawns: 'data-otservbr-global/world/otservbr-monster.xml',
+    },
     recommendedLevel: 8,
     soloVocation: 'vocation:tibia:knight',
     region: {
@@ -243,5 +248,78 @@ describe('validateHuntSelection', () => {
       },
       { path: 'spawns[0]', code: 'HUNT_UNKNOWN_CREATURE' },
     ]);
+  });
+
+  it('requires the selection to name the map it is extracted from', () => {
+    const result = validateHuntSelection(
+      selection({ source: { spawns: 'data/world/spawns.xml' } }),
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+
+    expect(
+      result.diagnostics.filter((item) => item.path === 'source.map'),
+    ).toEqual([
+      {
+        path: 'source.map',
+        code: 'HUNT_SOURCE_INVALID',
+        message: 'Selection must name the snapshot map it is extracted from',
+      },
+    ]);
+  });
+
+  it('requires the selection to name its spawn declaration', () => {
+    const result = validateHuntSelection(
+      selection({ source: { map: 'data/world/map.otbm' } }),
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+
+    expect(
+      result.diagnostics.filter((item) => item.path === 'source.spawns'),
+    ).toEqual([
+      {
+        path: 'source.spawns',
+        code: 'HUNT_SOURCE_INVALID',
+        message: 'Selection must name the snapshot spawn declaration',
+      },
+    ]);
+  });
+
+  it('rejects a source path that escapes the snapshot root', () => {
+    const result = validateHuntSelection(
+      selection({
+        source: { map: '../outside.otbm', spawns: 'data/world/spawns.xml' },
+      }),
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+
+    expect(
+      result.diagnostics.filter((item) => item.path === 'source.map'),
+    ).toEqual([
+      {
+        path: 'source.map',
+        code: 'HUNT_SOURCE_INVALID',
+        message:
+          'Source path must be relative to the snapshot root: ../outside.otbm',
+      },
+    ]);
+  });
+
+  it('accepts a selection that names both sources', () => {
+    const result = validateHuntSelection(
+      selection({
+        region: { minX: 100, minY: 200, maxX: 102, maxY: 201, floors: [8] },
+        expectedSpawnGroups: 1,
+        expectedSpawnSlots: 1,
+      }),
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+
+    expect(
+      result.diagnostics.filter((item) => item.code === 'HUNT_SOURCE_INVALID'),
+    ).toEqual([]);
   });
 });

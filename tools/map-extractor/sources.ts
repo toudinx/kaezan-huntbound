@@ -6,14 +6,15 @@ import type {
   LockedSourceFile,
   SourceSnapshotLock,
 } from '../../packages/content/src/application/sourceLockTypes.ts';
+import type { HuntSelectionSource } from '../hunt-selection/types.ts';
 
 /**
- * Provenance of the two snapshot files the extraction reads.
+ * Provenance of the two snapshot files one hunt is extracted from.
  *
- * Neither path is hard-coded: the map and the spawn declaration are located by
- * their `purpose` in the content source lock, and every byte read is checked
- * against the digest the lock froze. Pointing the extraction at a different map
- * is a source lock edit, never a code edit.
+ * The hunt selection names its own map and spawn declaration, and the source
+ * lock freezes their digests. Nothing here is global: several hunts can come
+ * from several maps at once, and adding a hunt is a selection file plus its lock
+ * entries, never a code change.
  */
 export type HuntSourcePurpose = 'map' | 'spawn';
 
@@ -91,26 +92,44 @@ function diagnostic(
   return { path, code, message };
 }
 
-function pickByPurpose(
+/** Finds the lock entry that freezes exactly the path the selection asked for. */
+function pickByPath(
   files: readonly LockedSourceFile[],
   purpose: HuntSourcePurpose,
+  requestedPath: string,
 ): LockedSourceFile | HuntSourceDiagnostic {
-  const matches = files.filter((file) => file.purpose === purpose);
+  const normalized = normalizeRelativePath(requestedPath);
+  if (normalized === undefined) {
+    return diagnostic(
+      `sources.${purpose}`,
+      'HUNT_SOURCE_PATH_INVALID',
+      `Selection ${purpose} must be relative and inside the snapshot: ${requestedPath}`,
+    );
+  }
+
+  const matches = files.filter(
+    (file) => normalizeRelativePath(file.relativePath) === normalized,
+  );
   const [first] = matches;
   if (first === undefined) {
     return diagnostic(
       `sources.${purpose}`,
       'HUNT_SOURCE_NOT_LOCKED',
-      `The content source lock declares no file with purpose ${purpose}`,
+      `The content source lock does not freeze the selected ${purpose}: ${normalized}`,
     );
   }
   if (matches.length > 1) {
     return diagnostic(
       `sources.${purpose}`,
       'HUNT_SOURCE_AMBIGUOUS',
-      `The content source lock declares ${matches.length} files with purpose ${purpose}: ${matches
-        .map((file) => file.relativePath)
-        .join(', ')}`,
+      `The content source lock freezes ${normalized} ${matches.length} times`,
+    );
+  }
+  if (first.purpose !== purpose) {
+    return diagnostic(
+      `sources.${purpose}`,
+      'HUNT_SOURCE_NOT_LOCKED',
+      `${normalized} is locked with purpose ${first.purpose}, not ${purpose}`,
     );
   }
   return first;
@@ -185,15 +204,16 @@ function isDiagnostic(
 }
 
 /**
- * Locates and verifies the map and spawn declaration named by the source lock.
+ * Locates and verifies the map and spawn declaration one hunt selection names.
  *
- * Every palette id in an extracted region traces back to these two files plus
+ * Every palette id in the extracted region traces back to these two files plus
  * `tile-flags.json`, whose own sources — `appearances.dat` and `items.xml` —
  * the same lock already freezes.
  */
 export function resolveHuntSources(
   lock: SourceSnapshotLock,
   snapshotRoot: string,
+  selectionSource: HuntSelectionSource,
   options: ResolveHuntSourcesOptions = {},
 ): HuntSourcesResult {
   const verifyHashes = options.verifyHashes ?? true;
@@ -215,9 +235,13 @@ export function resolveHuntSources(
     };
   }
 
+  const requested: Readonly<Record<HuntSourcePurpose, string>> = {
+    map: selectionSource.map,
+    spawn: selectionSource.spawns,
+  };
   const resolved = new Map<HuntSourcePurpose, ResolvedHuntSource>();
   for (const purpose of ['map', 'spawn'] as const) {
-    const locked = pickByPurpose(lock.files, purpose);
+    const locked = pickByPath(lock.files, purpose, requested[purpose]);
     if (isDiagnostic(locked)) {
       diagnostics.push(locked);
       continue;
