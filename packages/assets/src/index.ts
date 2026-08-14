@@ -8,6 +8,7 @@ export { ManifestEffectIdAssetAdapter } from './adapters/ManifestEffectIdAssetAd
 export { ManifestLookTypeAssetAdapter } from './adapters/ManifestLookTypeAssetAdapter.ts';
 export { ManifestMissileIdAssetAdapter } from './adapters/ManifestMissileIdAssetAdapter.ts';
 export type { MissileIdAssetAdapter } from './adapters/MissileIdAssetAdapter.ts';
+export * from './hunt/HuntPack.ts';
 export * from './manifest/diagnostics.ts';
 export * from './manifest/identity.ts';
 export * from './manifest/schemas.ts';

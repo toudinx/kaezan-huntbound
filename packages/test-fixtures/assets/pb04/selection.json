@@ -1,0 +1,2815 @@
+{
+  "schemaVersion": "1",
+  "selectionId": "selection:pb-04-venore-rotworm-cave",
+  "packId": "asset-pack:pb-04-venore-rotworm-cave",
+  "contentVersion": "pb-04-venore-rotworm-cave@74bbd94a62c6",
+  "buildProfiles": [
+    "test",
+    "product"
+  ],
+  "groups": [
+    {
+      "groupId": "huntbound-test",
+      "source": "huntbound-synthetic-fixture",
+      "sourceSnapshot": "pb04-synthetic-v1",
+      "licenseClass": "huntbound-test",
+      "buildProfiles": [
+        "test",
+        "product"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "key": "creature:tibia:rotworm",
+      "category": "creature",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 26
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers creature:tibia:rotworm required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "outfit:tibia:knight",
+      "category": "outfit",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 131
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers outfit:tibia:knight required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:101",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 101
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:101 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16280",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16280
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16280 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16281",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16281
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16281 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16283",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16283
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16283 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16284",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16284
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16284 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16285",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16285
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16285 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16286",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16286
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16286 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16288",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16288
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16288 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16289",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16289
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16289 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16290",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16290
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16290 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16291",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16291
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16291 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16292",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16292
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16292 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16293",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16293
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16293 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16294",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16294
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16294 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16295",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16295
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16295 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16296",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16296
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16296 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16297",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16297
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16297 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16298",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16298
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16298 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16299",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16299
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16299 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16638",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16638
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16638 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16639",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16639
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16639 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16640",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16640
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16640 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16641",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16641
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16641 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16642",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16642
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16642 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16643",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16643
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16643 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16644",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16644
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16644 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16645",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16645
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16645 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16646",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16646
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16646 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16647",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16647
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16647 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16648",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16648
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16648 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:16649",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 16649
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:16649 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:17238",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 17238
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:17238 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1854",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1854
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1854 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1855",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1855
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1855 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1856",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1856
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1856 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1857",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1857
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1857 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1858",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1858
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1858 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1865",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1865
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1865 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1866",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1866
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1866 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1867",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1867
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:1867 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:194",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 194
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:194 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2696",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2696
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:2696 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3115",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3115
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3115 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3116",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3116
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3116 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3133",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3133
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3133 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:351",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 351
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:351 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:352",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 352
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:352 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:353",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 353
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:353 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:354",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 354
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:354 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:355",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 355
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:355 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:356",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 356
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:356 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:357",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 357
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:357 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:358",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 358
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:358 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:359",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 359
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:359 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:360",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 360
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:360 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:361",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 361
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:361 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:362",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 362
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:362 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:363",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 363
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:363 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:364",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 364
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:364 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:365",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 365
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:365 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:366",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 366
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:366 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:367",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 367
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:367 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3690",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3690
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3690 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:385",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 385
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:385 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:386",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 386
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:386 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3906",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3906
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3906 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3907",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3907
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:3907 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4668",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4668
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4668 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4669",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4669
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4669 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4670",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4670
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4670 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4671",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4671
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4671 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4672",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4672
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4672 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4673",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4673
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4673 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4674",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4674
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4674 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4675",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4675
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4675 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4676",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4676
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4676 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4677",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4677
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4677 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4678",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4678
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4678 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4679",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4679
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4679 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4691",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4691
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4691 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4692",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4692
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4692 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4693",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4693
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4693 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4694",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4694
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4694 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4697",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4697
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4697 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4700",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4700
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4700 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4701",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4701
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4701 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4786",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4786
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4786 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4787",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4787
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4787 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4788",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4788
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4788 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4790",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4790
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4790 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4791",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4791
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4791 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4792",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4792
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4792 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4795",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4795
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4795 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4796",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4796
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4796 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4878",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4878
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:4878 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5556",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5556
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5556 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5557",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5557
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5557 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5558",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5558
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5558 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5559",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5559
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5559 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5560",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5560
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5560 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5561",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5561
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5561 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5562",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5562
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5562 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5563",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5563
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5563 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5630",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5630
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5630 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5631",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5631
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5631 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5632",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5632
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5632 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5633",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5633
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5633 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5634",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5634
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5634 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5635",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5635
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5635 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5636",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5636
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5636 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5637",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5637
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5637 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5640",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5640
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5640 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5646",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5646
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5646 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5648",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5648
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5648 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5649",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5649
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5649 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5650",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5650
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5650 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5652",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5652
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5652 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5711",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5711
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5711 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5712",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5712
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5712 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5713",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5713
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5713 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5714",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5714
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5714 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5715",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5715
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5715 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5716",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5716
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5716 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5717",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5717
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5717 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5718",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5718
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5718 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5719",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5719
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5719 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5720",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5720
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5720 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5721",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5721
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5721 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5722",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5722
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5722 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5726",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5726
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5726 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5747",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5747
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5747 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5750",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5750
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5750 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5754",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5754
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5754 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5866",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5866
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5866 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5868",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5868
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5868 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5869",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5869
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5869 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5873",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5873
+      },
+      "sourceGroupId": "huntbound-test",
+      "consumer": "PB-04 Venore Rotworm Cave asset pack",
+      "rationale": "Covers tile:tibia:5873 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    }
+  ],
+  "hunt": {
+    "packKey": "pb-04-venore-rotworm-cave",
+    "huntId": "hunt:tibia:venore-rotworm-cave",
+    "regionSha256": "74bbd94a62c646be4115b1fa9ddf7ceced8dfba8cd3e7f90e2188a11e2a860f5",
+    "keys": [
+      "tile:tibia:101",
+      "tile:tibia:194",
+      "tile:tibia:351",
+      "tile:tibia:352",
+      "tile:tibia:353",
+      "tile:tibia:354",
+      "tile:tibia:355",
+      "tile:tibia:356",
+      "tile:tibia:357",
+      "tile:tibia:358",
+      "tile:tibia:359",
+      "tile:tibia:360",
+      "tile:tibia:361",
+      "tile:tibia:362",
+      "tile:tibia:363",
+      "tile:tibia:364",
+      "tile:tibia:365",
+      "tile:tibia:366",
+      "tile:tibia:367",
+      "tile:tibia:385",
+      "tile:tibia:386",
+      "tile:tibia:1854",
+      "tile:tibia:1855",
+      "tile:tibia:1856",
+      "tile:tibia:1857",
+      "tile:tibia:1858",
+      "tile:tibia:1865",
+      "tile:tibia:1866",
+      "tile:tibia:1867",
+      "tile:tibia:2696",
+      "tile:tibia:3115",
+      "tile:tibia:3116",
+      "tile:tibia:3133",
+      "tile:tibia:3690",
+      "tile:tibia:3906",
+      "tile:tibia:3907",
+      "tile:tibia:4668",
+      "tile:tibia:4669",
+      "tile:tibia:4670",
+      "tile:tibia:4671",
+      "tile:tibia:4672",
+      "tile:tibia:4673",
+      "tile:tibia:4674",
+      "tile:tibia:4675",
+      "tile:tibia:4676",
+      "tile:tibia:4677",
+      "tile:tibia:4678",
+      "tile:tibia:4679",
+      "tile:tibia:4691",
+      "tile:tibia:4692",
+      "tile:tibia:4693",
+      "tile:tibia:4694",
+      "tile:tibia:4697",
+      "tile:tibia:4700",
+      "tile:tibia:4701",
+      "tile:tibia:4786",
+      "tile:tibia:4787",
+      "tile:tibia:4788",
+      "tile:tibia:4790",
+      "tile:tibia:4791",
+      "tile:tibia:4792",
+      "tile:tibia:4795",
+      "tile:tibia:4796",
+      "tile:tibia:4878",
+      "tile:tibia:5556",
+      "tile:tibia:5557",
+      "tile:tibia:5558",
+      "tile:tibia:5559",
+      "tile:tibia:5560",
+      "tile:tibia:5561",
+      "tile:tibia:5562",
+      "tile:tibia:5563",
+      "tile:tibia:5630",
+      "tile:tibia:5631",
+      "tile:tibia:5632",
+      "tile:tibia:5633",
+      "tile:tibia:5634",
+      "tile:tibia:5635",
+      "tile:tibia:5636",
+      "tile:tibia:5637",
+      "tile:tibia:5640",
+      "tile:tibia:5646",
+      "tile:tibia:5648",
+      "tile:tibia:5649",
+      "tile:tibia:5650",
+      "tile:tibia:5652",
+      "tile:tibia:5711",
+      "tile:tibia:5712",
+      "tile:tibia:5713",
+      "tile:tibia:5714",
+      "tile:tibia:5715",
+      "tile:tibia:5716",
+      "tile:tibia:5717",
+      "tile:tibia:5718",
+      "tile:tibia:5719",
+      "tile:tibia:5720",
+      "tile:tibia:5721",
+      "tile:tibia:5722",
+      "tile:tibia:5726",
+      "tile:tibia:5747",
+      "tile:tibia:5750",
+      "tile:tibia:5754",
+      "tile:tibia:5866",
+      "tile:tibia:5868",
+      "tile:tibia:5869",
+      "tile:tibia:5873",
+      "tile:tibia:16280",
+      "tile:tibia:16281",
+      "tile:tibia:16283",
+      "tile:tibia:16284",
+      "tile:tibia:16285",
+      "tile:tibia:16286",
+      "tile:tibia:16288",
+      "tile:tibia:16289",
+      "tile:tibia:16290",
+      "tile:tibia:16291",
+      "tile:tibia:16292",
+      "tile:tibia:16293",
+      "tile:tibia:16294",
+      "tile:tibia:16295",
+      "tile:tibia:16296",
+      "tile:tibia:16297",
+      "tile:tibia:16298",
+      "tile:tibia:16299",
+      "tile:tibia:16638",
+      "tile:tibia:16639",
+      "tile:tibia:16640",
+      "tile:tibia:16641",
+      "tile:tibia:16642",
+      "tile:tibia:16643",
+      "tile:tibia:16644",
+      "tile:tibia:16645",
+      "tile:tibia:16646",
+      "tile:tibia:16647",
+      "tile:tibia:16648",
+      "tile:tibia:16649",
+      "tile:tibia:17238",
+      "creature:tibia:rotworm",
+      "outfit:tibia:knight"
+    ],
+    "budget": {
+      "maxEntries": 512,
+      "maxBytes": 6291456
+    }
+  }
+}

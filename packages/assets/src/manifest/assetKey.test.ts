@@ -14,11 +14,12 @@ import {
 } from '../index.ts';
 
 describe('asset identity contracts', () => {
-  it('accepts the five stable key forms used by PB-02', () => {
+  it('accepts the stable key forms used by PB-02 and PB-04', () => {
     const keys = [
       'outfit:tibia:knight',
       'creature:tibia:rotworm',
       'item:tibia:gold-coin',
+      'tile:tibia:100',
       'effect:tibia:energy-hit',
       'missile:tibia:energy-ball',
     ];

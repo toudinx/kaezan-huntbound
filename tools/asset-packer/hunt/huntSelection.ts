@@ -1,0 +1,120 @@
+import {
+  type AssetSelectionManifest,
+  AssetSelectionManifestSchema,
+  type AssetSourceGroup,
+  deriveHuntPackKeys,
+  HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_OUTFIT_KEY,
+  type HuntPackSelection,
+  hashHuntRegion,
+  validateHuntPack,
+} from '../../../packages/assets/src/index.ts';
+import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
+
+export const HUNT_PACK_KEY = 'pb-04-venore-rotworm-cave';
+export const HUNT_ID = 'hunt:tibia:venore-rotworm-cave';
+export const HUNT_PACK_BUDGET = {
+  maxEntries: 512,
+  maxBytes: 6 * 1024 * 1024,
+} as const;
+
+export function deriveHuntPackSelection(region: MapRegion): HuntPackSelection {
+  const selection: HuntPackSelection = {
+    packKey: HUNT_PACK_KEY,
+    huntId: HUNT_ID,
+    regionSha256: hashHuntRegion(region),
+    keys: [
+      ...deriveHuntPackKeys(region),
+      HUNT_PACK_CREATURE_KEY,
+      HUNT_PACK_OUTFIT_KEY,
+    ],
+    budget: HUNT_PACK_BUDGET,
+  };
+  const diagnostics = validateHuntPack(
+    selection,
+    region,
+    selection.keys.map((key) => ({ key, bytes: 0 })),
+  );
+  if (diagnostics.length > 0) {
+    throw new Error(
+      diagnostics.map(({ code, message }) => `${code}: ${message}`).join('\n'),
+    );
+  }
+  return selection;
+}
+
+function identityForKey(key: string): {
+  readonly category: 'outfit' | 'creature' | 'object';
+  readonly sourceIdentity:
+    | { readonly kind: 'lookType'; readonly id: number }
+    | { readonly kind: 'clientId'; readonly id: number };
+  readonly pivot: { readonly x: number; readonly y: number };
+} {
+  if (key === HUNT_PACK_CREATURE_KEY) {
+    return {
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 26 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+  if (key === HUNT_PACK_OUTFIT_KEY) {
+    return {
+      category: 'outfit',
+      sourceIdentity: { kind: 'lookType', id: 131 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+
+  const match = /^tile:tibia:([1-9][0-9]*)$/.exec(key);
+  if (match === null) {
+    throw new Error(`Unsupported PB-04 hunt asset key ${key}`);
+  }
+  return {
+    category: 'object',
+    sourceIdentity: { kind: 'clientId', id: Number(match[1]) },
+    pivot: { x: 0.5, y: 1 },
+  };
+}
+
+export function createHuntAssetSelection(input: {
+  readonly hunt: HuntPackSelection;
+  readonly group: AssetSourceGroup;
+}): AssetSelectionManifest {
+  const entries = [...input.hunt.keys]
+    .sort((left, right) => left.localeCompare(right))
+    .map((key) => {
+      const identity = identityForKey(key);
+      return {
+        key,
+        category: identity.category,
+        sourceIdentity: identity.sourceIdentity,
+        sourceGroupId: input.group.groupId,
+        consumer: 'PB-04 Venore Rotworm Cave asset pack',
+        rationale: `Covers ${key} required by the frozen hunt selection.`,
+        presentation: {
+          pivot: identity.pivot,
+          scale: 1,
+          filtering: 'nearest' as const,
+        },
+      };
+    });
+
+  const result = AssetSelectionManifestSchema.safeParse({
+    schemaVersion: '1',
+    selectionId: `selection:${input.hunt.packKey}`,
+    packId: `asset-pack:${input.hunt.packKey}`,
+    contentVersion: `${input.hunt.packKey}@${input.hunt.regionSha256.slice(0, 12)}`,
+    buildProfiles: input.group.buildProfiles,
+    groups: [input.group],
+    entries,
+    hunt: input.hunt,
+  });
+  if (!result.success) {
+    throw new Error(
+      result.error.issues
+        .map(({ path, message }) => `${path.join('.')}: ${message}`)
+        .join('\n'),
+    );
+  }
+  return result.data;
+}

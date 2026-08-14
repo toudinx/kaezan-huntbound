@@ -15,7 +15,11 @@
       "!apps/game/public/assets/test",
       "!packages/content/catalog/operations",
       "!packages/content/src/generated",
+      "!packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json",
       "!packages/test-fixtures/assets/pb02/expected",
+      "!packages/test-fixtures/assets/pb04/expected",
+      "!packages/test-fixtures/assets/pb04/source",
+      "!packages/test-fixtures/assets/pb04/selection.json",
       "!packages/test-fixtures/simulation/pb03"
     ]
   },

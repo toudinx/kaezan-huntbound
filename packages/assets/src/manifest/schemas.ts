@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { HuntPackSelectionSchema } from '../hunt/HuntPack.ts';
 import type { AssetDiagnosticCode } from './diagnostics.ts';
 import {
   type AssetKey,
@@ -211,6 +212,7 @@ const AssetSelectionManifestBaseSchema = z
     buildProfiles: nonEmptyUniqueReadonlyArray(AssetBuildProfileSchema),
     groups: z.array(AssetSourceGroupSchema).min(1).readonly(),
     entries: z.array(AssetSelectionEntrySchema).min(1).readonly(),
+    hunt: HuntPackSelectionSchema.optional(),
   })
   .strict();
 
@@ -322,7 +324,9 @@ function categoryMatchesIdentity(
 
 function keyMatchesCategory(key: AssetKey, category: AssetCategory): boolean {
   const keyKind = key.split(':', 1)[0];
-  return (keyKind === 'item' ? 'object' : keyKind) === category;
+  return (
+    (keyKind === 'item' || keyKind === 'tile' ? 'object' : keyKind) === category
+  );
 }
 
 interface IdentityEntry {

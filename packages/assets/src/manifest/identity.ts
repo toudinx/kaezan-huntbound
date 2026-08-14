@@ -21,7 +21,7 @@ export type MissileId = number & {
 };
 
 const assetKeyPattern =
-  /^(?:outfit|creature|item|effect|missile):[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  /^(?:outfit|creature|item|tile|effect|missile):[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const positiveInteger = z.number().finite().int().positive();
 
