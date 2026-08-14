@@ -5,8 +5,9 @@
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** ready — PB-02 foi fechado em `1134fc8` como `APPROVED_WITH_WARNINGS` e PB-03-01 é a
-próxima task elegível.
+**Status:** closed — a auditoria integrada PB-03-08 fechou o playbook como `APPROVED_WITH_WARNINGS`
+sobre o commit auditado `f885535`. Evidências em
+[`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). PB-04 está elegível.
 
 **Goal:** entregar um kernel headless que avança em tick fixo, deriva toda aleatoriedade de uma seed
 serializável, resolve espaço em grid inteiro, aceita comandos validados, emite eventos ordenados e
@@ -74,7 +75,7 @@ primeira hunt e por mapear `HuntDefinition` para cenário.
 |---|---|
 | `TICK_DURATION_MS` | `50` |
 | `MAX_FRAME_DELTA_MS` | `250` |
-| `SIMULATION_SCHEMA_VERSION` | `1` |
+| `SIMULATION_SCHEMA_VERSION` | `2` desde PB-03-06-FIX-01 (era `1`) |
 | `SIMULATION_RULES_VERSION` | `1` |
 | Seed do fixture | `0f1e2d3c4b5a6978` |
 | Cenário do fixture | `pb-03-kernel-coverage`, revisão `1`, 16×16, `z = 7` |
@@ -144,14 +145,14 @@ estruturais baratas e nunca depende de I/O. Toda saída observável passa por ev
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-03-01](tasks/PB-03-01-definir-contratos-do-kernel.md) | tipos, schemas, versões e diagnósticos | PB-02 fechado | Luna `xhigh` | pending |
-| [PB-03-02](tasks/PB-03-02-implementar-rng-deterministico.md) | PRNG, streams e vetores golden | PB-03-01 | Luna `xhigh` | pending |
-| [PB-03-03](tasks/PB-03-03-implementar-grid-e-movimento.md) | grid, colisão, ocupação e passo | PB-03-01 | Luna `xhigh` | pending |
-| [PB-03-04](tasks/PB-03-04-implementar-comandos-e-log.md) | buffer, validação, ordenação e log | PB-03-01 | Luna `xhigh` | pending |
-| [PB-03-05](tasks/PB-03-05-implementar-loop-de-tick-e-eventos.md) | pipeline de tick, sistemas e journal | PB-03-02/03/04 | Sol `xhigh` | pending |
-| [PB-03-06](tasks/PB-03-06-fechar-snapshot-e-replay.md) | snapshot, restore, replay, CLI e golden | PB-03-05 | Sol `xhigh` | pending |
-| [PB-03-07](tasks/PB-03-07-validar-kernel-no-browser.md) | host, probe e paridade de runtime | PB-03-06 | Luna `xhigh` | pending |
-| [PB-03-08](tasks/PB-03-08-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-03-07 | Opus 5/Sol | pending |
+| [PB-03-01](tasks/PB-03-01-definir-contratos-do-kernel.md) | tipos, schemas, versões e diagnósticos | PB-02 fechado | Luna `xhigh` | done |
+| [PB-03-02](tasks/PB-03-02-implementar-rng-deterministico.md) | PRNG, streams e vetores golden | PB-03-01 | Luna `xhigh` | done |
+| [PB-03-03](tasks/PB-03-03-implementar-grid-e-movimento.md) | grid, colisão, ocupação e passo | PB-03-01 | Luna `xhigh` | done |
+| [PB-03-04](tasks/PB-03-04-implementar-comandos-e-log.md) | buffer, validação, ordenação e log | PB-03-01 | Luna `xhigh` | done |
+| [PB-03-05](tasks/PB-03-05-implementar-loop-de-tick-e-eventos.md) | pipeline de tick, sistemas e journal | PB-03-02/03/04 | Sol `xhigh` | done |
+| [PB-03-06](tasks/PB-03-06-fechar-snapshot-e-replay.md) | snapshot, restore, replay, CLI e golden | PB-03-05 | Sol `xhigh` | done |
+| [PB-03-07](tasks/PB-03-07-validar-kernel-no-browser.md) | host, probe e paridade de runtime | PB-03-06 | Luna `xhigh` | done |
+| [PB-03-08](tasks/PB-03-08-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-03-07 | Opus 5/Sol | done |
 
 PB-03-02, PB-03-03 e PB-03-04 podem executar em paralelo após PB-03-01 porque seus paths funcionais
 não se sobrepõem. O padrão é serial. Se o supervisor ativar paralelismo, os três removem worktrees
@@ -174,20 +175,23 @@ e apaga as branches somente depois dos gates integrados.
 
 ## Critérios finais de aceite
 
-- [ ] Comandos, eventos, snapshot, cenário e log possuem schemas estritos e diagnósticos ordenados.
-- [ ] `@huntbound/simulation` não declara nem importa dependência externa, Node, DOM ou Phaser.
-- [ ] Nenhum `Date`, `performance`, `Math.random`, timer ou `crypto` existe no kernel, provado por
+Todos verificados pela auditoria PB-03-08 sobre o commit `f885535`; a evidência de cada um está na
+matriz do [relatório de aceite](artifacts/acceptance-report.md).
+
+- [x] Comandos, eventos, snapshot, cenário e log possuem schemas estritos e diagnósticos ordenados.
+- [x] `@huntbound/simulation` não declara nem importa dependência externa, Node, DOM ou Phaser.
+- [x] Nenhum `Date`, `performance`, `Math.random`, timer ou `crypto` existe no kernel, provado por
       `architecture:check`.
-- [ ] Nenhum float alcança o snapshot; o encoder canônico falha com diagnóstico próprio.
-- [ ] RNG tem vetores golden, streams isolados, `drawCount` serializado e `nextBelow` sem viés.
-- [ ] Fora de limites, terreno, ocupação, corte de canto e cooldown falham com códigos distintos.
-- [ ] Comando inválido nunca muta estado e sempre emite `command/rejected`.
-- [ ] Duas execuções limpas do replay produzem snapshot e journal byte-idênticos.
-- [ ] Retomada por snapshot em `117` converge para o mesmo snapshot final de `200`.
-- [ ] Browser e Node produzem o mesmo SHA-256 do snapshot canônico.
-- [ ] Trocar seed, comando ou `rulesVersion` é detectado como divergência explícita.
-- [ ] `corepack pnpm verify` passa no resultado integrado.
-- [ ] Relatório de aceite decide a elegibilidade de PB-04.
+- [x] Nenhum float alcança o snapshot; o encoder canônico falha com diagnóstico próprio.
+- [x] RNG tem vetores golden, streams isolados, `drawCount` serializado e `nextBelow` sem viés.
+- [x] Fora de limites, terreno, ocupação, corte de canto e cooldown falham com códigos distintos.
+- [x] Comando inválido nunca muta estado e sempre emite `command/rejected`.
+- [x] Duas execuções limpas do replay produzem snapshot e journal byte-idênticos.
+- [x] Retomada por snapshot em `117` converge para o mesmo snapshot final de `200`.
+- [x] Browser e Node produzem o mesmo SHA-256 do snapshot canônico.
+- [x] Trocar seed, comando ou `rulesVersion` é detectado como divergência explícita.
+- [x] `corepack pnpm verify` passa no resultado integrado.
+- [x] Relatório de aceite decide a elegibilidade de PB-04.
 
 ## Fora de escopo
 
@@ -202,6 +206,10 @@ e apaga as branches somente depois dos gates integrados.
 
 ## Como executar
 
-Abra um chat novo e envie o bloco copiável da próxima task indicada em `STATE.md`. Execute somente
-uma task. A task cria branch/worktree, segue RED/GREEN, verifica, atualiza o handoff, commita,
-integra por `--ff-only` no fluxo serial e remove seus recursos temporários. Não antecipe a seguinte.
+O playbook está fechado; não há task pendente aqui. O fluxo continua em PB-04, indicado por
+`docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`.
+
+Para referência histórica: cada task foi executada em um chat novo a partir do bloco copiável
+indicado em `STATE.md`, criando branch/worktree, seguindo RED/GREEN, verificando, atualizando o
+handoff, commitando, integrando por `--ff-only` no fluxo serial e removendo seus recursos
+temporários.

@@ -2,11 +2,13 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-07 concluídas; PB-03-08 é a próxima task elegível
+**Estado geral:** closed — as oito tasks concluídas; PB-03 fechado como `APPROVED_WITH_WARNINGS`
 
-**Última atualização:** 2026-08-13
+**Última atualização:** 2026-08-14
 
-**Próxima task elegível:** PB-03-08.
+**Próxima task elegível:** nenhuma neste playbook. PB-04 está elegível.
+
+**Relatório de aceite:** [`artifacts/acceptance-report.md`](artifacts/acceptance-report.md).
 
 ## Tasks
 
@@ -20,7 +22,7 @@
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
 | PB-03-06-FIX-01 | done | `codex/pb03-06-fix-01-pending-intents` | `24f642b` | 41 contracts + 118 simulation + 31 tools/replay; verify ×2; simulation:check ×2 |
 | PB-03-07 | done | `codex/pb03-07-kernel-browser` | `be5bea3` + `e671af2` | 48 testes game; typecheck; build; architecture; simulation:check; Playwright; verify; scan de regras; diff check |
-| PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
+| PB-03-08 | done | `codex/pb03-08-integrated-gate` | fechamento documental | auditoria integrada sobre `f885535`; verify ×2; determinismo, retomada, negativas e paridade — `APPROVED_WITH_WARNINGS` |
 
 ## Baseline congelado
 
@@ -525,6 +527,68 @@ Skills usadas: `superpowers:using-superpowers`, `superpowers:brainstorming`,
 efetivo: gates automatizados.
 
 PB-03-08 é a próxima task elegível. A auditoria integrada não foi iniciada.
+
+## PB-03-08 — handoff concluído
+
+PB-03-08 executou a auditoria integrada na branch `codex/pb03-08-integrated-gate`, sobre o commit
+`f885535` em árvore limpa, e fechou o playbook como **`APPROVED_WITH_WARNINGS`**. O relatório completo
+está em [`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). A task foi read-only para
+código: nenhum arquivo de implementação, schema, fixture, golden, teste ou config foi alterado.
+
+Evidência fresca no worktree de auditoria:
+
+```text
+corepack pnpm --filter @huntbound/contracts test        -> exit 0; 41 passed (4 files)
+corepack pnpm --filter @huntbound/simulation test       -> exit 0; 118 passed (12 files)
+corepack pnpm exec vitest run --config tools/replay/vitest.config.ts -> exit 0; 31 passed (2 files)
+corepack pnpm --filter @huntbound/simulation typecheck  -> exit 0
+corepack pnpm exec tsc -p tools/replay/tsconfig.json --noEmit -> exit 0
+corepack pnpm architecture:check                        -> exit 0
+node --test tools/architecture/simulation-boundaries.test.ts -> exit 0; 6 passed
+corepack pnpm simulation:check                          -> exit 0
+corepack pnpm --filter @huntbound/game build            -> exit 0
+corepack pnpm exec playwright test kernel-replay.spec.ts -> exit 0; 1 passed
+corepack pnpm verify                                    -> exit 0 (duas execuções seguidas)
+git diff --check                                        -> exit 0
+```
+
+Provas que a auditoria mediu em vez de assumir:
+
+- **Determinismo.** Duas execuções independentes de `cli.ts run --out` em diretórios distintos
+  produziram os mesmos 6 arquivos com os mesmos SHA-256, calculados por `Get-FileHash` e não lidos da
+  própria ferramenta; `Compare-Object` devolveu 0 diferenças. Os artefatos são byte-idênticos aos
+  golden versionados (1003 e 8100 bytes) e não contêm CR, path absoluto nem timestamp.
+- **Retomada.** Além da fronteira congelada `117` (snapshot intermediário
+  `23822a7446a5a3e5a07a7cdc2705332a469b3e33e2fa56870a9ed21fe5b4173a`), a auditoria varreu as **201**
+  fronteiras de `0` a `200`: `44` são não quiescentes e **`0` divergem**. A afirmação "retomada é fiel
+  em qualquer fronteira" de PB-03-06-FIX-01 está medida. Vale notar que o tick `117` é quiescente e,
+  sozinho, não exercitaria `pendingIntents`.
+- **Fronteira do kernel.** A regra foi provada contra o kernel **real**, copiado para diretório
+  temporário do SO: limpo devolve zero diagnóstico, e `Date.now()`, `Math.random()` e import de
+  `seedrandom` são reprovados individualmente, com o kernel restaurado voltando a passar.
+- **Comando rejeitado não muta estado.** Removendo do log a linha de `entityId 999` e renumerando a
+  cauda, o snapshot final difere do golden **somente** em `nextCommandSequence` (14→13) e
+  `nextEventSequence` (60→59); `actors`, `nextEntityId`, `pendingCommands`, `pendingIntents`,
+  `randomStreams` e `tick` são idênticos.
+- **Probe test-only.** O bundle `--mode test` contém `__huntboundKernelProbe`; o bundle
+  `--mode product` **não contém a string**, porque o Vite substitui `import.meta.env.MODE`
+  estaticamente e elimina o corpo.
+
+Seis warnings não bloqueantes ficaram registrados (§10 do relatório): W1 e W2 são imprecisões da
+tabela do card PB-03-08 diante do `REPLAY_CONTRACT.md`, que já descreve o comportamento observado —
+seed/comando alterado devolve exit `1` com `kind:"divergence"`, e `SIM_REPLAY_DIVERGED` é reservado à
+divergência de `sequence` no intake; `SIM_STATE_NOT_INTEGER` é do encoder, não do comparador do
+`verify`. W3 é o enumerador de `node --test` na raiz, herdado. W4 é `build:product` exigir
+`assets:stage:product` prévio, de escopo PB-02. W5 e W6 são o aviso de chunk do Vite e os warnings
+herdados de PB-02.
+
+Modelo/effort efetivos: Claude Code/Opus 5, conforme a política. Skills usadas:
+`superpowers:using-superpowers`, `superpowers:using-git-worktrees` e
+`superpowers:verification-before-completion`. Validador efetivo: gates automatizados; a plataforma não
+expõe alternativa frontier distinta nesta sessão, desvio registrado conforme §Diversidade de revisão.
+O auditor não implementou PB-03-06.
+
+PB-03 está `closed`. **PB-04 é elegível** e não foi iniciada.
 
 ## Bloqueios
 

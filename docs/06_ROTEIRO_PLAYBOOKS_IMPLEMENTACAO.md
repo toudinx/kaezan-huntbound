@@ -40,8 +40,8 @@ contagem de arquivos, linhas ou minutos.
 | [PB-00R](playbooks/PB-00R/README.md) | Correções do gate de fundação | resize real, boot reproduzível, descoberta de testes e output limpo — **fechado** |
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
-| [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **planejado; PB-03-01 elegível** |
-| PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições |
+| [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
+| PB-04 | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições — **elegível** |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
@@ -66,9 +66,18 @@ ambos foram corrigidos por `PB-02-FIX-01` e `PB-02-FIX-02` e reverificados. Os w
 são não bloqueantes e estão priorizados em
 [`playbooks/PB-02/artifacts/acceptance-report.md`](playbooks/PB-02/artifacts/acceptance-report.md).
 
-**PB-03 é o próximo a executar.** PB-00, PB-01 e PB-02 formam a primeira leva e estão fechados;
-os contratos que impedem paths, IDs e regras de vazarem entre camadas estão no lugar, então o
-primeiro playbook de gameplay pode começar.
+PB-03 foi fechado em 2026-08-14 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre
+o commit auditado `f885535`. `corepack pnpm verify` saiu em exit 0 duas vezes seguidas com a árvore
+inalterada; duas execuções independentes do replay produziram bytes idênticos e iguais ao golden; a
+retomada por snapshot convergiu nas 201 fronteiras de `0` a `200`, incluindo as 44 não quiescentes; e
+o Chromium reproduziu o mesmo snapshot canônico e o mesmo SHA-256
+(`9d0c3a249b6e72daf0bce868824eb17a80b0cf4153ab05f6f7b7d50dae5f7260`) que o Node. Os warnings
+remanescentes são não bloqueantes e estão priorizados em
+[`playbooks/PB-03/artifacts/acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
+
+**PB-04 é o próximo a executar.** PB-00, PB-01, PB-02 e PB-03 estão fechados; os contratos que impedem
+paths, IDs e regras de vazarem entre camadas estão no lugar e o kernel determinístico já é dirigível
+por Node e pelo browser, então a primeira hunt ponta a ponta pode começar.
 
 ## PB-00 — Definition of Ready
 
@@ -130,6 +139,8 @@ sem path literal fora do manifesto.
 
 ## PB-03 — Definition of Ready
 
+**Estado: fechado** em 2026-08-14 como `APPROVED_WITH_WARNINGS`, commit auditado `f885535`.
+
 **Playbook modular:** `docs/playbooks/PB-03/README.md` — oito task cards, cada uma executável em um
 chat independente. Design aprovado em
 `docs/superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md`.
@@ -142,7 +153,8 @@ chat independente. Design aprovado em
 - [x] O estado serializado contém apenas inteiros, booleanos e strings.
 - [x] SHA-256 é calculado fora do kernel, sobre o JSON canônico.
 
-Parâmetros congelados: tick de `50 ms`, clamp de frame de `250 ms`, `SIMULATION_SCHEMA_VERSION = 1`,
+Parâmetros congelados: tick de `50 ms`, clamp de frame de `250 ms`, `SIMULATION_SCHEMA_VERSION = 2`
+(subiu de `1` em PB-03-06-FIX-01, que acrescentou `pendingIntents` ao snapshot),
 `SIMULATION_RULES_VERSION = 1`, RNG xoshiro128\*\* com streams `movement`, `ai` e `scenario`, e
 fixture `pb-03-kernel-coverage` com seed `0f1e2d3c4b5a6978` em 200 ticks.
 
