@@ -1,15 +1,15 @@
 # Contrato do kernel determinístico
 
 Este documento congela a linguagem pública compartilhada por `@huntbound/contracts` e pelo kernel
-headless de PB-03. A task PB-03-01 define somente tipos, schemas e diagnósticos; não implementa RNG,
-grid, aplicação de comandos, loop de tick, snapshot/restore ou replay.
+headless. PB-03 entregou tick, RNG, grid de um andar, comandos, eventos, snapshot e replay; PB-04-05
+acrescentou andares, transição automática e o sistema de spawn.
 
 ## Versões e tempo
 
 | Constante | Valor |
 | --- | ---: |
-| `SIMULATION_SCHEMA_VERSION` | `2` |
-| `SIMULATION_RULES_VERSION` | `1` |
+| `SIMULATION_SCHEMA_VERSION` | `3` |
+| `SIMULATION_RULES_VERSION` | `2` |
 | `TICK_DURATION_MS` | `50` |
 | `MAX_FRAME_DELTA_MS` | `250` |
 
@@ -33,16 +33,36 @@ Todo número nos schemas do kernel é inteiro seguro. Não existe campo float. C
 
 ## Cenário
 
-`KernelScenario` contém `schemaVersion`, `scenarioId`, `scenarioRevision`, `width`, `height`, `z`,
-`blockedTiles`, `blueprints` e `initialActors`.
+`KernelScenario` v3 contém `schemaVersion`, `scenarioId`, `scenarioRevision`, `width`, `height`,
+`floors`, `transitions`, `spawnGroups`, `maxLiveActors`, `blueprints` e `initialActors`. **Não há
+compatibilidade com a v2:** `z` e `blockedTiles` no topo do documento foram substituídos por
+`floors`, e um documento v2 é reprovado pelo schema estrito.
 
-- `width` e `height` são positivos.
-- `blockedTiles` fica dentro do grid, sem duplicatas e estritamente ordenado por `(y, x)`.
+- `width` e `height` são positivos e valem para todos os andares.
+- `floors` é não vazio e estritamente ordenado por `z` ascendente, o que também proíbe `z` repetido.
+  Cada `blockedTiles` fica dentro do grid, sem duplicatas e estritamente ordenado por `(y, x)`.
+  Terreno é por andar: o mesmo `(x, y)` pode ser livre em um andar e bloqueado em outro.
+- `transitions` é uma lista de pares dirigidos `{ from, to }`. `from` e `to` ficam dentro do grid e
+  em andares declarados, `to` não pode ser terreno bloqueado, `from` não pode repetir e não pode
+  igualar `to`. A ordem da lista não é normativa, porque `from` é único e a tabela é um mapa.
+- `spawnGroups` declara `{ center, radius, slots }`; cada slot é
+  `{ blueprintId, position, respawnTicks }`. O centro fica dentro do grid e em andar declarado; cada
+  slot referencia um blueprint existente, fica em célula livre de terreno do andar do centro e
+  dentro do raio Chebyshev do grupo. Centros de grupo são únicos e dois slots do mesmo grupo não
+  compartilham célula: as duas unicidades são o que torna a ordem canônica **total**.
+- `maxLiveActors` é positivo e é o teto de atores vivos verificado por `S4`.
 - `blueprintId` é kebab-case e único.
-- `stepCooldownTicks` é inteiro seguro não negativo.
-- Cada ator inicial referencia um blueprint existente, está dentro do grid, usa o `z` do cenário, não
-  ocupa terreno bloqueado e não compartilha célula com outro ator.
+- `stepCooldownTicks` e `respawnTicks` são inteiros seguros não negativos.
+- Cada ator inicial referencia um blueprint existente, está dentro do grid, usa um andar declarado,
+  não ocupa terreno bloqueado e não compartilha célula com outro ator.
 - Os schemas são estritos: campos desconhecidos são rejeitados.
+
+### Ordem canônica de spawn
+
+`groupIndex` e `slotIndex` **não** são o índice de declaração. O kernel ordena os grupos por
+`(center.z, center.y, center.x)` e os slots de cada grupo por `(position.z, position.y, position.x)`,
+e numera a partir dessa ordem. Dois documentos com a mesma composição declarada em ordens diferentes
+produzem journal e snapshot idênticos.
 
 As direções canônicas, nesta ordem, são:
 
@@ -88,9 +108,13 @@ monotônica global na execução.
 | `actor/move-blocked` | `entityId`, `attempted`, `reason` |
 | `actor/faced` | `entityId`, `facing` |
 | `actor/despawned` | `entityId` |
+| `actor/transitioned` | `entityId`, `from`, `to` |
+| `spawn/deferred` | `groupIndex`, `slotIndex`, `reason` |
+| `spawn/capped` | `groupIndex`, `slotIndex` |
 | `command/rejected` | `commandType`, `commandSequence`, `code` |
 
-As causas de bloqueio são `bounds`, `terrain`, `occupied`, `diagonal-corner` e `cooldown`.
+As causas de bloqueio são `bounds`, `terrain`, `occupied`, `diagonal-corner`, `cooldown` e
+`transition-blocked`. As razões de `spawn/deferred` são `no-free-cell` e `cap-reached`.
 
 ## Snapshot
 
@@ -100,7 +124,7 @@ hash do cenário. O formato contém:
 ```text
 schemaVersion, rulesVersion, scenarioId, scenarioRevision, seed, tick,
 nextEntityId, nextEventSequence, nextCommandSequence,
-randomStreams, actors, pendingCommands, pendingIntents
+randomStreams, actors, pendingCommands, pendingIntents, spawnSlots
 ```
 
 As coleções têm ordem canônica parte do contrato:
@@ -108,10 +132,30 @@ As coleções têm ordem canônica parte do contrato:
 - `randomStreams` por `label`, sem duplicatas;
 - `actors` por `entityId`, sem duplicatas;
 - `pendingCommands` por `(tick, sequence)`;
-- `pendingIntents` por `(tick, entityId)`, estritamente, sem duplicatas.
+- `pendingIntents` por `(tick, entityId)`, estritamente, sem duplicatas;
+- `spawnSlots` por `(groupIndex, slotIndex)`, estritamente, sem duplicatas.
 
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
-`ActorState` guarda `entityId`, `blueprintId`, `position`, `facing` e `readyAtTick`.
+`ActorState` guarda `entityId`, `blueprintId`, `position`, `facing`, `readyAtTick` e
+`transitionGuard`. `SpawnSlotState` guarda `groupIndex`, `slotIndex`, `readyAtTick` e `entityId`,
+que é `null` quando o assento está vago. Um `entityId` de slot que não corresponda a nenhum ator do
+snapshot é reprovado.
+
+Dois atores só não podem compartilhar célula no **mesmo** andar; `(x, y)` iguais em `z` diferentes
+são estado válido.
+
+### `transitionGuard` e `spawnSlots`
+
+São os dois campos que PB-04-05 acrescentou, e ambos são estado vivo pelo mesmo motivo que
+`pendingIntents`: nenhum outro campo os reconstrói.
+
+`transitionGuard` é `null` ou a célula em que o ator pousou por transição. Ele inibe transição
+enquanto vivo — ver "Transições" — logo um snapshot sem ele retoma numa regra diferente.
+`spawnSlots` carrega o cronograma de respawn; sem ele a retomada perde quem está vivo em cada
+assento e quando o próximo nascimento é devido.
+
+A checagem de que `transitionGuard` cai dentro do grid mora em `restoreSimulationKernel`, não no
+schema: o snapshot não declara terreno, então só o cenário permite avaliá-la.
 
 ### `pendingIntents`
 
@@ -208,7 +252,16 @@ continua avançando até obter um estado não nulo.
 `createSeededRandom(seed, label)` deriva o stream inicial a partir do estado expandido. `derive(label)`
 calcula FNV-1a 32 do rótulo kebab-case e mistura esse hash com `s0`–`s3` do estado atual por
 `SplitMix32`. A operação não consome o pai; o mesmo rótulo sobre o mesmo estado produz o mesmo filho.
-Os streams do kernel são exatamente `movement`, `ai` e `scenario`.
+Os streams do kernel são exatamente `movement`, `ai`, `scenario` e `spawn`.
+
+Como a derivação é por hash do rótulo, acrescentar `spawn` **não** desloca os outros três. Isso é
+afirmação testável, não suposição: `packages/simulation/src/random/random.test.ts` compara os oito
+primeiros `nextUint32()` de `ai`, `movement` e `scenario` com os vetores golden de PB-03-02 e
+registra o vetor novo de `spawn` para a seed `0f1e2d3c4b5a6978`:
+
+```text
+spawn: c4e46756 97d5fe29 e8f89ef4 2187ecdc 9b4bb0ce e6e26967 236ed8ca ed821c3f
+```
 
 `nextUint32()` é a única primitiva que avança o estado e incrementa `drawCount`. `nextBelow(bound)`
 aceita um inteiro em `[1, 2^32]`, calcula a maior faixa múltipla de `bound` contida em `2^32`,
@@ -216,8 +269,9 @@ descarta valores fora dessa faixa e só então aplica o módulo. Cada valor desc
 `drawCount`, portanto o contador audita exatamente o consumo do stream.
 
 O estado serializado é `{ label, s0, s1, s2, s3, drawCount }`. `KernelRandomStreams.serialize()`
-ordena os estados por `label`: `ai`, `movement`, `scenario`. Restaurar estado zero, label ausente,
-duplicado ou desconhecido é erro. Trocar o algoritmo, as constantes, a ordem da mistura ou a regra de
+ordena os estados por `label`: `ai`, `movement`, `scenario`, `spawn`. Restaurar estado zero, label
+ausente, duplicado ou desconhecido é erro, e um conjunto de três estados — a forma do schema `2` — é
+recusado por contagem. Trocar o algoritmo, as constantes, a ordem da mistura ou a regra de
 rejeição altera a sequência observável e exige incremento de `SIMULATION_RULES_VERSION` com novos
 vetores golden.
 
@@ -284,33 +338,69 @@ filesystem, fetch, Web Crypto, Blob ou qualquer outro pacote Huntbound.
 
 ## Espaço e movimento
 
-O espaço do kernel é um grid inteiro estático. Cada posição tem `{ x, y, z }`; o cenário declara
-uma única camada `z`, `width`, `height` e a lista `blockedTiles`. Não há transição de andar,
-pathfinding, line of sight, área de efeito ou projétil em PB-03.
+O espaço do kernel é um grid inteiro estático com múltiplos andares. Cada posição tem `{ x, y, z }`;
+o cenário declara `width`, `height` e a lista `floors`, cada uma com seu `z` e seu `blockedTiles`.
+Não há pathfinding, line of sight, área de efeito ou projétil.
+
+`createStaticGrid(scenario)` devolve `StaticGrid` com `width`, `height`, `floors` (os `z`
+declarados, na ordem do cenário), `hasFloor(z)`, `isInside(position)`, `isBlockedTerrain(position)` e
+`transitionAt(position)`. `isInside` exige andar declarado **e** posição dentro de `width`/`height`.
+`FloorGrid` é o terreno de um único andar e é o tipo interno que `StaticGrid` indexa por `z`.
 
 As direções formam um conjunto fechado e são percorridas nesta ordem canônica:
 `n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`. Seus deltas são, respectivamente, `(0,-1)`, `(1,-1)`,
 `(1,0)`, `(1,1)`, `(0,1)`, `(-1,1)`, `(-1,0)` e `(-1,-1)`. A coordenada `z` é preservada durante
 um passo.
 
-O terreno é estático e bloqueia somente as células declaradas em `blockedTiles`. A ocupação é um
-índice derivado da lista de `ActorState`; ela é reconstruída ao carregar o estado e não é
-serializada. Cada célula comporta no máximo um ator, conforme a validação do cenário e do snapshot.
+O terreno é estático e bloqueia somente as células declaradas no `blockedTiles` **do andar**. A
+ocupação é um índice derivado da lista de `ActorState`; ela é reconstruída ao carregar o estado e não
+é serializada. **A chave do índice inclui `z`**: dois atores em andares diferentes podem ocupar o
+mesmo `(x, y)`, e uma chave só de `(x, y)` faria um ator de baixo bloquear a coluna de cima.
 
 `resolveStep` é pura: não modifica o ator, o grid ou o índice. Ela calcula o destino e avalia as
 causas nesta precedência fixa:
 
-1. `bounds`, quando o destino está fora de `width`, `height` ou usa outro `z`;
-2. `terrain`, quando o destino está bloqueado;
+1. `bounds`, quando o destino está fora de `width`, `height` ou num andar não declarado;
+2. `terrain`, quando o destino está bloqueado no andar de origem;
 3. `diagonal-corner`, quando um dos dois vizinhos ortogonais do passo diagonal está bloqueado por
-   terreno;
-4. `occupied`, quando o destino está ocupado por outro ator.
+   terreno **no andar de origem**;
+4. `occupied`, quando o destino está ocupado por outro ator;
+5. `transition-blocked`, quando o destino declara transição e a célula de chegada está ocupada.
 
-O teste de corte de canto considera somente terreno: um ator em um dos vizinhos ortogonais não
-impede o passo diagonal. O destino, porém, continua sujeito à verificação de ocupação. Passos
-ortogonais custam `baseTicks`; passos diagonais custam `Math.ceil(baseTicks * 3 / 2)` ticks. O
-`baseTicks` é o `stepCooldownTicks` do blueprint, e a decisão de `cooldown` pertence ao chamador,
-não à camada geométrica.
+O teste de corte de canto considera somente terreno, e somente o do andar de origem: não existe
+passo diagonal entre andares, porque `translate` preserva `z`. Um ator em um dos vizinhos ortogonais
+não impede o passo diagonal. Passos ortogonais custam `baseTicks`; passos diagonais custam
+`Math.ceil(baseTicks * 3 / 2)` ticks. O `baseTicks` é o `stepCooldownTicks` do blueprint, e a decisão
+de `cooldown` pertence ao chamador, não à camada geométrica.
+
+`StepOutcome` bem-sucedido ganha `transitionedTo`, presente somente quando o passo dispara uma
+transição. `to` continua sendo o destino geométrico; `transitionedTo` é onde o ator termina o tick.
+
+## Transições
+
+Uma transição dispara **ao entrar no tile por passo**, no fim de `S2 movement`, nunca por comando.
+Não existe comando novo e `commandPriority` está inalterado.
+
+O disparo emite `actor/moved` e, em seguida, `actor/transitioned` — nessa ordem, no mesmo tick. Uma
+transição não consome aleatoriedade.
+
+A regra do guard, congelada:
+
+- ao chegar, `transitionGuard` recebe a posição de chegada;
+- o guard é limpo pelo passo que sai da célula guardada, e **esse mesmo passo não dispara
+  transição**: o ator "só volta a poder disparar qualquer transição depois de sair dessa célula", e o
+  passo que sai ainda está coberto. É exatamente isso que torna o guard estado vivo e observável, e
+  o que a varredura de fronteiras detecta se ele não for serializado;
+- por consequência, chegar num tile que também é transição não encadeia no mesmo tick, e sair e
+  voltar ao tile de chegada volta a permitir a transição;
+- enquanto o guard está ativo a transição é ignorada por inteiro, inclusive para efeito de bloqueio:
+  um passo guardado nunca devolve `transition-blocked`;
+- um guard que não corresponde à posição do ator é estado inconsistente, não comportamento. O kernel
+  falha o tick lançando `KernelInvariantError` com `code: 'SIM_TRANSITION_CHAINED'` em vez de
+  continuar.
+
+Destino ocupado bloqueia o passo inteiro com `transition-blocked`: o ator fica na origem e **não**
+emite `actor/moved`.
 
 ## Loop de tick
 
@@ -335,9 +425,13 @@ A ordem é fixa e não tem exceção:
 1. intake    comandos externos com tick == currentTick saem do buffer já ordenados;
              intents internas decididas em ticks anteriores para este tick entram na fila de passo
 2. apply     validação e mutação por comando, na ordem (prioridade, sequence)
-3. systems   S1 lifecycle -> S2 movement -> S3 ai
+3. systems   S1 lifecycle -> S2 movement (com transição no fim) -> S3 ai -> S4 spawn
 4. flush     o journal do tick é fechado e devolvido; currentTick += 1
 ```
+
+`S4` é o último por duas razões congeladas: o nascimento do tick `T` só pode ser observado a partir
+de `T`, e ele nunca disputa célula com um passo do mesmo tick — uma célula liberada por `S2` já pode
+receber um nascimento no mesmo tick, e o recém-nascido só é considerado por `S3` no tick seguinte.
 
 `advance(ticks)` concatena os journals na ordem dos ticks e é equivalente a `ticks` chamadas de
 `advanceOne()`. `advance(0)` não avança e devolve vazio; `ticks` negativo, fracionário ou `NaN`
@@ -405,6 +499,25 @@ forma determinística, porque muda o consumo do stream.
 Comandos internos gerados por `S3` usam uma fila interna própria, ordenada por `EntityId`. Eles não
 entram no command log e não consomem `sequence` de comando externo.
 
+`S4 spawn` percorre a tabela do cenário em ordem `(groupIndex, slotIndex)` — a ordem canônica
+descrita acima, não a de declaração. Para cada slot vago cujo `readyAtTick` já chegou:
+
+1. se o número de atores vivos já alcançou `maxLiveActors`, emite `spawn/capped` e, em seguida,
+   `spawn/deferred` com `cap-reached`, e passa ao próximo slot;
+2. nasce na posição declarada quando ela está dentro do grid, livre de terreno e desocupada;
+3. senão, sorteia uniformemente entre as células livres do raio pelo stream `spawn`, percorrendo o
+   quadrado do raio em ordem row-major `(y, x)` e consumindo exatamente um `nextBelow(n)`;
+4. sem nenhuma célula livre, emite `spawn/deferred` com `no-free-cell`, **não** consome
+   aleatoriedade e tenta de novo no tick seguinte.
+
+Um ator nascido por `S4` entra com `facing: 's'`, `readyAtTick = currentTick` e
+`transitionGuard = null`, e emite `actor/spawned` como qualquer outro nascimento. Quando o ator de um
+slot é removido por `scenario/despawn-actor`, o assento fica `null` e
+`readyAtTick = tickDoDespawn + respawnTicks`. Não existe morte em PB-04; o despawn é a única saída.
+
+O teto vale apenas para `S4`. Um `scenario/spawn-actor` externo continua governado pelas rejeições de
+`apply`, e não por `maxLiveActors`.
+
 ### Determinismo
 
 Nenhum sistema lê relógio, cria promessa, agenda callback ou depende de ordem de inserção de
@@ -413,3 +526,14 @@ estrutura preenchida de forma não determinística. `Math.random`, `Date`, `perf
 `packages/simulation/src/**` e a regra é executável em `tools/architecture/simulation-boundaries.ts`,
 incluída em `architecture:check`. A regra vale para todo arquivo do pacote; `vitest` é o único
 pacote externo tolerado, e apenas em arquivos `*.test.ts`.
+
+## Fronteira kernel × conteúdo
+
+O kernel recebe geometria e comportamento, nunca identidade Tibia. As identidades `serverId`,
+`clientId`, `lookType`, `huntId` e `regionId` são proibidas em `packages/simulation/src/**` e a
+mesma regra executável as reprova. Diferente dos globais acima, elas são reprovadas em **qualquer**
+posição — acesso a propriedade e declaração incluídos —, porque é exatamente assim que um campo
+desses vaza. Comentários e strings continuam fora do escaneamento.
+
+`simulation-boundaries.test.ts` e `content-boundaries.test.ts` entram no enumerador de `node --test`
+do script `test` da raiz, portanto a regra roda no gate agregado.

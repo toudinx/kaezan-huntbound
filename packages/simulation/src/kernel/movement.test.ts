@@ -79,6 +79,7 @@ describe('kernel movement system', () => {
       position: at(2, 2),
       facing: 'se',
       readyAtTick: 4,
+      transitionGuard: null,
     });
   });
 

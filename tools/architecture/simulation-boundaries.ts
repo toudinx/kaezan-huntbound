@@ -23,6 +23,20 @@ const forbiddenMembers: readonly (readonly [string, string])[] = [
   ['Math', 'random'],
 ];
 
+/**
+ * Tibia identity never crosses into the kernel: it receives geometry and
+ * behaviour, never an item id, an outfit id or the name of a hunt. Unlike the
+ * globals above these are banned in every position, property accesses and
+ * declarations included, because that is exactly how such a field leaks.
+ */
+const forbiddenIdentities: readonly string[] = [
+  'clientId',
+  'huntId',
+  'lookType',
+  'regionId',
+  'serverId',
+];
+
 async function filesUnder(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
   const files: string[] = [];
@@ -243,6 +257,11 @@ function globalDiagnostics(source: string): readonly [string, number][] {
       ) {
         found.push([`${object}.${member}`, lineOf(source, token.start)]);
       }
+    }
+
+    if (forbiddenIdentities.includes(token.value)) {
+      found.push([token.value, lineOf(source, token.start)]);
+      continue;
     }
 
     if (tokens[index - 1]?.value === '.' || tokens[index + 1]?.value === ':') {

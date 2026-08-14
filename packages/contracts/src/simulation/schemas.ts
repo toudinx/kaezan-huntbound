@@ -50,6 +50,7 @@ const diagnosticCodeValues = [
   'SIM_MOVE_DIAGONAL_CORNER',
   'SIM_MOVE_ON_COOLDOWN',
   'SIM_SPAWN_TILE_UNAVAILABLE',
+  'SIM_TRANSITION_CHAINED',
   'SIM_STATE_NOT_INTEGER',
   'SIM_STATE_NOT_SERIALIZABLE',
   'SIM_REPLAY_DIVERGED',
@@ -58,12 +59,19 @@ const diagnosticCodeValues = [
 export const DirectionSchema = z.enum(directionValues);
 export const ActorBehaviorSchema = z.enum(['inert', 'wander']);
 export const CommandIssuerSchema = z.enum(['player', 'ai', 'scenario']);
-export const MoveBlockedReasonSchema = z.enum([
+const moveBlockedReasonValues = [
   'bounds',
   'terrain',
   'occupied',
   'diagonal-corner',
   'cooldown',
+  'transition-blocked',
+] as const;
+
+export const MoveBlockedReasonSchema = z.enum(moveBlockedReasonValues);
+export const SpawnDeferralReasonSchema = z.enum([
+  'no-free-cell',
+  'cap-reached',
 ]);
 export const SimulationCommandTypeSchema = z.enum(commandTypeValues);
 export const SimulationDiagnosticCodeSchema = z.enum(diagnosticCodeValues);
@@ -133,6 +141,36 @@ function positionKey(position: {
   return `${position.x}:${position.y}:${position.z}`;
 }
 
+export const ScenarioFloorSchema = z
+  .object({
+    z: safeInteger,
+    blockedTiles: z.array(BlockedTileSchema).readonly(),
+  })
+  .strict();
+
+export const ScenarioTransitionSchema = z
+  .object({
+    from: GridPositionSchema,
+    to: GridPositionSchema,
+  })
+  .strict();
+
+export const ScenarioSpawnSlotSchema = z
+  .object({
+    blueprintId,
+    position: GridPositionSchema,
+    respawnTicks: nonNegativeInteger,
+  })
+  .strict();
+
+export const ScenarioSpawnGroupSchema = z
+  .object({
+    center: GridPositionSchema,
+    radius: nonNegativeInteger,
+    slots: z.array(ScenarioSpawnSlotSchema).readonly(),
+  })
+  .strict();
+
 export const KernelScenarioSchema = z
   .object({
     schemaVersion: nonNegativeInteger,
@@ -140,52 +178,148 @@ export const KernelScenarioSchema = z
     scenarioRevision: nonNegativeInteger,
     width: positiveInteger,
     height: positiveInteger,
-    z: safeInteger,
-    blockedTiles: z.array(BlockedTileSchema).readonly(),
+    floors: z.array(ScenarioFloorSchema).readonly(),
+    transitions: z.array(ScenarioTransitionSchema).readonly(),
+    spawnGroups: z.array(ScenarioSpawnGroupSchema).readonly(),
+    maxLiveActors: positiveInteger,
     blueprints: z.array(ActorBlueprintSchema).readonly(),
     initialActors: z.array(InitialActorSchema).readonly(),
   })
   .strict()
   .superRefine((scenario, context) => {
+    const inside = (position: { readonly x: number; readonly y: number }) =>
+      position.x >= 0 &&
+      position.x < scenario.width &&
+      position.y >= 0 &&
+      position.y < scenario.height;
+
+    if (scenario.floors.length === 0) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['floors'],
+        'A scenario must declare at least one floor',
+      );
+    }
+
+    // A blocked cell belongs to one floor: `(x, y)` alone is not a key any
+    // more, and the same column can be free above and solid below.
     const blocked = new Set<string>();
-    let previousTile: readonly [number, number] | undefined;
+    const declaredFloors = new Set<number>();
+    let previousZ: number | undefined;
 
-    scenario.blockedTiles.forEach((tile, index) => {
-      const [x, y] = tile;
-      const path = ['blockedTiles', index] as const;
-
-      if (x < 0 || x >= scenario.width || y < 0 || y >= scenario.height) {
+    scenario.floors.forEach((floor, floorIndex) => {
+      if (previousZ !== undefined && floor.z <= previousZ) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
-          path,
-          'Blocked tile must be inside the scenario grid',
+          ['floors', floorIndex, 'z'],
+          'floors must be strictly ordered by ascending z',
         );
       }
+      previousZ = floor.z;
+      declaredFloors.add(floor.z);
 
-      if (
-        previousTile !== undefined &&
-        compareBlockedTiles(previousTile, tile) >= 0
-      ) {
+      const seen = new Set<string>();
+      let previousTile: readonly [number, number] | undefined;
+
+      floor.blockedTiles.forEach((tile, index) => {
+        const [x, y] = tile;
+        const path = ['floors', floorIndex, 'blockedTiles', index] as const;
+
+        if (!inside({ x, y })) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            path,
+            'Blocked tile must be inside the scenario grid',
+          );
+        }
+
+        if (
+          previousTile !== undefined &&
+          compareBlockedTiles(previousTile, tile) >= 0
+        ) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            path,
+            'blockedTiles must be strictly ordered by (y, x)',
+          );
+        }
+
+        if (seen.has(tileKey(x, y))) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            path,
+            'blockedTiles must not contain duplicates',
+          );
+        }
+
+        seen.add(tileKey(x, y));
+        blocked.add(positionKey({ x, y, z: floor.z }));
+        previousTile = tile;
+      });
+    });
+
+    const usable = (
+      position: { readonly x: number; readonly y: number; readonly z: number },
+      allowBlocked: boolean,
+    ): string | undefined => {
+      if (!inside(position)) {
+        return 'must be inside the scenario grid';
+      }
+      if (!declaredFloors.has(position.z)) {
+        return 'must sit on a declared floor';
+      }
+      if (!allowBlocked && blocked.has(positionKey(position))) {
+        return 'must not sit on blocked terrain';
+      }
+      return undefined;
+    };
+
+    const transitionSources = new Set<string>();
+    scenario.transitions.forEach((transition, index) => {
+      const fromProblem = usable(transition.from, true);
+      if (fromProblem !== undefined) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
-          path,
-          'blockedTiles must be strictly ordered by (y, x)',
+          ['transitions', index, 'from'],
+          `Transition source ${fromProblem}`,
         );
       }
 
-      if (blocked.has(tileKey(x, y))) {
+      const toProblem = usable(transition.to, false);
+      if (toProblem !== undefined) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
-          path,
-          'blockedTiles must not contain duplicates',
+          ['transitions', index, 'to'],
+          `Transition target ${toProblem}`,
         );
       }
 
-      blocked.add(tileKey(x, y));
-      previousTile = tile;
+      if (positionKey(transition.from) === positionKey(transition.to)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['transitions', index],
+          'A transition must not target its own source',
+        );
+      }
+
+      const key = positionKey(transition.from);
+      if (transitionSources.has(key)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['transitions', index, 'from'],
+          'A cell can declare at most one transition',
+        );
+      }
+      transitionSources.add(key);
     });
 
     const blueprintIds = new Set<string>();
@@ -199,6 +333,80 @@ export const KernelScenarioSchema = z
         );
       }
       blueprintIds.add(blueprint.blueprintId);
+    });
+
+    // The canonical spawn order is derived from `(z, y, x)` of the centre and
+    // of each slot, so both keys have to be unique for the order to be total.
+    const groupCentres = new Set<string>();
+    scenario.spawnGroups.forEach((group, groupIndex) => {
+      const centreProblem = usable(group.center, true);
+      if (centreProblem !== undefined) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['spawnGroups', groupIndex, 'center'],
+          `Spawn group centre ${centreProblem}`,
+        );
+      }
+
+      const centreKey = positionKey(group.center);
+      if (groupCentres.has(centreKey)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['spawnGroups', groupIndex, 'center'],
+          'Spawn group centres must be unique',
+        );
+      }
+      groupCentres.add(centreKey);
+
+      const slotCells = new Set<string>();
+      group.slots.forEach((slot, slotIndex) => {
+        const path = ['spawnGroups', groupIndex, 'slots', slotIndex] as const;
+
+        if (!blueprintIds.has(slot.blueprintId)) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...path, 'blueprintId'],
+            `Unknown blueprint ${slot.blueprintId}`,
+          );
+        }
+
+        const slotProblem = usable(slot.position, false);
+        if (slotProblem !== undefined) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...path, 'position'],
+            `Spawn slot position ${slotProblem}`,
+          );
+        }
+
+        if (
+          slot.position.z !== group.center.z ||
+          Math.abs(slot.position.x - group.center.x) > group.radius ||
+          Math.abs(slot.position.y - group.center.y) > group.radius
+        ) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...path, 'position'],
+            'Spawn slot position must lie inside the group radius',
+          );
+        }
+
+        const slotKey = positionKey(slot.position);
+        if (slotCells.has(slotKey)) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...path, 'position'],
+            'Spawn slots of a group must not share a cell',
+          );
+        }
+        slotCells.add(slotKey);
+      });
     });
 
     const actorCells = new Set<string>();
@@ -215,12 +423,7 @@ export const KernelScenarioSchema = z
         );
       }
 
-      if (
-        position.x < 0 ||
-        position.x >= scenario.width ||
-        position.y < 0 ||
-        position.y >= scenario.height
-      ) {
+      if (!inside(position)) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
@@ -229,16 +432,16 @@ export const KernelScenarioSchema = z
         );
       }
 
-      if (position.z !== scenario.z) {
+      if (!declaredFloors.has(position.z)) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
           [...positionPath, 'z'],
-          'Initial actor position must use the scenario z level',
+          'Initial actor position must use a declared floor',
         );
       }
 
-      if (blocked.has(tileKey(position.x, position.y))) {
+      if (blocked.has(positionKey(position))) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
@@ -373,13 +576,33 @@ export const ActorMoveBlockedEventPayloadSchema = z
     type: z.literal('actor/move-blocked'),
     entityId: EntityIdSchema,
     attempted: GridPositionSchema,
-    reason: z.enum([
-      'bounds',
-      'terrain',
-      'occupied',
-      'diagonal-corner',
-      'cooldown',
-    ]),
+    reason: MoveBlockedReasonSchema,
+  })
+  .strict();
+
+export const ActorTransitionedEventPayloadSchema = z
+  .object({
+    type: z.literal('actor/transitioned'),
+    entityId: EntityIdSchema,
+    from: GridPositionSchema,
+    to: GridPositionSchema,
+  })
+  .strict();
+
+export const SpawnDeferredEventPayloadSchema = z
+  .object({
+    type: z.literal('spawn/deferred'),
+    groupIndex: nonNegativeInteger,
+    slotIndex: nonNegativeInteger,
+    reason: SpawnDeferralReasonSchema,
+  })
+  .strict();
+
+export const SpawnCappedEventPayloadSchema = z
+  .object({
+    type: z.literal('spawn/capped'),
+    groupIndex: nonNegativeInteger,
+    slotIndex: nonNegativeInteger,
   })
   .strict();
 
@@ -413,6 +636,9 @@ export const SimulationEventPayloadSchema = z.discriminatedUnion('type', [
   ActorMoveBlockedEventPayloadSchema,
   ActorFacedEventPayloadSchema,
   ActorDespawnedEventPayloadSchema,
+  ActorTransitionedEventPayloadSchema,
+  SpawnDeferredEventPayloadSchema,
+  SpawnCappedEventPayloadSchema,
   CommandRejectedEventPayloadSchema,
 ]);
 
@@ -442,6 +668,16 @@ export const ActorStateSchema = z
     position: GridPositionSchema,
     facing: DirectionSchema,
     readyAtTick: nonNegativeInteger,
+    transitionGuard: GridPositionSchema.nullable(),
+  })
+  .strict();
+
+export const SpawnSlotStateSchema = z
+  .object({
+    groupIndex: nonNegativeInteger,
+    slotIndex: nonNegativeInteger,
+    readyAtTick: nonNegativeInteger,
+    entityId: EntityIdSchema.nullable(),
   })
   .strict();
 
@@ -462,6 +698,19 @@ function comparePendingIntents(
   }
   if (left.entityId !== right.entityId) {
     return left.entityId < right.entityId ? -1 : 1;
+  }
+  return 0;
+}
+
+function compareSpawnSlots(
+  left: { readonly groupIndex: number; readonly slotIndex: number },
+  right: { readonly groupIndex: number; readonly slotIndex: number },
+) {
+  if (left.groupIndex !== right.groupIndex) {
+    return left.groupIndex < right.groupIndex ? -1 : 1;
+  }
+  if (left.slotIndex !== right.slotIndex) {
+    return left.slotIndex < right.slotIndex ? -1 : 1;
   }
   return 0;
 }
@@ -494,6 +743,7 @@ export const SimulationSnapshotSchema = z
     actors: z.array(ActorStateSchema).readonly(),
     pendingCommands: z.array(SimulationCommandRecordSchema).readonly(),
     pendingIntents: z.array(PendingIntentStateSchema).readonly(),
+    spawnSlots: z.array(SpawnSlotStateSchema).readonly(),
   })
   .strict()
   .superRefine((snapshot, context) => {
@@ -581,6 +831,7 @@ export const SimulationSnapshotSchema = z
     });
 
     const actorCells = new Set<string>();
+    const liveEntityIds = new Set<number>();
     snapshot.actors.forEach((actor, index) => {
       const key = positionKey(actor.position);
       if (actorCells.has(key)) {
@@ -592,6 +843,40 @@ export const SimulationSnapshotSchema = z
         );
       }
       actorCells.add(key);
+      liveEntityIds.add(actor.entityId);
+    });
+
+    snapshot.spawnSlots.forEach((slot, index) => {
+      if (slot.entityId !== null && !liveEntityIds.has(slot.entityId)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['spawnSlots', index, 'entityId'],
+          `spawnSlots cannot hold the missing entity ${slot.entityId}`,
+        );
+      }
+
+      const previous = snapshot.spawnSlots[index - 1];
+      if (previous === undefined) {
+        return;
+      }
+
+      const order = compareSpawnSlots(previous, slot);
+      if (order === 0) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['spawnSlots', index],
+          'spawnSlots must not repeat a (groupIndex, slotIndex) pair',
+        );
+      } else if (order > 0) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['spawnSlots', index],
+          'spawnSlots must be strictly ordered by (groupIndex, slotIndex)',
+        );
+      }
     });
   });
 

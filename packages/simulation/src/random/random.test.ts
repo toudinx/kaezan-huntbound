@@ -17,6 +17,7 @@ const otherSeed = '0f1e2d3c4b5a6979' as Seed;
 const movement = 'movement' as StreamLabel;
 const ai = 'ai' as StreamLabel;
 const scenario = 'scenario' as StreamLabel;
+const spawn = 'spawn' as StreamLabel;
 const UINT32_RANGE = 0x1_0000_0000;
 
 function drawMany(
@@ -153,13 +154,14 @@ describe('deterministic random source', () => {
 });
 
 describe('kernel random streams', () => {
-  it('creates and restores the three streams in canonical label order', () => {
+  it('creates and restores every stream in canonical label order', () => {
     const streams = createKernelRandomStreams(seed);
 
     expect(streams.serialize().map((state) => state.label)).toEqual([
       ai,
       movement,
       scenario,
+      spawn,
     ]);
     streams.movement.nextUint32();
     streams.scenario.nextBelow(6);
@@ -177,9 +179,15 @@ describe('kernel random streams', () => {
     const first = states[0];
     const second = states[1];
     const third = states[2];
+    const fourth = states[3];
 
-    if (first === undefined || second === undefined || third === undefined) {
-      throw new Error('Expected three kernel random stream states.');
+    if (
+      first === undefined ||
+      second === undefined ||
+      third === undefined ||
+      fourth === undefined
+    ) {
+      throw new Error('Expected four kernel random stream states.');
     }
     expect(() => restoreKernelRandomStreams(states.slice(1))).toThrow();
     expect(() =>
@@ -193,10 +201,16 @@ describe('kernel random streams', () => {
         first,
         { ...second, label: first.label },
         third,
+        fourth,
       ]),
     ).toThrow();
   });
 
+  /**
+   * The vectors below are the ones PB-03-02 froze. A stream is derived by
+   * hashing its own label, so adding `spawn` must not shift any of them; if one
+   * moves, label derivation is broken and the bump is not a format change.
+   */
   it('freezes golden vectors for the kernel streams', () => {
     const expected: Record<string, readonly number[]> = {
       ai: [
@@ -211,6 +225,10 @@ describe('kernel random streams', () => {
         0xfc89a05c, 0x535ac971, 0x733b1b1a, 0x27af86d8, 0x0fcb29a6, 0x971986f7,
         0xab6025df, 0x6f306771,
       ],
+      spawn: [
+        0xc4e46756, 0x97d5fe29, 0xe8f89ef4, 0x2187ecdc, 0x9b4bb0ce, 0xe6e26967,
+        0x236ed8ca, 0xed821c3f,
+      ],
     };
     const streams = createKernelRandomStreams(seed);
 
@@ -218,8 +236,30 @@ describe('kernel random streams', () => {
       [ai, streams.ai],
       [movement, streams.movement],
       [scenario, streams.scenario],
+      [spawn, streams.spawn],
     ] as const) {
       expect(drawMany(source, 8)).toEqual(expected[label]);
     }
+  });
+
+  it('adds spawn as the fourth canonical stream without moving the others', () => {
+    const streams = createKernelRandomStreams(seed);
+
+    expect(streams.serialize().map((state) => state.label)).toEqual([
+      ai,
+      movement,
+      scenario,
+      spawn,
+    ]);
+  });
+
+  it('refuses to restore a three-stream snapshot from the previous schema', () => {
+    const states = createKernelRandomStreams(seed).serialize();
+
+    expect(() =>
+      restoreKernelRandomStreams(
+        states.filter((state) => state.label !== spawn),
+      ),
+    ).toThrow();
   });
 });

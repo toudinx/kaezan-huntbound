@@ -7,6 +7,7 @@ import type {
   SimulationDiagnostic,
   SimulationSnapshot,
   SimulationValidationResult,
+  SpawnSlotState,
 } from '@huntbound/contracts';
 import {
   SIMULATION_RULES_VERSION,
@@ -14,6 +15,7 @@ import {
   validateSimulationSnapshot,
 } from '@huntbound/contracts';
 
+import { createStaticGrid } from '../grid/staticGrid.ts';
 import {
   createSimulationKernel,
   type SimulationKernel,
@@ -56,6 +58,13 @@ function byTickThenEntityId(
   );
 }
 
+function byGroupThenSlot(left: SpawnSlotState, right: SpawnSlotState): number {
+  return (
+    compareNumbers(left.groupIndex, right.groupIndex) ||
+    compareNumbers(left.slotIndex, right.slotIndex)
+  );
+}
+
 /**
  * Serializable state of a live kernel, in the frozen field order-independent
  * shape. Terrain, occupancy and the scenario digest are deliberately absent:
@@ -78,6 +87,7 @@ export function snapshotKernel(kernel: SimulationKernel): SimulationSnapshot {
     actors: [...state.actors].sort(byEntityId),
     pendingCommands: [...state.pendingCommands].sort(byTickThenSequence),
     pendingIntents: [...state.pendingInternalIntents].sort(byTickThenEntityId),
+    spawnSlots: [...state.spawnSlots].sort(byGroupThenSlot),
   };
 }
 
@@ -134,6 +144,22 @@ export function restoreSimulationKernel(
     );
   }
 
+  // The snapshot schema cannot see the grid, so the cell a guard names is only
+  // checkable once the scenario is in hand.
+  const grid = createStaticGrid(scenario);
+  value.actors.forEach((actor, index) => {
+    const guard = actor.transitionGuard;
+    if (guard !== null && !grid.isInside(guard)) {
+      diagnostics.push(
+        diagnostic(
+          'SIM_SCHEMA_INVALID',
+          `transitionGuard (${guard.x}, ${guard.y}, ${guard.z}) is outside the scenario grid`,
+          ['actors', index, 'transitionGuard'],
+        ),
+      );
+    }
+  });
+
   if (diagnostics.length > 0) {
     return { ok: false, diagnostics };
   }
@@ -150,6 +176,7 @@ export function restoreSimulationKernel(
         randomStreams: value.randomStreams,
         pendingCommands: value.pendingCommands,
         pendingIntents: value.pendingIntents,
+        spawnSlots: value.spawnSlots,
       }),
     };
   } catch (error) {

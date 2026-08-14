@@ -163,6 +163,64 @@ describe('simulation architecture boundaries', () => {
     assert.match(diagnostics[0] ?? '', /kernel\.ts: import "vitest"/);
   });
 
+  it('rejects Tibia identity leaking into the kernel', async () => {
+    const root = await scratchRoot('huntbound-simulation-identity-');
+    const file = join(root, 'leak.ts');
+    await writeFile(
+      file,
+      [
+        'export interface Leak {',
+        '  readonly serverId: number;',
+        '  readonly clientId: number;',
+        '  readonly lookType: number;',
+        '}',
+        '',
+        'export function read(leak: Leak, hunt: { huntId: string }) {',
+        '  const regionId = hunt.huntId;',
+        '  return leak.serverId + leak.clientId + leak.lookType + regionId.length;',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const report = (
+      await checkSimulationBoundaries(root, { sourceFiles: [file] })
+    ).join('\n');
+
+    for (const identity of [
+      'serverId',
+      'clientId',
+      'lookType',
+      'huntId',
+      'regionId',
+    ]) {
+      assert.match(report, new RegExp(`"${identity}"`), `missing ${identity}`);
+    }
+  });
+
+  it('accepts a kernel module that names no Tibia identity', async () => {
+    const root = await scratchRoot('huntbound-simulation-no-identity-');
+    const file = join(root, 'clean.ts');
+    await writeFile(
+      file,
+      [
+        'export interface Slot {',
+        '  readonly blueprintId: string;',
+        '  readonly groupIndex: number;',
+        '}',
+        '',
+        '// serverId and lookType inside a comment stay allowed.',
+        "export const note = 'clientId inside a string stays allowed';",
+        '',
+      ].join('\n'),
+    );
+
+    assert.deepEqual(
+      await checkSimulationBoundaries(root, { sourceFiles: [file] }),
+      [],
+    );
+  });
+
   it('keeps the real simulation package inside its boundaries', async () => {
     assert.deepEqual(
       await checkSimulationBoundaries(join(import.meta.dirname, '..', '..')),

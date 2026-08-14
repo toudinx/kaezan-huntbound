@@ -37,7 +37,7 @@ uma intent decidida, e varrem todas as fronteiras de `0` a `24`.
 JSONL. Primeira linha é o cabeçalho:
 
 ```text
-{"kind":"header","rulesVersion":1,"scenarioId":"...","scenarioRevision":1,"schemaVersion":2,"seed":"...","tickCount":200}
+{"kind":"header","rulesVersion":2,"scenarioId":"...","scenarioRevision":1,"schemaVersion":3,"seed":"...","tickCount":200}
 ```
 
 As demais linhas são comandos achatados:
@@ -112,13 +112,13 @@ seguidas devolvem `0`.
 ## Hashes congelados
 
 Fixture `pb-03-kernel-coverage`, revisão `1`, seed `0f1e2d3c4b5a6978`, `200` ticks, retomada em `117`,
-`SIMULATION_SCHEMA_VERSION = 2`, `SIMULATION_RULES_VERSION = 1`:
+`SIMULATION_SCHEMA_VERSION = 3`, `SIMULATION_RULES_VERSION = 2`:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `056d869682ba13241f7444ae2df39bc68100c867b1ee71d2dca973fec370b3f1` |
-| `commands.jsonl` | `c1e815c663dcddf0d2d651bdf0b136d4e2a50f85f66912f2114f78dab0ce0d9c` |
-| `snapshot.golden.json` | `9d0c3a249b6e72daf0bce868824eb17a80b0cf4153ab05f6f7b7d50dae5f7260` |
+| `scenario.json` | `72d006552742691fbb71cd41bc84a80aebf0afd27faef027e358b4d92fcc23e9` |
+| `commands.jsonl` | `88ec73de434a7bf092c68bb3a3601caaef1bfca2b59d9b84f20f334462749d66` |
+| `snapshot.golden.json` | `84528f5246c156b65e46343d713851d064943c3550281bba0ab0e5d18d10d341` |
 | `events.golden.jsonl` | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
 
 ### Migração de `SIMULATION_SCHEMA_VERSION` `1` para `2`
@@ -136,10 +136,33 @@ Um snapshot escrito na versão `1` não é migrado automaticamente: falta-lhe `p
 é `.strict()`, e `validateSimulationSnapshot` o recusa com `SIM_VERSION_MISMATCH`. Reproduzir uma run
 antiga significa reexecutar o command log, que é a fonte de verdade.
 
+### Migração de `SIMULATION_SCHEMA_VERSION` `2` para `3`
+
+A versão `3` troca `z` e `blockedTiles` do cenário por `floors`, acrescenta `transitions`,
+`spawnGroups` e `maxLiveActors` ao cenário, `transitionGuard` ao ator e `spawnSlots` ao snapshot, e
+cria o stream `spawn`. `SIMULATION_RULES_VERSION` sobe para `2` porque a semântica mudou de fato: há
+transição automática, ordem de sistemas com `S4` e ocupação por andar.
+
+Os três documentos que declaram versão — `scenario.json`, o header de `commands.jsonl` e
+`snapshot.golden.json` — mudaram de hash. O cenário também mudou de forma, e o snapshot ganhou os
+dois campos novos e o quarto stream.
+
+`events.golden.jsonl` permanece **byte-idêntico**, com o mesmo
+`31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` de PB-03-06 e da migração
+anterior. A fixture tem um único andar, `transitions` e `spawnGroups` vazios e nenhum ator sob teto,
+então `S4` não emite nada e a transição nunca dispara: a regra que a fixture exercita não mudou. Esse
+é o critério que separou mudança de formato de mudança de regra nesta migração, e ele foi bloqueante.
+Se o journal tivesse mudado, a migração teria de parar.
+
+Um snapshot ou cenário escrito na versão `2` é recusado pelo schema estrito, e um snapshot com três
+streams de RNG é recusado por contagem na restauração.
+
 ## Cobertura da fixture
 
-Grid 16×16 em `z = 7`. Parede horizontal em `y = 8`, corredor de largura 1 em `x = 5` entre paredes
-em `x = 4` e `x = 6`, e um único tile em `(2,1)` que serve de terreno bloqueante e de canto proibido.
+Grid 16×16 com um único andar `z = 7`, declarado em `floors`. Parede horizontal em `y = 8`, corredor
+de largura 1 em `x = 5` entre paredes em `x = 4` e `x = 6`, e um único tile em `(2,1)` que serve de
+terreno bloqueante e de canto proibido. `transitions` e `spawnGroups` são vazios e `maxLiveActors` é
+`64`, o teto congelado da região: a fixture cobre a regra de PB-03 e nada mais.
 
 Blueprints: `walker` (`stepCooldownTicks: 2`, `inert`), `wanderer` (`stepCooldownTicks: 3`, `wander`)
 e `statue` (`stepCooldownTicks: 0`, `inert`). Quatro atores iniciais.

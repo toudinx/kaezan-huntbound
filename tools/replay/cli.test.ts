@@ -6,6 +6,8 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { SIMULATION_RULES_VERSION } from '../../packages/contracts/src/index.ts';
+
 const cliPath = resolve(import.meta.dirname, 'cli.ts');
 const repoRoot = resolve(import.meta.dirname, '../..');
 const fixtureRoot = resolve(repoRoot, 'packages/test-fixtures/simulation/pb03');
@@ -269,7 +271,10 @@ describe('replay cli verify', () => {
     const original = await readFile(paths.log, 'utf8');
     await writeFile(
       paths.log,
-      original.replace('"rulesVersion":1', '"rulesVersion":2'),
+      original.replace(
+        `"rulesVersion":${SIMULATION_RULES_VERSION}`,
+        `"rulesVersion":${SIMULATION_RULES_VERSION + 1}`,
+      ),
       'utf8',
     );
 

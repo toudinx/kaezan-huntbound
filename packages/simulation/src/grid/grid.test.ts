@@ -19,16 +19,24 @@ import {
 } from './index.ts';
 
 const scenario: KernelScenario = {
-  schemaVersion: 1,
+  schemaVersion: 3,
   scenarioId: 'grid-test',
   scenarioRevision: 1,
   width: 4,
   height: 3,
-  z: 7,
-  blockedTiles: [
-    [1, 1],
-    [2, 2],
+  floors: [
+    {
+      z: 7,
+      blockedTiles: [
+        [1, 1],
+        [2, 2],
+      ],
+    },
+    { z: 8, blockedTiles: [[0, 0]] },
   ],
+  transitions: [],
+  spawnGroups: [],
+  maxLiveActors: 8,
   blueprints: [
     {
       blueprintId: 'walker',
@@ -49,13 +57,20 @@ function actor(
     position,
     facing: 's',
     readyAtTick: 0,
+    transitionGuard: null,
   };
 }
 
 function gridWithBlockedTiles(
   blockedTiles: readonly (readonly [number, number])[],
 ) {
-  return createStaticGrid({ ...scenario, blockedTiles });
+  return createStaticGrid({
+    ...scenario,
+    floors: [
+      { z: 7, blockedTiles },
+      { z: 8, blockedTiles: [] },
+    ],
+  });
 }
 
 describe('grid directions and movement costs', () => {
@@ -104,24 +119,64 @@ describe('grid directions and movement costs', () => {
 });
 
 describe('static grid and occupancy', () => {
-  it('accepts only positions inside the declared dimensions and z level', () => {
+  it('reports exactly the declared floors', () => {
+    const grid = createStaticGrid(scenario);
+
+    expect(grid.floors).toEqual([7, 8]);
+    expect(grid.hasFloor(7)).toBe(true);
+    expect(grid.hasFloor(8)).toBe(true);
+    expect(grid.hasFloor(6)).toBe(false);
+    expect(grid.hasFloor(9)).toBe(false);
+  });
+
+  it('accepts only positions inside the declared dimensions and a declared floor', () => {
     const grid = createStaticGrid(scenario);
 
     expect(grid.isInside({ x: 0, y: 0, z: 7 })).toBe(true);
+    expect(grid.isInside({ x: 0, y: 0, z: 8 })).toBe(true);
     expect(grid.isInside({ x: -1, y: 0, z: 7 })).toBe(false);
     expect(grid.isInside({ x: 0, y: -1, z: 7 })).toBe(false);
     expect(grid.isInside({ x: 4, y: 0, z: 7 })).toBe(false);
     expect(grid.isInside({ x: 0, y: 3, z: 7 })).toBe(false);
-    expect(grid.isInside({ x: 0, y: 0, z: 8 })).toBe(false);
+    expect(grid.isInside({ x: 0, y: 0, z: 9 })).toBe(false);
   });
 
-  it('reports only the scenario terrain as blocked', () => {
+  it('keeps terrain per floor, so one column can be free above and solid below', () => {
     const grid = createStaticGrid(scenario);
 
     expect(grid.isBlockedTerrain({ x: 1, y: 1, z: 7 })).toBe(true);
-    expect(grid.isBlockedTerrain({ x: 0, y: 0, z: 7 })).toBe(false);
     expect(grid.isBlockedTerrain({ x: 1, y: 1, z: 8 })).toBe(false);
+    expect(grid.isBlockedTerrain({ x: 0, y: 0, z: 8 })).toBe(true);
+    expect(grid.isBlockedTerrain({ x: 0, y: 0, z: 7 })).toBe(false);
+    expect(grid.isBlockedTerrain({ x: 1, y: 1, z: 9 })).toBe(false);
     expect(grid.isBlockedTerrain({ x: 4, y: 0, z: 7 })).toBe(false);
+  });
+
+  it('resolves a transition only for the cell that declares it', () => {
+    const grid = createStaticGrid({
+      ...scenario,
+      transitions: [{ from: { x: 2, y: 0, z: 7 }, to: { x: 2, y: 0, z: 8 } }],
+    });
+
+    expect(grid.transitionAt({ x: 2, y: 0, z: 7 })).toEqual({
+      x: 2,
+      y: 0,
+      z: 8,
+    });
+    expect(grid.transitionAt({ x: 2, y: 0, z: 8 })).toBeUndefined();
+    expect(grid.transitionAt({ x: 1, y: 0, z: 7 })).toBeUndefined();
+  });
+
+  it('keys occupancy by floor, so two actors can share an (x, y) column', () => {
+    // The PB-03 index keyed on `(x, y)` alone. With floors that key collides:
+    // an actor on `z = 8` would block the same column on `z = 7`.
+    const upstairs = actor(1, { x: 2, y: 1, z: 7 });
+    const downstairs = actor(2, { x: 2, y: 1, z: 8 });
+    const index = createOccupancyIndex([upstairs, downstairs]);
+
+    expect(index.occupantAt({ x: 2, y: 1, z: 7 })).toBe(upstairs.entityId);
+    expect(index.occupantAt({ x: 2, y: 1, z: 8 })).toBe(downstairs.entityId);
+    expect(index.isOccupied({ x: 2, y: 1, z: 9 })).toBe(false);
   });
 
   it('rebuilds the same occupancy index regardless of actor insertion order', () => {
@@ -307,6 +362,58 @@ describe('resolveStep', () => {
     });
   });
 
+  it('ignores an actor standing on the same column of another floor', () => {
+    const movingActor = actor(1, { x: 1, y: 1, z: 7 });
+    const belowActor = actor(2, { x: 2, y: 1, z: 8 });
+
+    expect(
+      resolveStep(
+        gridWithBlockedTiles([]),
+        createOccupancyIndex([movingActor, belowActor]),
+        movingActor,
+        'e',
+        2,
+      ),
+    ).toEqual({ ok: true, to: { x: 2, y: 1, z: 7 }, costTicks: 2 });
+  });
+
+  it('cuts corners against the origin floor, not the floor below', () => {
+    // `(2,1)` and `(1,2)` are solid on `z = 8` only, so a diagonal on `z = 7`
+    // must ignore them entirely.
+    const grid = createStaticGrid({
+      ...scenario,
+      floors: [
+        { z: 7, blockedTiles: [] },
+        {
+          z: 8,
+          blockedTiles: [
+            [2, 1],
+            [1, 2],
+          ],
+        },
+      ],
+    });
+    const upstairs = actor(1, { x: 1, y: 1, z: 7 });
+    const downstairs = actor(2, { x: 1, y: 1, z: 8 });
+
+    expect(
+      resolveStep(grid, createOccupancyIndex([upstairs]), upstairs, 'se', 2),
+    ).toEqual({ ok: true, to: { x: 2, y: 2, z: 7 }, costTicks: 3 });
+    expect(
+      resolveStep(
+        grid,
+        createOccupancyIndex([downstairs]),
+        downstairs,
+        'se',
+        2,
+      ),
+    ).toEqual({
+      ok: false,
+      reason: 'diagonal-corner',
+      attempted: { x: 2, y: 2, z: 8 },
+    });
+  });
+
   it('does not mutate the actor while resolving a step', () => {
     const movingActor = actor(1, { x: 1, y: 1, z: 7 });
     const before = {
@@ -322,6 +429,98 @@ describe('resolveStep', () => {
     expect(occupancy.occupantAt(movingActor.position)).toBe(
       movingActor.entityId,
     );
+  });
+});
+
+describe('resolveStep across a transition', () => {
+  const stairs = createStaticGrid({
+    ...scenario,
+    floors: [
+      { z: 7, blockedTiles: [] },
+      { z: 8, blockedTiles: [] },
+    ],
+    transitions: [{ from: { x: 2, y: 1, z: 7 }, to: { x: 2, y: 1, z: 8 } }],
+  });
+
+  it('carries the arrival cell in transitionedTo when the step lands on a transition', () => {
+    const movingActor = actor(1, { x: 1, y: 1, z: 7 });
+
+    expect(
+      resolveStep(
+        stairs,
+        createOccupancyIndex([movingActor]),
+        movingActor,
+        'e',
+        2,
+      ),
+    ).toEqual({
+      ok: true,
+      to: { x: 2, y: 1, z: 7 },
+      costTicks: 2,
+      transitionedTo: { x: 2, y: 1, z: 8 },
+    });
+  });
+
+  it('leaves transitionedTo absent for an ordinary step', () => {
+    const movingActor = actor(1, { x: 0, y: 1, z: 7 });
+
+    expect(
+      resolveStep(
+        stairs,
+        createOccupancyIndex([movingActor]),
+        movingActor,
+        'e',
+        2,
+      ),
+    ).toEqual({ ok: true, to: { x: 1, y: 1, z: 7 }, costTicks: 2 });
+  });
+
+  it('ignores the transition entirely while the actor is guarded', () => {
+    const guarded: ActorState = {
+      ...actor(1, { x: 1, y: 1, z: 7 }),
+      transitionGuard: { x: 1, y: 1, z: 7 },
+    };
+
+    expect(
+      resolveStep(stairs, createOccupancyIndex([guarded]), guarded, 'e', 2),
+    ).toEqual({ ok: true, to: { x: 2, y: 1, z: 7 }, costTicks: 2 });
+  });
+
+  it('does not block a guarded step even when the landing cell is taken', () => {
+    const guarded: ActorState = {
+      ...actor(1, { x: 1, y: 1, z: 7 }),
+      transitionGuard: { x: 1, y: 1, z: 7 },
+    };
+    const landingActor = actor(2, { x: 2, y: 1, z: 8 });
+
+    expect(
+      resolveStep(
+        stairs,
+        createOccupancyIndex([guarded, landingActor]),
+        guarded,
+        'e',
+        2,
+      ),
+    ).toEqual({ ok: true, to: { x: 2, y: 1, z: 7 }, costTicks: 2 });
+  });
+
+  it('blocks the whole step when the transition target is occupied', () => {
+    const movingActor = actor(1, { x: 1, y: 1, z: 7 });
+    const landingActor = actor(2, { x: 2, y: 1, z: 8 });
+
+    expect(
+      resolveStep(
+        stairs,
+        createOccupancyIndex([movingActor, landingActor]),
+        movingActor,
+        'e',
+        2,
+      ),
+    ).toEqual({
+      ok: false,
+      reason: 'transition-blocked',
+      attempted: { x: 2, y: 1, z: 7 },
+    });
   });
 });
 

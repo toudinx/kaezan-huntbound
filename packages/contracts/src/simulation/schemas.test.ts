@@ -33,16 +33,23 @@ function at<T>(values: readonly T[], index: number): T {
 
 function createScenario() {
   return {
-    schemaVersion: 2,
+    schemaVersion: SIMULATION_SCHEMA_VERSION,
     scenarioId: 'pb-03-kernel-coverage',
     scenarioRevision: 1,
     width: 4,
     height: 4,
-    z: 7,
-    blockedTiles: [
-      [1, 1],
-      [2, 2],
+    floors: [
+      {
+        z: 7,
+        blockedTiles: [
+          [1, 1],
+          [2, 2],
+        ],
+      },
     ],
+    transitions: [] as { from: unknown; to: unknown }[],
+    spawnGroups: [] as unknown[],
+    maxLiveActors: 64,
     blueprints: [
       { blueprintId: 'walker', stepCooldownTicks: 2, behavior: 'inert' },
       { blueprintId: 'wanderer', stepCooldownTicks: 3, behavior: 'wander' },
@@ -66,8 +73,8 @@ function createCommandLog() {
   return {
     header: {
       kind: 'header',
-      schemaVersion: 2,
-      rulesVersion: 1,
+      schemaVersion: SIMULATION_SCHEMA_VERSION,
+      rulesVersion: SIMULATION_RULES_VERSION,
       scenarioId: 'pb-03-kernel-coverage',
       scenarioRevision: 1,
       seed: '0f1e2d3c4b5a6978',
@@ -101,8 +108,8 @@ function createCommandLog() {
 
 function createSnapshot() {
   return {
-    schemaVersion: 2,
-    rulesVersion: 1,
+    schemaVersion: SIMULATION_SCHEMA_VERSION,
+    rulesVersion: SIMULATION_RULES_VERSION,
     scenarioId: 'pb-03-kernel-coverage',
     scenarioRevision: 1,
     seed: '0f1e2d3c4b5a6978',
@@ -127,6 +134,7 @@ function createSnapshot() {
         position: { x: 0, y: 0, z: 7 },
         facing: 'e',
         readyAtTick: 0,
+        transitionGuard: null,
       },
       {
         entityId: 2,
@@ -134,8 +142,10 @@ function createSnapshot() {
         position: { x: 3, y: 3, z: 7 },
         facing: 'nw',
         readyAtTick: 0,
+        transitionGuard: null,
       },
     ],
+    spawnSlots: [] as unknown[],
     pendingCommands: [
       {
         tick: 1,
@@ -214,14 +224,14 @@ describe('simulation schemas', () => {
 
   it('enforces scenario ordering, uniqueness, bounds, and cross references', () => {
     const unsorted = createScenario();
-    unsorted.blockedTiles = [
+    at(unsorted.floors, 0).blockedTiles = [
       [2, 2],
       [1, 1],
     ];
     expectSchemaInvalid(validateKernelScenario(unsorted));
 
     const duplicateTile = createScenario();
-    duplicateTile.blockedTiles = [
+    at(duplicateTile.floors, 0).blockedTiles = [
       [1, 1],
       [1, 1],
     ];
@@ -252,7 +262,7 @@ describe('simulation schemas', () => {
     expectSchemaInvalid(validateKernelScenario(wrongFloor));
 
     const outOfBoundsTile = createScenario();
-    outOfBoundsTile.blockedTiles = [
+    at(outOfBoundsTile.floors, 0).blockedTiles = [
       [1, 1],
       [4, 2],
     ];
@@ -382,10 +392,11 @@ describe('simulation schemas', () => {
     expectSchemaInvalid(validateSimulationSnapshot(decimalTick));
   });
 
-  it('pins the schema version at 2 and leaves the rules version at 1', () => {
-    // pendingIntents changed the snapshot format, not the kernel semantics.
-    expect(SIMULATION_SCHEMA_VERSION).toBe(2);
-    expect(SIMULATION_RULES_VERSION).toBe(1);
+  it('pins the schema version at 3 and the rules version at 2', () => {
+    // Floors, transitions and the spawn system changed both the format and
+    // the kernel semantics, so both numbers moved.
+    expect(SIMULATION_SCHEMA_VERSION).toBe(3);
+    expect(SIMULATION_RULES_VERSION).toBe(2);
   });
 
   it('rejects non-increasing command sequences and decreasing ticks in logs', () => {
@@ -405,7 +416,7 @@ describe('simulation schemas', () => {
 
   it('reports version mismatches with a stable domain diagnostic', () => {
     const snapshot = createSnapshot();
-    snapshot.rulesVersion = 2;
+    snapshot.rulesVersion = SIMULATION_RULES_VERSION + 1;
     const result = validateSimulationSnapshot(snapshot);
 
     expect(result.ok).toBe(false);

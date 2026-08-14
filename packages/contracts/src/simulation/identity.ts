@@ -5,8 +5,8 @@ export type EntityId = number & { readonly __brand: 'EntityId' };
 export type Seed = string & { readonly __brand: 'Seed' };
 export type StreamLabel = string & { readonly __brand: 'StreamLabel' };
 
-export const SIMULATION_SCHEMA_VERSION = 2;
-export const SIMULATION_RULES_VERSION = 1;
+export const SIMULATION_SCHEMA_VERSION = 3;
+export const SIMULATION_RULES_VERSION = 2;
 export const TICK_DURATION_MS = 50;
 export const MAX_FRAME_DELTA_MS = 250;
 

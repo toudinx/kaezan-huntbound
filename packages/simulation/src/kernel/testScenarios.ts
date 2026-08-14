@@ -3,6 +3,7 @@ import type {
   Direction,
   GridPosition,
   KernelScenario,
+  ScenarioFloor,
   Seed,
   SimulationCommandInput,
   SimulationEvent,
@@ -20,8 +21,27 @@ export const TEST_SEED: Seed = createSeed('0f1e2d3c4b5a6978');
 
 export const TEST_Z = 7;
 
-export function at(x: number, y: number): GridPosition {
-  return { x, y, z: TEST_Z };
+/** The floor directly below `TEST_Z`, used by the multi-floor cases. */
+export const TEST_Z_BELOW = 8;
+
+export function at(x: number, y: number, z: number = TEST_Z): GridPosition {
+  return { x, y, z };
+}
+
+export function singleFloor(
+  blockedTiles: readonly (readonly [number, number])[] = [],
+): readonly ScenarioFloor[] {
+  return [{ z: TEST_Z, blockedTiles }];
+}
+
+export function twoFloors(
+  upper: readonly (readonly [number, number])[] = [],
+  lower: readonly (readonly [number, number])[] = [],
+): readonly ScenarioFloor[] {
+  return [
+    { z: TEST_Z, blockedTiles: upper },
+    { z: TEST_Z_BELOW, blockedTiles: lower },
+  ];
 }
 
 export function kernelScenario(
@@ -33,8 +53,10 @@ export function kernelScenario(
     scenarioRevision: 1,
     width: 8,
     height: 6,
-    z: TEST_Z,
-    blockedTiles: [],
+    floors: singleFloor(),
+    transitions: [],
+    spawnGroups: [],
+    maxLiveActors: 64,
     blueprints: [
       { blueprintId: 'walker', stepCooldownTicks: 2, behavior: 'inert' },
       { blueprintId: 'wanderer', stepCooldownTicks: 3, behavior: 'wander' },

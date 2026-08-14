@@ -4,6 +4,7 @@ import type {
   RandomStreamState,
   Seed,
   SimulationCommandRecord,
+  SpawnSlotState,
   TickIndex,
 } from '@huntbound/contracts';
 
@@ -31,6 +32,11 @@ export interface KernelStateAccess {
    * them would lose a decision and diverge on the next tick.
    */
   readonly pendingInternalIntents: readonly PendingIntentState[];
+  /**
+   * The respawn schedule of the scenario spawn table. Like the intents above it
+   * lives outside the command log, so the snapshot has to carry it.
+   */
+  readonly spawnSlots: readonly SpawnSlotState[];
 }
 
 /** State handed back to `createSimulationKernel` when resuming a snapshot. */
@@ -43,6 +49,7 @@ export interface KernelRestoreState {
   readonly randomStreams: readonly RandomStreamState[];
   readonly pendingCommands: readonly SimulationCommandRecord[];
   readonly pendingIntents: readonly PendingIntentState[];
+  readonly spawnSlots: readonly SpawnSlotState[];
 }
 
 export const KERNEL_STATE: unique symbol = Symbol('huntbound.kernel.state');

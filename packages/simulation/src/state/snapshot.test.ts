@@ -9,10 +9,14 @@ import { describe, expect, it } from 'vitest';
 import { createSimulationKernel } from '../kernel/index.ts';
 import {
   at,
+  despawnActor,
   kernelScenario,
   moveStep,
+  singleFloor,
   spawnActor,
   TEST_SEED,
+  TEST_Z_BELOW,
+  twoFloors,
 } from '../kernel/testScenarios.ts';
 import { encodeCanonicalJson } from './canonicalJson.ts';
 import { restoreSimulationKernel, snapshotKernel } from './snapshot.ts';
@@ -30,13 +34,14 @@ const SNAPSHOT_KEYS = [
   'scenarioRevision',
   'schemaVersion',
   'seed',
+  'spawnSlots',
   'tick',
 ];
 
 function crowdedScenario() {
   return kernelScenario({
     scenarioId: 'snapshot-test',
-    blockedTiles: [[3, 1]],
+    floors: singleFloor([[3, 1]]),
     initialActors: [
       { blueprintId: 'walker', position: at(1, 1), facing: 's' },
       { blueprintId: 'statue', position: at(2, 1), facing: 's' },
@@ -105,6 +110,7 @@ describe('snapshotKernel', () => {
       'ai',
       'movement',
       'scenario',
+      'spawn',
     ]);
     expect(
       snapshot.pendingCommands.map((record) => [record.tick, record.sequence]),
@@ -156,6 +162,86 @@ function resumeReport(boundary: number): string[] {
   return problems;
 }
 
+/**
+ * Two floors, a transition in each direction, a spawn table that outgrows the
+ * live ceiling and a despawn that starts a respawn countdown. Every piece of
+ * live state the v3 bump added is in motion here.
+ */
+function huntLikeScenario() {
+  return kernelScenario({
+    scenarioId: 'floors-and-spawn',
+    floors: twoFloors(),
+    // Two adjacent stairs on the lower floor, so the step that leaves a
+    // landing cell lands on another transition: that is the only step the
+    // guard changes, and the sweep must be able to see it.
+    transitions: [
+      { from: at(3, 1), to: at(3, 1, TEST_Z_BELOW) },
+      { from: at(3, 1, TEST_Z_BELOW), to: at(3, 1) },
+      { from: at(2, 1, TEST_Z_BELOW), to: at(2, 1) },
+    ],
+    spawnGroups: [
+      {
+        center: at(5, 4),
+        radius: 1,
+        slots: [
+          { blueprintId: 'wanderer', position: at(5, 4), respawnTicks: 4 },
+          { blueprintId: 'wanderer', position: at(4, 4), respawnTicks: 4 },
+        ],
+      },
+      {
+        center: at(2, 3, TEST_Z_BELOW),
+        radius: 1,
+        slots: [
+          {
+            blueprintId: 'statue',
+            position: at(2, 3, TEST_Z_BELOW),
+            respawnTicks: 3,
+          },
+        ],
+      },
+    ],
+    maxLiveActors: 3,
+    initialActors: [{ blueprintId: 'walker', position: at(1, 1), facing: 'e' }],
+  });
+}
+
+const HUNT_SWEEP_TICKS = 30;
+
+function driveHuntRun(kernel: ReturnType<typeof createSimulationKernel>) {
+  kernel.enqueue(moveStep(1, 'e', 0));
+  kernel.enqueue(moveStep(1, 'e', 2));
+  kernel.enqueue(moveStep(1, 'w', 4));
+  kernel.enqueue(moveStep(1, 'e', 6));
+  kernel.enqueue(despawnActor(2, 8));
+  kernel.enqueue(despawnActor(3, 14));
+  kernel.enqueue(moveStep(1, 's', 16));
+}
+
+function huntResumeReport(boundary: number): string[] {
+  const scenario = huntLikeScenario();
+  const straight = createSimulationKernel(scenario, TEST_SEED);
+  driveHuntRun(straight);
+  const straightEvents = straight.advance(HUNT_SWEEP_TICKS);
+
+  const split = createSimulationKernel(scenario, TEST_SEED);
+  driveHuntRun(split);
+  const head = split.advance(boundary);
+  const resumed = restoredOrThrow(scenario, snapshotKernel(split));
+  const tail = resumed.advance(HUNT_SWEEP_TICKS - boundary);
+
+  const problems: string[] = [];
+  if (eventText([...head, ...tail]) !== eventText(straightEvents)) {
+    problems.push(`tick ${boundary}: event journal differs`);
+  }
+  if (
+    encodeCanonicalJson(snapshotKernel(resumed)) !==
+    encodeCanonicalJson(snapshotKernel(straight))
+  ) {
+    problems.push(`tick ${boundary}: final snapshot differs`);
+  }
+  return problems;
+}
+
 describe('restoreSimulationKernel', () => {
   it('resumes every boundary identically to an uninterrupted run', () => {
     const problems: string[] = [];
@@ -164,6 +250,36 @@ describe('restoreSimulationKernel', () => {
     }
 
     expect(problems).toEqual([]);
+  });
+
+  it('resumes every boundary of a run with floors, transitions and spawn', () => {
+    const problems: string[] = [];
+    for (let boundary = 0; boundary <= HUNT_SWEEP_TICKS; boundary += 1) {
+      problems.push(...huntResumeReport(boundary));
+    }
+
+    expect(problems).toEqual([]);
+  });
+
+  it('actually exercises transitions, respawn and the live ceiling', () => {
+    // A sweep over a run that never transitions or spawns would pass for the
+    // wrong reason, so the fixture asserts its own coverage.
+    const kernel = createSimulationKernel(huntLikeScenario(), TEST_SEED);
+    driveHuntRun(kernel);
+    const seen = new Set(
+      kernel.advance(HUNT_SWEEP_TICKS).map((event) => event.payload.type),
+    );
+
+    expect([...seen].sort()).toEqual(
+      expect.arrayContaining([
+        'actor/despawned',
+        'actor/moved',
+        'actor/spawned',
+        'actor/transitioned',
+        'spawn/capped',
+        'spawn/deferred',
+      ]),
+    );
   });
 
   it('resumes a boundary that still owes a decided AI intent', () => {

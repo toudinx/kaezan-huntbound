@@ -10,7 +10,12 @@ import {
 } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { at, kernelScenario, TEST_SEED } from '../kernel/testScenarios.ts';
+import {
+  at,
+  kernelScenario,
+  singleFloor,
+  TEST_SEED,
+} from '../kernel/testScenarios.ts';
 import { encodeCanonicalJson } from '../state/canonicalJson.ts';
 import { restoreSimulationKernel, snapshotKernel } from '../state/snapshot.ts';
 import { encodeEventJournal } from './eventJournalFile.ts';
@@ -18,7 +23,7 @@ import { prepareReplayKernel, runReplay } from './runReplay.ts';
 
 const scenario = kernelScenario({
   scenarioId: 'replay-test',
-  blockedTiles: [[3, 1]],
+  floors: singleFloor([[3, 1]]),
   initialActors: [
     { blueprintId: 'walker', position: at(1, 1), facing: 's' },
     { blueprintId: 'statue', position: at(2, 1), facing: 's' },

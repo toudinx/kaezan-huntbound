@@ -35,6 +35,10 @@ export function cloneActor(actor: ActorState): ActorState {
     position: clonePosition(actor.position),
     facing: actor.facing,
     readyAtTick: actor.readyAtTick,
+    transitionGuard:
+      actor.transitionGuard === null
+        ? null
+        : clonePosition(actor.transitionGuard),
   };
 }
 
@@ -114,6 +118,7 @@ export function createWorld(scenario: KernelScenario): MutableWorld {
       position: initial.position,
       facing: initial.facing,
       readyAtTick: 0,
+      transitionGuard: null,
     });
   }
 

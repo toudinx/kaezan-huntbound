@@ -15,7 +15,16 @@ import type { OccupancyIndex } from './occupancy.ts';
 import type { StaticGrid } from './staticGrid.ts';
 
 export type StepOutcome =
-  | { readonly ok: true; readonly to: GridPosition; readonly costTicks: number }
+  | {
+      readonly ok: true;
+      readonly to: GridPosition;
+      readonly costTicks: number;
+      /**
+       * Set only when the cell the step lands on declares a transition. `to`
+       * stays the geometric destination; this is where the actor ends the tick.
+       */
+      readonly transitionedTo?: GridPosition;
+    }
   | {
       readonly ok: false;
       readonly reason: MoveBlockedReason;
@@ -71,9 +80,21 @@ export function resolveStep(
     return blocked('occupied', attempted);
   }
 
-  return {
-    ok: true,
-    to: attempted,
-    costTicks: stepCostTicks(baseTicks, direction),
-  };
+  const costTicks = stepCostTicks(baseTicks, direction);
+  // A guarded actor is still leaving the cell it landed on, so no transition is
+  // considered for this step — not even to block it.
+  const transitionedTo =
+    actor.transitionGuard === null ? grid.transitionAt(attempted) : undefined;
+
+  if (transitionedTo === undefined) {
+    return { ok: true, to: attempted, costTicks };
+  }
+
+  // Arrival respects occupancy: a taken landing cell blocks the whole step and
+  // the actor keeps its origin, rather than half-moving onto the stairs.
+  if (occupancy.isOccupied(transitionedTo)) {
+    return blocked('transition-blocked', attempted);
+  }
+
+  return { ok: true, to: attempted, costTicks, transitionedTo };
 }

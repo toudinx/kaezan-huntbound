@@ -8,13 +8,14 @@ import {
   kernelScenario,
   moveStep,
   payloads,
+  singleFloor,
   spawnActor,
   TEST_SEED,
   wait,
 } from './testScenarios.ts';
 
 const scenario = kernelScenario({
-  blockedTiles: [[2, 0]],
+  floors: singleFloor([[2, 0]]),
   initialActors: [
     { blueprintId: 'walker', position: at(1, 1), facing: 's' },
     { blueprintId: 'statue', position: at(1, 2), facing: 'n' },
@@ -114,10 +115,10 @@ describe('kernel command application', () => {
 
   it('reports terrain, bounds and diagonal-corner causes from the grid', () => {
     const kernel = bootedKernel({
-      blockedTiles: [
+      floors: singleFloor([
         [2, 0],
         [1, 2],
-      ],
+      ]),
       initialActors: [
         { blueprintId: 'statue', position: at(1, 1), facing: 's' },
       ],

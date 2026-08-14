@@ -1,4 +1,4 @@
-{"kind":"header","rulesVersion":1,"scenarioId":"pb-03-kernel-coverage","scenarioRevision":1,"schemaVersion":2,"seed":"0f1e2d3c4b5a6978","tickCount":200}
+{"kind":"header","rulesVersion":2,"scenarioId":"pb-03-kernel-coverage","scenarioRevision":1,"schemaVersion":3,"seed":"0f1e2d3c4b5a6978","tickCount":200}
 {"issuer":"player","kind":"command","payload":{"direction":"n","entityId":1},"sequence":1,"tick":3,"type":"actor/face"}
 {"issuer":"player","kind":"command","payload":{"entityId":1},"sequence":2,"tick":4,"type":"actor/wait"}
 {"issuer":"player","kind":"command","payload":{"direction":"w","entityId":1},"sequence":3,"tick":5,"type":"actor/move-step"}

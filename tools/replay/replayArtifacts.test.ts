@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { validateKernelScenario } from '../../packages/contracts/src/index.ts';
+import {
+  SIMULATION_RULES_VERSION,
+  validateKernelScenario,
+} from '../../packages/contracts/src/index.ts';
 import {
   decodeCommandLog,
   prepareReplayKernel,
@@ -145,7 +148,10 @@ describe('buildReplayArtifacts', () => {
 
     const built = buildReplayArtifacts(
       scenarioText,
-      logText.replace('"rulesVersion":1', '"rulesVersion":2'),
+      logText.replace(
+        `"rulesVersion":${SIMULATION_RULES_VERSION}`,
+        `"rulesVersion":${SIMULATION_RULES_VERSION + 1}`,
+      ),
     );
 
     expect(built.ok).toBe(false);

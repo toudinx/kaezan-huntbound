@@ -29,6 +29,7 @@ describe('kernel boot', () => {
         position: at(1, 1),
         facing: 's',
         readyAtTick: 0,
+        transitionGuard: null,
       },
       {
         entityId: 2,
@@ -36,6 +37,7 @@ describe('kernel boot', () => {
         position: at(3, 1),
         facing: 'n',
         readyAtTick: 0,
+        transitionGuard: null,
       },
       {
         entityId: 3,
@@ -43,6 +45,7 @@ describe('kernel boot', () => {
         position: at(5, 4),
         facing: 'e',
         readyAtTick: 0,
+        transitionGuard: null,
       },
     ]);
   });

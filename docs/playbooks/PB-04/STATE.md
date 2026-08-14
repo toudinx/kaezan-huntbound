@@ -3,14 +3,15 @@
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
 **Estado geral:** bloqueado em PB-04-04 pelo bloqueio B1 — o mapa que contém a hunt congelada não
-está no snapshot local. O extrator foi entregue e está verde; a região não foi extraída. PB-04-05
-segue elegível. PB-04-01, PB-04-02 e PB-04-03 concluídas. PB-03 foi fechado em
+está no snapshot local. O extrator foi entregue e está verde; a região não foi extraída. PB-04-01,
+PB-04-02, PB-04-03 e PB-04-05 concluídas. PB-03 foi fechado em
 `7097b67` como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado
 `f885535`, sem blockers e sem task corretiva.
 
 **Última atualização:** 2026-08-14
 
-**Próximas tasks elegíveis:** PB-04-05. PB-04-04, PB-04-06 e PB-04-07 dependem da resolução de B1.
+**Próximas tasks elegíveis:** nenhuma sem resolver B1. PB-04-04, PB-04-06 e PB-04-07 dependem da
+resolução de B1; PB-04-06 já tem o kernel v3 de que precisa.
 
 ## Tasks
 
@@ -20,7 +21,7 @@ segue elegível. PB-04-01, PB-04-02 e PB-04-03 concluídas. PB-03 foi fechado em
 | PB-04-02 | done | `codex/pb04-02-world-contracts` | `d5352eb` | `packages/contracts/src/hunt/**` + `MAP_REGION_CONTRACT.md` |
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | blocked | `codex/pb04-04-map-extractor` | (extrator) | `tools/map-extractor/**` verde; região congelada não extraída — mapa ausente do snapshot |
-| PB-04-05 | eligible | `codex/pb04-05-kernel-floors-spawn` | — | PB-04-02 contracts integrated |
+| PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
 | PB-04-06 | pending | `codex/pb04-06-hunt-replay` | — | — |
 | PB-04-07 | pending | `codex/pb04-07-hunt-assets` | — | — |
 | PB-04-08 | pending | `codex/pb04-08-hunt-scene` | — | — |
@@ -276,16 +277,81 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 - **Próximas tasks elegíveis:** PB-04-05, que não depende desta. PB-04-06 e PB-04-07 continuam
   bloqueadas por B1, porque consomem a região extraída.
 
+## PB-04-05 — handoff concluído
+
+- **Status:** done; conclusão serial em worktree isolada, integrada por fast-forward.
+- **Artefatos novos:** `packages/simulation/src/kernel/spawnTable.ts`, `errors.ts`, `spawn.test.ts`,
+  `transition.test.ts` e `packages/contracts/src/simulation/worldV3.test.ts`.
+- **Versões:** `SIMULATION_SCHEMA_VERSION` `2 → 3`, `SIMULATION_RULES_VERSION` `1 → 2`.
+- **`events.golden.jsonl` NÃO mudou.** Hash preservado
+  `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4`, provado por
+  `git diff --stat packages/test-fixtures/simulation/pb03/events.golden.jsonl`, saída **vazia**, e
+  pelo digest devolvido por `tools/replay/cli.ts run`.
+- **Hashes da fixture PB-03, antes → depois:**
+  - `scenario.json` `056d8696…70b3f1` → `72d006552742691fbb71cd41bc84a80aebf0afd27faef027e358b4d92fcc23e9`;
+  - `commands.jsonl` `c1e815c6…0ce0d9c` → `88ec73de434a7bf092c68bb3a3601caaef1bfca2b59d9b84f20f334462749d66`;
+  - `snapshot.golden.json` `9d0c3a24…e5f7260` → `84528f5246c156b65e46343d713851d064943c3550281bba0ab0e5d18d10d341`;
+  - `events.golden.jsonl` **inalterado**.
+- **Vetores golden de RNG:** `ai`, `movement` e `scenario` idênticos aos de PB-03-02, provado em
+  `random.test.ts`. Vetor novo de `spawn` para a seed `0f1e2d3c4b5a6978`:
+  `c4e46756 97d5fe29 e8f89ef4 2187ecdc 9b4bb0ce e6e26967 236ed8ca ed821c3f`.
+- **RED/GREEN:** contratos v3 (`8` falhas → `112/112`); stream `spawn` (`3` → `14/14` em
+  `random.test.ts`); grid multi-floor (suíte não carregava → `26/26`); transições (`6` → `11/11`);
+  spawn (`9` → `12/12`); fronteira de identidade (`1` → `8/8`). Final por pacote:
+  `@huntbound/contracts` `112/112` em `6` arquivos, `@huntbound/simulation` `155/155` em `14`
+  arquivos, `tools/replay` `31/31` em `2` arquivos, `node --test` de arquitetura `23/23`,
+  `apps/game` `48/48`, browser `9/9`.
+- **Provas de mutação:** anular `transitionGuard` no snapshot e zerar `spawnSlots` derrubaram, cada
+  uma, a varredura de fronteiras `0..30`; ambas foram revertidas e a suíte voltou a `16/16`. A
+  primeira tentativa da varredura **não** pegou o guard, o que expôs uma semântica errada e forçou a
+  decisão de supervisor abaixo.
+- **Decisão de supervisor registrada — semântica do `transitionGuard`:** o guard só é estado vivo se
+  o passo que sai da célula guardada também for coberto por ele. Na leitura em que o guard é limpo
+  antes de avaliar a transição, ele não altera comportamento nenhum, o snapshot não o observa e a
+  varredura passa com ele descartado — o oposto do que a spec exige. A regra congelada é: o guard é
+  limpo pelo passo que sai da célula guardada, **e esse passo não dispara transição**. Está
+  documentada em `docs/simulation/KERNEL_CONTRACT.md`, seção "Transições".
+- **Decisões derivadas:**
+  - `KernelScenario` v3 ganhou também `maxLiveActors`, além de `floors`, `transitions` e
+    `spawnGroups`: `spawn/capped` precisa de um teto, e cravar `64` no kernel colocaria orçamento de
+    conteúdo dentro da simulação;
+  - `groupIndex`/`slotIndex` são derivados da ordem canônica `(z, y, x)` de centro e de slot, não da
+    ordem de declaração — é o que a acceptance pede ao exigir duas ordens de entrada equivalentes.
+    Para a ordem ser total, o schema passou a exigir centro de grupo único e células de slot únicas
+    dentro do grupo;
+  - a checagem de `transitionGuard` contra o grid mora em `restoreSimulationKernel`, não no schema:
+    o snapshot não declara terreno;
+  - `maxLiveActors` vale só para `S4`; `scenario/spawn-actor` externo continua governado pelas
+    rejeições de `apply`, o que é o que mantém o journal do PB-03 intacto.
+- **Warning W3 fechado:** o script `test` da raiz passou a enumerar `simulation-boundaries.test.ts` e
+  `content-boundaries.test.ts` em `node --test`, então a regra nova de identidade Tibia entra no gate
+  agregado.
+- **Comandos e exit codes:** `--filter @huntbound/contracts test` `0`;
+  `--filter @huntbound/simulation test` `0`; `vitest run --config tools/replay/vitest.config.ts` `0`;
+  `typecheck` `0`; `tsc --project tools/replay/tsconfig.json` `0`; `architecture:check` `0`;
+  `biome check` `0`; `format:check` `0`; `git diff --check` `0`; `simulation:check` `0` **duas vezes
+  seguidas**; `verify` `0` **duas vezes seguidas**, com a árvore byte-idêntica entre elas.
+- **Escopo:** nada fora de `packages/contracts/src/simulation/**`, `packages/simulation/src/**`,
+  `packages/test-fixtures/simulation/pb03/**`, `tools/architecture/simulation-boundaries.*`,
+  `tools/replay/**`, `package.json` e docs. `packages/content`, `packages/assets`,
+  `tools/map-extractor`, `tools/tile-flags` e `apps/game` não foram tocados. Nenhum comando novo
+  entrou e `commandPriority` está inalterado.
+- **Modelo/effort efetivos:** Claude Opus 5 nesta sessão. Modelo sugerido pelo roteiro: GPT-5.6 Sol
+  `xhigh` ou Claude Opus 5.
+- **Skills e validador:** `using-superpowers`, `test-driven-development` e
+  `verification-before-completion`; validação por Vitest focado, mutação dirigida, `node --test`,
+  TypeScript, Biome, CLI real de replay e `corepack pnpm verify` em duas execuções.
+- **Próximas tasks elegíveis:** nenhuma sem resolver B1. PB-04-06 tem o kernel de que precisa e fica
+  bloqueada apenas pela região extraída.
+
 ## Bloqueios
 
 - **B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot. Detalhe, medição e
   saídas possíveis no handoff de PB-04-04 acima. Bloqueia PB-04-04, PB-04-06 e PB-04-07.
-- Warning W3 herdado da auditoria PB-03-08, não bloqueante: o script `test` da raiz enumera apenas
-  `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`, então
-  `simulation-boundaries.test.ts` e `content-boundaries.test.ts` não rodam no gate agregado. PB-04-05
-  altera `simulation-boundaries.ts` e **deve** corrigir o enumerador na mesma task, porque a regra
-  nova de identidade Tibia precisa entrar em gate agregado. Isso fecha W3 como efeito colateral
-  legítimo, e não como ampliação silenciosa de escopo.
+- ~~Warning W3 herdado da auditoria PB-03-08: o script `test` da raiz enumera apenas
+  `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`.~~ **Fechado por PB-04-05
+  em 2026-08-14:** o enumerador passou a incluir `content-boundaries.test.ts` e
+  `simulation-boundaries.test.ts`, e a regra nova de identidade Tibia roda em gate agregado.
 - Warnings W1, W2, W4, W5 e W6 da auditoria PB-03-08 seguem abertos e não bloqueantes; estão em
   `docs/playbooks/PB-03/artifacts/acceptance-report.md` §10 e não devem ser absorvidos por uma task
   do PB-04 sem card próprio.

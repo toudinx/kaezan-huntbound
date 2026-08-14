@@ -10,13 +10,14 @@ import {
   restoreSeededRandom,
 } from './source.ts';
 
-const streamLabels = ['ai', 'movement', 'scenario'] as const;
+const streamLabels = ['ai', 'movement', 'scenario', 'spawn'] as const;
 type KernelStreamLabel = (typeof streamLabels)[number];
 
 export interface KernelRandomStreams {
   readonly movement: RandomSource;
   readonly ai: RandomSource;
   readonly scenario: RandomSource;
+  readonly spawn: RandomSource;
   serialize(): readonly RandomStreamState[];
 }
 
@@ -25,34 +26,26 @@ function isKernelStreamLabel(label: string): label is KernelStreamLabel {
 }
 
 function createStreams(
-  ai: RandomSource,
-  movement: RandomSource,
-  scenario: RandomSource,
+  sources: Readonly<Record<KernelStreamLabel, RandomSource>>,
 ): KernelRandomStreams {
   return {
-    ai,
-    movement,
-    scenario,
+    ai: sources.ai,
+    movement: sources.movement,
+    scenario: sources.scenario,
+    spawn: sources.spawn,
     serialize() {
-      return streamLabels.map((label) => {
-        if (label === 'ai') {
-          return ai.serialize();
-        }
-        if (label === 'movement') {
-          return movement.serialize();
-        }
-        return scenario.serialize();
-      });
+      return streamLabels.map((label) => sources[label].serialize());
     },
   };
 }
 
 export function createKernelRandomStreams(seed: Seed): KernelRandomStreams {
-  return createStreams(
-    createSeededRandom(seed, 'ai' as StreamLabel),
-    createSeededRandom(seed, 'movement' as StreamLabel),
-    createSeededRandom(seed, 'scenario' as StreamLabel),
-  );
+  return createStreams({
+    ai: createSeededRandom(seed, 'ai' as StreamLabel),
+    movement: createSeededRandom(seed, 'movement' as StreamLabel),
+    scenario: createSeededRandom(seed, 'scenario' as StreamLabel),
+    spawn: createSeededRandom(seed, 'spawn' as StreamLabel),
+  });
 }
 
 export function restoreKernelRandomStreams(
@@ -63,7 +56,7 @@ export function restoreKernelRandomStreams(
   }
   if (states.length !== streamLabels.length) {
     throw new RangeError(
-      'Kernel random streams must contain exactly three states.',
+      `Kernel random streams must contain exactly ${streamLabels.length} states.`,
     );
   }
 
@@ -86,18 +79,14 @@ export function restoreKernelRandomStreams(
     restored.set(state.label, restoreSeededRandom(state));
   }
 
+  const sources: Partial<Record<KernelStreamLabel, RandomSource>> = {};
   for (const label of streamLabels) {
-    if (!restored.has(label)) {
+    const source = restored.get(label);
+    if (source === undefined) {
       throw new RangeError(`Missing kernel random stream label: ${label}.`);
     }
+    sources[label] = source;
   }
 
-  const ai = restored.get('ai');
-  const movement = restored.get('movement');
-  const scenario = restored.get('scenario');
-  if (ai === undefined || movement === undefined || scenario === undefined) {
-    throw new Error('Kernel random streams were not restored completely.');
-  }
-
-  return createStreams(ai, movement, scenario);
+  return createStreams(sources as Record<KernelStreamLabel, RandomSource>);
 }

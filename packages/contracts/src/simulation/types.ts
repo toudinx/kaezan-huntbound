@@ -22,14 +22,43 @@ export interface InitialActor {
   readonly facing: Direction;
 }
 
+export interface ScenarioFloor {
+  readonly z: number;
+  readonly blockedTiles: readonly (readonly [number, number])[];
+}
+
+/**
+ * A directed pair fired automatically when an actor steps onto `from`. The
+ * kernel knows nothing about stairs, ramps or holes: geometry is the whole
+ * contract.
+ */
+export interface ScenarioTransition {
+  readonly from: GridPosition;
+  readonly to: GridPosition;
+}
+
+export interface ScenarioSpawnSlot {
+  readonly blueprintId: string;
+  readonly position: GridPosition;
+  readonly respawnTicks: number;
+}
+
+export interface ScenarioSpawnGroup {
+  readonly center: GridPosition;
+  readonly radius: number;
+  readonly slots: readonly ScenarioSpawnSlot[];
+}
+
 export interface KernelScenario {
   readonly schemaVersion: number;
   readonly scenarioId: string;
   readonly scenarioRevision: number;
   readonly width: number;
   readonly height: number;
-  readonly z: number;
-  readonly blockedTiles: readonly (readonly [number, number])[];
+  readonly floors: readonly ScenarioFloor[];
+  readonly transitions: readonly ScenarioTransition[];
+  readonly spawnGroups: readonly ScenarioSpawnGroup[];
+  readonly maxLiveActors: number;
   readonly blueprints: readonly ActorBlueprint[];
   readonly initialActors: readonly InitialActor[];
 }
@@ -73,7 +102,10 @@ export type MoveBlockedReason =
   | 'terrain'
   | 'occupied'
   | 'diagonal-corner'
-  | 'cooldown';
+  | 'cooldown'
+  | 'transition-blocked';
+
+export type SpawnDeferralReason = 'no-free-cell' | 'cap-reached';
 
 export type SimulationEventPayload =
   | {
@@ -103,6 +135,23 @@ export type SimulationEventPayload =
     }
   | { readonly type: 'actor/despawned'; readonly entityId: EntityId }
   | {
+      readonly type: 'actor/transitioned';
+      readonly entityId: EntityId;
+      readonly from: GridPosition;
+      readonly to: GridPosition;
+    }
+  | {
+      readonly type: 'spawn/deferred';
+      readonly groupIndex: number;
+      readonly slotIndex: number;
+      readonly reason: SpawnDeferralReason;
+    }
+  | {
+      readonly type: 'spawn/capped';
+      readonly groupIndex: number;
+      readonly slotIndex: number;
+    }
+  | {
       readonly type: 'command/rejected';
       readonly commandType: SimulationCommandType;
       readonly commandSequence: number;
@@ -130,6 +179,24 @@ export interface ActorState {
   readonly position: GridPosition;
   readonly facing: Direction;
   readonly readyAtTick: number;
+  /**
+   * The cell an actor landed on through a transition, or `null`. It is live
+   * state: it is what stops a transition from chaining, and dropping it from
+   * the snapshot changes the state a resumed run converges to.
+   */
+  readonly transitionGuard: GridPosition | null;
+}
+
+/**
+ * One creature seat of the scenario spawn table. `entityId` is the live actor
+ * born from it, or `null` when the seat is empty and waiting for
+ * `readyAtTick`.
+ */
+export interface SpawnSlotState {
+  readonly groupIndex: number;
+  readonly slotIndex: number;
+  readonly readyAtTick: number;
+  readonly entityId: EntityId | null;
 }
 
 /**
@@ -156,6 +223,7 @@ export interface SimulationSnapshot {
   readonly actors: readonly ActorState[];
   readonly pendingCommands: readonly SimulationCommandRecord[];
   readonly pendingIntents: readonly PendingIntentState[];
+  readonly spawnSlots: readonly SpawnSlotState[];
 }
 
 export interface SimulationCommandLogHeader {
@@ -188,6 +256,7 @@ export type SimulationDiagnosticCode =
   | 'SIM_MOVE_DIAGONAL_CORNER'
   | 'SIM_MOVE_ON_COOLDOWN'
   | 'SIM_SPAWN_TILE_UNAVAILABLE'
+  | 'SIM_TRANSITION_CHAINED'
   | 'SIM_STATE_NOT_INTEGER'
   | 'SIM_STATE_NOT_SERIALIZABLE'
   | 'SIM_REPLAY_DIVERGED';
