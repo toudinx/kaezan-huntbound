@@ -2,19 +2,19 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** ready — nenhuma task iniciada. PB-03 foi fechado em `7097b67` como
+**Estado geral:** em andamento — PB-04-01 concluída. PB-03 foi fechado em `7097b67` como
 `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado `f885535`, sem
 blockers e sem task corretiva.
 
 **Última atualização:** 2026-08-14
 
-**Próxima task elegível:** PB-04-01.
+**Próxima task elegível:** PB-04-02.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-04-01 | pending | `codex/pb04-01-hunt-selection` | — | — |
+| PB-04-01 | done | `codex/pb04-01-hunt-selection` | `e6e3119` | `docs/content/PB-04-SELECTION.md` + CLI exit 0 no snapshot local |
 | PB-04-02 | pending | `codex/pb04-02-world-contracts` | — | — |
 | PB-04-03 | pending | `codex/pb04-03-tile-flags` | — | — |
 | PB-04-04 | pending | `codex/pb04-04-map-extractor` | — | — |
@@ -72,7 +72,29 @@ Registrados para que PB-04-01 comece de evidência e não de suposição:
 
 ## Handoffs
 
-Nenhum. Cada task acrescenta aqui sua seção `## PB-04-NN — handoff concluído` ao encerrar.
+PB-04-01 acrescenta a seleção congelada, o validador e o relatório abaixo. A próxima task elegível
+é PB-04-02; PB-04-04 continua responsável por confirmar ou corrigir `expectedDroppedTransitions`.
+
+## PB-04-01 — handoff concluído
+
+- **Status:** done; conclusão serial em worktree isolada, pronta para integração fast-forward.
+- **Commit da feature:** `e6e3119` (`docs: freeze the first hunt selection`).
+- **Artefatos:** `packages/content/src/selections/pb-04-venore-rotworm-cave.json`,
+  `tools/hunt-selection/**` e `docs/content/PB-04-SELECTION.md`.
+- **Seleção medida:** `x=33002..33030`, `y=31995..32027`, largura `29`, altura `33`, andares
+  `[8,9]`, `8` grupos e `12` slots de Rotworm; `4` slots em `z=8`, `8` em `z=9`, zero espécies
+  estranhas e `expectedDroppedTransitions=0` por delegação ao PB-04-04.
+- **Comandos e exit codes:** baseline `corepack pnpm verify` `0`; RED inicial do validador `1`
+  por módulo ausente; GREEN `corepack pnpm exec vitest run --config tools/hunt-selection/vitest.config.ts tools/hunt-selection` `0` com `12/12` testes; `biome check tools/hunt-selection packages/content` `0`; `format:check` `0`; typecheck local `tools/hunt-selection/tsconfig.json` `0`; CLI real e `corepack pnpm hunt:selection:check` `0`; verify completo `0` com `9/9` testes browser.
+- **Snapshot e política:** `references/` foi apenas lido; nenhum byte foi copiado. O script
+  `hunt:selection:check` ficou fora de `check` e `verify` porque requer
+  `HUNTBOUND_CANARY_SOURCE`.
+- **Modelo/effort efetivos:** Codex/GPT-5 nesta sessão; effort efetivo não é exposto pela
+  interface. Modelo sugerido pelo roteiro: GPT-5.6 Luna `xhigh`.
+- **Skills e validador:** `using-superpowers`, `brainstorming`, `writing-plans`,
+  `using-git-worktrees`, `executing-plans`, `test-driven-development` e
+  `verification-before-completion`; validação por Vitest focado, Biome, TypeScript, CLI real e
+  `corepack pnpm verify`.
 
 ## Bloqueios
 
