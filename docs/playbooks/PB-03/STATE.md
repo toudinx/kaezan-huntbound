@@ -2,11 +2,11 @@
 
 **Playbook:** `docs/playbooks/PB-03/README.md`
 
-**Estado geral:** ready — PB-03-01 a PB-03-06 concluídas; PB-03-07 é a próxima task elegível
+**Estado geral:** ready — PB-03-01 a PB-03-06 concluídas; PB-03-06-FIX-01 é a próxima task elegível
 
 **Última atualização:** 2026-08-13
 
-**Próxima task elegível:** PB-03-07.
+**Próxima task elegível:** PB-03-06-FIX-01, que precede PB-03-07.
 
 ## Tasks
 
@@ -18,6 +18,7 @@
 | PB-03-04 | done | `codex/pb03-04-kernel-commands` | `d039c70` | 10 testes; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-05 | done | `codex/pb03-05-kernel-tick-loop` | `94571a4` | 79 testes vitest + 6 node --test; typecheck; architecture; Biome; format; diff check; workspace typecheck/test |
 | PB-03-06 | done | `codex/pb03-06-kernel-replay` | `aced4bb` | 115 vitest simulation + 29 vitest tools/replay; simulation:check ×2; typecheck; architecture; Biome; format; diff check |
+| PB-03-06-FIX-01 | pending | `codex/pb03-06-fix-01-pending-intents` | — | — |
 | PB-03-07 | pending | `codex/pb03-07-kernel-browser` | — | — |
 | PB-03-08 | pending | `codex/pb03-08-integrated-gate` | — | — |
 
@@ -387,12 +388,24 @@ App, browser, Playwright e Phaser não foram tocados. PB-03-07 é a próxima tas
 
 ## Bloqueios
 
-Nenhum bloqueio de execução. Uma decisão de supervisor fica aberta, descrita em detalhe no handoff
-de PB-03-06: a retomada por snapshot só é fiel em fronteira quiescente, porque a fila interna de
-intents de `S3 ai` não tem campo no snapshot congelado em PB-03-01. A restrição está documentada,
-testada nos dois sentidos e recusada explicitamente pela ferramenta; fechá-la de vez exige estender
-`SimulationSnapshotSchema` em `packages/contracts`, com bump de `SIMULATION_SCHEMA_VERSION`. PB-03-07
-não depende dessa decisão; PB-03-08 deveria fechá-la.
+Nenhum bloqueio de execução. A decisão aberta por PB-03-06 — retomada fiel só em fronteira
+quiescente — foi **decidida em 2026-08-13: corrigir o contrato**, e não aceitar a restrição.
+
+Motivo: a spec aprovada lista "serializa e restaura estado sem perda" como objetivo do kernel, então
+um restore que descarta intents de IA já decididas é defeito, não desenho. A correção sai agora
+porque o raio de alcance é mínimo — nada fora da própria ferramenta de PB-03 consome snapshot — e
+porque PB-03-07 compara um snapshot produzido no browser contra estes golden: mudar o schema depois
+obrigaria a refazer parte daquela paridade contra hashes novos. Save/resume de playbooks posteriores
+também precisa de snapshot em tick arbitrário.
+
+A correção está cardificada em
+`docs/playbooks/PB-03/tasks/PB-03-06-FIX-01-fechar-retomada-nao-quiescente.md` e **precede
+PB-03-07**. Ela serializa `pendingIntents` no snapshot, sobe `SIMULATION_SCHEMA_VERSION` para `2` e
+mantém `SIMULATION_RULES_VERSION` em `1`; o critério que separa mudança de formato de mudança de
+semântica é `events.golden.jsonl` permanecer byte-idêntico.
+
+Até lá, a mitigação de PB-03-06 continua válida e não mente: `isKernelQuiescent` reporta a fronteira,
+o teste prova a limitação nos dois sentidos e `tools/replay` recusa retomada não quiescente.
 
 Uma observação não bloqueante segue registrada: o script `test` da raiz enumera
 apenas `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`, de modo que
