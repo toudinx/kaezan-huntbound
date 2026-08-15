@@ -170,6 +170,25 @@ entre andares acontece antes dessas camadas e não altera colisão nem estado da
 `TICK_DURATION_MS = 50` permanece. O tick define quando decisões lógicas ocorrem; não define que
 todo passo deva ser visualmente comprimido em um único intervalo de 50 ms.
 
+### Input de movimento
+
+O primeiro passo de uma intenção de movimento é edge-triggered: cada `keydown` físico ou
+`pointerdown` do d-pad arma no `InputMap` uma única ação pendente. `drain()` consome essa borda
+uma vez, mesmo que o controle seja liberado antes da abertura do próximo tick. Eventos de
+`keydown` repetidos pelo sistema operacional não criam novas bordas; mudanças reais de direção
+continuam podendo armar uma nova intenção.
+
+A repetição de hold é level-triggered somente depois da borda inicial e usa o limiar congelado
+`HOLD_REPEAT_DELAY_TICKS = 1`. Portanto, após a primeira entrega, a próxima abertura do
+`inputGate` pode produzir uma intenção adicional; as aberturas seguintes ficam limitadas a no
+máximo uma intenção enquanto a direção estiver segurada. Soltar o controle antes dessa abertura
+não produz passo extra. `blur`, `pointercancel` e `detach` limpam tanto as direções seguradas
+quanto as bordas ainda não consumidas.
+
+Teclado e d-pad percorrem a mesma máquina de estado de input. Essa camada não altera o tick, o
+`TickInputGate`, o cooldown de movimento nem o kernel; ela apenas transforma a borda física em
+uma intenção determinística antes do consumo em `HuntScene.update`.
+
 Cada movimento aceito cria um segmento visual por ator:
 
 - origem e destino do evento `actor/moved`;
