@@ -4,6 +4,7 @@ references/
 
 # Dependencies and build artifacts
 node_modules/
+.worktrees/
 dist/
 coverage/
 test-results/
