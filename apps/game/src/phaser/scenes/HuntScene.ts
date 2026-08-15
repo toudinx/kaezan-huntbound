@@ -26,6 +26,12 @@ import {
   createHuntPresentation,
   type HuntPresentation,
 } from '../../hunt/HuntPresentation';
+import {
+  type HuntProbeActor,
+  type HuntProbeLayerCounts,
+  type HuntProbeState,
+  installHuntProbe,
+} from '../../hunt/HuntProbe';
 import type { InputMap } from '../../input/InputMap';
 
 export const HUNT_TILE_SIZE = 32;
@@ -102,6 +108,7 @@ export class HuntScene extends Phaser.Scene {
   private presentation?: HuntPresentation;
   private cameraController?: CameraController;
   private unsubscribeEvents: (() => void) | undefined;
+  private uninstallProbe: (() => void) | undefined;
 
   constructor(private readonly options: HuntSceneOptions) {
     super('hunt');
@@ -159,10 +166,16 @@ export class HuntScene extends Phaser.Scene {
       this.syncActorSprites(this.options.driver.alpha);
     });
 
+    this.uninstallProbe = installHuntProbe(this, (listener) =>
+      this.options.bridge.subscribeEvents(listener),
+    );
+
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubscribeEvents?.();
       this.unsubscribeEvents = undefined;
+      this.uninstallProbe?.();
+      this.uninstallProbe = undefined;
       this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
       this.destroySprites();
     });
@@ -201,6 +214,60 @@ export class HuntScene extends Phaser.Scene {
     }
 
     this.syncActorSprites(this.options.driver.alpha);
+  }
+
+  /**
+   * Reads back what this scene is presenting right now. It is only reachable
+   * through the test-only probe, and it never mutates the scene: PB-04-09
+   * proves the chain input -> command -> event -> pixel, so the assertions have
+   * to observe the drawn state rather than the kernel.
+   */
+  huntProbeState(): HuntProbeState {
+    const presentation = this.presentation;
+    const playerBlueprintId = this.options.hunt.playerBlueprintId;
+    const actors: HuntProbeActor[] = (presentation?.actors() ?? []).map(
+      (actor) => {
+        const sprite = this.actorSprites.get(actor.entityId);
+
+        return {
+          entityId: actor.entityId,
+          blueprintId: actor.blueprintId,
+          key: actor.key,
+          position: { ...actor.position },
+          facing: actor.facing,
+          sprite: sprite ? { x: sprite.x, y: sprite.y } : null,
+          visible: sprite?.visible ?? false,
+        };
+      },
+    );
+    const layers: Record<keyof HuntProbeLayerCounts, number> = {
+      ground: 0,
+      objectsBelow: 0,
+      actors: 0,
+      objectsAbove: 0,
+    };
+
+    for (const sprite of this.sprites) {
+      const layer = sprite.getData('hunt-layer') as
+        | keyof HuntProbeLayerCounts
+        | undefined;
+      if (layer !== undefined && layer in layers) layers[layer] += 1;
+    }
+
+    return {
+      tick: this.options.driver.tick,
+      floor: presentation?.floor() ?? this.options.hunt.playerStart.z,
+      player:
+        actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
+      actors,
+      camera: {
+        scrollX: this.cameras.main.scrollX,
+        scrollY: this.cameras.main.scrollY,
+        width: this.scale.width,
+        height: this.scale.height,
+      },
+      drawn: { total: this.sprites.length, layers },
+    };
   }
 
   private makeCameraController(): CameraController {

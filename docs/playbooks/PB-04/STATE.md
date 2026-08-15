@@ -9,10 +9,13 @@ PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
 
 **Última atualização:** 2026-08-14
 
-**Atualização vigente:** PB-04-08 concluída em `codex/pb04-08-hunt-scene`, com implementação em
-`e97f72b`. A próxima task elegível é PB-04-09.
+**Atualização vigente:** PB-04-09 concluída em `codex/pb04-09-hunt-browser-qa`. A hunt está provada no
+browser real: paridade de SHA-256 Node ↔ Chromium, jogabilidade por input sintético, d-pad em
+`390 × 844`, quatro screenshots versionadas e orçamento medido. `corepack pnpm verify` voltou a sair
+`0` — estava vermelho desde PB-04-08 pelas cinco baselines legadas de screenshot, agora regeneradas.
 
-**Próximas tasks elegíveis:** PB-04-09, responsável pelos screenshots e QA browser da hunt.
+**Próximas tasks elegíveis:** PB-04-10 (auditoria integrada). **PB-04-06 precisa ser reaberta** antes
+do fechamento do playbook: W11 abaixo.
 
 ## Tasks
 
@@ -23,10 +26,10 @@ PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | done | `codex/pb04-04-extract-region` | (ver handoff) | região congelada em `packages/content/src/generated/hunts/venore-rotworm-cave/**`, `dropped=0`, `--check` exit 0 |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | done | `codex/pb04-06-hunt-replay` | `5e98e91` + região integrada | `hunt.json`/cenário real disponíveis e `hunt:check` verde |
+| PB-04-06 | partial | `codex/pb04-06-hunt-replay` | `5e98e91` + região integrada | `buildHuntScenario` entregue; fixture `pb-04-hunt-session` e `hunt:check` **não** existem — ver W11 |
 | PB-04-07 | done | `codex/pb04-07-hunt-assets` | `5ae830e` | pack PB-04 sintético, profiles e seleção de chaves verificados |
 | PB-04-08 | done | `codex/pb04-08-hunt-scene` | `e97f72b` | HuntScene, InputMap, câmera, projeção de camadas e bootstrap integrados |
-| PB-04-09 | pending | `codex/pb04-09-hunt-browser-qa` | — | — |
+| PB-04-09 | done | `codex/pb04-09-hunt-browser-qa` | (ver handoff) | `docs/playbooks/PB-04/artifacts/browser-qa.md` + 4 screenshots + `verify` exit `0` |
 | PB-04-10 | pending | `codex/pb04-10-integrated-gate` | — | — |
 
 ## Baseline congelado
@@ -515,6 +518,57 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 - **Proxima task elegivel:** PB-04-09 — QA browser da hunt, incluindo screenshots, input touch e
   paridade/medicao que o card anterior deixa fora de escopo.
 
+## PB-04-09 — handoff concluído
+
+- **Status:** done; conclusão serial em worktree isolada, integrada por fast-forward.
+- **Artefatos:** `tests/e2e/hunt-replay.spec.ts`, `hunt-play.spec.ts`, `hunt-mobile.spec.ts`,
+  `hunt-budget.spec.ts`, `hunt-screenshots.spec.ts`, `tests/e2e/support/huntSession.ts` +
+  `huntSession.test.ts`, `tests/e2e/support/huntDriver.ts`, `apps/game/src/hunt/HuntProbe.ts` +
+  `HuntProbe.test.ts`, `docs/playbooks/PB-04/artifacts/browser-qa.md` e as quatro screenshots em
+  `docs/playbooks/PB-04/artifacts/screenshots/`.
+- **Desvio de escopo declarado (decisão de supervisor):** PB-04-06 nunca produziu a fixture
+  `pb-04-hunt-session` nem o script `hunt:check`, logo **não havia SHA-256 registrado** para comparar.
+  A paridade foi provada de forma **diferencial** — mesma cena e mesmo command log executados em Node
+  e em Chromium a cada corrida, comparados campo a campo. Nenhum golden foi fabricado e nenhum
+  arquivo de fixture foi criado. Ver W11.
+- **Paridade medida:** `scenario:hunt:tibia:venore-rotworm-cave`, seed `1a2b3c4d5e6f7a8b`, `600`
+  ticks; SHA-256 do snapshot canônico
+  `9b4fcd61bc957d31b7433d74ab4a9992f83c8cdd148cb85e03132857eda33a41`, `3122` eventos, tick final
+  `600` — idênticos nos dois runtimes. A sessão exercita `22` passos aceitos do jogador, `1` transição
+  de andar, recusas por `terrain` e por `occupied`, e os `12` atores do teto de spawn.
+- **Jogabilidade:** provada por **teclado real via CDP** e por **pointer real no d-pad**, nunca
+  chamando o kernel. Passo, parede, criatura, câmera e transição têm asserção própria, lidas do
+  `HuntProbe` test-only (estado desenhado pela `HuntScene`) e do journal de eventos.
+- **Prova de mutação:** neutralizar `InputMap.onKeyDown` derrubou os `4` testes que dependem de
+  movimento e deixou vivos só os `2` estáticos; a mutação foi revertida. É o que separa "provei a
+  cadeia input → comando → evento → pixel" de "provei o kernel de novo".
+- **Orçamento medido (Fast 4G, cache frio, 8 corridas):** primeiro estado acionável
+  **`4 090 – 4 602 ms`** contra o teto de `5 000 ms`; durante `10,4 s` de caminhada contínua houve
+  **exatamente uma** long task ≥ 50 ms por corrida, de `51 – 63 ms`, sempre nos primeiros `15 – 36 ms`
+  da caminhada (fronteira ocioso → input), nenhuma durante a caminhada estável. Passa, mas o boot já
+  consome ~`84 %` do orçamento; o gargalo é o bundle (`1 570 KB` / `412 KB` gzip, ~`2 260 ms` de
+  transferência). **Nada foi otimizado, reduzido ou desligado** — pertence a PB-10.
+- **Screenshots:** quatro, uma por viewport obrigatório, nomes estáveis, sem mídia pessoal — o profile
+  `test` serve um PNG sintético de 1 × 1 e 68 bytes para todas as chaves, e a spec falha se qualquer
+  requisição tocar `/assets/personal/` ou `/assets/product/`. São artefato, não baseline de pixel;
+  regenerar exige `HUNTBOUND_HUNT_SCREENSHOTS=write`.
+- **Zero erro** de console, página, requisição e resposta HTTP ≥ 400 nos quatro viewports.
+- **Baselines legadas:** as cinco de `shell.spec.ts` que PB-04-08 deixou desatualizadas foram
+  regeneradas e confirmadas estáveis em três corridas; `verify` voltou a sair `0`.
+- **Comandos e exit codes:** RED por sessão inexistente `1` → GREEN `0`; RED por probe ausente com
+  `6` falhas → GREEN `6/6`, estável em `10 × repeat-each` (`60/60`); `format:check` `0`; `typecheck`
+  `0`; `architecture:check` `0`; `test` `0`; `verify` `0` antes e depois da integração;
+  `git diff --check` `0`. `hunt:check` **não foi executado porque não existe** (W11).
+- **Findings novos:** W9 (chrome de canto morde o terço centro-inferior em `390 × 844`), W10
+  (`biome check` vermelho em `main`, pré-existente), W11 (fixture e gate devidos por PB-04-06), W12
+  (`tests/**` fora de qualquer gate de tipos). Detalhe e números em `artifacts/browser-qa.md` §10.
+- **Modelo/effort efetivos:** Claude Opus 5 nesta sessão. Modelo sugerido pelo roteiro: GPT-5.6 Luna
+  `xhigh`.
+- **Skills e validador:** `using-superpowers`, `test-driven-development` e
+  `verification-before-completion`; validação por Playwright real em Chromium, Vitest, mutação
+  dirigida, `tsc` avulso sobre `tests/**`, Biome e `corepack pnpm verify`.
+- **Próxima task elegível:** PB-04-10, com PB-04-06 reaberta antes do fechamento.
+
 ## Bloqueios
 
 - ~~**B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot.~~ **Resolvido em
@@ -549,6 +603,23 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   `asset-boundaries.test.ts` e `check-boundaries.test.ts` em `node --test`.~~ **Fechado por PB-04-05
   em 2026-08-14:** o enumerador passou a incluir `content-boundaries.test.ts` e
   `simulation-boundaries.test.ts`, e a regra nova de identidade Tibia roda em gate agregado.
+- **W9 (não bloqueante, PB-04-09):** em `390 × 844` a chrome de canto morde o terço centro-inferior do
+  playfield — d-pad `7,0 px` e painel de viewport `12,3 px`. O quinto central, onde a deadzone mantém
+  o jogador, está livre nos quatro viewports. Fechar exige encolher as duas caixas de canto, decisão
+  de layout fora do escopo desta task. Medição em `artifacts/browser-qa.md` §4.
+- **W10 (não bloqueante, pré-existente):** `corepack pnpm check` falha em `main` porque `biome check`
+  reporta cinco `organizeImports` em `apps/game/src/**` e um `useTemplate` em
+  `tests/e2e/asset-pack.spec.ts`. `verify` não pega porque roda `format:check`, não `biome check`.
+  PB-04-09 confirmou a lista idêntica em `main` e no branch e **não** a absorveu.
+- **W11 (bloqueante para o fechamento, PB-04-06):** a fixture `pb-04-hunt-session` e o script
+  `hunt:check` nunca existiram — `git log --all` não mostra nenhum commit em
+  `packages/test-fixtures/simulation/pb04`, e `package.json` não define `hunt:check`. A linha de
+  PB-04-06 na tabela acima foi corrigida de `done` para `partial`. PB-04-09 provou a paridade de forma
+  diferencial e **não** fabricou golden. Falta: fixture versionada com sidecars, cobertura de `600`
+  ticks com retomada em `313` e o gate entrando em `check`/`verify`.
+- **W12 (não bloqueante, PB-04-09):** nenhum `tsconfig` do workspace inclui `tests/`, então specs
+  Playwright não são checadas por tipo em gate nenhum. Nove erros reais foram encontrados à mão e
+  corrigidos nesta entrega.
 - Warnings W1, W2, W4, W5 e W6 da auditoria PB-03-08 seguem abertos e não bloqueantes; estão em
   `docs/playbooks/PB-03/artifacts/acceptance-report.md` §10 e não devem ser absorvidos por uma task
   do PB-04 sem card próprio.
