@@ -40,6 +40,11 @@ export interface HuntProbeActor {
   readonly facing: Direction;
   /** Where the sprite sits in world pixels, or `null` when nothing is drawn. */
   readonly sprite: { readonly x: number; readonly y: number } | null;
+  /** The atlas frame on screen, so facing and animation are observable. */
+  readonly frame: number | string | null;
+  /** Whether the sprite is mirrored. Tibia sheets carry every facing, so a
+   * mirrored actor is a presentation bug, not a facing. */
+  readonly flipX: boolean;
   readonly visible: boolean;
 }
 
@@ -60,11 +65,22 @@ export interface HuntProbeState {
     readonly scrollY: number;
     readonly width: number;
     readonly height: number;
+    readonly zoom: number;
+    readonly visibleRows: number;
   };
   readonly drawn: {
     readonly total: number;
     readonly layers: HuntProbeLayerCounts;
+    readonly composedGroundCells: number;
+    readonly unresolvedGroundCells: number;
   };
+}
+
+export interface HuntProbeCommand {
+  readonly tick: number;
+  readonly sequence: number;
+  readonly entityId: number;
+  readonly direction: Direction;
 }
 
 export interface HuntProbeRecorder {
@@ -76,12 +92,15 @@ export interface HuntProbeRecorder {
 export interface HuntProbe {
   state(): HuntProbeState;
   events(): readonly HuntProbeEvent[];
+  commands?(): readonly HuntProbeCommand[];
   reset(): void;
 }
 
 /** Implemented by the scene under observation. */
 export interface HuntProbeSource {
   huntProbeState(): HuntProbeState;
+  huntProbeCommands?(): readonly HuntProbeCommand[];
+  resetHuntProbe?(): void;
 }
 
 export type HuntProbeEventFeed = (
@@ -204,7 +223,11 @@ export function installHuntProbe(
   const probe: HuntProbe = Object.freeze({
     state: () => source.huntProbeState(),
     events: () => recorder.events(),
-    reset: () => recorder.reset(),
+    commands: () => source.huntProbeCommands?.() ?? [],
+    reset: () => {
+      recorder.reset();
+      source.resetHuntProbe?.();
+    },
   });
 
   target.__huntboundHuntProbe = probe;

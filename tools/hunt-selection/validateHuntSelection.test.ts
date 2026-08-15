@@ -35,6 +35,7 @@ function selection(
       map: 'data-otservbr-global/world/otservbr.otbm',
       spawns: 'data-otservbr-global/world/otservbr-monster.xml',
     },
+    layout: 'layouts/hunts/venore-rotworm-cave.json',
     recommendedLevel: 8,
     soloVocation: 'vocation:tibia:knight',
     region: {
@@ -303,6 +304,27 @@ describe('validateHuntSelection', () => {
         code: 'HUNT_SOURCE_INVALID',
         message:
           'Source path must be relative to the snapshot root: ../outside.otbm',
+      },
+    ]);
+  });
+
+  it('rejects a layout path that escapes the selection directory', () => {
+    const invalid = validateHuntSelection(
+      {
+        ...selection(),
+        layout: '/outside.json',
+        expectedSpawnGroups: 1,
+        expectedSpawnSlots: 1,
+      },
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+    expect(invalid.diagnostics).toEqual([
+      {
+        path: 'layout',
+        code: 'HUNT_LAYOUT_INVALID',
+        message:
+          'Layout path must be relative to the selection file: /outside.json',
       },
     ]);
   });

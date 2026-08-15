@@ -56,10 +56,19 @@ function emptyState(): HuntProbeState {
     floor: 8,
     player: null,
     actors: [],
-    camera: { scrollX: 0, scrollY: 0, width: 0, height: 0 },
+    camera: {
+      scrollX: 0,
+      scrollY: 0,
+      width: 0,
+      height: 0,
+      zoom: 1,
+      visibleRows: 11,
+    },
     drawn: {
       total: 0,
       layers: { ground: 0, objectsBelow: 0, actors: 0, objectsAbove: 0 },
+      composedGroundCells: 0,
+      unresolvedGroundCells: 0,
     },
   };
 }
@@ -211,6 +220,30 @@ describe('installHuntProbe', () => {
     publish?.([moved(4, 1, at(24, 14, 8), at(24, 15, 8))]);
 
     expect(probe?.events().map((item) => item.tick)).toEqual([4]);
+  });
+
+  it('publishes accepted input commands and clears them with reset', () => {
+    vi.stubEnv('MODE', 'test');
+    let commands = [
+      { tick: 12, sequence: 4, entityId: 1, direction: 'e' as const },
+    ];
+    const source = {
+      huntProbeState: emptyState,
+      huntProbeCommands: () => commands,
+      resetHuntProbe: () => {
+        commands = [];
+      },
+    };
+
+    installHuntProbe(source, () => () => {});
+
+    const probe = target.__huntboundHuntProbe;
+    expect(probe?.commands?.()).toEqual([
+      { tick: 12, sequence: 4, entityId: 1, direction: 'e' },
+    ]);
+
+    probe?.reset();
+    expect(probe?.commands?.()).toEqual([]);
   });
 
   it('replaces the probe when a later scene installs its own', () => {

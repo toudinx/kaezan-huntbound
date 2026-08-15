@@ -9,6 +9,13 @@ import type {
   MapRegion,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
+import {
+  groundCompositionStats,
+  resolveGroundSample,
+  type GroundCompositionStats,
+} from './GroundCompositor';
+import type { ActorMotionSegment } from './ActorMotion';
+import { createActorMotion } from './ActorMotion';
 
 export type HuntDrawLayer =
   | 'ground'
@@ -31,6 +38,7 @@ export interface HuntTileDrawCommand {
   readonly x: number;
   readonly y: number;
   readonly z: number;
+  readonly sourceZ: number;
   readonly stackIndex: number;
 }
 
@@ -51,6 +59,7 @@ export type HuntDrawCommand = HuntTileDrawCommand | HuntActorDrawCommand;
 export interface PresentationActorState extends PresentationActor {
   readonly previous: GridPosition;
   readonly target: GridPosition;
+  readonly motion?: ActorMotionSegment;
 }
 
 interface MutablePresentationActorState {
@@ -61,6 +70,7 @@ interface MutablePresentationActorState {
   previous: GridPosition;
   target: GridPosition;
   facing: Direction;
+  motion?: ActorMotionSegment;
 }
 
 export interface HuntPresentation {
@@ -69,6 +79,7 @@ export interface HuntPresentation {
   floor(): number;
   actors(): readonly PresentationActorState[];
   drawCommands(): readonly HuntDrawCommand[];
+  groundComposition(): GroundCompositionStats;
 }
 
 export interface HuntPresentationOptions {
@@ -76,6 +87,7 @@ export interface HuntPresentationOptions {
   readonly actorKeys: ReadonlyMap<string, AssetKey>;
   readonly playerBlueprintId?: string;
   readonly initialFloor?: number;
+  readonly stepCooldownTicksByBlueprint?: ReadonlyMap<string, number>;
   readonly onDiagnostic?: (message: string) => void;
 }
 
@@ -118,6 +130,7 @@ function tileCommand(
   index: number,
   paletteIndex: number | undefined,
   stackIndex: number,
+  sourceZ: number,
 ): HuntTileDrawCommand | undefined {
   const key = tileKeyForPaletteIndex(region, paletteIndex);
   if (key === undefined) return undefined;
@@ -128,6 +141,7 @@ function tileCommand(
     x: index % region.width,
     y: Math.floor(index / region.width),
     z,
+    sourceZ,
     stackIndex,
   };
 }
@@ -147,13 +161,26 @@ export function buildFloorDrawCommands(
   if (floor === undefined) return Object.freeze([]);
 
   const commands: HuntDrawCommand[] = [];
-  const groundKeys = floor.ground.map((paletteIndex) =>
-    tileKeyForPaletteIndex(region, paletteIndex),
+  const groundSamples = floor.ground.map((_paletteIndex, index) =>
+    resolveGroundSample(region, z, index),
   );
-  const hasGround = (index: number): boolean => groundKeys[index] !== undefined;
+  const hasGround = (index: number): boolean =>
+    groundSamples[index] !== undefined;
 
-  floor.ground.forEach((paletteIndex, index) => {
-    const command = tileCommand(region, z, 'ground', index, paletteIndex, 0);
+  floor.ground.forEach((_paletteIndex, index) => {
+    const sample = groundSamples[index];
+    const command =
+      sample === undefined
+        ? undefined
+        : tileCommand(
+            region,
+            z,
+            'ground',
+            index,
+            sample.paletteIndex,
+            0,
+            sample.sourceZ,
+          );
     if (command !== undefined) commands.push(command);
   });
 
@@ -167,6 +194,7 @@ export function buildFloorDrawCommands(
         entry.i,
         paletteIndex,
         stackIndex,
+        z,
       );
       if (command !== undefined) commands.push(command);
     });
@@ -200,6 +228,7 @@ export function buildFloorDrawCommands(
         entry.i,
         paletteIndex,
         stackIndex,
+        z,
       );
       if (command !== undefined) commands.push(command);
     });
@@ -219,6 +248,7 @@ function copyActor(
     previous: copyPosition(actor.previous),
     target: copyPosition(actor.target),
     facing: actor.facing,
+    ...(actor.motion === undefined ? {} : { motion: { ...actor.motion } }),
   };
 }
 
@@ -277,10 +307,16 @@ export function createHuntPresentation(
             diagnose(`Move event references unknown actor ${payload.entityId}`);
             continue;
           }
-          actor.previous = copyPosition(actor.target);
+          actor.previous = copyPosition(payload.from);
           actor.target = copyPosition(payload.to);
           actor.position = copyPosition(payload.to);
           actor.facing = payload.facing;
+          actor.motion = createActorMotion({
+            event: payload,
+            eventTick: event.tick,
+            baseStepTicks:
+              options.stepCooldownTicksByBlueprint?.get(actor.blueprintId) ?? 1,
+          });
           break;
         }
         case 'actor/faced': {
@@ -307,6 +343,7 @@ export function createHuntPresentation(
           actor.previous = copyPosition(payload.to);
           actor.target = copyPosition(payload.to);
           actor.position = copyPosition(payload.to);
+          delete actor.motion;
           activeFloor = payload.to.z;
           break;
         }
@@ -354,5 +391,7 @@ export function createHuntPresentation(
           facing: actor.facing,
         })),
       ),
+    groundComposition: () =>
+      groundCompositionStats(options.region, activeFloor),
   };
 }

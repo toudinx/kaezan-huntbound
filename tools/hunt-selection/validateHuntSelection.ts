@@ -29,6 +29,7 @@ interface ParsedSpawn {
 
 interface SelectionData {
   readonly source: { readonly map: unknown; readonly spawns: unknown };
+  readonly layout: unknown;
   readonly region: {
     readonly minX: number;
     readonly minY: number;
@@ -100,6 +101,7 @@ function selectionData(input: unknown): SelectionData {
 
   return {
     source: { map: rawSource.map, spawns: rawSource.spawns },
+    layout: root.layout,
     region: {
       minX: asIntegerOrZero(rawRegion.minX),
       minY: asIntegerOrZero(rawRegion.minY),
@@ -315,6 +317,32 @@ function sourceDiagnostics(
   return out;
 }
 
+function layoutDiagnostics(value: unknown): readonly HuntSelectionDiagnostic[] {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [
+      diagnostic(
+        'layout',
+        'HUNT_LAYOUT_INVALID',
+        'Selection must name a Huntbound layout recipe',
+      ),
+    ];
+  }
+  if (
+    value.includes('\\') ||
+    value.startsWith('/') ||
+    windowsDrivePattern.test(value)
+  ) {
+    return [
+      diagnostic(
+        'layout',
+        'HUNT_LAYOUT_INVALID',
+        `Layout path must be relative to the selection file: ${value}`,
+      ),
+    ];
+  }
+  return [];
+}
+
 export function validateHuntSelection(
   selection: unknown,
   monsterXml: string,
@@ -331,6 +359,7 @@ export function validateHuntSelection(
       : 0;
   const diagnostics: HuntSelectionDiagnostic[] = [
     ...sourceDiagnostics(data.source),
+    ...layoutDiagnostics(data.layout),
   ];
 
   if (width > data.budget.maxWidth) {

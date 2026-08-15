@@ -5,8 +5,8 @@
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** ready — PB-03 foi fechado em `7097b67` como `APPROVED_WITH_WARNINGS` e PB-04-01 é a
-próxima task elegível.
+**Status:** em andamento — PB-04-FIX-01 implementou as correções automatizadas da primeira hunt;
+o aceite visual do profile pessoal ainda está pendente por causa do bloqueio B2.
 
 **Goal:** entregar a primeira hunt jogável no browser: região real do mapa extraída offline, colisão
 e transições derivadas do snapshot, criaturas nascendo por tabela de spawn determinística, câmera
@@ -141,16 +141,17 @@ docs/content/MAP_REGION_CONTRACT.md             contrato da região extraída
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-04-01](tasks/PB-04-01-selecionar-e-congelar-a-hunt.md) | seleção da hunt, bounding box, andares, criaturas e budget medido | PB-03 fechado | Luna `xhigh` | pending |
-| [PB-04-02](tasks/PB-04-02-definir-contratos-de-mundo.md) | `HuntDefinition`, `MapRegion`, `SpawnTable`, `TransitionTable` e `KernelScenario` v3 | PB-04-01 | Luna `xhigh` | pending |
-| [PB-04-03](tasks/PB-04-03-gerar-tabela-de-flags-de-tile.md) | leitor protobuf mínimo, `floorchange` e prova de `serverId == clientId` | PB-04-02 | Sol `xhigh` | pending |
-| [PB-04-04](tasks/PB-04-04-extrair-regiao-do-mapa.md) | recorte OTBM, camadas, colisão, transições e spawns | PB-04-03 | Sol `xhigh` | pending |
-| [PB-04-05](tasks/PB-04-05-estender-kernel-para-andares-e-spawn.md) | andares, transições, spawn, stream novo, bump de versões e migração do fixture PB-03 | PB-04-02 | Sol `xhigh` | pending |
-| [PB-04-06](tasks/PB-04-06-construir-cenario-e-replay-da-hunt.md) | `buildHuntScenario`, fixture `pb-04-hunt-session`, golden e gate `hunt:check` | PB-04-04, PB-04-05 | Sol `xhigh` | pending |
-| [PB-04-07](tasks/PB-04-07-empacotar-assets-da-hunt.md) | selection `tile:tibia:*`, budget, profiles e gate de chave faltante | PB-04-04 | Luna `xhigh` | pending |
-| [PB-04-08](tasks/PB-04-08-renderizar-hunt-e-input.md) | `HuntScene`, camadas, câmera com deadzone, interpolação e `InputMap` | PB-04-06, PB-04-07 | Luna `xhigh` | pending |
-| [PB-04-09](tasks/PB-04-09-validar-hunt-no-browser.md) | quatro viewports, screenshots, paridade de replay e orçamento de boot | PB-04-08 | Luna `xhigh` | pending |
-| [PB-04-10](tasks/PB-04-10-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-04-09 | Opus 5 | pending |
+| [PB-04-01](tasks/PB-04-01-selecionar-e-congelar-a-hunt.md) | seleção da hunt, bounding box, andares, criaturas e budget medido | PB-03 fechado | Luna `xhigh` | done |
+| [PB-04-02](tasks/PB-04-02-definir-contratos-de-mundo.md) | `HuntDefinition`, `MapRegion`, `SpawnTable`, `TransitionTable` e `KernelScenario` v3 | PB-04-01 | Luna `xhigh` | done |
+| [PB-04-03](tasks/PB-04-03-gerar-tabela-de-flags-de-tile.md) | leitor protobuf mínimo, `floorchange` e prova de `serverId == clientId` | PB-04-02 | Sol `xhigh` | done |
+| [PB-04-04](tasks/PB-04-04-extrair-regiao-do-mapa.md) | recorte OTBM, recipe, camadas, colisão, transições e spawns | PB-04-03 | Sol `xhigh` | done |
+| [PB-04-05](tasks/PB-04-05-estender-kernel-para-andares-e-spawn.md) | andares, transições, spawn, stream novo, bump de versões e migração do fixture PB-03 | PB-04-02 | Sol `xhigh` | done |
+| [PB-04-06](tasks/PB-04-06-construir-cenario-e-replay-da-hunt.md) | `buildHuntScenario`, fixture, golden e gate `hunt:check` | PB-04-04, PB-04-05 | Sol `xhigh` | replay fixed by FIX-01; audit pending |
+| [PB-04-07](tasks/PB-04-07-empacotar-assets-da-hunt.md) | selection `tile:tibia:*`, budget, profiles e gate de chave faltante | PB-04-04 | Luna `xhigh` | done for test; personal blocked by B2 |
+| [PB-04-08](tasks/PB-04-08-renderizar-hunt-e-input.md) | `HuntScene`, camadas, câmera e `InputMap` | PB-04-06, PB-04-07 | Luna `xhigh` | done; corrected by FIX-01 |
+| [PB-04-09](tasks/PB-04-09-validar-hunt-no-browser.md) | quatro viewports, screenshots, paridade de replay e orçamento de boot | PB-04-08 | Luna `xhigh` | done; rerun by FIX-01 |
+| [PB-04-FIX-01](tasks/PB-04-FIX-01-corrigir-experiencia-da-hunt.md) | corrigir remix, composição, câmera, movimento, input e replay da hunt | PB-04-09 | Codex/GPT-5 | automated done; personal acceptance pending |
+| [PB-04-10](tasks/PB-04-10-auditar-e-fechar-playbook.md) | auditoria integrada e aceite | PB-04-FIX-01 + aceite pessoal | Opus 5 | blocked pending acceptance |
 
 PB-04-03 e PB-04-05 podem executar em paralelo após PB-04-02: uma toca `tools/` e
 `packages/content`, a outra toca `packages/simulation` e `packages/contracts/src/simulation`.

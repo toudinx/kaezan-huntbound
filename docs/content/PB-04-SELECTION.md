@@ -8,15 +8,18 @@
 ## Decisão
 
 A seleção congelada usa o agrupamento superior de Rotworms que aparece nos dois andares
-`z = 8` e `z = 9`. A caixa é absoluta, inclusiva e tem origem local futura no canto
-`(minX, minY)`:
+`z = 8` e `z = 9`. A caixa absoluta abaixo é apenas o envelope de material-fonte do OTBM;
+a geometria jogável é produzida deterministicamente pela receita versionada em `layout` e tem
+origem local no canto `(0, 0)`:
 
 | Campo | Valor medido |
 |---|---:|
 | `minX..maxX` | `33002..33030` |
 | `minY..maxY` | `31995..32027` |
-| Largura | `29` tiles |
-| Altura | `33` tiles |
+| Largura do envelope OTBM | `29` tiles |
+| Altura do envelope OTBM | `33` tiles |
+| Largura autorada | `24` tiles |
+| Altura autorada | `24` tiles |
 | Andares | `8, 9` |
 | Grupos de Rotworm | `8` |
 | Slots de Rotworm | `12` |
@@ -45,10 +48,10 @@ na caixa, a CLI falhará com `HUNT_UNKNOWN_CREATURE`; somente uma entrada explí
 | Nome e nível recomendado | A página identifica **Venore Rotworm Cave** e informa nível recomendado `8`; os mesmos valores estão no JSON. |
 | Compatibilidade solo | A página lista a rota para `EK` entre as vocações solo; o contrato congela a vocação-alvo como `vocation:tibia:knight`. |
 | Todas as criaturas existem no snapshot/catalogo | A tabela contém apenas `creature:tibia:rotworm`; PB-01 registra `Rotworm`, fonte `data-otservbr-global/monster/vermins/rotworm.lua`, `lookType: 26`, e o catálogo gerado contém a chave estável. A CLI revalida a chave contra `packages/content/src/generated/pb-01-contract-coverage.json`. |
-| Região localizável e extraível | A seleção declara coordenadas Tibia absolutas `33002..33030 × 31995..32027`, nos andares 8 e 9; a caixa tem `29 × 33`, dentro de `96 × 96`. O mapa local é `data-canary/world/canary.otbm`; `config.lua.dist` declara `mapName = "otservbr"`, pareando o mapa com `data-otservbr-global/world/otservbr-monster.xml`. |
+| Região localizável e extraível | A seleção declara o envelope Tibia absoluto `33002..33030 × 31995..32027`, nos andares 8 e 9; a caixa de material tem `29 × 33`, dentro de `96 × 96`. A receita `../../layouts/hunts/venore-rotworm-cave.json` remixa esse envelope para uma região autorada conectada de `24 × 24`. O mapa local é `data-canary/world/canary.otbm`; `config.lua.dist` declara `mapName = "otservbr"`, pareando o mapa com `data-otservbr-global/world/otservbr-monster.xml`. |
 | Tiles, objetos, outfits e efeitos necessários | O snapshot contém `canary.otbm` (19.718.948 bytes), `data/items/appearances.dat` (4.862.287 bytes) e `data/items/items.xml` (3.722.590 bytes; 345 ocorrências de `floorchange`). O dump também contém `data/XML/outfits.xml` com `looktype="131" name="Knight"`. PB-04-01 não requer efeito de combate: a hunt não tem combate, spell ou projétil; `attachedeffects.xml` existe no dump (465 bytes) e nenhum ID de efeito é importado pela seleção. |
 | Não depende de party, quest chain, world event ou serviço não implementado | O artefato congela apenas mapa, andares e a tabela de Rotworms; não há campos ou dependências de party, quest, evento ou serviço. A página informa apenas os requisitos de rota Rope/Shovel, que não são uma dependência de runtime desta task. |
-| Cabe no budget da ADR-001 | `floors.length = 2 ≤ 3`, `width = 29 ≤ 96` e `height = 33 ≤ 96`. Os tetos de entradas/bytes do pack e atores vivos são gates posteriores de PB-04-07/PB-04-09; não são inventados nesta decisão de seleção. |
+| Cabe no budget da ADR-001 | `floors.length = 2 ≤ 3`, envelope OTBM `29 × 33 ≤ 96 × 96` e geometria autorada `24 × 24 ≤ 96 × 96`. Os tetos de entradas/bytes do pack e atores vivos são gates posteriores de PB-04-07/PB-04-09; não são inventados nesta decisão de seleção. |
 
 ## Revalidação
 
@@ -60,8 +63,10 @@ node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts ch
   --source-root C:\Kaezan\kaezan-huntbound\references\canary
 ```
 
-Resultado: exit `0`, `width=29`, `height=33`, `floors=[8,9]`, `spawnGroups=8`,
-`spawnSlots=12`, `creatureNames=["Rotworm"]` e `diagnostics=[]`.
+Resultado: exit `0`, envelope `width=29`, `height=33`, `floors=[8,9]`, `spawnGroups=8`,
+`spawnSlots=12`, `creatureNames=["Rotworm"]` e `diagnostics=[]`. A receita autorada deriva a
+região jogável final com `width=24`, `height=24`, `floors=[8,9]` e um componente walkable por
+andar.
 
 O script raiz equivalente é `hunt:selection:check`, usando
 `--source-root-env HUNTBOUND_CANARY_SOURCE`. Ele fica fora de `check` e `verify` porque um
@@ -71,12 +76,18 @@ de máquina no repositório.
 `references/` permanece somente como entrada local do snapshot. Nenhum byte desse diretório é
 copiado para o repositório.
 
-## Resultado de PB-04-04 — a caixa foi extraída
+## Resultado de PB-04-FIX-01 — a geometria autorada foi extraída
 
-Medição final em 2026-08-14, de `data-otservbr-global/world/otservbr.otbm` (`a80de1dd…`):
-`1914` células, palette de `138`, `105` células vazias, `4` transições e **`0` derrubadas**,
-`8` grupos e `12` slots de Rotworm. `expectedDroppedTransitions` permanece `0` porque a medição
-confirmou `0` — a caixa congelada não perde nenhuma travessia no recorte.
+Medição final em 2026-08-15, usando o envelope OTBM de `data-otservbr-global/world/otservbr.otbm`
+(`a80de1dd…`) e a receita `packages/content/src/layouts/hunts/venore-rotworm-cave.json`,
+produziu `1152` células autoradas (`24 × 24 × 2`), palette de `133`, `417` células vazias,
+`104` walkable em `z=8`, `152` walkable em `z=9`, `2` transições em sentidos opostos,
+`8` grupos e `12` slots de Rotworm. Cada andar tem exatamente um componente walkable e
+`expectedDroppedTransitions` permanece `0`.
+
+O SHA-256 da receita é `180aab488ab80426ce5b9c7c5e5472db450a83f44e864abbb16cc1ef3f18702e`.
+A fidelidade à coordenada original não é requisito: o envelope é material de origem, enquanto
+a receita é a fonte de verdade da composição final.
 
 A seção abaixo fica como histórico do diagnóstico que levou à instalação do mapa.
 

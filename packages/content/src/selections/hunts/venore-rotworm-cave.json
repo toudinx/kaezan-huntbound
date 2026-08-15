@@ -6,6 +6,7 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
+  "layout": "../../layouts/hunts/venore-rotworm-cave.json",
   "recommendedLevel": 8,
   "soloVocation": "vocation:tibia:knight",
   "region": {

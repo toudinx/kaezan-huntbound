@@ -423,18 +423,23 @@ partir de `HUNTBOUND_CANARY_SOURCE` e fica **fora** de `check` e `verify`;
 `corepack pnpm hunt:extract:sidecar` compara os quatro sidecars sem precisar do snapshot e entra em
 `content:check` quando os artefatos existirem.
 
-### Região congelada — `hunt:tibia:venore-rotworm-cave`
+### Região autorada vigente — `hunt:tibia:venore-rotworm-cave`
 
-Extraída em 2026-08-14 de `data-otservbr-global/world/otservbr.otbm`
+Extraída em 2026-08-15 a partir do envelope OTBM de `data-otservbr-global/world/otservbr.otbm`
 (`a80de1dd…`) e `data-otservbr-global/world/otservbr-monster.xml` (`7043c114…`), com
-`tile-flags.json` (`a373f0d1…`):
+`tile-flags.json` (`a373f0d1…`). O envelope absoluto continua sendo material de origem; a
+geometria jogável é a receita versionada `packages/content/src/layouts/hunts/venore-rotworm-cave.json`
+(`180aab488ab80426ce5b9c7c5e5472db450a83f44e864abbb16cc1ef3f18702e`). Fidelidade à posição
+original não é requisito da região autorada.
 
 | Medida | Valor |
 |---|---:|
-| Células (`29 × 33 × 2`) | `1914` |
-| Palette | `138` |
-| Células vazias (`HUNT_EMPTY_TILE`) | `105` |
-| Transições | `4` |
+| Células (`24 × 24 × 2`) | `1152` |
+| Palette | `133` |
+| Células vazias (`HUNT_EMPTY_TILE`) | `417` |
+| Walkable (`z=8 / z=9`) | `104 / 152` |
+| Componentes walkable (`z=8 / z=9`) | `1 / 1` |
+| Transições | `2` |
 | Transições derrubadas | `0` |
 | Grupos de spawn | `8` |
 | Slots de spawn | `12` |
@@ -443,21 +448,18 @@ Hashes congelados dos quatro arquivos:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `region.json` | `74bbd94a62c646be4115b1fa9ddf7ceced8dfba8cd3e7f90e2188a11e2a860f5` |
-| `transitions.json` | `3520964782905a4d7b00cf52398ff43a831a22a770a55d4c58f2e0d92a9bd2e7` |
-| `spawns.json` | `aa8b2062e0c9eb638f748b296d9d2e1b4675f3bc2538b218d1ce883cc869e3b5` |
-| `hunt.json` | `24e3b97e4d5b1fa53aba7c2f107d9b42d32735f0b1e6c35eb2850fd57c29bdb9` |
+| `region.json` | `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5` |
+| `transitions.json` | `8c59f8ef4f9a5f9842a06712a4d1bbfe2dbf4a6ef578ecdd1be55bf6e7bc51e7` |
+| `spawns.json` | `141be183e4603a72f7ee594a7fe694a20265336bf05f1f2eadf3e18116c58520` |
+| `hunt.json` | `7c6383061f77c317a34e945ae3b81d594a9f3dbbdc4a511155240bf6cffce6cc` |
 
 `expectedDroppedTransitions` da seleção era `0` e a medição confirmou `0`: **nenhuma transição foi
 derrubada**, então nenhuma reconciliação foi necessária e nenhuma travessia se perdeu no recorte.
 
-**As quatro transições descem.** O único item com `floorchange` dentro da caixa é o `385`, valor
-`down`, e todas as quatro entradas vão de `z = 8` para `z = 9`. Não existe tile de subida na caixa
-porque, neste trecho, a volta em Tibia é feita por script de ação (escada/corda), não por
-`floorchange` — e ação não é geometria, logo não pertence a esta extração. Isso é registro para
-**PB-04-06**, cuja cobertura de fixture pede "uma transição em cada sentido": ou a sessão usa
-`scenario/teleport-actor` para voltar, ou a cobertura precisa ser reescrita. Não é derrubada de
-transição e não afeta os critérios de aceite desta task.
+**As duas transições são autoradas e opostas.** A receita instala uma entrada de `z = 8` para
+`z = 9` e a volta correspondente de `z = 9` para `z = 8`; ambas permanecem dentro de células
+walkable dos componentes únicos. Isso torna a travessia bidirecional uma propriedade explícita
+da geometria remixada, sem depender de um `floorchange` encontrado acidentalmente no recorte.
 
 ### Procedência do mapa
 

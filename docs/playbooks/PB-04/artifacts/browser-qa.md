@@ -6,6 +6,20 @@
 **Build servida:** `corepack pnpm build` (profile `test`) e `vite preview` em `127.0.0.1:4173`
 **Commit medido:** ver handoff de PB-04-09 em `docs/playbooks/PB-04/STATE.md`
 
+> **Atualização PB-04-FIX-01 — 2026-08-15:** este artefato histórico foi rerodado contra o remix
+> autorado e os contratos atuais. A sessão agora é a fixture versionada em
+> `packages/test-fixtures/hunt/pb04/`, com `hunt:check` e a fixture suplementar de respawn em
+> `pb04-respawn/`. A suíte Playwright atual passou `27/27`: quatro viewports com `visibleRows=11`,
+> `zoom>1`, ground composto, hold curto com um comando por tick, BFS de descida/retorno e zero erros
+> de console, página, rede ou HTTP. A topologia medida é `104` tiles caminháveis em `z=8` e `152` em
+> `z=9`, ambos com um componente. A câmera agora centraliza o jogador; as referências históricas a
+> deadzone, coordenadas antigas e W11 abaixo pertencem ao estado anterior ao FIX-01.
+>
+> Os quatro PNGs foram regenerados deliberadamente. O profile `test` continua usando a mídia
+> sintética 1×1 prevista neste documento, portanto os pixels validam HUD e geometria, não a arte final.
+> O aceite visual do profile pessoal permanece pendente por B2; não há placeholders nem aprovação do
+> usuário registrada.
+
 ## 1. Desvio de escopo declarado
 
 PB-04-06 **não** entregou a fixture `pb-04-hunt-session` nem o script `hunt:check`. O próprio handoff

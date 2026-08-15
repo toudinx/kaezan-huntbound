@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { MapRegion } from '../../packages/contracts/src/hunt/types.ts';
 import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
+import type { HuntLayoutRecipe } from './layout.ts';
 import { buildSpawnTable } from './spawns.ts';
 
 const WIDTH = 10;
@@ -35,6 +36,7 @@ const selection: HuntSelection = {
     map: 'data-otservbr-global/world/otservbr.otbm',
     spawns: 'data-otservbr-global/world/otservbr-monster.xml',
   },
+  layout: 'layouts/hunts/venore-rotworm-cave.json',
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {
@@ -84,6 +86,44 @@ function monsterXml(groups: readonly GroupFixture[]): string {
 }
 
 describe('buildSpawnTable', () => {
+  it('remaps selected XML slots through a Huntbound layout recipe', () => {
+    const layout: HuntLayoutRecipe = {
+      schemaVersion: 1,
+      layoutId: 'layout:huntbound:test',
+      width: WIDTH,
+      height: HEIGHT,
+      floors: [7, 8].map((z) => ({ z, operations: [] })),
+      playerStart: { x: 0, y: 0, z: 7 },
+      transitions: [],
+      spawnPlacements: [
+        {
+          source: { x: MIN_X + 5, y: MIN_Y + 3, z: 8 },
+          target: { x: 1, y: 2, z: 8 },
+        },
+      ],
+    };
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X + 4,
+          centerY: MIN_Y + 5,
+          centerZ: 8,
+          radius: 3,
+          slots: [{ name: 'Rotworm', x: 1, y: -2, z: 8 }],
+        },
+      ]),
+      selection,
+      region,
+      layout,
+    );
+
+    expect(built.table.groups[0]).toMatchObject({
+      center: { x: 1, y: 2, z: 8 },
+      slots: [{ offsetX: 0, offsetY: 0, offsetZ: 0 }],
+    });
+    expect(built.diagnostics).toEqual([]);
+  });
+
   it('turns a group inside the box into a definition with a local center', () => {
     const built = buildSpawnTable(
       monsterXml([

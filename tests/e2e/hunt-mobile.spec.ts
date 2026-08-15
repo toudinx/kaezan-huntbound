@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 
 import {
   movedEvents,
-  readHuntState,
   requireCell,
   requireFirst,
   requirePlayer,
@@ -11,9 +10,7 @@ import {
   stepWithKeyboard,
   waitForHunt,
 } from './support/huntDriver';
-import { readHuntDefinition } from './support/huntSession';
 
-const hunt = readHuntDefinition();
 const mobile = { width: 390, height: 844 };
 
 interface Rect {
@@ -119,9 +116,8 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
       y: playfield.y + third.height * 2,
       ...third,
     };
-    // The camera deadzone keeps the player horizontally centred, so the strip
-    // the player and the tiles below it actually occupy is the middle fifth of
-    // the playfield. That strip has to be clear on every viewport.
+    // The centered camera keeps the player in the middle of the playfield, so
+    // the strip the player and the tiles below it occupy is the middle fifth.
     const lowerMiddleCore: Rect = {
       x: playfield.x + playfield.width * 0.4,
       y: lowerMiddle.y,
@@ -195,54 +191,55 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
     expect(bite).toBeLessThanOrEqual(13);
   });
 
-  test('holds the camera inside the deadzone and follows once it is left', async ({
+  test('keeps the player centered while the hunt moves on a phone viewport', async ({
     page,
   }) => {
-    await waitForHunt(page);
+    let state = await waitForHunt(page);
+    const samples = [state];
+    const directions = ['s', 'w', 'e', 's', 'w', 'e'] as const;
 
-    // Row 15 of the upper floor is a straight walkable corridor west of
-    // `playerStart`; stepping west on row 14 would drop through the transition.
-    await stepWithKeyboard(page, stepKeys.s);
-
-    const samples: { playerX: number; scrollX: number }[] = [];
-    let state = await readHuntState(page);
-
-    samples.push({
-      playerX: requirePlayer(state).position.x,
-      scrollX: state.camera.scrollX,
-    });
-
-    for (let step = 0; step < 8; step += 1) {
-      const outcome = await stepWithKeyboard(page, stepKeys.w);
-
+    for (const direction of directions) {
+      const outcome = await stepWithKeyboard(page, stepKeys[direction]);
       state = outcome.after;
-      samples.push({
-        playerX: requirePlayer(state).position.x,
-        scrollX: state.camera.scrollX,
-      });
+      if (movedEvents(outcome).length > 0) samples.push(state);
+      if (samples.length >= 4) break;
     }
 
-    const held = samples.some((sample, index) => {
-      const previous = samples[index - 1];
-      return (
-        previous !== undefined &&
-        sample.playerX !== previous.playerX &&
-        sample.scrollX === previous.scrollX
-      );
-    });
-    const followed = samples.some((sample, index) => {
-      const previous = samples[index - 1];
-      return previous !== undefined && sample.scrollX < previous.scrollX;
-    });
+    expect(
+      samples.length,
+      'the camera test needs accepted player moves',
+    ).toBeGreaterThanOrEqual(2);
 
-    expect(
-      requireFirst([...samples].reverse(), 'camera sample').playerX,
-      'the player never walked west',
-    ).toBeLessThan(hunt.playerStart.x);
-    expect(
-      held,
-      'the camera moved on every step, so there is no deadzone',
-    ).toBe(true);
-    expect(followed, 'the camera never followed the player').toBe(true);
+    const canvas = await page.locator('#game-root canvas').boundingBox();
+    expect(canvas).not.toBeNull();
+    if (canvas === null) return;
+
+    for (const sample of samples) {
+      const player = requirePlayer(sample);
+      expect(player.sprite).not.toBeNull();
+      if (player.sprite === null) continue;
+
+      expect(sample.camera.visibleRows).toBeGreaterThanOrEqual(10);
+      expect(sample.camera.visibleRows).toBeLessThanOrEqual(12);
+      expect(sample.camera.zoom).toBeGreaterThan(1);
+
+      // Phaser zooms around the camera midpoint, so `scroll` is in unzoomed
+      // viewport units and the world point under the centre is
+      // `scroll + viewport / 2`. Converting with `(world - scroll) * zoom`
+      // assumes the scroll is the top-left of the zoomed view and hides a
+      // camera that is off by `viewport/2 - viewport/(2*zoom)`.
+      const worldCentreX = sample.camera.scrollX + sample.camera.width / 2;
+      const worldCentreY = sample.camera.scrollY + sample.camera.height / 2;
+      const centreX = canvas.x + canvas.width / 2;
+      const centreY = canvas.y + canvas.height / 2;
+      const screenX =
+        centreX + (player.sprite.x - worldCentreX) * sample.camera.zoom;
+      const screenY =
+        centreY + (player.sprite.y - worldCentreY) * sample.camera.zoom;
+      const screenTile = sample.camera.height / sample.camera.visibleRows;
+
+      expect(Math.abs(screenX - centreX)).toBeLessThanOrEqual(screenTile);
+      expect(Math.abs(screenY - centreY)).toBeLessThanOrEqual(screenTile);
+    }
   });
 });

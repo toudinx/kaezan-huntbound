@@ -1120,17 +1120,6 @@
       "byteLength": 1636
     },
     {
-      "key": "tile:tibia:5560",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5560
-      },
-      "path": "objects/5560.png",
-      "sha256": "6441be13ac3e5189fd169daf654e3fa265ccecc98a11c25757b1dccb846dfbed",
-      "byteLength": 2531
-    },
-    {
       "key": "tile:tibia:5561",
       "category": "object",
       "sourceIdentity": {
@@ -1252,17 +1241,6 @@
       "byteLength": 2123
     },
     {
-      "key": "tile:tibia:5640",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5640
-      },
-      "path": "objects/5640.png",
-      "sha256": "4d87bf7b67db4759acbca5d199beba6f22b2093229edce7096741367288b1803",
-      "byteLength": 2209
-    },
-    {
       "key": "tile:tibia:5646",
       "category": "object",
       "sourceIdentity": {
@@ -1305,17 +1283,6 @@
       "path": "objects/5650.png",
       "sha256": "296a5fbca540767f0f2ec386c6c2e8b898e1dd1012117a5b477f1124493cbc96",
       "byteLength": 2171
-    },
-    {
-      "key": "tile:tibia:5652",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5652
-      },
-      "path": "objects/5652.png",
-      "sha256": "6212976262b7896e9bc07ae7c517ab4c9e5dc75533a327426989f34aad398bc2",
-      "byteLength": 2138
     },
     {
       "key": "tile:tibia:5711",
@@ -1406,17 +1373,6 @@
       "byteLength": 2563
     },
     {
-      "key": "tile:tibia:5719",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5719
-      },
-      "path": "objects/5719.png",
-      "sha256": "7e4c7d0743083eb1366747781a893b0e8062dad00da84e462404f867246c29f1",
-      "byteLength": 2605
-    },
-    {
       "key": "tile:tibia:5720",
       "category": "object",
       "sourceIdentity": {
@@ -1481,17 +1437,6 @@
       "path": "objects/5750.png",
       "sha256": "7ac6b15ef14bb08e626f0b620b320c146c6632884db7e7d2a37af25f6b449401",
       "byteLength": 10018
-    },
-    {
-      "key": "tile:tibia:5754",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5754
-      },
-      "path": "objects/5754.png",
-      "sha256": "f0d3c01cc6d4f65937f953c71b4c0e6ee5b6eaaeec7bf9fad5b82847f45803c7",
-      "byteLength": 3319
     },
     {
       "key": "tile:tibia:5866",

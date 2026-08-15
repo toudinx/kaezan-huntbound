@@ -3,14 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { createCameraController, interpolate } from './CameraController';
 
 describe('CameraController', () => {
-  it('does not scroll while the target remains inside the deadzone', () => {
+  it('keeps the target centered at the viewport center', () => {
     const camera = createCameraController({
       viewportWidth: 320,
       viewportHeight: 240,
-      deadzoneWidth: 160,
-      deadzoneHeight: 120,
-      worldWidth: 960,
-      worldHeight: 720,
+      zoom: 1,
     });
 
     camera.follow({ x: 160, y: 120 });
@@ -18,39 +15,34 @@ describe('CameraController', () => {
     expect([camera.scrollX, camera.scrollY]).toEqual([0, 0]);
   });
 
-  it('moves to the deadzone edge without overshoot in every direction', () => {
+  it('does not clamp the finite authored map at its edges', () => {
     const camera = createCameraController({
       viewportWidth: 320,
       viewportHeight: 240,
-      deadzoneWidth: 160,
-      deadzoneHeight: 120,
-      worldWidth: 960,
-      worldHeight: 720,
+      zoom: 1,
     });
 
     camera.follow({ x: 300, y: 220 });
-    expect([camera.scrollX, camera.scrollY]).toEqual([60, 40]);
+    expect([camera.scrollX, camera.scrollY]).toEqual([140, 100]);
 
     camera.follow({ x: 40, y: 20 });
-    expect([camera.scrollX, camera.scrollY]).toEqual([0, 0]);
-
-    camera.follow({ x: 700, y: 500 });
-    expect([camera.scrollX, camera.scrollY]).toEqual([460, 320]);
+    expect([camera.scrollX, camera.scrollY]).toEqual([-120, -100]);
   });
 
-  it('clamps scroll at the far world edge', () => {
-    const camera = createCameraController({
-      viewportWidth: 320,
-      viewportHeight: 240,
-      deadzoneWidth: 160,
-      deadzoneHeight: 120,
-      worldWidth: 640,
-      worldHeight: 480,
+  it('keeps the centered scroll independent of zoom', () => {
+    const scrolls = [1, 2, 3.4].map((zoom) => {
+      const camera = createCameraController({
+        viewportWidth: 320,
+        viewportHeight: 240,
+        zoom,
+      });
+      camera.follow({ x: 999, y: 999 });
+      return [camera.scrollX, camera.scrollY];
     });
 
-    camera.follow({ x: 999, y: 999 });
-
-    expect([camera.scrollX, camera.scrollY]).toEqual([320, 240]);
+    for (const scroll of scrolls) {
+      expect(scroll).toEqual([839, 879]);
+    }
   });
 
   it('clamps interpolation alpha and remains monotonic between endpoints', () => {

@@ -2,6 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import type {
   HuntboundHuntGlobal,
   HuntProbeActor,
+  HuntProbeCommand,
   HuntProbeEvent,
   HuntProbeState,
 } from '../../../apps/game/src/hunt/HuntProbe.ts';
@@ -21,6 +22,7 @@ export interface HuntStepOutcome {
   readonly before: HuntProbeState;
   readonly after: HuntProbeState;
   readonly playerEvents: readonly HuntProbeEvent[];
+  readonly commands: readonly HuntProbeCommand[];
 }
 
 const playerEventTypes = new Set([
@@ -73,8 +75,9 @@ async function beginStep(page: Page): Promise<HuntProbeState> {
 
 /**
  * Waits in the page, on `requestAnimationFrame`, so the hold is released about
- * one frame after the simulation answers. The player's step cooldown is two
- * ticks (100 ms), so a single hold yields a single step.
+ * one frame after the simulation answers. The input gate opens once per tick, so
+ * a hold shorter than one tick is what yields a single command; a longer hold
+ * keeps enqueueing while the key is down.
  *
  * A `cooldown` refusal is not an answer to this press: it only says the
  * previous step is still paying for itself. Treating it as one would release
@@ -108,12 +111,12 @@ async function endStep(
   page: Page,
   before: HuntProbeState,
 ): Promise<HuntStepOutcome> {
-  const [after, events] = await page.evaluate(() => {
+  const [after, events, commands] = await page.evaluate(() => {
     const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
     if (probe === undefined) {
       throw new Error('Hunt probe is not installed in the test browser.');
     }
-    return [probe.state(), probe.events()] as const;
+    return [probe.state(), probe.events(), probe.commands?.() ?? []] as const;
   });
   const playerEntityId = before.player?.entityId;
 
@@ -126,6 +129,7 @@ async function endStep(
         playerEventTypes.has(item.type) &&
         item.reason !== 'cooldown',
     ),
+    commands,
   };
 }
 
@@ -148,6 +152,30 @@ export async function stepWithKeyboard(
     await page.keyboard.up(key);
   }
 
+  return endStep(page, before);
+}
+
+/** Holds a direction for less than the player's 2-tick step duration. */
+export async function holdKeyboardFor(
+  page: Page,
+  key: StepKey,
+  durationMs: number,
+): Promise<HuntStepOutcome> {
+  const before = await beginStep(page);
+  const playerEntityId = before.player?.entityId;
+
+  if (playerEntityId === undefined) {
+    throw new Error(probeErrorMessage);
+  }
+
+  await page.keyboard.down(key);
+  try {
+    await page.waitForTimeout(durationMs);
+  } finally {
+    await page.keyboard.up(key);
+  }
+
+  await waitForPlayerAnswer(page, playerEntityId);
   return endStep(page, before);
 }
 

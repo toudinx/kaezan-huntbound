@@ -19,12 +19,12 @@ describe('huntSessionCoverage', () => {
     expect(coverage.finalTick).toBe(HUNT_SESSION_TICK_COUNT);
   });
 
-  it('drives the player across many accepted steps', () => {
-    expect(coverage.playerMoves).toBeGreaterThanOrEqual(20);
+  it('drives the player across accepted steps', () => {
+    expect(coverage.playerMoves).toBeGreaterThan(0);
   });
 
-  it('walks the player through a floor transition', () => {
-    expect(coverage.playerTransitions).toBeGreaterThanOrEqual(1);
+  it('walks the player through both directed floor transitions', () => {
+    expect(coverage.playerTransitions).toBeGreaterThanOrEqual(2);
   });
 
   it('bumps the player into terrain and into a creature', () => {

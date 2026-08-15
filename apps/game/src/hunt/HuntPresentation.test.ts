@@ -81,6 +81,7 @@ describe('HuntPresentation', () => {
       'ground',
       'ground',
       'ground',
+      'ground',
       'objectsBelow',
       'actors',
       'objectsAbove',
@@ -90,9 +91,9 @@ describe('HuntPresentation', () => {
         .filter((command) => command.layer !== 'actors')
         .every((command) => command.key.startsWith('tile:tibia:')),
     ).toBe(true);
-    expect(commands.some((command) => command.x === 1 && command.y === 1)).toBe(
-      false,
-    );
+    expect(
+      commands.find((command) => command.x === 1 && command.y === 1),
+    ).toMatchObject({ layer: 'ground', sourceZ: 8 });
   });
 
   it('replaces the active floor and handles actor lifecycle events', () => {

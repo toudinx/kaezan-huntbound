@@ -11,6 +11,8 @@ import type { TileFlagsTable } from '../tile-flags/types.ts';
 import { readOtbmTiles } from './otbm.ts';
 import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
+import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
+import { analyzeHuntTopology } from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';
 import { diagnostic, sortDiagnostics } from './types.ts';
@@ -25,16 +27,21 @@ import { diagnostic, sortDiagnostics } from './types.ts';
  * belongs to combat, which is PB-05.
  */
 export const PLAYER_BLUEPRINT_ID = 'player';
-const PLAYER_STEP_COOLDOWN_TICKS = 2;
-const CREATURE_STEP_COOLDOWN_TICKS = 3;
+/**
+ * Steps are paced to read as walking rather than sliding: at 50 ms a tick these
+ * are 500 ms per plain tile for the player, near a Tibia character without
+ * haste, and 1 s for a rotworm, which is a slow creature.
+ */
+const PLAYER_STEP_COOLDOWN_TICKS = 10;
+const CREATURE_STEP_COOLDOWN_TICKS = 20;
 
 /** Frozen region budget from the PB-04 design spec. */
 const MAX_FLOORS = 3;
 const MAX_WIDTH = 96;
 const MAX_HEIGHT = 96;
 
-const HUNT_REVISION = 1;
-const REGION_REVISION = 1;
+const HUNT_REVISION = 2;
+const REGION_REVISION = 2;
 
 /** `hunt:tibia:venore-rotworm-cave` addresses `region:tibia:...`. */
 function regionIdFor(huntKey: string): string {
@@ -135,6 +142,7 @@ export function extractHunt(
   monsterXml: string,
   tileFlags: TileFlagsTable,
   selection: HuntSelection,
+  layout?: HuntLayoutRecipe,
 ): ExtractionResult {
   const bounds = {
     minX: selection.region.minX,
@@ -145,12 +153,35 @@ export function extractHunt(
   };
 
   const tiles = readOtbmTiles(otbm, bounds);
-  const built = buildMapRegion(tiles, bounds, indexTileFlags(tileFlags), {
-    regionId: regionIdFor(selection.key),
-    regionRevision: REGION_REVISION,
-  });
-  const transitions = buildTransitionTable(built.region, built.floorChanges);
-  const spawns = buildSpawnTable(monsterXml, selection, built.region);
+  const authoredTiles =
+    layout === undefined ? tiles : applyHuntLayout(tiles, layout);
+  const regionBounds =
+    layout === undefined
+      ? bounds
+      : {
+          minX: 0,
+          minY: 0,
+          maxX: layout.width - 1,
+          maxY: layout.height - 1,
+          floors: layout.floors.map(({ z }) => z),
+        };
+  const built = buildMapRegion(
+    authoredTiles,
+    regionBounds,
+    indexTileFlags(tileFlags),
+    {
+      regionId: regionIdFor(selection.key),
+      regionRevision: REGION_REVISION,
+    },
+  );
+  const transitions =
+    layout === undefined
+      ? buildTransitionTable(built.region, built.floorChanges)
+      : {
+          table: { entries: layout.transitions, dropped: 0 },
+          diagnostics: [],
+        };
+  const spawns = buildSpawnTable(monsterXml, selection, built.region, layout);
 
   const player: KernelBlueprint = {
     blueprintId: PLAYER_BLUEPRINT_ID,
@@ -168,10 +199,9 @@ export function extractHunt(
     ),
   ].sort((left, right) => left.blueprintId.localeCompare(right.blueprintId));
 
-  const playerStart = pickPlayerStart(
-    built.region,
-    spawns.table.groups[0]?.center,
-  );
+  const playerStart =
+    layout?.playerStart ??
+    pickPlayerStart(built.region, spawns.table.groups[0]?.center);
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,
@@ -218,6 +248,10 @@ export function extractHunt(
         ),
       ),
     );
+  }
+
+  if (layout !== undefined) {
+    diagnostics.push(...analyzeHuntTopology(hunt).diagnostics);
   }
 
   return { hunt, diagnostics: sortDiagnostics(diagnostics) };

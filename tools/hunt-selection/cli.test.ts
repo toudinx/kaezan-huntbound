@@ -66,6 +66,7 @@ async function createFixture() {
       map: 'data-otservbr-global/world/otservbr.otbm',
       spawns: 'data-otservbr-global/world/otservbr-monster.xml',
     },
+    layout: 'layout.json',
     recommendedLevel: 8,
     soloVocation: 'vocation:tibia:knight',
     region: { minX: 100, minY: 200, maxX: 100, maxY: 200, floors: [8] },

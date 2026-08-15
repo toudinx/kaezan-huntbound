@@ -30,6 +30,7 @@ const selection = {
     map: 'data-canary/world/canary.otbm',
     spawns: 'data-otservbr-global/world/otservbr-monster.xml',
   },
+  layout: 'layouts/layout.json',
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {
@@ -151,6 +152,45 @@ beforeEach(() => {
 
   selectionPath = join(root, 'selection.json');
   writeFileSync(selectionPath, JSON.stringify(selection));
+  mkdirSync(join(root, 'layouts'), { recursive: true });
+  writeFileSync(
+    join(root, 'layouts', 'layout.json'),
+    JSON.stringify({
+      schemaVersion: 1,
+      layoutId: 'layout:huntbound:test',
+      width: SIZE,
+      height: SIZE,
+      floors: [7, 8].map((z) => ({
+        z,
+        operations: [
+          {
+            kind: 'copy-rect',
+            from: { minX: MIN_X, minY: MIN_Y, z },
+            width: SIZE,
+            height: SIZE,
+            to: { x: 0, y: 0 },
+          },
+        ],
+      })),
+      playerStart: { x: 0, y: 0, z: 7 },
+      transitions: [
+        {
+          from: { x: 1, y: 1, z: 7 },
+          to: { x: 1, y: 1, z: 8 },
+        },
+        {
+          from: { x: 1, y: 1, z: 8 },
+          to: { x: 1, y: 1, z: 7 },
+        },
+      ],
+      spawnPlacements: [
+        {
+          source: { x: MIN_X + 2, y: MIN_Y + 3, z: 8 },
+          target: { x: 2, y: 3, z: 8 },
+        },
+      ],
+    }),
+  );
   tileFlagsPath = join(root, 'tile-flags.json');
   writeFileSync(
     tileFlagsPath,
@@ -226,7 +266,7 @@ describe('runMapExtractorCli', () => {
     const encoded = readFileSync(path, 'utf8');
     writeFileSync(
       path,
-      encoded.replace('"regionRevision":1', '"regionRevision":2'),
+      encoded.replace('"regionRevision":2', '"regionRevision":3'),
     );
 
     captured = { out: [], err: [], usage: 0 };
@@ -356,6 +396,11 @@ describe('runMapExtractorCli', () => {
       JSON.stringify({ ...selection, key: 'hunt:tibia:second-cave' }),
     );
     const outputRoot = join(root, 'hunts-out');
+    mkdirSync(join(selections, 'layouts'), { recursive: true });
+    writeFileSync(
+      join(selections, 'layouts', 'layout.json'),
+      readFileSync(join(root, 'layouts', 'layout.json')),
+    );
 
     expect(
       runMapExtractorCli(
@@ -386,6 +431,11 @@ describe('runMapExtractorCli', () => {
   it('fails build-all when one hunt in the directory fails', () => {
     const selections = join(root, 'hunts');
     mkdirSync(selections, { recursive: true });
+    mkdirSync(join(selections, 'layouts'), { recursive: true });
+    writeFileSync(
+      join(selections, 'layouts', 'layout.json'),
+      readFileSync(join(root, 'layouts', 'layout.json')),
+    );
     writeFileSync(join(selections, 'first.json'), JSON.stringify(selection));
     writeFileSync(
       join(selections, 'broken.json'),

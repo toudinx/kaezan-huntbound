@@ -41,7 +41,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
-| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região de mapa, spawn, câmera, colisão e transições — **planejado; PB-04-01 elegível** |
+| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **em andamento; PB-04-FIX-01 automatizado, aceite pessoal pendente** |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
@@ -75,9 +75,9 @@ o Chromium reproduziu o mesmo snapshot canônico e o mesmo SHA-256
 remanescentes são não bloqueantes e estão priorizados em
 [`playbooks/PB-03/artifacts/acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
 
-**PB-04 é o próximo a executar.** PB-00, PB-01, PB-02 e PB-03 estão fechados; os contratos que impedem
-paths, IDs e regras de vazarem entre camadas estão no lugar e o kernel determinístico já é dirigível
-por Node e pelo browser, então a primeira hunt ponta a ponta pode começar.
+**PB-04 está em andamento.** PB-00, PB-01, PB-02 e PB-03 estão fechados; o PB-04-FIX-01 deixou a
+primeira hunt automatizadamente verificável, mas o aceite visual do profile pessoal continua pendente
+por causa do bloqueio B2. PB-04-10 só é elegível depois dessa decisão.
 
 ## PB-00 — Definition of Ready
 

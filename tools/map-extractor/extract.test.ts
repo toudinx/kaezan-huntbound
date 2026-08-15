@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { validateHuntDefinition } from '../../packages/contracts/src/hunt/diagnostics.ts';
+import { TICK_DURATION_MS } from '../../packages/contracts/src/index.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import { extractHunt, PLAYER_BLUEPRINT_ID } from './extract.ts';
 import type { OtbmAreaFixture } from './testing/otbmFixture.ts';
@@ -29,6 +30,7 @@ const selection: HuntSelection = {
     map: 'data-otservbr-global/world/otservbr.otbm',
     spawns: 'data-otservbr-global/world/otservbr-monster.xml',
   },
+  layout: 'layouts/hunts/venore-rotworm-cave.json',
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
   region: {
@@ -97,6 +99,27 @@ describe('extractHunt', () => {
       'rotworm',
     ]);
     expect(hunt.playerBlueprintId).toBe(PLAYER_BLUEPRINT_ID);
+  });
+
+  /**
+   * The cooldown is authored in ticks but read by the eye in milliseconds, so
+   * the assertion is written the way the hunt is judged: a Tibia character
+   * without haste crosses a plain tile in about half a second.
+   */
+  it('paces a step in milliseconds a player can read as walking', () => {
+    const { hunt } = extract();
+    const stepMs = (blueprintId: string) => {
+      const blueprint = hunt.blueprints.find(
+        (candidate) => candidate.blueprintId === blueprintId,
+      );
+      if (blueprint === undefined) {
+        throw new Error(`${blueprintId} blueprint is missing`);
+      }
+      return blueprint.stepCooldownTicks * TICK_DURATION_MS;
+    };
+
+    expect(stepMs(PLAYER_BLUEPRINT_ID)).toBe(500);
+    expect(stepMs('rotworm')).toBe(1_000);
   });
 
   it('starts the player on a walkable tile of the region', () => {

@@ -13,13 +13,7 @@ interface KernelProbeResult {
   readonly finalTick: number;
 }
 
-/**
- * PB-04-06 never produced a versioned `pb-04-hunt-session` golden, so there is
- * no stored SHA-256 to compare against. The parity question this task owns is
- * "does Chromium compute what Node computes", and that is answered by running
- * the same scenario and the same command log in both runtimes and comparing.
- * Nothing is fabricated as a golden: the Node side is recomputed every run.
- */
+/** The browser must match the committed PB-04 replay goldens byte for byte. */
 test('replays the first hunt to the same SHA-256 in Chromium as in Node', async ({
   page,
 }) => {

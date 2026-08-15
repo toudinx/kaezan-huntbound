@@ -11,6 +11,7 @@ import type {
 } from '../../packages/contracts/src/hunt/types.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import { convertSpawntimeToTicks } from '../hunt-selection/validateHuntSelection.ts';
+import type { HuntLayoutRecipe } from './layout.ts';
 import type { ExtractionDiagnostic } from './types.ts';
 import { diagnostic } from './types.ts';
 
@@ -72,6 +73,7 @@ export function buildSpawnTable(
   monsterXml: string,
   selection: HuntSelection,
   region: MapRegion,
+  layout?: HuntLayoutRecipe,
 ): SpawnTableBuild {
   const parsed = parseXmlRoot(monsterXml, 'monsters', ['monster']);
   if (!parsed.ok) {
@@ -81,6 +83,8 @@ export function buildSpawnTable(
   }
 
   const floors = new Set(region.floors.map((floor) => floor.z));
+  const sourceRegion = layout === undefined ? region : selection.region;
+  const sourceFloors = new Set(sourceRegion.floors);
   const keyByName = new Map(
     selection.creatures.flatMap((key) => {
       const name = key.split(':').at(-1);
@@ -96,11 +100,35 @@ export function buildSpawnTable(
   );
 
   const insideRegion = (x: number, y: number, z: number) =>
-    x >= region.origin.x &&
-    x < region.origin.x + region.width &&
-    y >= region.origin.y &&
-    y < region.origin.y + region.height &&
-    floors.has(z);
+    x >= (layout === undefined ? region.origin.x : sourceRegion.minX) &&
+    x <=
+      (layout === undefined
+        ? region.origin.x + region.width - 1
+        : sourceRegion.maxX) &&
+    y >= (layout === undefined ? region.origin.y : sourceRegion.minY) &&
+    y <=
+      (layout === undefined
+        ? region.origin.y + region.height - 1
+        : sourceRegion.maxY) &&
+    (layout === undefined ? floors.has(z) : sourceFloors.has(z));
+
+  const placementBySource = new Map(
+    (layout?.spawnPlacements ?? []).map((placement) => [
+      `${placement.source.x}:${placement.source.y}:${placement.source.z}`,
+      placement.target,
+    ]),
+  );
+
+  const outputContains = (position: {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+  }) =>
+    position.x >= 0 &&
+    position.x < region.width &&
+    position.y >= 0 &&
+    position.y < region.height &&
+    floors.has(position.z);
 
   const candidates: CandidateGroup[] = [];
   for (const element of asXmlElements(parsed.root.monster)) {
@@ -133,7 +161,14 @@ export function buildSpawnTable(
   let slotCount = 0;
 
   candidates.forEach((group, groupIndex) => {
-    const slots: SpawnSlotDefinition[] = [];
+    const mappedSlots: {
+      readonly position: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+      };
+      readonly slot: SpawnSlotDefinition;
+    }[] = [];
 
     asXmlElements(group.element.monster).forEach((slot, slotIndex) => {
       const path = `spawns.groups[${groupIndex}].slots[${slotIndex}]`;
@@ -202,27 +237,84 @@ export function buildSpawnTable(
       }
 
       if (!creatureKeys.includes(creatureKey)) creatureKeys.push(creatureKey);
-      slots.push({
-        creatureKey,
-        blueprintId: blueprintIdForCreature(creatureKey),
-        offsetX,
-        offsetY,
-        offsetZ: z - group.centerZ,
-        respawnTicks: conversion.ticks,
+      const sourcePosition = { x: absoluteX, y: absoluteY, z };
+      const targetPosition =
+        layout === undefined
+          ? {
+              x: absoluteX - region.origin.x,
+              y: absoluteY - region.origin.y,
+              z,
+            }
+          : placementBySource.get(
+              `${sourcePosition.x}:${sourcePosition.y}:${sourcePosition.z}`,
+            );
+      if (targetPosition === undefined) {
+        diagnostics.push(
+          diagnostic(
+            path,
+            'HUNT_LAYOUT_INVALID',
+            `No spawn placement exists for ${name} at (${absoluteX}, ${absoluteY}, ${z})`,
+          ),
+        );
+        return;
+      }
+      if (!outputContains(targetPosition)) {
+        diagnostics.push(
+          diagnostic(
+            path,
+            'HUNT_SPAWN_OUT_OF_REGION',
+            `${name} target at (${targetPosition.x}, ${targetPosition.y}, ${targetPosition.z}) falls outside the authored region`,
+          ),
+        );
+        return;
+      }
+      mappedSlots.push({
+        position: targetPosition,
+        slot: {
+          creatureKey,
+          blueprintId: blueprintIdForCreature(creatureKey),
+          offsetX: layout === undefined ? offsetX : targetPosition.x,
+          offsetY: layout === undefined ? offsetY : targetPosition.y,
+          offsetZ: layout === undefined ? z - group.centerZ : targetPosition.z,
+          respawnTicks: conversion.ticks,
+        },
       });
     });
 
-    if (slots.length === 0) return;
+    if (mappedSlots.length === 0) return;
+    const targetCenter = mappedSlots[0]?.position as {
+      readonly x: number;
+      readonly y: number;
+      readonly z: number;
+    };
+    const slots =
+      layout === undefined
+        ? mappedSlots.map(({ slot }) => slot)
+        : mappedSlots.map(({ position, slot }) => ({
+            ...slot,
+            offsetX: position.x - targetCenter.x,
+            offsetY: position.y - targetCenter.y,
+            offsetZ: position.z - targetCenter.z,
+          }));
     slotCount += slots.length;
     groups.push({
-      center: {
-        x: group.centerX - region.origin.x,
-        y: group.centerY - region.origin.y,
-        z: group.centerZ,
-      },
+      center:
+        layout === undefined
+          ? {
+              x: group.centerX - region.origin.x,
+              y: group.centerY - region.origin.y,
+              z: group.centerZ,
+            }
+          : targetCenter,
       radius: group.radius,
       slots,
     });
+  });
+
+  groups.sort((left, right) => {
+    if (left.center.z !== right.center.z) return left.center.z - right.center.z;
+    if (left.center.y !== right.center.y) return left.center.y - right.center.y;
+    return left.center.x - right.center.x;
   });
 
   return {

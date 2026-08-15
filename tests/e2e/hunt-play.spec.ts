@@ -1,25 +1,74 @@
 import { expect, type Page, test } from '@playwright/test';
-
+import { resolveGroundSample } from '../../apps/game/src/hunt/GroundCompositor.ts';
 import type { HuntProbeState } from '../../apps/game/src/hunt/HuntProbe.ts';
+import { TICK_DURATION_MS } from '../../packages/contracts/src/index.ts';
 import {
   blockedEvents,
   type HuntStepOutcome,
+  holdKeyboardFor,
   movedEvents,
   readHuntState,
   requireCell,
   requireFirst,
+  requirePlayer,
   stepKeys,
   stepWithKeyboard,
   waitForHunt,
 } from './support/huntDriver';
 import { readHuntDefinition } from './support/huntSession';
+import { cardinalRoute, reachableWalkableCount } from './support/huntTopology';
 
 const hunt = readHuntDefinition();
 const playerStart = hunt.playerStart;
-/** The transition immediately west of `playerStart`, per the frozen region. */
-const transitionFrom = { x: 23, y: 14, z: 8 };
-const lowerFloor = 9;
+const downTransition = hunt.transitions.entries.find(
+  ({ from, to }) => from.z === playerStart.z && to.z !== from.z,
+);
+const returnTransition = hunt.transitions.entries.find(
+  ({ from, to }) =>
+    downTransition !== undefined &&
+    from.x === downTransition.to.x &&
+    from.y === downTransition.to.y &&
+    from.z === downTransition.to.z &&
+    to.x === downTransition.from.x &&
+    to.y === downTransition.from.y &&
+    to.z === downTransition.from.z,
+);
+
+if (downTransition === undefined || returnTransition === undefined) {
+  throw new Error(
+    'The corrected hunt must declare an opposite transition pair.',
+  );
+}
+
+const transitionFrom = downTransition.from;
+const lowerFloor = downTransition.to.z;
 const desktop = { width: 1366, height: 768 };
+
+function cardinalKey(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): keyof typeof stepKeys {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (dx === 1 && dy === 0) return 'e';
+  if (dx === -1 && dy === 0) return 'w';
+  if (dx === 0 && dy === 1) return 's';
+  if (dx === 0 && dy === -1) return 'n';
+  throw new Error(`Expected adjacent cardinal cells, got ${dx},${dy}`);
+}
+
+function directionDelta(direction: keyof typeof stepKeys) {
+  return {
+    x: direction === 'e' ? 1 : direction === 'w' ? -1 : 0,
+    y: direction === 's' ? 1 : direction === 'n' ? -1 : 0,
+  };
+}
+
+const transitionKey = cardinalKey(playerStart, transitionFrom);
+const offlineReachableWalkable = new Map([
+  [8, 104],
+  [9, 152],
+]);
 
 function floorOf(z: number) {
   const floor = hunt.region.floors.find((candidate) => candidate.z === z);
@@ -30,23 +79,37 @@ function floorOf(z: number) {
 
 /** Cells whose palette entry is a real id; index 0 is the void marker (W8). */
 function drawableGround(z: number): number {
-  return floorOf(z).ground.filter((index) => {
-    const clientId = hunt.region.palette[index];
-    return clientId !== undefined && clientId > 0;
-  }).length;
+  return Array.from(
+    { length: hunt.region.width * hunt.region.height },
+    (_value, index) => resolveGroundSample(hunt.region, z, index),
+  ).filter((sample) => sample !== undefined).length;
 }
 
 function drawableStack(z: number, layer: 'objectsBelow' | 'objectsAbove') {
   return floorOf(z)[layer].reduce(
     (total, entry) =>
       total +
-      entry.stack.filter((index) => {
-        const clientId = hunt.region.palette[index];
-        return clientId !== undefined && clientId > 0;
-      }).length,
+      (resolveGroundSample(hunt.region, z, entry.i) === undefined
+        ? 0
+        : entry.stack.length),
     0,
   );
 }
+
+const terrainDirection = (['n', 's', 'w', 'e'] as const).find((direction) => {
+  const dx = direction === 'e' ? 1 : direction === 'w' ? -1 : 0;
+  const dy = direction === 's' ? 1 : direction === 'n' ? -1 : 0;
+  const x = playerStart.x + dx;
+  const y = playerStart.y + dy;
+  const floor = floorOf(playerStart.z);
+  return floor.collision.includes(y * hunt.region.width + x);
+});
+
+if (terrainDirection === undefined) {
+  throw new Error('The corrected player start must have an adjacent wall.');
+}
+
+const terrainDelta = directionDelta(terrainDirection);
 
 interface PageWatch {
   readonly consoleErrors: string[];
@@ -114,6 +177,10 @@ test.describe('the first hunt is playable by synthetic input', () => {
     expect(state.player?.position).toEqual(playerStart);
     expect(state.floor).toBe(playerStart.z);
     expect(state.drawn.layers.ground).toBeGreaterThan(0);
+    expect(state.camera.visibleRows).toBeGreaterThanOrEqual(10);
+    expect(state.camera.visibleRows).toBeLessThanOrEqual(12);
+    expect(state.camera.zoom).toBeGreaterThan(1);
+    expect(state.drawn.composedGroundCells).toBeGreaterThan(0);
     expect(state.drawn.layers.actors).toBeGreaterThan(0);
     expect(state.drawn.total).toBeGreaterThan(state.drawn.layers.ground);
     expect(state.player?.sprite).not.toBeNull();
@@ -167,21 +234,82 @@ test.describe('the first hunt is playable by synthetic input', () => {
     expectQuiet(watch);
   });
 
+  test('faces west from the sheet instead of mirroring the sprite', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    await waitForHunt(page);
+
+    // West of `playerStart` is the floor transition, so the player would leave
+    // the floor mid-test. One step north first keeps the westward step on a
+    // plain cell, which is what this assertion is about.
+    await stepWithKeyboard(page, stepKeys.n);
+
+    let outcome = await stepWithKeyboard(page, stepKeys.w);
+    for (let attempt = 0; attempt < 10 && movedEvents(outcome).length === 0; ) {
+      attempt += 1;
+      outcome = await stepWithKeyboard(page, stepKeys.w);
+    }
+
+    expect(movedEvents(outcome).length).toBeGreaterThanOrEqual(1);
+
+    const player = requirePlayer(outcome.after);
+
+    expect(player.facing).toBe('w');
+    // Every Tibia sheet carries all four facings, so mirroring the west sprite
+    // turns it back east and the actor walks backwards.
+    expect(player.flipX).toBe(false);
+    expectQuiet(watch);
+  });
+
+  test('turns a short held direction into one paced command', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    await waitForHunt(page);
+
+    const player = hunt.blueprints.find(
+      (blueprint) => blueprint.blueprintId === hunt.playerBlueprintId,
+    );
+    if (player === undefined)
+      throw new Error('The hunt has no player blueprint.');
+
+    // Shorter than one tick, so the input gate opens exactly once: that is what
+    // makes this a single press rather than a held walk.
+    const holdMs = TICK_DURATION_MS - 10;
+    // South is the only free neighbour of `playerStart`: north and east are
+    // terrain, and west is the floor transition, which answers
+    // `transition-blocked` and made this assertion about the transition rather
+    // than about input pacing.
+    const outcome = await holdKeyboardFor(page, stepKeys.s, holdMs);
+    const moves = movedEvents(outcome);
+
+    expect(moves).toHaveLength(1);
+    expect(outcome.commands).toHaveLength(1);
+    expect(new Set(outcome.commands.map(({ tick }) => tick)).size).toBe(
+      outcome.commands.length,
+    );
+    expect(new Set(outcome.commands.map(({ sequence }) => sequence)).size).toBe(
+      outcome.commands.length,
+    );
+    expect(outcome.commands[0]?.tick).toBe(moves[0]?.tick);
+    expectQuiet(watch);
+  });
+
   test('refuses a step into terrain without moving or throwing', async ({
     page,
   }) => {
     const watch = watchPage(page);
     const state = await waitForHunt(page);
 
-    // East of `playerStart` is wall in the frozen region.
-    const outcome = await stepWithKeyboard(page, stepKeys.e);
+    const outcome = await stepWithKeyboard(page, stepKeys[terrainDirection]);
     const blocked = blockedEvents(outcome);
 
     expect(blocked.length).toBeGreaterThanOrEqual(1);
     expect(blocked[0]?.reason).toBe('terrain');
     expect(blocked[0]?.to).toEqual({
-      x: playerStart.x + 1,
-      y: playerStart.y,
+      x: playerStart.x + terrainDelta.x,
+      y: playerStart.y + terrainDelta.y,
       z: playerStart.z,
     });
     expect(movedEvents(outcome)).toHaveLength(0);
@@ -207,7 +335,7 @@ test.describe('the first hunt is playable by synthetic input', () => {
 
     expect(transitions.length).toBeGreaterThanOrEqual(1);
     expect(transitions[0]?.from).toEqual(transitionFrom);
-    expect(transitions[0]?.to).toEqual({ ...transitionFrom, z: lowerFloor });
+    expect(transitions[0]?.to).toEqual(downTransition.to);
     expect(outcome.after.floor).toBe(lowerFloor);
     expect(outcome.after.player?.position.z).toBe(lowerFloor);
     // The whole other floor is now on screen, not just the player.
@@ -215,6 +343,76 @@ test.describe('the first hunt is playable by synthetic input', () => {
     expect(outcome.after.drawn.layers.objectsBelow).toBe(
       drawableStack(lowerFloor, 'objectsBelow'),
     );
+    expectQuiet(watch);
+  });
+
+  test('walks the corrected topology by deterministic BFS and returns', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    const before = await waitForHunt(page);
+
+    for (const floor of hunt.region.floors) {
+      const root = floor.z === playerStart.z ? playerStart : downTransition.to;
+      expect(reachableWalkableCount(hunt, root)).toBe(
+        offlineReachableWalkable.get(floor.z),
+      );
+    }
+
+    expect(before.player?.position).toEqual(playerStart);
+    const descentRoute = cardinalRoute(hunt, playerStart, transitionFrom);
+    expect(descentRoute.length).toBeGreaterThan(0);
+    for (const direction of descentRoute.slice(0, -1)) {
+      await stepUntilMoved(page, stepKeys[direction as keyof typeof stepKeys]);
+    }
+    const descent = await stepUntilTransition(
+      page,
+      stepKeys[descentRoute[descentRoute.length - 1] as keyof typeof stepKeys],
+      downTransition,
+    );
+
+    expect(descent.transition.from).toEqual(downTransition.from);
+    expect(descent.transition.to).toEqual(downTransition.to);
+    let state = descent.outcome.after;
+    expect(state.floor).toBe(lowerFloor);
+
+    let returnTransitionEvent:
+      | HuntStepOutcome['playerEvents'][number]
+      | undefined;
+    for (let attempt = 0; attempt < 80; attempt += 1) {
+      const position = state.player?.position;
+      if (position === null || position === undefined) {
+        state = await readHuntState(page);
+        continue;
+      }
+
+      const route = cardinalRoute(hunt, position, returnTransition.from);
+      if (route.length === 0) {
+        const exitDirection = findExitDirection(returnTransition.from);
+        const exit = await stepUntilMoved(page, stepKeys[exitDirection]);
+        returnTransitionEvent = exit.playerEvents.find(
+          (event) => event.type === 'actor/transitioned',
+        );
+        state = exit.after;
+        if (returnTransitionEvent !== undefined) break;
+        continue;
+      }
+
+      const step = await stepUntilMoved(
+        page,
+        stepKeys[route[0] as keyof typeof stepKeys],
+      );
+      returnTransitionEvent = step.playerEvents.find(
+        (event) => event.type === 'actor/transitioned',
+      );
+      state = step.after;
+      if (returnTransitionEvent !== undefined) break;
+    }
+
+    expect(returnTransitionEvent).toBeDefined();
+    expect(returnTransitionEvent?.from).toEqual(returnTransition.from);
+    expect(returnTransitionEvent?.to).toEqual(returnTransition.to);
+    expect(state.floor).toBe(playerStart.z);
     expectQuiet(watch);
   });
 
@@ -275,16 +473,16 @@ test.describe('the first hunt is playable by synthetic input', () => {
 });
 
 /**
- * Walks west off `playerStart` until the drawn floor changes. The step can be
+ * Walks from `playerStart` onto the authored transition until the drawn floor changes. The step can be
  * refused for as long as a rotworm stands on the transition cell or on its
  * arrival cell, so this keeps pressing rather than assuming one press is enough.
  */
 async function stepUntilFloorChanges(page: Page) {
-  let outcome = await stepWithKeyboard(page, stepKeys.w);
+  let outcome = await stepWithKeyboard(page, stepKeys[transitionKey]);
 
   for (let attempt = 0; attempt < 80; attempt += 1) {
     if (outcome.after.floor !== transitionFrom.z) return outcome;
-    outcome = await stepWithKeyboard(page, stepKeys.w);
+    outcome = await stepWithKeyboard(page, stepKeys[transitionKey]);
   }
 
   expect(
@@ -292,6 +490,75 @@ async function stepUntilFloorChanges(page: Page) {
     'the player never reached the floor below',
   ).not.toBe(transitionFrom.z);
   return outcome;
+}
+
+async function stepUntilMoved(
+  page: Page,
+  key: (typeof stepKeys)[keyof typeof stepKeys],
+) {
+  let outcome = await stepWithKeyboard(page, key);
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (movedEvents(outcome).length > 0) return outcome;
+    outcome = await stepWithKeyboard(page, key);
+  }
+
+  throw new Error(`The player never accepted ${key}.`);
+}
+
+async function stepUntilTransition(
+  page: Page,
+  key: (typeof stepKeys)[keyof typeof stepKeys],
+  expected: {
+    readonly from: {
+      readonly x: number;
+      readonly y: number;
+      readonly z: number;
+    };
+    readonly to: { readonly x: number; readonly y: number; readonly z: number };
+  },
+) {
+  let outcome = await stepWithKeyboard(page, key);
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const transition = outcome.playerEvents.find(
+      (event) =>
+        event.type === 'actor/transitioned' &&
+        event.from?.x === expected.from.x &&
+        event.from?.y === expected.from.y &&
+        event.from?.z === expected.from.z &&
+        event.to?.x === expected.to.x &&
+        event.to?.y === expected.to.y &&
+        event.to?.z === expected.to.z,
+    );
+    if (transition !== undefined) return { outcome, transition };
+    outcome = await stepWithKeyboard(page, key);
+  }
+
+  throw new Error(`The player never reached transition ${key}.`);
+}
+
+function findExitDirection(position: {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}) {
+  const direction = (['n', 'e', 's', 'w'] as const).find((candidate) => {
+    const delta = directionDelta(candidate);
+    const x = position.x + delta.x;
+    const y = position.y + delta.y;
+    const floor = floorOf(position.z);
+    return (
+      x >= 0 &&
+      x < hunt.region.width &&
+      y >= 0 &&
+      y < hunt.region.height &&
+      !floor.collision.includes(y * hunt.region.width + x)
+    );
+  });
+
+  if (direction === undefined) {
+    throw new Error('The transition has no walkable exit neighbor.');
+  }
+  return direction;
 }
 
 /**

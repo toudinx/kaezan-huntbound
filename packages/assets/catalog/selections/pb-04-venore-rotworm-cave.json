@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "selectionId": "selection:pb-04-venore-rotworm-cave",
   "packId": "asset-pack:pb-04-venore-rotworm-cave",
-  "contentVersion": "pb-04-venore-rotworm-cave@74bbd94a62c6",
+  "contentVersion": "pb-04-venore-rotworm-cave@a56697fd75a9",
   "buildProfiles": [
     "personal"
   ],
@@ -1938,25 +1938,6 @@
       }
     },
     {
-      "key": "tile:tibia:5560",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5560
-      },
-      "sourceGroupId": "huntbound-private-assets-pb04",
-      "consumer": "PB-04 Venore Rotworm Cave asset pack",
-      "rationale": "Covers tile:tibia:5560 required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
       "key": "tile:tibia:5561",
       "category": "object",
       "sourceIdentity": {
@@ -2166,25 +2147,6 @@
       }
     },
     {
-      "key": "tile:tibia:5640",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5640
-      },
-      "sourceGroupId": "huntbound-private-assets-pb04",
-      "consumer": "PB-04 Venore Rotworm Cave asset pack",
-      "rationale": "Covers tile:tibia:5640 required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
       "key": "tile:tibia:5646",
       "category": "object",
       "sourceIdentity": {
@@ -2251,25 +2213,6 @@
       "sourceGroupId": "huntbound-private-assets-pb04",
       "consumer": "PB-04 Venore Rotworm Cave asset pack",
       "rationale": "Covers tile:tibia:5650 required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
-      "key": "tile:tibia:5652",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5652
-      },
-      "sourceGroupId": "huntbound-private-assets-pb04",
-      "consumer": "PB-04 Venore Rotworm Cave asset pack",
-      "rationale": "Covers tile:tibia:5652 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -2432,25 +2375,6 @@
       }
     },
     {
-      "key": "tile:tibia:5719",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5719
-      },
-      "sourceGroupId": "huntbound-private-assets-pb04",
-      "consumer": "PB-04 Venore Rotworm Cave asset pack",
-      "rationale": "Covers tile:tibia:5719 required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
       "key": "tile:tibia:5720",
       "category": "object",
       "sourceIdentity": {
@@ -2565,25 +2489,6 @@
       }
     },
     {
-      "key": "tile:tibia:5754",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 5754
-      },
-      "sourceGroupId": "huntbound-private-assets-pb04",
-      "consumer": "PB-04 Venore Rotworm Cave asset pack",
-      "rationale": "Covers tile:tibia:5754 required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
       "key": "tile:tibia:5866",
       "category": "object",
       "sourceIdentity": {
@@ -2663,7 +2568,7 @@
   "hunt": {
     "packKey": "pb-04-venore-rotworm-cave",
     "huntId": "hunt:tibia:venore-rotworm-cave",
-    "regionSha256": "74bbd94a62c646be4115b1fa9ddf7ceced8dfba8cd3e7f90e2188a11e2a860f5",
+    "regionSha256": "a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5",
     "keys": [
       "tile:tibia:101",
       "tile:tibia:194",
@@ -2733,7 +2638,6 @@
       "tile:tibia:5557",
       "tile:tibia:5558",
       "tile:tibia:5559",
-      "tile:tibia:5560",
       "tile:tibia:5561",
       "tile:tibia:5562",
       "tile:tibia:5563",
@@ -2745,12 +2649,10 @@
       "tile:tibia:5635",
       "tile:tibia:5636",
       "tile:tibia:5637",
-      "tile:tibia:5640",
       "tile:tibia:5646",
       "tile:tibia:5648",
       "tile:tibia:5649",
       "tile:tibia:5650",
-      "tile:tibia:5652",
       "tile:tibia:5711",
       "tile:tibia:5712",
       "tile:tibia:5713",
@@ -2759,14 +2661,12 @@
       "tile:tibia:5716",
       "tile:tibia:5717",
       "tile:tibia:5718",
-      "tile:tibia:5719",
       "tile:tibia:5720",
       "tile:tibia:5721",
       "tile:tibia:5722",
       "tile:tibia:5726",
       "tile:tibia:5747",
       "tile:tibia:5750",
-      "tile:tibia:5754",
       "tile:tibia:5866",
       "tile:tibia:5868",
       "tile:tibia:5869",

@@ -1,16 +1,18 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import type { SourceSnapshotLock } from '../../packages/content/src/application/sourceLockTypes.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import type { TileFlagsTable } from '../tile-flags/types.ts';
 import { extractHunt } from './extract.ts';
+import { parseHuntLayoutRecipe } from './layout.ts';
 import type { HuntFileName } from './output.ts';
 import { encodeHuntFiles, HUNT_FILE_NAMES } from './output.ts';
 import type { ResolvedHuntSource } from './sources.ts';
 import { resolveHuntSources } from './sources.ts';
-import { isBlockingDiagnostic } from './types.ts';
+import { diagnostic, isBlockingDiagnostic } from './types.ts';
+import { analyzeHuntTopology } from './topology.ts';
 
 interface MapExtractorCliIo {
   stdout(value: unknown): void;
@@ -297,9 +299,87 @@ function runBuild(
   command: Extract<Command, { kind: 'build' }>,
   io: MapExtractorCliIo,
 ): number {
-  const selection = readSelection(command.selection);
+  const selectionPath = resolve(command.selection);
+  const selection = readSelection(selectionPath);
   const tileFlagsText = readFileSync(resolve(command.tileFlags), 'utf8');
   const tileFlags = JSON.parse(tileFlagsText) as TileFlagsTable;
+
+  if (typeof selection.layout !== 'string' || selection.layout.length === 0) {
+    io.stderr({
+      command: 'build',
+      reason: 'blocking-diagnostics',
+      diagnostics: [
+        diagnostic(
+          'layout',
+          'HUNT_LAYOUT_INVALID',
+          'Selection must name a Huntbound layout recipe',
+        ),
+      ],
+      total: 1,
+    });
+    return 1;
+  }
+  const selectionDirectory = dirname(selectionPath);
+  const layoutPath = resolve(selectionDirectory, selection.layout);
+  const layoutRelative = relative(selectionDirectory, layoutPath);
+  if (
+    isAbsolute(selection.layout) ||
+    selection.layout.includes('\\') ||
+    /^[a-zA-Z]:/.test(selection.layout)
+  ) {
+    io.stderr({
+      command: 'build',
+      reason: 'blocking-diagnostics',
+      diagnostics: [
+        diagnostic(
+          'layout',
+          'HUNT_LAYOUT_INVALID',
+          `Layout path must stay relative to the selection file: ${selection.layout}`,
+        ),
+      ],
+      total: 1,
+    });
+    return 1;
+  }
+  let layoutText: string;
+  try {
+    layoutText = readFileSync(layoutPath, 'utf8');
+  } catch (error) {
+    io.stderr({
+      command: 'build',
+      reason: 'blocking-diagnostics',
+      diagnostics: [
+        diagnostic(
+          'layout',
+          'HUNT_LAYOUT_INVALID',
+          `Layout recipe cannot be read: ${error instanceof Error ? error.message : String(error)}`,
+        ),
+      ],
+      total: 1,
+    });
+    return 1;
+  }
+  let layout: ReturnType<typeof parseHuntLayoutRecipe>;
+  try {
+    layout = parseHuntLayoutRecipe(
+      JSON.parse(layoutText) as unknown,
+      selection.region,
+    );
+  } catch (error) {
+    io.stderr({
+      command: 'build',
+      reason: 'blocking-diagnostics',
+      diagnostics: [
+        diagnostic(
+          'layout',
+          'HUNT_LAYOUT_INVALID',
+          error instanceof Error ? error.message : String(error),
+        ),
+      ],
+      total: 1,
+    });
+    return 1;
+  }
 
   const sources = resolveHuntSources(
     readSourceLock(command.sourceLock),
@@ -321,6 +401,7 @@ function runBuild(
     sources.spawn.text,
     tileFlags,
     selection,
+    layout,
   );
 
   const blocking = diagnostics.filter(isBlockingDiagnostic);
@@ -345,6 +426,7 @@ function runBuild(
   }
 
   const files = encodeHuntFiles(hunt);
+  const topology = analyzeHuntTopology(hunt);
   const summary = {
     huntId: hunt.huntId,
     tiles: hunt.region.width * hunt.region.height * hunt.region.floors.length,
@@ -358,6 +440,15 @@ function runBuild(
     ),
     emptyTiles: diagnostics.filter((item) => item.code === 'HUNT_EMPTY_TILE')
       .length,
+    layout: {
+      relativePath: layoutRelative.replaceAll('\\', '/'),
+      sha256: sha256Hex(layoutText),
+    },
+    topology: topology.floors.map(({ z, walkableTiles, componentCount }) => ({
+      z,
+      walkableTiles,
+      componentCount,
+    })),
     // Every palette id traces back to these files: geometry from the locked
     // map, creatures from the locked spawn declaration, and id semantics from
     // tile-flags.json, itself derived from the locked appearances.dat/items.xml.

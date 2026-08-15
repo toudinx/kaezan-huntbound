@@ -70,7 +70,12 @@ for (const viewport of viewports) {
     const state = await waitForHunt(page);
 
     expect(state.drawn.layers.ground).toBeGreaterThan(0);
+    expect(state.drawn.composedGroundCells).toBeGreaterThan(0);
+    expect(state.drawn.unresolvedGroundCells).toBeGreaterThan(0);
     expect(state.player).not.toBeNull();
+    expect(state.camera.visibleRows).toBeGreaterThanOrEqual(10);
+    expect(state.camera.visibleRows).toBeLessThanOrEqual(12);
+    expect(state.camera.zoom).toBeGreaterThan(1);
 
     console.log(
       `[hunt-screenshot] ${viewport.name} ${viewport.width}x${viewport.height} ` +
@@ -79,6 +84,7 @@ for (const viewport of viewports) {
         `below=${state.drawn.layers.objectsBelow} ` +
         `actors=${state.drawn.layers.actors} ` +
         `above=${state.drawn.layers.objectsAbove} ` +
+        `visibleRows=${state.camera.visibleRows.toFixed(2)} ` +
         `camera=${Math.round(state.camera.scrollX)},${Math.round(state.camera.scrollY)}`,
     );
 

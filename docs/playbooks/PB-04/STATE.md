@@ -7,15 +7,15 @@ PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
 `7097b67` como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado
 `f885535`, sem blockers e sem task corretiva.
 
-**Última atualização:** 2026-08-14
+**Última atualização:** 2026-08-15
 
-**Atualização vigente:** PB-04-09 concluída em `codex/pb04-09-hunt-browser-qa`. A hunt está provada no
-browser real: paridade de SHA-256 Node ↔ Chromium, jogabilidade por input sintético, d-pad em
-`390 × 844`, quatro screenshots versionadas e orçamento medido. `corepack pnpm verify` voltou a sair
-`0` — estava vermelho desde PB-04-08 pelas cinco baselines legadas de screenshot, agora regeneradas.
+**Atualização vigente:** PB-04-FIX-01 implementou o recipe autorado, a topologia conectada, a composição
+de pisos, o enquadramento de 10–12 linhas, o movimento por tick, o gate de input, o replay versionado
+e a QA Chromium. `hunt:check`, `assets:check`, `typecheck`, `test`, `build` e `playwright test` estão
+verdes; o perfil `test` usa mídia sintética 1×1.
 
-**Próximas tasks elegíveis:** PB-04-10 (auditoria integrada). **PB-04-06 precisa ser reaberta** antes
-do fechamento do playbook: W11 abaixo.
+**Próxima etapa:** aceite visual do profile pessoal pelo usuário. **PB-04-10 não é elegível** até que
+B2 seja destravado e `product-acceptance.md` registre uma decisão; PB-04-06 foi reaberta por FIX-01.
 
 ## Tasks
 
@@ -26,11 +26,12 @@ do fechamento do playbook: W11 abaixo.
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | done | `codex/pb04-04-extract-region` | (ver handoff) | região congelada em `packages/content/src/generated/hunts/venore-rotworm-cave/**`, `dropped=0`, `--check` exit 0 |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | partial | `codex/pb04-06-hunt-replay` | `5e98e91` + região integrada | `buildHuntScenario` entregue; fixture `pb-04-hunt-session` e `hunt:check` **não** existem — ver W11 |
+| PB-04-06 | partial → replay fixed by FIX-01 | `codex/pb04-06-hunt-replay` | `5e98e91` + FIX-01 | `packages/test-fixtures/hunt/**` + `hunt:check`; auditoria histórica ainda aguarda PB-04-10 |
 | PB-04-07 | done | `codex/pb04-07-hunt-assets` | `5ae830e` | pack PB-04 sintético, profiles e seleção de chaves verificados |
 | PB-04-08 | done | `codex/pb04-08-hunt-scene` | `e97f72b` | HuntScene, InputMap, câmera, projeção de camadas e bootstrap integrados |
 | PB-04-09 | done | `codex/pb04-09-hunt-browser-qa` | (ver handoff) | `docs/playbooks/PB-04/artifacts/browser-qa.md` + 4 screenshots + `verify` exit `0` |
-| PB-04-10 | pending | `codex/pb04-10-integrated-gate` | — | — |
+| PB-04-FIX-01 | automated done / acceptance pending | — | — | `docs/playbooks/PB-04/tasks/PB-04-FIX-01-corrigir-experiencia-da-hunt.md` + `hunt:check` + QA Chromium |
+| PB-04-10 | blocked pending acceptance | `codex/pb04-10-integrated-gate` | — | — |
 
 ## Baseline congelado
 
@@ -521,6 +522,8 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 ## PB-04-09 — handoff concluído
 
 - **Status:** done; conclusão serial em worktree isolada, integrada por fast-forward.
+- **Nota histórica:** o handoff abaixo registra o estado anterior ao PB-04-FIX-01; W11 foi fechado
+  posteriormente pela fixture e pelo gate de replay versionados.
 - **Artefatos:** `tests/e2e/hunt-replay.spec.ts`, `hunt-play.spec.ts`, `hunt-mobile.spec.ts`,
   `hunt-budget.spec.ts`, `hunt-screenshots.spec.ts`, `tests/e2e/support/huntSession.ts` +
   `huntSession.test.ts`, `tests/e2e/support/huntDriver.ts`, `apps/game/src/hunt/HuntProbe.ts` +
@@ -569,6 +572,29 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   dirigida, `tsc` avulso sobre `tests/**`, Biome e `corepack pnpm verify`.
 - **Próxima task elegível:** PB-04-10, com PB-04-06 reaberta antes do fechamento.
 
+## PB-04-FIX-01 — handoff de correção
+
+- **Status:** implementação automatizada concluída em `main`; aceite visual pessoal pendente.
+- **Plano/design:** `docs/superpowers/plans/2026-08-15-pb-04-hunt-experience-corrections.md` e
+  `docs/superpowers/specs/2026-08-15-pb-04-corrective-hunt-experience-design.md`.
+- **Conteúdo:** recipe `packages/content/src/layouts/hunts/venore-rotworm-cave.json`; região `24 × 24`,
+  pisos `z=8/9`, topologia `104/152` tiles caminháveis, um componente por piso, duas transições
+  opostas e `12` slots de spawn.
+- **Hashes de conteúdo:** recipe
+  `180aab488ab80426ce5b9c7c5e5472db450a83f44e864abbb16cc1ef3f18702e`; região
+  `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5`; pack de teste
+  `1f5c9f849d2ba577d88bdc6b1b096018b5c74fd2d2d301df1925ca4eee6def6f`.
+- **Replay:** `packages/test-fixtures/hunt/pb04/` congela `600` ticks e
+  `packages/test-fixtures/hunt/pb04-respawn/` prova o respawn de `1800` ticks; ambos são verificados
+  por `hunt:check` e têm sidecars/hash tables versionados.
+- **Browser:** `27/27` testes Playwright passaram, incluindo quatro viewports, `visibleRows=11`,
+  composição de ground, hold curto com um comando, BFS de descida/retorno e zero erros de runtime.
+- **Aceite:** não criar `product-acceptance.md` até o usuário testar o profile pessoal. B2 permanece
+  bloqueante: faltam `67` IDs reais no export externo e `HUNTBOUND_PERSONAL_ASSET_SOURCE` não está
+  configurado neste workspace.
+- **Próxima etapa:** após o reexport externo e a decisão do usuário, registrar aceite/rejeição e só
+  então liberar PB-04-10.
+
 ## Bloqueios
 
 - ~~**B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot.~~ **Resolvido em
@@ -604,19 +630,16 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   em 2026-08-14:** o enumerador passou a incluir `content-boundaries.test.ts` e
   `simulation-boundaries.test.ts`, e a regra nova de identidade Tibia roda em gate agregado.
 - **W9 (não bloqueante, PB-04-09):** em `390 × 844` a chrome de canto morde o terço centro-inferior do
-  playfield — d-pad `7,0 px` e painel de viewport `12,3 px`. O quinto central, onde a deadzone mantém
-  o jogador, está livre nos quatro viewports. Fechar exige encolher as duas caixas de canto, decisão
-  de layout fora do escopo desta task. Medição em `artifacts/browser-qa.md` §4.
+  playfield — d-pad `7,0 px` e painel de viewport `12,3 px`. O quinto central, onde a câmera centrada
+  mantém o jogador, está livre nos quatro viewports. Fechar exige encolher as duas caixas de canto,
+  decisão de layout fora do escopo desta task. Medição em `artifacts/browser-qa.md` §4.
 - **W10 (não bloqueante, pré-existente):** `corepack pnpm check` falha em `main` porque `biome check`
   reporta cinco `organizeImports` em `apps/game/src/**` e um `useTemplate` em
   `tests/e2e/asset-pack.spec.ts`. `verify` não pega porque roda `format:check`, não `biome check`.
   PB-04-09 confirmou a lista idêntica em `main` e no branch e **não** a absorveu.
-- **W11 (bloqueante para o fechamento, PB-04-06):** a fixture `pb-04-hunt-session` e o script
-  `hunt:check` nunca existiram — `git log --all` não mostra nenhum commit em
-  `packages/test-fixtures/simulation/pb04`, e `package.json` não define `hunt:check`. A linha de
-  PB-04-06 na tabela acima foi corrigida de `done` para `partial`. PB-04-09 provou a paridade de forma
-  diferencial e **não** fabricou golden. Falta: fixture versionada com sidecars, cobertura de `600`
-  ticks com retomada em `313` e o gate entrando em `check`/`verify`.
+- ~~**W11 (bloqueante para o fechamento, PB-04-06):** fixture e gate de replay ausentes.~~ **Fechado
+  por PB-04-FIX-01 em 2026-08-15:** `packages/test-fixtures/hunt/pb04/` e
+  `pb04-respawn/` são versionados com sidecars, retomadas e `hunt:check` entrou em `check`/`verify`.
 - **W12 (não bloqueante, PB-04-09):** nenhum `tsconfig` do workspace inclui `tests/`, então specs
   Playwright não são checadas por tipo em gate nenhum. Nove erros reais foram encontrados à mão e
   corrigidos nesta entrega.
