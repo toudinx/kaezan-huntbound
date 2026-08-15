@@ -41,7 +41,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
-| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **em andamento; PB-04-FIX-01 automatizado, aceite pessoal pendente** |
+| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **aberto; `REJECTED` por PB-04-10 em `307a3f0`; hunt jogável e aceite de produto dado; desbloqueiam FIX-02/03/04** |
 | PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
@@ -75,9 +75,23 @@ o Chromium reproduziu o mesmo snapshot canônico e o mesmo SHA-256
 remanescentes são não bloqueantes e estão priorizados em
 [`playbooks/PB-03/artifacts/acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
 
-**PB-04 está em andamento.** PB-00, PB-01, PB-02 e PB-03 estão fechados; o PB-04-FIX-01 deixou a
-primeira hunt automatizadamente verificável, mas o aceite visual do profile pessoal continua pendente
-por causa do bloqueio B2. PB-04-10 só é elegível depois dessa decisão.
+**PB-04 está aberto e REPROVADO.** PB-00, PB-01, PB-02 e PB-03 estão fechados. A auditoria integrada
+PB-04-10 rodou em 2026-08-15 sobre o commit `307a3f0` e emitiu **`REJECTED`**.
+
+A hunt **é jogável** — a auditoria andou, colidiu, desceu, subiu e mediu o cooldown em Chromium real,
+sem um único erro de runtime — e o aceite de produto do usuário está registrado em
+[`playbooks/PB-04/artifacts/product-acceptance.md`](playbooks/PB-04/artifacts/product-acceptance.md).
+B2 deixou de ser bloqueante e migrou para pré-requisito de PB-07.
+
+A reprovação é de integridade de gate e de documentação: um toque curto produz um ou dois passos
+conforme a fase do tick e o teste que prova isso falha `10/10` mascarado por `retries: 1`; os cinco
+hashes de replay publicados no card do PB-04-FIX-01 não existem no repositório; `REPLAY_CONTRACT.md`
+nunca recebeu as fixtures do PB-04; e `biome check` sai `1` com `13` diagnósticos. Detalhe em
+[`playbooks/PB-04/artifacts/acceptance-report.md`](playbooks/PB-04/artifacts/acceptance-report.md).
+
+**PB-05 não está liberado.** PB-05 é combate e se apoiaria no mesmo caminho de input defeituoso. Os
+próximos a executar são `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`, que podem rodar em paralelo;
+com os três integrados, uma nova rodada de PB-04-10 decide o fechamento.
 
 ## PB-00 — Definition of Ready
 

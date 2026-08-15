@@ -5,8 +5,12 @@
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** em andamento — PB-04-FIX-01 implementou as correções automatizadas da primeira hunt;
-o aceite visual do profile pessoal ainda está pendente por causa do bloqueio B2.
+**Status:** **aberto — `REJECTED`** pela auditoria integrada PB-04-10 sobre o commit `307a3f0`, em
+2026-08-15. A hunt é jogável e o aceite de produto do usuário está registrado em
+[`artifacts/product-acceptance.md`](artifacts/product-acceptance.md); a reprovação é de integridade
+de gate e de documentação. Veredito e evidência em
+[`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). Desbloqueiam o fechamento:
+`PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`. **PB-05 não está liberado.**
 
 **Goal:** entregar a primeira hunt jogável no browser: região real do mapa extraída offline, colisão
 e transições derivadas do snapshot, criaturas nascendo por tabela de spawn determinística, câmera
@@ -191,7 +195,10 @@ Registradas porque atingiram uma vez por task no PB-03:
 - [ ] Toda criatura da tabela de spawn existe no catálogo PB-01.
 - [ ] `serverId == clientId` está provado para todos os IDs da região.
 - [ ] A tabela de flags é gerada do snapshot, versionada e reprodutível byte a byte.
-- [ ] Reextrair a região do mesmo snapshot produz JSON byte-idêntico.
+- [ ] Reextrair a região do mesmo snapshot produz JSON byte-idêntico. **Desatualizado (W14):** desde
+      PB-04-FIX-01 a geometria jogável é autorada pelo recipe versionado e materializada
+      deterministicamente; o envelope OTBM virou fonte de spawn e de material. `PB-04-FIX-04`
+      reconcilia este critério.
 - [ ] Nenhuma transição necessária foi derrubada; a contagem bate com a seleção.
 - [ ] O kernel resolve andares, transições e spawn sem conhecer Tibia, asset ou path.
 - [ ] `events.golden.jsonl` do fixture PB-03 permaneceu byte-idêntico após o bump de schema.

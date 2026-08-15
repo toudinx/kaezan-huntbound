@@ -2,20 +2,33 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** em andamento — **B1 resolvido** e a região real extraída e congelada. PB-04-01,
-PB-04-02, PB-04-03, PB-04-04 e PB-04-05 concluídas. PB-03 foi fechado em
-`7097b67` como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado
-`f885535`, sem blockers e sem task corretiva.
+**Estado geral:** **aberto e REPROVADO pela auditoria integrada PB-04-10**, sobre o commit auditado
+`307a3f0`. B1 está resolvido, o aceite de produto do usuário está registrado, e a hunt é jogável —
+mas o playbook não fecha por integridade de gate e de documentação. PB-03 foi fechado em `7097b67`
+como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-03-08, sobre o commit auditado `f885535`.
 
 **Última atualização:** 2026-08-15
 
-**Atualização vigente:** PB-04-FIX-01 implementou o recipe autorado, a topologia conectada, a composição
-de pisos, o enquadramento de 10–12 linhas, o movimento por tick, o gate de input, o replay versionado
-e a QA Chromium. `hunt:check`, `assets:check`, `typecheck`, `test`, `build` e `playwright test` estão
-verdes; o perfil `test` usa mídia sintética 1×1.
+**Atualização vigente:** a auditoria PB-04-10 rodou em checkout limpo e emitiu `REJECTED`. `verify` é
+idempotente (exit `0` duas vezes, árvore inalterada), o golden do PB-03 sobreviveu byte-idêntico,
+`hunt:check` é determinístico, as fronteiras do kernel estão limpas, não há mídia pessoal versionada
+e a hunt **foi jogada de fato**: anda, colide, desce, sobe, respeita cooldown e não emite um erro
+sequer. **W7 está fechado** — a tabela tem as duas transições opostas.
 
-**Próxima etapa:** aceite visual do profile pessoal pelo usuário. **PB-04-10 não é elegível** até que
-B2 seja destravado e `product-acceptance.md` registre uma decisão; PB-04-06 foi reaberta por FIX-01.
+A reprovação é por quatro defeitos: D1, o toque curto vira um ou dois passos conforme a fase do tick,
+e o teste que prova isso falha `10/10` mascarado por `retries: 1`; D2, os cinco hashes de replay
+publicados no card do FIX-01 não existem no repositório; D3, `REPLAY_CONTRACT.md` nunca recebeu as
+fixtures do PB-04; D4, `biome check` sai `1` com `13` diagnósticos, sete deles em arquivos do PB-04.
+Detalhe em `artifacts/acceptance-report.md`.
+
+**Aceite de produto:** `APPROVED` pelo usuário em 2026-08-15, registrado em
+`artifacts/product-acceptance.md`. A auditoria mediu que o profile `personal` não é gerável neste
+workspace, então o aceite cobre a experiência jogável, não identidade visual. **B2 deixa de ser
+bloqueante** e migra para pré-requisito de PB-07.
+
+**Próxima etapa:** executar `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04` — podem rodar em
+paralelo. Com os três `done` e integrados, uma nova rodada de PB-04-10 decide o fechamento.
+**PB-05 não está liberado.**
 
 ## Tasks
 
@@ -30,8 +43,11 @@ B2 seja destravado e `product-acceptance.md` registre uma decisão; PB-04-06 foi
 | PB-04-07 | done | `codex/pb04-07-hunt-assets` | `5ae830e` | pack PB-04 sintético, profiles e seleção de chaves verificados |
 | PB-04-08 | done | `codex/pb04-08-hunt-scene` | `e97f72b` | HuntScene, InputMap, câmera, projeção de camadas e bootstrap integrados |
 | PB-04-09 | done | `codex/pb04-09-hunt-browser-qa` | (ver handoff) | `docs/playbooks/PB-04/artifacts/browser-qa.md` + 4 screenshots + `verify` exit `0` |
-| PB-04-FIX-01 | automated done / acceptance pending | — | — | `docs/playbooks/PB-04/tasks/PB-04-FIX-01-corrigir-experiencia-da-hunt.md` + `hunt:check` + QA Chromium |
-| PB-04-10 | blocked pending acceptance | `codex/pb04-10-integrated-gate` | — | — |
+| PB-04-FIX-01 | done, com defeitos apontados por PB-04-10 | — | `307a3f0` | `hunt:check` + QA Chromium; tabela de hashes reprovada (D2) |
+| PB-04-10 | done — veredito `REJECTED` | `codex/pb04-10-integrated-gate` | (esta entrega) | `docs/playbooks/PB-04/artifacts/acceptance-report.md` |
+| PB-04-FIX-02 | pending | — | — | `tasks/PB-04-FIX-02-tornar-o-toque-um-passo.md` |
+| PB-04-FIX-03 | pending | — | — | `tasks/PB-04-FIX-03-corrigir-hashes-congelados.md` |
+| PB-04-FIX-04 | pending | — | — | `tasks/PB-04-FIX-04-fechar-gates-e-contratos.md` |
 
 ## Baseline congelado
 
@@ -595,20 +611,57 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 - **Próxima etapa:** após o reexport externo e a decisão do usuário, registrar aceite/rejeição e só
   então liberar PB-04-10.
 
+## PB-04-10 — handoff da auditoria integrada
+
+- **Status:** done. **Veredito `REJECTED`**, playbook mantido aberto.
+- **Commit auditado:** `307a3f026c4bdc1238ef86df152d2708c3c394f8`, árvore limpa, worktree
+  `codex/pb04-10-integrated-gate`.
+- **Artefatos:** `artifacts/acceptance-report.md`, `artifacts/product-acceptance.md` e os três cards
+  `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`.
+- **Passou:** `verify` exit `0` **duas vezes**, árvore byte-idêntica entre e depois;
+  `simulation:check` `0`; `hunt:check` `0` **duas vezes com digests idênticos**; `architecture:check`
+  `0`; golden do PB-03 `31f86d62…555888d4` byte-idêntico; as duas varreduras do kernel vazias
+  (exit `1`); nenhuma mídia pessoal versionada; `product` recusa `cipsoft-personal` em dois pontos.
+- **Reprovou:** D1 input não edge-triggered com teste `10/10 failed` mascarado por retry; D2 cinco
+  hashes de replay do card FIX-01 inexistentes no repositório; D3 `REPLAY_CONTRACT.md` sem as
+  fixtures do PB-04; D4 `biome check` exit `1` com `13` diagnósticos.
+- **Jogou de fato:** sessão dirigida pelo auditor em Chromium real, teclado real, lendo o `HuntProbe`.
+  Boot no andar `8` em `(21,7,8)`, `11` criaturas vivas, `visibleRows = 11`, `641` objetos desenhados.
+  Colisão em `n`/`e`, passo em `s`/`w`, `cooldown` medido em `10` ticks, descida no tick `39`, subida
+  no tick `75`, **zero** erro de console, página, rede ou HTTP `≥ 400`.
+- **Escopo:** somente documentação. Nenhum código, contrato, fixture, golden ou teste foi alterado.
+  Os scripts de jogo da auditoria ficaram no scratchpad da sessão e importam Playwright por caminho
+  absoluto, para não tocar a árvore auditada.
+- **Modelo/effort efetivos:** Claude Opus 5; effort não exposto pelo runtime.
+- **Skills e validador:** `superpowers:using-superpowers` e
+  `superpowers:verification-before-completion`; validação por reexecução completa dos gates, medição
+  direta de SHA-256, varredura de fronteiras, inspeção de todos os binários rastreados e sessão de
+  jogo dirigida e instrumentada.
+- **Próximas tasks elegíveis:** `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`, em paralelo. Depois,
+  nova rodada de PB-04-10. **PB-05 não está liberado.**
+
 ## Bloqueios
 
 - ~~**B1 (bloqueante):** o mapa que contém a hunt congelada não está no snapshot.~~ **Resolvido em
   2026-08-14:** `otservbr.otbm` foi instalado no snapshot local a partir da distribuição
   `canary-3.4.1` já presente na máquina e congelado no source lock; a região foi extraída com
   `dropped=0`. Detalhe no handoff "PB-04-04 — concluída" acima.
-- **W7 (não bloqueante):** a hunt extraída só tem transições descendo. Pertence a PB-04-06; detalhe
-  acima.
+- ~~**W7 (não bloqueante):** a hunt extraída só tem transições descendo.~~ **Fechado por PB-04-FIX-01
+  e verificado pela auditoria PB-04-10 em 2026-08-15:** `transitions.json` tem exatamente duas
+  entradas opostas, `(20,7,8) → (21,4,9)` e `(21,4,9) → (20,7,8)`, e ambas foram percorridas em jogo
+  real com teclado, emitindo `actor/transitioned` nos ticks `39` e `75`.
 - **W8 (não bloqueante, armadilha de contagem):** `region.palette` tem `138` entradas mas **`137`
   ids reais** — o índice `0` é o marcador de vazio `serverId 0`, que não é item e não tem `clientId`,
   sprite nem chave de pack. Todo consumidor da palette precisa filtrar o `0` antes de contar ou
   resolver. A regra virou normativa em `docs/content/MAP_REGION_CONTRACT.md`. Já causou um erro de
   contagem em PB-04-07 (`68` faltantes relatados contra `67` reais).
-- **B2 (bloqueante, PB-04-07):** a origem pessoal de mídia cobre apenas `70` dos `137` ids reais da
+- **B2 (não bloqueante desde 2026-08-15, migrado para PB-07):** o usuário aceitou a experiência sem a
+  mídia pessoal, registrado em `artifacts/product-acceptance.md`. A auditoria PB-04-10 mediu que o
+  profile `personal` **não é gerável** neste workspace: `HUNTBOUND_PERSONAL_ASSET_SOURCE` está vazio e
+  `personal-source-lock.json` exige um `manifest.json` de `32 397` bytes que não existe — o de
+  `kaezan-arena-fable` tem `808 964`. O texto original do bloqueio segue abaixo para histórico.
+
+  A origem pessoal de mídia cobre apenas `70` dos `137` ids reais da
   palette; **`67` faltam** — `15` deles são tiles de chão, e a camada `ground` usa `48` ids
   distintos dos quais só `33` têm sprite. Isso dispara a condição de parada declarada no card
   ("se algum `clientId` da palette não existir no manifesto de origem"), e parar sem gerar
@@ -633,10 +686,28 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   playfield — d-pad `7,0 px` e painel de viewport `12,3 px`. O quinto central, onde a câmera centrada
   mantém o jogador, está livre nos quatro viewports. Fechar exige encolher as duas caixas de canto,
   decisão de layout fora do escopo desta task. Medição em `artifacts/browser-qa.md` §4.
-- **W10 (não bloqueante, pré-existente):** `corepack pnpm check` falha em `main` porque `biome check`
-  reporta cinco `organizeImports` em `apps/game/src/**` e um `useTemplate` em
-  `tests/e2e/asset-pack.spec.ts`. `verify` não pega porque roda `format:check`, não `biome check`.
-  PB-04-09 confirmou a lista idêntica em `main` e no branch e **não** a absorveu.
+- **W10 → promovido a defeito D4 pela auditoria PB-04-10:** `corepack pnpm check` falha em `main`.
+  Medido em `307a3f0`: `biome check .` sai `1` com `10` erros de `organizeImports`, `2` warnings de
+  `noUnusedVariables` em `tools/map-extractor/topology.ts` — arquivo **novo do FIX-01** — e `1` info
+  de `useTemplate`. PB-04-09 havia registrado `6` diagnósticos; agora são `13`, sete dos arquivos em
+  território do PB-04. `verify` não pega porque roda `format:check`. Card: `PB-04-FIX-04`.
+
+- **W15 (bloqueante, PB-04-10):** `playwright.config.ts:12` usa `retries: 1`, então um teste que falha
+  em 100% das primeiras tentativas é reportado como suite verde e `verify` sai `0`. Foi assim que o
+  defeito D1 sobreviveu ao FIX-01 sem nenhum gate mostrá-lo. Card: `PB-04-FIX-04`.
+
+- **W16 (não bloqueante, PB-04-10):** `tools/content-catalog` tem `14` arquivos `*.test.ts` e um
+  `vitest.config.ts` próprio, mas **nenhum script os executa**: o `test` da raiz enumera `replay`,
+  `tile-flags` e `map-extractor` e omite `content-catalog`. Card: `PB-04-FIX-04`.
+
+- **W13 (não bloqueante, PB-04-10):** `docs/content/PB-04-SELECTION.md` ainda afirma que o mapa da
+  hunt é `data-canary/world/canary.otbm` pareado por `mapName = "otservbr"` — exatamente a inferência
+  que PB-04-04 refutou com medição e que este STATE já marca como riscada. Card: `PB-04-FIX-04`.
+
+- **W14 (não bloqueante, PB-04-10):** o roteiro exige que o gate prove "a região reextraída é
+  byte-idêntica" e o README lista "Reextrair a região do mesmo snapshot produz JSON byte-idêntico",
+  mas desde o FIX-01 a geometria jogável é **autorada por recipe**, não extraída. Contrato e realidade
+  divergem. Card: `PB-04-FIX-04`.
 - ~~**W11 (bloqueante para o fechamento, PB-04-06):** fixture e gate de replay ausentes.~~ **Fechado
   por PB-04-FIX-01 em 2026-08-15:** `packages/test-fixtures/hunt/pb04/` e
   `pb04-respawn/` são versionados com sidecars, retomadas e `hunt:check` entrou em `check`/`verify`.
