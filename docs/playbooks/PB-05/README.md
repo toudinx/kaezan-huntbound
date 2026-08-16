@@ -6,7 +6,8 @@
 > chat. O formato, o handoff e o ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** autoria concluída; execução bloqueada até PB-04 fechar por auditoria aprovada.
+**Status:** escrito e **elegível**. PB-04 fechou como `APPROVED_WITH_WARNINGS` em `9f1c14c`
+(registro `d8253dc`). A execução começa em PB-05-01.
 
 **Goal:** transformar a primeira hunt em caçada. O Knight golpeia, conjura três spells, mata rotworms
 e recebe o loot automaticamente; as criaturas agridem, perseguem e podem matar o jogador — tudo com a
@@ -186,9 +187,9 @@ efetivamente usados vão para o `STATE.md`.
 - PB-02: `closed` em `1134fc8`.
 - PB-03: `closed` como `APPROVED_WITH_WARNINGS`, commit auditado `f885535`; journal golden
   `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4`.
-- PB-04: precisa estar fechado por auditoria aprovada antes de PB-05-01. Os hashes de baseline das
-  fixtures de hunt são lidos de `docs/simulation/REPLAY_CONTRACT.md` no momento da execução — este
-  README não os copia, para não repetir o defeito D2.
+- PB-04: `closed` como `APPROVED_WITH_WARNINGS`; commit auditado `9f1c14c`, registro `d8253dc`. Os
+  hashes de baseline das fixtures de hunt são lidos de `docs/simulation/REPLAY_CONTRACT.md` no
+  momento da execução — este README não os copia, para não repetir o defeito D2.
 - Gate raiz: `corepack pnpm verify`, que deve continuar verde e idempotente, **mais** `biome check .`,
   que o `verify` não cobre.
 
@@ -196,8 +197,9 @@ efetivamente usados vão para o `STATE.md`.
 
 Estas são critério de aceite em todas as tasks aplicáveis, não recomendação:
 
-- **D1 — estabilidade real.** `playwright.config.ts` tem `retries: 1`. Spec nova é provada com
-  `--retries=0 --repeat-each=10`; instabilidade mascarada por retry é defeito.
+- **D1 — estabilidade real.** `playwright.config.ts` tem `retries: 0` (FIX-04). Spec nova é
+  provada com `--retries=0 --repeat-each=10`; reintroduzir `retries` para mascarar instabilidade é
+  defeito.
 - **D2 — hash existe ou não se publica.** Todo SHA-256 citado em card, spec, relatório ou `STATE.md`
   é gerado do artefato real e verificável na árvore.
 - **D3 — fixture entra no contrato.** `pb-05-hunt-combat` é registrada em

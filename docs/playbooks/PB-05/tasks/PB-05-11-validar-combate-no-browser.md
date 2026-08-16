@@ -40,8 +40,9 @@ a prova de estabilidade que a auditoria do PB-04 exigiu depois do defeito D1.
 ## Decisões congeladas
 
 - Viewports obrigatórios: `390 × 844`, `768 × 1024`, `1366 × 768` e `1920 × 1080`.
-- **Toda spec nova é provada com `--retries=0 --repeat-each=10`.** Verde só com `retries: 1` é
-  vermelho: foi exatamente o defeito D1.
+- **Toda spec nova é provada com `--retries=0 --repeat-each=10`.** Verde só porque `retries > 0`
+  mascarou a primeira tentativa é vermelho: foi exatamente o defeito D1. `playwright.config.ts`
+  já está em `retries: 0`; não reabra.
 - O `dist` precisa ser reconstruído antes de qualquer conclusão. `playwright test` direto serve
   bundle velho.
 - Paridade de replay: `KernelProbe` no Chromium precisa produzir o mesmo SHA-256 do snapshot canônico

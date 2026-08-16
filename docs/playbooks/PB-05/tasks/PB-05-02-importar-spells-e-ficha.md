@@ -29,7 +29,9 @@ seguidas com a árvore inalterada.
 ## Dependências
 
 - PB-05-01 `done` e integrada em `main`.
-- `HUNTBOUND_CANARY_SOURCE` apontando para o snapshot local.
+- Snapshot Canary acessível via `HUNTBOUND_CANARY_SOURCE`. Worktree irmã não copia `references/`;
+  se a variável estiver vazia, aponte-a para o snapshot do clone principal ou para uma cópia
+  listada em `AGENTS.md`. Não grave o path no repositório.
 
 ## Leitura mínima
 

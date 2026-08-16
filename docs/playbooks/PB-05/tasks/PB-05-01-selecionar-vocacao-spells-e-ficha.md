@@ -38,7 +38,12 @@ real, e a saída vai para o relatório.
 
 - PB-04 fechado por auditoria aprovada (B3 em `STATE.md`).
 - Branch de instruções integrada em `main` (B4 em `STATE.md`).
-- `HUNTBOUND_CANARY_SOURCE` apontando para o snapshot local.
+- Snapshot Canary acessível via `HUNTBOUND_CANARY_SOURCE`. A worktree irmã **não** copia
+  `references/` (gitignorado). Se a variável estiver vazia, aponte-a para o snapshot do clone
+  principal ou para uma das cópias listadas em `AGENTS.md`. Não grave o path no repositório. O
+  verificador de IDs usa `--source-root-env` e fica **fora** de `check`/`verify`, no mesmo padrão
+  de `hunt:selection:check`. Sem a variável ele não roda — é limitação de ambiente, não bloqueio
+  de playbook.
 
 ## Leitura mínima
 
@@ -94,7 +99,11 @@ corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-01-selection install --prefe
 ```
 
 A forma irmã é deliberada: worktree aninhada em `.worktrees` derruba `format:check` pelo defeito de
-`biome.json` aninhado, ainda aberto em PB-04-FIX-04.
+`biome.json` aninhado (W17).
+
+Confirme `HUNTBOUND_CANARY_SOURCE` **depois** do `install`, nesta sessão da worktree. Se estiver
+vazio, defina-o apontando para o snapshot local (não commite o valor). Sem isso o passo 8 não
+consegue provar existência de ID.
 
 - [ ] **2. Localizar as duas spells novas no snapshot e registrar os arquivos-fonte.**
 
@@ -102,7 +111,7 @@ Encontre os Lua de `exori ico` e `exura ico` sob `data/scripts/spells/` no snaps
 `HUNTBOUND_CANARY_SOURCE`. Registre path relativo, `spell:id`, `words`, `level`, `mana`, `cooldown`,
 `groupCooldown`, vocações permitidas e a forma exata de `onGetFormulaValues`.
 
-Se `references/canary` não tiver o arquivo, consulte as cópias locais completas listadas em
+Se o snapshot apontado não tiver o arquivo, consulte as cópias locais completas listadas em
 `AGENTS.md` antes de concluir que não existe.
 
 - [ ] **3. Medir a conversão de `speed` para `stepCooldownTicks`.**
@@ -240,6 +249,10 @@ integrada em main) estao resolvidos. Se algum continuar aberto, PARE e reporte.
 Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb05-01-selection com a branch
 claude/pb-05-01-vocation-spell-selection e rode "corepack pnpm install --prefer-offline" dentro dela
 antes de qualquer gate. Nao use worktree aninhada: ela derruba format:check.
+
+Worktree irma nao traz references/ (gitignorado). Se HUNTBOUND_CANARY_SOURCE estiver vazio, aponte-o
+para o snapshot local — o do clone principal ou uma copia listada em AGENTS.md. Nao grave o path no
+repositorio. O verificador de IDs fica fora de check/verify.
 
 Congele a selecao de vocacao, das tres spells, da ficha e dos assets necessarios. MEÇA as conversoes
 de speed para stepCooldownTicks, de intervalMs para attackCooldownTicks e das formulas para minPower

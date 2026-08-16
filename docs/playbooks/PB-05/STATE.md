@@ -2,17 +2,16 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** autoria concluída, execução **não iniciada**. B4 está resolvido. B3 continua
-aberto até a nova rodada de PB-04-10.
+**Estado geral:** autoria concluída, execução **não iniciada**. B3 e B4 estão resolvidos.
+**PB-05-01 é elegível.**
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** `claude/agent-instructions-shared` entrou em `main` no merge `5aeb8bb`
-(`AGENTS.md`, skills, hooks). FIX-03 e FIX-04 do PB-04 também estão em `main`. PB-05-01 continua
-inelegível até a auditoria do PB-04 aprovar.
+**Atualização vigente:** PB-04 fechou como `APPROVED_WITH_WARNINGS` (commit auditado `9f1c14c`,
+registro `d8253dc`). `playwright.config.ts` está em `retries: 0`. Worktree irmã não traz
+`references/`; PB-05-01/02 apontam o snapshot por `HUNTBOUND_CANARY_SOURCE` sem gravar o path.
 
-**Próxima etapa:** nova rodada de **PB-04-10**. Com veredito aprovado, PB-05-01 é a primeira task
-elegível.
+**Próxima etapa:** **PB-05-01**.
 
 ## Tasks
 
@@ -37,7 +36,7 @@ Nenhuma. A autoria do playbook não é task de PB-05.
 
 ## Próxima task elegível
 
-**Nenhuma até B3 ser resolvido.** B4 está fechado. Depois da nova rodada de PB-04-10: **PB-05-01**.
+**Nenhuma task de PB-05 concluída.** A primeira elegível é **PB-05-01**. B3 e B4 estão fechados.
 
 ## Verificações executadas
 
@@ -72,10 +71,10 @@ publicado sem artefato correspondente foi o defeito D2 da auditoria do PB-04.
 
 ## Bloqueios
 
-- **B3 (bloqueante, externo ao PB-05):** PB-04 está aberto. A auditoria PB-04-10 sobre `307a3f0`
-  permanece `REJECTED` no histórico. FIX-02/03/04 estão em `main` (`6cd63c6`, `911ce2f`/`695b6a7`,
-  `96c7628`/`6aeefec`). Uma nova rodada de PB-04-10 precisa aprovar. **PB-05-01 não abre antes
-  desse veredito.**
+- ~~**B3 (bloqueante, externo ao PB-05):** PB-04 aberto.~~ **Resolvido em 2026-08-16** pela
+  reavaliação PB-04-10: veredito `APPROVED_WITH_WARNINGS` sobre `9f1c14c`, registro `d8253dc`.
+  Warnings remanescentes do PB-04 (W9, W12, W17, W8, B2) não bloqueiam combate; B2 é pré-requisito
+  de PB-07.
 
 - ~~**B4 (bloqueante, pré-requisito de instrução):** `AGENTS.md` vivia só em
   `claude/agent-instructions-shared`.~~ **Resolvido em 2026-08-16** pelo merge `5aeb8bb`. Fast-forward
