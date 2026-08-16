@@ -26,10 +26,24 @@ visual por duração do tick, input segurado com cadência e fixtures de replay 
 |---|---|
 | recipe | `180aab488ab80426ce5b9c7c5e5472db450a83f44e864abbb16cc1ef3f18702e` |
 | região | `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5` |
-| sessão `pb04` | `986b23df…` cenário / `89879376…` snapshot / `74bd1a51…` eventos |
-| respawn `pb04-respawn` | `0cf24215…` snapshot / `5803374b…` eventos |
 
-Os hashes abreviados acima têm os valores completos nos `hashes.md` de cada fixture.
+Os hashes de replay **não** são republicados neste card. A fonte única de cada digest é o
+`hashes.md` da fixture, conferido contra o arquivo e o sidecar `.sha256` por `hunt:check`:
+
+- `packages/test-fixtures/hunt/pb04/hashes.md`
+- `packages/test-fixtures/hunt/pb04-respawn/hashes.md`
+
+### Correção da tabela de replay (PB-04-10 / D2)
+
+A tabela anterior publicava, como evidência determinística da sessão, os prefixos `986b23df`
+(cenário `pb04`), `89879376` (snapshot `pb04`), `74bd1a51` (eventos `pb04`), `0cf24215`
+(snapshot `pb04-respawn`) e `5803374b` (eventos `pb04-respawn`), e afirmava que os valores
+completos estavam nos `hashes.md`. Isso era falso: busca literal de cada prefixo no repositório
+inteiro encontrava só este card, e nenhum `hashes.md` os contém.
+
+A auditoria integrada PB-04-10 detectou o defeito (D2). As fixtures estavam corretas; a tabela
+que as documentava, não. Os prefixos acima ficam registrados como o erro, não como congelamento
+vigente.
 
 ## Bloqueio de aceite visual
 

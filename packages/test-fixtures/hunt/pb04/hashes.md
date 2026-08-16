@@ -1,7 +1,8 @@
 # PB-04 hunt replay hashes
 
 Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
-`1a2b3c4d5e6f7a8b`.
+`1a2b3c4d5e6f7a8b`. This table is the published source of the four digests;
+`check-hashes` compares each row to the file bytes and to the sidecar `.sha256`.
 
 | Artifact | SHA-256 |
 |---|---|

@@ -3,7 +3,9 @@
 This supplementary fixture uses the same generated scenario and seed as the
 600-tick browser session, but runs for `1805` ticks. The cap-aware route
 despawns entity `2` at tick `1` and entity `3` at tick `2`, leaving a live slot
-available for the real `1800`-tick respawn proof.
+available for the real `1800`-tick respawn proof. This table is the published
+source of the four digests; `check-hashes` compares each row to the file bytes
+and to the sidecar `.sha256`.
 
 | Artifact | SHA-256 |
 |---|---|

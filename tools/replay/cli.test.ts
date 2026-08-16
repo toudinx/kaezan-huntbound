@@ -349,3 +349,55 @@ describe('replay cli verify', () => {
     expect(result.exitCode).toBe(2);
   });
 });
+
+describe('replay cli check-hashes', () => {
+  const huntPb04 = resolve(repoRoot, 'packages/test-fixtures/hunt/pb04');
+  const huntRespawn = resolve(
+    repoRoot,
+    'packages/test-fixtures/hunt/pb04-respawn',
+  );
+
+  it('exits 0 on the committed hunt fixtures', async () => {
+    expect((await runCli(['check-hashes', '--dir', huntPb04])).exitCode).toBe(
+      0,
+    );
+    expect(
+      (await runCli(['check-hashes', '--dir', huntRespawn])).exitCode,
+    ).toBe(0);
+  });
+
+  it('exits 1 when a published hash digit changes', async () => {
+    const root = await scratch();
+    const names = [
+      'scenario.json',
+      'commands.jsonl',
+      'snapshot.golden.json',
+      'events.golden.jsonl',
+      'scenario.sha256',
+      'commands.sha256',
+      'snapshot.golden.sha256',
+      'events.golden.sha256',
+      'hashes.md',
+    ];
+    await Promise.all(
+      names.map((name) => copyFile(join(huntPb04, name), join(root, name))),
+    );
+    const original = await readFile(join(root, 'hashes.md'), 'utf8');
+    await writeFile(
+      join(root, 'hashes.md'),
+      original.replace(
+        'f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0',
+        'f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e1',
+      ),
+      'utf8',
+    );
+
+    const result = await runCli(['check-hashes', '--dir', root]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('divergence');
+  });
+
+  it('exits 2 when --dir is missing', async () => {
+    expect((await runCli(['check-hashes'])).exitCode).toBe(2);
+  });
+});
