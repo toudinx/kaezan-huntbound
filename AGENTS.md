@@ -64,6 +64,41 @@ explicitamente antes de declarar uma task concluída.
 
 Gate é evidência, não formalidade: nenhum resultado pode ser afirmado sem a saída fresca do comando.
 
+## Hooks de guarda
+
+As regras que mais custaram tempo são verificadas por hook, com **uma única implementação** para os
+três agentes:
+
+| Camada | Arquivo |
+|---|---|
+| Regras puras e testadas | `tools/agent-hooks/rules.ts` (testes em `tests/workspace/agent-hooks.test.ts`) |
+| Sonda de filesystem | `tools/agent-hooks/workspace.ts` |
+| Adaptador Cursor | `tools/agent-hooks/cursor.ts` ← `.cursor/hooks.json` |
+| Adaptador Claude Code e Codex | `tools/agent-hooks/claude-codex.ts` ← `.claude/settings.json`, `.codex/hooks.json` |
+| Guarda no commit, independente de agente | `tools/git-hooks/pre-commit` |
+
+O que é bloqueado: `npm`/`yarn`/`pnpm` fora do corepack; `--no-verify`; force push; `git add -f` de
+asset pessoal; edição manual de artefato gerado, fixture `expected/` ou golden; `playwright test`
+direto quando `dist/game` está mais velho que `apps/game/src`. O que pede confirmação: `reset --hard`,
+`clean -f`, `branch -D`, `git worktree remove`.
+
+Semântica: **silêncio significa "sem opinião"** — a permissão normal do agente decide, e o hook nunca
+amplia o que você já autorizou. Só `deny` e `ask` produzem saída. Falha interna do hook sai `0`: um
+guard quebrado não pode travar o agente.
+
+Para mudar uma regra, edite `rules.ts` e seu teste. Os adaptadores só traduzem protocolo; não coloque
+regra dentro deles.
+
+Ative o hook de Git uma vez por clone ou worktree:
+
+```bash
+git config core.hooksPath tools/git-hooks
+```
+
+Limitação conhecida: o `afterFileEdit` do Cursor é observacional e não bloqueia, então lá a edição de
+artefato gerado vira aviso e é barrada depois no `pre-commit`. Em Claude Code e Codex o `PreToolUse`
+bloqueia antes da escrita.
+
 ## Fronteiras de pacote
 
 `tools/architecture/dependency-policy.json` é a fonte executável; `docs/architecture/PACKAGE_BOUNDARIES.md`
