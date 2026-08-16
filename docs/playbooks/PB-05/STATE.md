@@ -82,6 +82,8 @@ Nenhum campo novo entrou no snapshot e nenhum golden foi alterado.
 | `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot verify` | `124` | timeout em 244 s; QA browser não fechou |
 | `git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb-05-06-loot-autoloot` | `0` | `main` em `2f5d07c` |
 | `corepack pnpm verify` pós-integração em `main` | `124` | timeout em 244 s; QA browser não fechou |
+| `corepack pnpm exec biome check .` pós-integração em `main` | `0` | 392 arquivos |
+| `corepack pnpm test` pós-integração em `main` | `0` | workspace verde; simulation 212, content 68, contracts 148, assets 44, game 135 |
 | remoção da worktree + `git worktree prune` | `0` | diretório removido; branch preservada |
 
 **Bloqueio reproduzido:** com build fresco, `asset-pack.spec.ts` passou; `boot-budget.spec.ts`
