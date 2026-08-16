@@ -136,6 +136,7 @@ describe('PB-05 combat replay fixture', () => {
     expect(sessionCoverage(events)).toEqual(REQUIRED_COVERAGE);
   });
 
+  // Cold main took >191 s without diverging; the worktree finished in 53–108 s.
   it('reproduces the committed goldens and converges at every boundary', async () => {
     const fixture = await readFixture();
     const straight = buildReplayArtifacts(
@@ -167,7 +168,7 @@ describe('PB-05 combat replay fixture', () => {
       }
     }
     expect(divergent).toEqual([]);
-  }, 180_000);
+  }, 360_000);
 
   it('distinguishes seed, command, and rules-version changes', async () => {
     const fixture = await readFixture();

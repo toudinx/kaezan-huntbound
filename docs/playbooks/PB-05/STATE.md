@@ -26,7 +26,7 @@ de morte). PB-05-09 já está done.
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
-| PB-05-08 | done | `grok/pb-05-08-combat-fixture` | este commit | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
+| PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
@@ -166,8 +166,11 @@ Command log só com `issuer: player`. Goldens gerados por
 | `snapshot.golden.json` | `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a` |
 | `events.golden.jsonl` | `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394` |
 
-2240 eventos, tick final `2700`. Retomada `0..2700` sem fronteira divergente
-(108 s). Sensibilidade: seed, um `actor/move-step` e `rulesVersion` detectados.
+2240 eventos, tick final `2700`. Retomada `0..2700` sem fronteira divergente.
+Timeout da varredura: `180000ms` na worktree (53–108 s) e `360000ms` depois
+que o `verify` pós-ff na `main` estourou `180000ms` aos `191803ms` sem
+divergir — carga da suíte, não asserção enfraquecida. Sensibilidade: seed,
+um `actor/move-step` e `rulesVersion` detectados.
 
 **Verificações:**
 
@@ -181,7 +184,9 @@ Command log só com `issuer: player`. Goldens gerados por
 | `corepack pnpm hunt:check` | `0` | goldens PB-04 intactos |
 | `corepack pnpm combat:check` | `0` ×2 | árvore inalterada entre as duas |
 | `vitest run --config tools/replay/vitest.config.ts` | `0` | 53 testes, 106.85 s |
-| `corepack pnpm verify` | `0` ×2 | 243.6 s e 265.2 s; 29/29 Playwright. hunt-budget `actionableMs` `4402.2` e `4521.9`. B5 não reproduziu; não se declara fechado. |
+| `corepack pnpm verify` (worktree) | `0` ×2 | 243.6 s e 265.2 s; 29/29 Playwright. hunt-budget `actionableMs` `4402.2` e `4521.9` |
+| `corepack pnpm verify` (pós-ff `main`) | `1` | varredura `0..2700` estourou `180000ms` aos `191803ms` sem divergir |
+| `vitest` varredura isolada na `main` após teto `360000ms` | `0` | 62.45 s, `divergent = []` |
 
 **Próxima task elegível:** PB-05-10. Não iniciada neste chat.
 
