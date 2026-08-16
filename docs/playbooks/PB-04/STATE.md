@@ -642,7 +642,7 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
 
 ## PB-04-FIX-02 — handoff concluído
 
-- **Status:** done; implementação concluída em worktree isolada, pronta para integração fast-forward.
+- **Status:** done; implementação integrada em `main` por fast-forward local.
 - **Branch:** `codex/pb-04-fix-02-input-edge`.
 - **Commit de implementação:** `6cd63c6` (`fix: make hunt taps single-step`).
 - **Conteúdo:** `InputMap` passou a capturar `keydown`/`pointerdown` como borda única, repetir hold
