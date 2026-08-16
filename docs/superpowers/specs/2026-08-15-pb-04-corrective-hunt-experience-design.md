@@ -179,10 +179,12 @@ uma vez, mesmo que o controle seja liberado antes da abertura do próximo tick. 
 continuam podendo armar uma nova intenção.
 
 A repetição de hold é level-triggered somente depois da borda inicial e usa o limiar congelado
-`HOLD_REPEAT_DELAY_TICKS = 1`. Portanto, após a primeira entrega, a próxima abertura do
-`inputGate` pode produzir uma intenção adicional; as aberturas seguintes ficam limitadas a no
-máximo uma intenção enquanto a direção estiver segurada. Soltar o controle antes dessa abertura
-não produz passo extra. `blur`, `pointercancel` e `detach` limpam tanto as direções seguradas
+`HOLD_REPEAT_DELAY_TICKS = 2`, equivalente a `100 ms` com o tick atual. O `InputMap` mede a
+duração real do hold para que saltos do relógio lógico ou frames atrasados não transformem um
+toque curto em repetição: aberturas do `inputGate` antes do limiar não produzem ação. Quando o
+limiar é alcançado, a repetição engata e cada abertura fica limitada a no máximo uma intenção
+enquanto a direção estiver segurada. Soltar o controle antes do engate não produz passo extra.
+`blur` da janela proprietária, `pointercancel` e `detach` limpam tanto as direções seguradas
 quanto as bordas ainda não consumidas.
 
 Teclado e d-pad percorrem a mesma máquina de estado de input. Essa camada não altera o tick, o

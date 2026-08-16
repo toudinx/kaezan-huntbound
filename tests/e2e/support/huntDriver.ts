@@ -214,6 +214,43 @@ export async function stepWithDpad(
   return endStep(page, before);
 }
 
+/** Taps a d-pad control for a measured duration using real pointer input. */
+export async function tapDpadFor(
+  page: Page,
+  direction: 'n' | 's' | 'w' | 'e' | 'nw' | 'ne' | 'sw' | 'se',
+  durationMs: number,
+): Promise<HuntStepOutcome> {
+  const before = await beginStep(page);
+  const playerEntityId = before.player?.entityId;
+
+  if (playerEntityId === undefined) {
+    throw new Error(probeErrorMessage);
+  }
+
+  const control = page.locator(
+    `[data-testid="hunt-dpad"] [data-hunt-direction="${direction}"]`,
+  );
+  const box = await control.boundingBox();
+
+  if (box === null) {
+    throw new Error(`D-pad control ${direction} has no box.`);
+  }
+
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  try {
+    await page.waitForTimeout(durationMs);
+  } finally {
+    await page.mouse.up();
+  }
+
+  await waitForPlayerAnswer(page, playerEntityId);
+  return endStep(page, before);
+}
+
 /** Narrows the optional shapes the probe returns, with a message on failure. */
 export function requirePlayer(state: HuntProbeState): HuntProbeActor {
   const player = state.player;

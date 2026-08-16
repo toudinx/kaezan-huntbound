@@ -13,6 +13,7 @@ import {
   requirePlayer,
   stepKeys,
   stepWithKeyboard,
+  tapDpadFor,
   waitForHunt,
 } from './support/huntDriver';
 import { readHuntDefinition } from './support/huntSession';
@@ -293,6 +294,17 @@ test.describe('the first hunt is playable by synthetic input', () => {
       outcome.commands.length,
     );
     expect(outcome.commands[0]?.tick).toBe(moves[0]?.tick);
+    expectQuiet(watch);
+  });
+
+  test('turns a short d-pad tap into one paced command', async ({ page }) => {
+    const watch = watchPage(page);
+    await waitForHunt(page);
+
+    const outcome = await tapDpadFor(page, 's', TICK_DURATION_MS - 10);
+
+    expect(movedEvents(outcome)).toHaveLength(1);
+    expect(outcome.commands).toHaveLength(1);
     expectQuiet(watch);
   });
 

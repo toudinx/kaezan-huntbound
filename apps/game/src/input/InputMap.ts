@@ -1,4 +1,7 @@
-import type { Direction } from '../../../../packages/contracts/src/index.ts';
+import {
+  type Direction,
+  TICK_DURATION_MS,
+} from '../../../../packages/contracts/src/index.ts';
 
 export type InputAction =
   | { readonly kind: 'step'; readonly direction: Direction }
@@ -8,6 +11,10 @@ export interface InputMap {
   attach(target: HTMLElement): void;
   detach(): void;
   drain(): readonly InputAction[];
+}
+
+export interface InputMapOptions {
+  readonly now?: () => number;
 }
 
 type Axis = 'horizontal' | 'vertical';
@@ -39,6 +46,10 @@ const directionValues = new Set<Direction>([
   'w',
   'nw',
 ]);
+
+const HOLD_REPEAT_DELAY_TICKS = 2;
+const HOLD_REPEAT_DELAY_MS = HOLD_REPEAT_DELAY_TICKS * TICK_DURATION_MS;
+const EMPTY_ACTIONS = Object.freeze([]) as readonly InputAction[];
 
 function readDirection(value: unknown): Direction | undefined {
   return typeof value === 'string' && directionValues.has(value as Direction)
@@ -93,10 +104,40 @@ function axisValue(heldKeys: ReadonlySet<string>, axis: Axis): AxisValue | 0 {
   return negative ? -1 : 1;
 }
 
-export function createInputMap(): InputMap {
+export function createInputMap(options: InputMapOptions = {}): InputMap {
   const heldKeys = new Set<string>();
   const heldDpadDirections = new Set<Direction>();
+  let pendingDirection: Direction | undefined;
+  let holdStartedAtMs: number | undefined;
+  let repeatEngaged = false;
   let attachedTarget: HTMLElement | undefined;
+  let attachedWindow: Window | undefined;
+  const now =
+    options.now ?? (() => globalThis.performance?.now() ?? Date.now());
+
+  const currentDirection = (): Direction | undefined => {
+    const dpadDirection = [...heldDpadDirections][0];
+    return (
+      dpadDirection ??
+      directionFromAxes(
+        axisValue(heldKeys, 'horizontal'),
+        axisValue(heldKeys, 'vertical'),
+      )
+    );
+  };
+
+  const stepAction = (direction: Direction): readonly InputAction[] =>
+    Object.freeze([
+      { kind: 'step', direction } as const,
+    ]) as readonly InputAction[];
+
+  const armEdge = (): void => {
+    const direction = currentDirection();
+    if (direction === undefined) return;
+    pendingDirection = direction;
+    holdStartedAtMs = now();
+    repeatEngaged = false;
+  };
 
   const onKeyDown = (event: Event): void => {
     const keyboardEvent = event as KeyboardEvent;
@@ -104,11 +145,20 @@ export function createInputMap(): InputMap {
       return;
     }
     keyboardEvent.preventDefault();
+    if (heldKeys.has(keyboardEvent.code)) {
+      return;
+    }
     heldKeys.add(keyboardEvent.code);
+    armEdge();
   };
 
   const onKeyUp = (event: Event): void => {
-    heldKeys.delete((event as KeyboardEvent).code);
+    const code = (event as KeyboardEvent).code;
+    if (!heldKeys.delete(code)) {
+      return;
+    }
+    holdStartedAtMs = undefined;
+    repeatEngaged = false;
   };
 
   const onPointerDown = (event: Event): void => {
@@ -117,37 +167,51 @@ export function createInputMap(): InputMap {
       return;
     }
     event.preventDefault();
+    if (heldDpadDirections.has(direction)) {
+      return;
+    }
     heldDpadDirections.add(direction);
+    armEdge();
   };
 
   const onPointerUp = (event: Event): void => {
     const direction = directionFromTarget(event.target);
     if (direction === undefined) {
       heldDpadDirections.clear();
+      holdStartedAtMs = undefined;
+      repeatEngaged = false;
       return;
     }
     heldDpadDirections.delete(direction);
+    holdStartedAtMs = undefined;
+    repeatEngaged = false;
   };
 
   const clearHeldInput = (): void => {
     heldKeys.clear();
     heldDpadDirections.clear();
+    pendingDirection = undefined;
+    holdStartedAtMs = undefined;
+    repeatEngaged = false;
   };
 
   const detach = (): void => {
     const target = attachedTarget;
-    if (target === undefined) {
+    const windowTarget = attachedWindow;
+    if (target === undefined && windowTarget === undefined) {
       clearHeldInput();
       return;
     }
 
-    target.removeEventListener('keydown', onKeyDown);
-    target.removeEventListener('keyup', onKeyUp);
-    target.removeEventListener('pointerdown', onPointerDown);
-    target.removeEventListener('pointerup', onPointerUp);
-    target.removeEventListener('pointercancel', clearHeldInput);
-    target.removeEventListener('blur', clearHeldInput);
+    target?.removeEventListener('keydown', onKeyDown);
+    target?.removeEventListener('keyup', onKeyUp);
+    target?.removeEventListener('pointerdown', onPointerDown);
+    target?.removeEventListener('pointerup', onPointerUp);
+    target?.removeEventListener('pointercancel', clearHeldInput);
+    target?.removeEventListener('blur', clearHeldInput);
+    windowTarget?.removeEventListener('blur', clearHeldInput);
     attachedTarget = undefined;
+    attachedWindow = undefined;
     clearHeldInput();
   };
 
@@ -155,28 +219,43 @@ export function createInputMap(): InputMap {
     attach: (target) => {
       detach();
       attachedTarget = target;
+      attachedWindow = target.ownerDocument?.defaultView ?? undefined;
       target.addEventListener('keydown', onKeyDown);
       target.addEventListener('keyup', onKeyUp);
       target.addEventListener('pointerdown', onPointerDown);
       target.addEventListener('pointerup', onPointerUp);
       target.addEventListener('pointercancel', clearHeldInput);
       target.addEventListener('blur', clearHeldInput);
+      attachedWindow?.addEventListener('blur', clearHeldInput);
     },
     detach,
     drain: () => {
-      const dpadDirection = [...heldDpadDirections][0];
-      const direction =
-        dpadDirection ??
-        directionFromAxes(
-          axisValue(heldKeys, 'horizontal'),
-          axisValue(heldKeys, 'vertical'),
-        );
-      if (direction === undefined) {
-        return Object.freeze([]) as readonly InputAction[];
+      const edgeDirection = pendingDirection;
+      if (edgeDirection !== undefined) {
+        pendingDirection = undefined;
+        repeatEngaged = false;
+        return stepAction(edgeDirection);
       }
-      return Object.freeze([
-        { kind: 'step', direction } as const,
-      ]) as readonly InputAction[];
+
+      const direction = currentDirection();
+      if (direction === undefined) {
+        holdStartedAtMs = undefined;
+        repeatEngaged = false;
+        return EMPTY_ACTIONS;
+      }
+
+      if (!repeatEngaged) {
+        const heldSince = holdStartedAtMs;
+        if (heldSince === undefined) {
+          holdStartedAtMs = now();
+          return EMPTY_ACTIONS;
+        }
+        if (now() - heldSince < HOLD_REPEAT_DELAY_MS) {
+          return EMPTY_ACTIONS;
+        }
+        repeatEngaged = true;
+      }
+      return stepAction(direction);
     },
   };
 }
