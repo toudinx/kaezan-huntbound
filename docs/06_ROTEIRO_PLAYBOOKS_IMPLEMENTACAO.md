@@ -41,7 +41,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
-| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **aberto; `REJECTED` por PB-04-10 em `307a3f0`; hunt jogável e aceite de produto dado; desbloqueiam FIX-02/03/04** |
+| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **aberto; FIX-02/03/04 integrados; nova rodada de PB-04-10 decide o fechamento** |
 | [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **playbook escrito; execução bloqueada até PB-04 fechar** |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
@@ -89,9 +89,8 @@ hashes de replay publicados no card do PB-04-FIX-01 não existem no repositório
 nunca recebeu as fixtures do PB-04; e `biome check` sai `1` com `13` diagnósticos. Detalhe em
 [`playbooks/PB-04/artifacts/acceptance-report.md`](playbooks/PB-04/artifacts/acceptance-report.md).
 
-**PB-05 não está liberado.** PB-05 é combate e se apoiaria no mesmo caminho de input defeituoso. Os
-próximos a executar são `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`, que podem rodar em paralelo;
-com os três integrados, uma nova rodada de PB-04-10 decide o fechamento.
+**PB-05 não está liberado.** PB-05 é combate e espera o fechamento do PB-04. FIX-02, FIX-03 e FIX-04
+já estão em `main`; uma nova rodada de PB-04-10 decide o fechamento.
 
 O **playbook do PB-05 já está escrito** — spec, README, `STATE.md` e doze task cards — porque a
 autoria não depende do veredito e as quatro lições da auditoria do PB-04 já entram nele como critério

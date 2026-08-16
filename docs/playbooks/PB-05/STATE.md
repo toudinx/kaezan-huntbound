@@ -2,16 +2,16 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** autoria concluída, execução **não iniciada e bloqueada**. Nenhuma task de PB-05
-rodou; nenhum arquivo de código foi tocado por este playbook.
+**Estado geral:** autoria concluída, execução **não iniciada**. B4 está resolvido. B3 continua
+aberto até a nova rodada de PB-04-10.
 
-**Última atualização:** 2026-08-15
+**Última atualização:** 2026-08-16
 
-**Atualização vigente:** spec de design aprovada, README, STATE e as doze task cards escritos. Todos
-os parâmetros de combate estão congelados na spec
-`docs/superpowers/specs/2026-08-15-pb-05-vocation-combat-design.md`.
+**Atualização vigente:** `claude/agent-instructions-shared` entrou em `main` no merge `5aeb8bb`
+(`AGENTS.md`, skills, hooks). FIX-03 e FIX-04 do PB-04 também estão em `main`. PB-05-01 continua
+inelegível até a auditoria do PB-04 aprovar.
 
-**Próxima etapa:** desbloquear B3 e B4 (abaixo). Com os dois resolvidos, PB-05-01 é a primeira task
+**Próxima etapa:** nova rodada de **PB-04-10**. Com veredito aprovado, PB-05-01 é a primeira task
 elegível.
 
 ## Tasks
@@ -37,7 +37,7 @@ Nenhuma. A autoria do playbook não é task de PB-05.
 
 ## Próxima task elegível
 
-**Nenhuma até B3 e B4 serem resolvidos.** Depois deles: **PB-05-01**.
+**Nenhuma até B3 ser resolvido.** B4 está fechado. Depois da nova rodada de PB-04-10: **PB-05-01**.
 
 ## Verificações executadas
 
@@ -72,17 +72,16 @@ publicado sem artefato correspondente foi o defeito D2 da auditoria do PB-04.
 
 ## Bloqueios
 
-- **B3 (bloqueante, externo ao PB-05):** PB-04 está aberto e **reprovado** pela auditoria PB-04-10
-  sobre o commit `307a3f0`. PB-04-FIX-02 fechou D1; PB-04-FIX-03 e PB-04-FIX-04 seguem pendentes, e
-  uma nova rodada de PB-04-10 precisa aprovar. `docs/playbooks/PB-04/STATE.md` declara
-  explicitamente que PB-05 não está liberado. **PB-05-01 não abre antes desse veredito.**
+- **B3 (bloqueante, externo ao PB-05):** PB-04 está aberto. A auditoria PB-04-10 sobre `307a3f0`
+  permanece `REJECTED` no histórico. FIX-02/03/04 estão em `main` (`6cd63c6`, `911ce2f`/`695b6a7`,
+  `96c7628`/`6aeefec`). Uma nova rodada de PB-04-10 precisa aprovar. **PB-05-01 não abre antes
+  desse veredito.**
 
-- **B4 (bloqueante, pré-requisito de instrução):** `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/*.mdc`,
-  as skills `.cursor/skills/*` e o motor de hooks vivem na branch `claude/agent-instructions-shared`
-  (`f501afd`), que **divergiu de `main`** — dois commits de cada lado, fast-forward impossível. As
-  task cards deste playbook citam esses arquivos como fonte normativa e citam a versão de
-  `docs/08_POLITICA_MODELOS_AGENTES.md` que inclui Grok 4.6, que também está apenas nessa branch.
-  Integrar a branch em `main` é pré-requisito de PB-05-01. Não é trabalho do PB-05.
+- ~~**B4 (bloqueante, pré-requisito de instrução):** `AGENTS.md` vivia só em
+  `claude/agent-instructions-shared`.~~ **Resolvido em 2026-08-16** pelo merge `5aeb8bb`. Fast-forward
+  era impossível (a branch tinha divergido); o merge commit integrou `AGENTS.md`, `CLAUDE.md`,
+  `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
+  Grok 4.6 está em `main`.
 
 ## Regra de atualização
 

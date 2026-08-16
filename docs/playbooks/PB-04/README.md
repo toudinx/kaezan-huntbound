@@ -5,12 +5,10 @@
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** **aberto — `REJECTED`** pela auditoria integrada PB-04-10 sobre o commit `307a3f0`, em
-2026-08-15. A hunt é jogável e o aceite de produto do usuário está registrado em
-[`artifacts/product-acceptance.md`](artifacts/product-acceptance.md); a reprovação é de integridade
-de gate e de documentação. Veredito e evidência em
-[`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). Desbloqueiam o fechamento:
-`PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`. **PB-05 não está liberado.**
+**Status:** **aberto.** A auditoria integrada PB-04-10 sobre `307a3f0` permanece `REJECTED` no
+histórico. FIX-02, FIX-03 e FIX-04 estão integrados; uma nova rodada de PB-04-10 decide o
+fechamento. Veredito original em
+[`artifacts/acceptance-report.md`](artifacts/acceptance-report.md). **PB-05 não está liberado.**
 
 **Goal:** entregar a primeira hunt jogável no browser: região real do mapa extraída offline, colisão
 e transições derivadas do snapshot, criaturas nascendo por tabela de spawn determinística, câmera
@@ -71,7 +69,7 @@ tabela de spawn.
 
 | Prova | Verificação |
 |---|---|
-| Extração | reextrair a região do mesmo snapshot produz JSON byte-idêntico |
+| Extração | materializar o recipe versionado duas vezes produz JSON byte-idêntico |
 | Repetição | duas execuções limpas da sessão em Node são byte-idênticas |
 | Retomada | todas as fronteiras `0..600` convergem no mesmo snapshot final |
 | Paridade | browser e Node produzem o mesmo SHA-256 do snapshot canônico |
