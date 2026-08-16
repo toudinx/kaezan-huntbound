@@ -1,0 +1,40 @@
+---
+description: Fronteiras de pacote e determinismo do kernel de simulação
+globs: packages/simulation/**,packages/contracts/**,packages/save/**,tools/architecture/**
+alwaysApply: false
+---
+
+# Fronteiras
+
+`tools/architecture/dependency-policy.json` é a fonte executável; `corepack pnpm architecture:check`
+é o gate. O check lê cada manifesto e faz parse de imports, re-exports e dynamic imports literais.
+
+- `@huntbound/contracts` não depende de nenhum outro pacote Huntbound. É o único vocabulário
+  compartilhado entre simulação, conteúdo, assets, save e apresentação.
+- `@huntbound/simulation` depende apenas de `contracts` e de **nenhuma dependência externa**. Sem
+  Phaser, sem DOM, sem `node:*`. O `lib` efetivo do TypeScript não pode conter DOM.
+- `@huntbound/save` depende de `contracts` e `simulation`; nunca de Phaser ou de importadores.
+- Toda dependência externa precisa estar declarada no manifesto do pacote que a importa.
+- Antes de introduzir uma biblioteca dependente de DOM em qualquer pacote, adicione-a à policy.
+
+# Determinismo
+
+O kernel é headless, de tick fixo e reprodutível byte a byte em Node e no Chromium. Dentro de
+`packages/simulation`:
+
+- Nada de `Date.now()`, `performance.now()`, `Math.random()`, `crypto`, timers ou I/O. Tempo vem do
+  tick; aleatoriedade vem do RNG seedado em `src/random`.
+- Estado precisa ser serializável e comparável: nada de `Map`/`Set` com ordem de inserção implícita
+  na fronteira do snapshot, nada de float onde o contrato pede inteiro, nada de iteração sobre
+  chaves de objeto sem ordem definida.
+- Eventos saem em ordem determinística. Comando inválido é rejeitado pelo contrato, não tratado no
+  meio da regra.
+- Toda mudança de comportamento precisa passar por `corepack pnpm simulation:check` e
+  `corepack pnpm hunt:check`.
+
+Se um golden divergir, a pergunta é "o que mudou de comportamento e isso é intencional?" — nunca
+"como faço o golden aceitar isso?". Regenerar golden exige justificativa registrada na task e no
+`STATE.md`.
+
+Contratos em `packages/contracts` são congelados por playbook. Alterá-los é condição de parada, não
+decisão de implementação.

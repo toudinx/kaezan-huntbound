@@ -1,0 +1,20 @@
+#!/bin/sh
+# Agent-agnostic guard: personal Tibia media and generated asset packs never enter Git.
+#
+# Enable with:  git config core.hooksPath tools/git-hooks
+# It runs for every commit, no matter which agent — or which human — created it.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+offenders=$(printf '%s\n' "$staged" | grep -E '^(apps/game/public/assets/|assets/personal/|personal-assets/)' || true)
+
+if [ -n "$offenders" ]; then
+  echo "pre-commit: asset pessoal ou pack gerado no índice." >&2
+  echo "Esses diretórios são ignorados de propósito; o profile 'product' recusa" >&2
+  echo "licenseClass: \"cipsoft-personal\". Remova do índice com 'git restore --staged':" >&2
+  echo "" >&2
+  printf '%s\n' "$offenders" >&2
+  exit 1
+fi
+
+exit 0

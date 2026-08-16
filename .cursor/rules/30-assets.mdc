@@ -1,0 +1,37 @@
+---
+description: Manifestos de asset, profiles de build e licenciamento pessoal
+globs: packages/assets/**,tools/asset-packer/**,apps/game/src/assets/**
+alwaysApply: false
+---
+
+# Profiles
+
+Três profiles, com garantias diferentes:
+
+- `test` — fixtures determinísticas versionadas em `packages/test-fixtures/assets/**/expected/**`.
+- `personal` — apresentação integral do V0 a partir dos assets Tibia locais, gerada por
+  `HUNTBOUND_PERSONAL_ASSET_SOURCE`. **Nunca versionada.**
+- `product` — recusa qualquer asset com `licenseClass: "cipsoft-personal"`. Um futuro produto refaz a
+  camada visual atrás do mesmo `AssetProvider`.
+
+Nada sob `apps/game/public/assets/{personal,product,test}` ou `assets/personal/` entra no Git. Se um
+comando produzir mídia ali, ela é artefato local, não entrega.
+
+# Acesso por manifesto
+
+Simulação e domínio referenciam asset por **chave estável**, resolvida por manifesto/`AssetProvider`.
+Path literal de arquivo dentro de código de domínio é violação de fronteira, não detalhe de estilo.
+`@huntbound/assets` depende só de `contracts` (mais `zod`), sem Phaser e sem `node:*`.
+
+# Determinismo do pack
+
+Pack é reprodutível: a mesma seleção mais o mesmo `source-lock` produzem o mesmo pack, byte a byte.
+Toda geração tem `--check` correspondente:
+
+- `assets:check` — cobre geração, profile e pack das fixtures.
+- `assets:pb04:hunt:check` — cruza seleção, região e pack da hunt.
+- `assets:personal:check` / `assets:pb04:personal:check` — exigem o source pessoal configurado;
+  falham por ambiente ausente, o que **não** é motivo para relaxar o gate.
+
+Adicionar asset significa: atualizar a seleção, atualizar o `source-lock`, regenerar, rodar o
+`--check`. Não copie arquivo direto para dentro de um pack.

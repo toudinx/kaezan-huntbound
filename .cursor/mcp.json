@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "canary-snapshot": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Kaezan\\kaezan\\canary-3.4.1",
+        "C:\\Kaezan\\kaezan - world\\canary-3.4.1"
+      ]
+    }
+  }
+}
