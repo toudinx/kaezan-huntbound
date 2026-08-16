@@ -30,7 +30,7 @@ não bloqueia a fixture.
 | PB-05-04 | done | `grok/pb-05-04-kernel-combat` | `188a61a` | kernel v4; journals golden byte-idênticos |
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
-| PB-05-07 | done | `grok/pb-05-07-content-to-combat` | este commit | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
+| PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
 | PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
 | PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
@@ -45,8 +45,11 @@ Fast-forward para `main` autorizado pela task card.
 
 ## Handoff PB-05-07 — 2026-08-16
 
-**Status:** implementação concluída neste commit. Gates de código verdes;
-`verify` falhou só em B5 (`hunt-budget`), o mesmo bloqueio pré-existente.
+**Status:** implementação concluída e integrada em `640f18e` (ff
+`5762fa4..640f18e`). Gates de código verdes na worktree e na `main`. O `verify`
+pós-integração falhou no QA browser: B5 (`hunt-budget`) pré-existente, mais um
+stall ambiental de ~10 s em `pack.sha256` no `boot-budget` (não visto na
+worktree, 28/29).
 
 **Base:** `main` em `5762fa44a6a5e1e79be4af471d8ac023e1ec5d37`.
 
@@ -112,9 +115,12 @@ a composição de combate não pode invalidar o golden combat-neutral de PB-04.
 | `corepack pnpm content:check` | `0` | sidecars e catálogo verdes |
 | `corepack pnpm hunt:check` | `0` | PB-04 byte-idêntico |
 | `corepack pnpm hunt:extract:sidecar` | `0` | hashes acima |
-| `corepack pnpm verify` | `1` | B5 `hunt-budget`: `overBudget.length` `3` (teto `< 2`), tarefas `70,57,65` ms; `actionableMs` `4332.3`; 28/29 e2e passaram |
+| `corepack pnpm verify` (worktree) | `1` | B5 `hunt-budget`: `overBudget.length` `3` (teto `< 2`), tarefas `70,57,65` ms; `actionableMs` `4332.3`; 28/29 e2e passaram |
+| `git merge --ff-only grok/pb-05-07-content-to-combat` | `0` | `main` em `640f18e` |
+| `corepack pnpm verify` pós-integração em `main` | `1` | 1ª tentativa: EPERM no restage de `apps/game/public/assets/test` durante `build` (lock Windows, não código). 2ª: gates de código verdes; QA browser 27/29 — B5 `hunt-budget` `overBudget.length` `3` (71, 59, 67 ms; `actionableMs` `4727.3`) e `boot-budget` `actionableMs` `14610.3` com gap de 10197 ms em `pack.sha256` (stall de I/O, não regressão da composição) |
+| `corepack pnpm exec biome check .` pós-integração em `main` | `0` | 393 arquivos |
 
-Sem retry, skip ou golden reescrito. B5 é pré-existente; esta task não toca Playwright nem orçamento de boot.
+Sem retry, skip ou golden reescrito. B5 é pré-existente; o stall de `boot-budget` na 2ª passagem é ambiental (servir um `.sha256` de pack de fixture). Esta task não toca Playwright nem orçamento de boot.
 
 **Próxima task elegível:** PB-05-08.
 
