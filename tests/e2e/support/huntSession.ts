@@ -3,9 +3,12 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildHuntScenario,
+  createContentRegistry,
   loadHuntDefinition,
-} from '../../../packages/content/src/hunts/index.ts';
+  projectRuntimeBundle,
+} from '../../../packages/content/src/index.ts';
 import type {
+  CatalogContentBundle,
   Direction,
   HuntDefinition,
   KernelScenario,
@@ -30,6 +33,10 @@ export const HUNT_SESSION_PLAYER_ENTITY_ID = 1;
 
 const huntDefinitionUrl = new URL(
   '../../../packages/content/src/generated/hunts/venore-rotworm-cave/hunt.json',
+  import.meta.url,
+);
+const catalogBundleUrl = new URL(
+  '../../../packages/content/src/generated/pb-01-contract-coverage.json',
   import.meta.url,
 );
 const fixtureUrl = new URL(
@@ -88,9 +95,29 @@ export function buildHuntSessionScenario(): KernelScenario {
   return result.value;
 }
 
+function readHuntCombatContext() {
+  const runtime = projectRuntimeBundle(
+    JSON.parse(readFileSync(catalogBundleUrl, 'utf8')) as CatalogContentBundle,
+  );
+  const character = runtime.characters[0];
+  if (character === undefined) {
+    throw new Error('Generated catalog is missing the hunt character.');
+  }
+  return {
+    character,
+    registry: createContentRegistry(runtime),
+  };
+}
+
 function expectScenarioMatchesHunt(scenario: KernelScenario): void {
   const hunt = readHuntDefinition();
-  const built = buildHuntScenario(hunt, createSeed(HUNT_SESSION_SEED));
+  const { character, registry } = readHuntCombatContext();
+  const built = buildHuntScenario(
+    hunt,
+    character,
+    registry,
+    createSeed(HUNT_SESSION_SEED),
+  );
   if (!built.ok) {
     throw new Error(
       `Generated hunt scenario is invalid: ${built.diagnostics
@@ -98,8 +125,24 @@ function expectScenarioMatchesHunt(scenario: KernelScenario): void {
         .join('; ')}`,
     );
   }
-  if (encodeCanonicalJson(built.value) !== encodeCanonicalJson(scenario)) {
-    throw new Error('PB-04 scenario fixture is stale relative to hunt.json');
+  const composed = built.value.scenario;
+  if (
+    composed.scenarioId !== scenario.scenarioId ||
+    composed.scenarioRevision !== scenario.scenarioRevision ||
+    composed.width !== scenario.width ||
+    composed.height !== scenario.height ||
+    encodeCanonicalJson(composed.floors) !==
+      encodeCanonicalJson(scenario.floors) ||
+    encodeCanonicalJson(composed.transitions) !==
+      encodeCanonicalJson(scenario.transitions) ||
+    encodeCanonicalJson(composed.spawnGroups) !==
+      encodeCanonicalJson(scenario.spawnGroups) ||
+    encodeCanonicalJson(composed.initialActors) !==
+      encodeCanonicalJson(scenario.initialActors)
+  ) {
+    throw new Error(
+      'PB-04 scenario fixture geometry is stale relative to hunt.json',
+    );
   }
 }
 

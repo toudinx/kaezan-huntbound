@@ -86,7 +86,11 @@ export type HuntDiagnosticCode =
   | 'HUNT_UNKNOWN_BLUEPRINT'
   | 'HUNT_TRANSITION_INVALID'
   | 'HUNT_SPAWN_OUT_OF_REGION'
-  | 'HUNT_PALETTE_INDEX_INVALID';
+  | 'HUNT_PALETTE_INDEX_INVALID'
+  | 'HUNT_INTERVAL_NOT_DIVISIBLE'
+  | 'HUNT_UNKNOWN_ITEM'
+  | 'HUNT_UNKNOWN_CREATURE'
+  | 'HUNT_SPELL_NOT_ALLOWED';
 
 export interface HuntDiagnostic extends Omit<SimulationDiagnostic, 'code'> {
   readonly code: HuntDiagnosticCode;

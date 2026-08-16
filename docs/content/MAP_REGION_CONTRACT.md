@@ -331,9 +331,18 @@ outra criatura fora da seleção vira `HUNT_UNKNOWN_CREATURE`. `spawntime` conve
 `segundos * 1000 / 50` e um valor que não divide exatamente vira `HUNT_SPAWNTIME_NOT_DIVISIBLE`.
 Grupo que perde todos os slots é descartado, porque o schema exige pelo menos um.
 
-`maxLiveActors` é `min(64, total de slots)`. Os blueprints são mínimos porque PB-04 não tem combate:
-`player` é `inert` com `stepCooldownTicks` `2` e cada criatura é `wander` com `3`, os mesmos valores
-que o fixture PB-03 já exercitava. Derivar cooldown de estatística de criatura é trabalho de PB-05.
+`maxLiveActors` é `min(64, total de slots)`. A extração continua gravando blueprints
+combat-neutral — `player` `inert` com `stepCooldownTicks` `10` e cada criatura `wander`
+com `20` — porque a região **não é reextraída**. O combate é composto em
+`buildHuntScenario`: `stepCooldownTicks` sai da conversão Canary de `speed`
+(`speedA` `857.36`, `speedB` `261.29`, `speedC` `-4795.01`, `groundSpeed` `150`,
+`SERVER_BEAT` `50`) medida em `docs/content/PB-05-SELECTION.md`, o que produz
+`player` `11` e `rotworm` `21`; `attackCooldownTicks` é `intervalMs / 50` e um
+resto não nulo é `HUNT_INTERVAL_NOT_DIVISIBLE`, nunca arredondamento. Criatura com
+ataque vira `hunter`; criatura sem ataque permanece `wander`; o jogador permanece
+`inert`. Facções: jogador `0`, criaturas `1`. `aggroRadius` fica `0` porque o
+catálogo não importa `flags`/`targetDistance`. Regeneração da ficha não foi
+congelada, então entra `0`.
 `playerStart` é a célula caminhável mais próxima do centro do primeiro grupo de spawn, no andar
 desse grupo, com empate resolvido por `(y, x)`.
 

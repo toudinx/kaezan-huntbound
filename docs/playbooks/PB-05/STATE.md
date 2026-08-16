@@ -2,22 +2,23 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-05 concluída na branch
-`grok/pb-05-05-hunter-ai`; PB-05-06 implementada e integrada em `main`, mas
-bloqueada para aceite pelo QA browser de baseline.** O kernel opera em `schemaVersion` 4 /
-`rulesVersion` 3. `S6` decide `hunter` (manutenção, aquisição Chebyshev, passo
-guloso, golpe) e preserva o consumo de `ai` dos cenários sem `hunter`.
+**Estado geral:** execução em andamento. **PB-05-07 implementada** na branch
+`grok/pb-05-07-content-to-combat`. `buildHuntScenario` compõe combate a partir
+do catálogo. Os quatro artefatos gerados da hunt permaneceram byte-idênticos.
+O kernel opera em `schemaVersion` 4 / `rulesVersion` 3. B5 (hunt-budget) segue
+aberto.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** criaturas `hunter` agridem, perseguem e golpeiam em
-`S6`. Aquisição e perseguição não consomem aleatoriedade; sem alvo o hunter cai
-em `wander` com um `nextBelow(8)`. PB-05-06 rola loot em `S5` pelo stream
-`loot` e projeta a bolsa fora do kernel; o fast-forward foi aplicado, mas o
-`verify` pós-integração continua bloqueado pelo gate browser preexistente.
+**Atualização vigente:** `buildHuntScenario(hunt, character, registry, seed)`
+devolve `HuntScenarioBuild` com `scenario`, `itemKeys` e `abilityKeys`. Vida,
+dano, `attackCooldownTicks` e `stepCooldownTicks` saem da estatística pela
+conversão congelada em `PB-05-SELECTION.md`. As três spells viram habilidades
+com `minPower`/`maxPower` inteiros iguais aos congelados. Loot preserva chance
+e contagem com `itemIndex` estável.
 
-**Próxima etapa:** resolver o gate browser de baseline e concluir a verificação
-em `main`; só depois iniciar PB-05-07.
+**Próxima etapa:** PB-05-08 (fixture e gate de combate). B5 permanece aberto e
+não bloqueia a fixture.
 
 ## Tasks
 
@@ -29,7 +30,7 @@ em `main`; só depois iniciar PB-05-07.
 | PB-05-04 | done | `grok/pb-05-04-kernel-combat` | `188a61a` | kernel v4; journals golden byte-idênticos |
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
-| PB-05-07 | pending | `<agente>/pb05-07-content-to-combat` | — | `buildHuntScenario` com combate; quatro artefatos da hunt inalterados |
+| PB-05-07 | done | `grok/pb-05-07-content-to-combat` | este commit | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
 | PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
 | PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
@@ -38,9 +39,84 @@ em `main`; só depois iniciar PB-05-07.
 
 ## Última task concluída
 
-PB-05-05. Branch `grok/pb-05-05-hunter-ai` a partir de `main` (`188a61a`).
-Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-05-hunter`. Fast-forward para
-`main` autorizado pela task card.
+PB-05-07. Branch `grok/pb-05-07-content-to-combat` a partir de `main`
+(`5762fa4`). Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-07-content`.
+Fast-forward para `main` autorizado pela task card.
+
+## Handoff PB-05-07 — 2026-08-16
+
+**Status:** implementação concluída neste commit. Gates de código verdes;
+`verify` falhou só em B5 (`hunt-budget`), o mesmo bloqueio pré-existente.
+
+**Base:** `main` em `5762fa44a6a5e1e79be4af471d8ac023e1ec5d37`.
+
+**Branch/worktree:** `grok/pb-05-07-content-to-combat`; worktree irmã
+`C:\Kaezan\kaezan-huntbound-pb05-07-content`.
+
+**Modelo/effort:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+
+**Desvio de branch:** a task card pedia `codex/pb-05-07-content-to-combat`;
+a branch efetiva usa o prefixo `grok/` porque o executor é Grok. Worktree irmã
+no path pedido.
+
+**Desvio de escopo (correção necessária):** a task listava `apps/game` como
+fora de escopo, mas a nova assinatura de `buildHuntScenario` quebra
+`apps/game/src/main.ts` e `tests/e2e/support/huntSession.ts`. Os call sites
+foram atualizados. O `huntSession` da fixture PB-04 compara só geometria
+(floors, transitions, spawns, initialActors), não blueprints/abilities/loot —
+a composição de combate não pode invalidar o golden combat-neutral de PB-04.
+
+**Números derivados (ficha level 8, sword 10, attack 14, rotworm speed 58):**
+
+| Campo | Valor |
+|---|---:|
+| player `maxHealth` / `maxResource` | 185 / 185 |
+| player `stepCooldownTicks` / `attackCooldownTicks` | 11 / 40 |
+| player melee `attackMinDamage` / `attackMaxDamage` | 1 / 13 |
+| rotworm `maxHealth` | 65 |
+| rotworm `stepCooldownTicks` / `attackCooldownTicks` | 21 / 40 |
+| rotworm melee | 0–40 |
+| berserk `minPower`/`maxPower` | 14 / 41 |
+| brutal-strike `minPower`/`maxPower` | 10 / 20 |
+| wound-cleansing `minPower`/`maxPower` | 26 / 52 |
+
+**Decisões descobertas (documentadas em `MAP_REGION_CONTRACT.md`):**
+
+| Decisão | Valor |
+|---|---|
+| Facção do jogador | `0` |
+| Facção das criaturas | `1` |
+| `aggroRadius` | `0` — o catálogo não importa `flags`/`targetDistance`; inventar um raio seria número mágico novo |
+| Regeneração da ficha | `0` — a ficha congelada não declara ticks/amount |
+| `rangeTiles` de spell `target` | `1` (alcance Chebyshev de golpe já congelado na spec) |
+
+**Artefatos da hunt (byte-idênticos, `hunt:extract:sidecar` exit 0):**
+
+| Arquivo | SHA-256 |
+|---|---|
+| region | `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5` |
+| transitions | `8c59f8ef4f9a5f9842a06712a4d1bbfe2dbf4a6ef578ecdd1be55bf6e7bc51e7` |
+| spawns | `141be183e4603a72f7ee594a7fe694a20265336bf05f1f2eadf3e18116c58520` |
+| hunt | `a11941b2640286f95fe279dd6b451388ff592223c8dee598b17f08dfb15e8eb6` |
+
+`git status --porcelain` em `packages/content/src/generated/hunts` ficou vazio.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `corepack pnpm exec biome check .` | `0` | 393 arquivos |
+| `corepack pnpm --filter @huntbound/content test` | `0` | 77 testes |
+| `corepack pnpm typecheck` | `0` | todos os 7 projetos |
+| `corepack pnpm architecture:check` | `0` | fronteiras verdes |
+| `corepack pnpm content:check` | `0` | sidecars e catálogo verdes |
+| `corepack pnpm hunt:check` | `0` | PB-04 byte-idêntico |
+| `corepack pnpm hunt:extract:sidecar` | `0` | hashes acima |
+| `corepack pnpm verify` | `1` | B5 `hunt-budget`: `overBudget.length` `3` (teto `< 2`), tarefas `70,57,65` ms; `actionableMs` `4332.3`; 28/29 e2e passaram |
+
+Sem retry, skip ou golden reescrito. B5 é pré-existente; esta task não toca Playwright nem orçamento de boot.
+
+**Próxima task elegível:** PB-05-08.
 
 ## Handoff PB-05-06 — 2026-08-16
 
@@ -98,8 +174,7 @@ skip, timeout aumentado ou ajuste de golden.
 
 ## Próxima task elegível
 
-PB-05-06 está integrada, mas permanece bloqueada pelo gate browser acima.
-PB-05-07 só fica elegível após o `verify` verde.
+PB-05-08. B5 permanece aberto e não bloqueia a fixture de combate.
 
 ## Verificações executadas
 
@@ -317,6 +392,16 @@ Pós-integração em `C:\Kaezan\kaezan-huntbound` (`main` = `2933012`), 2026-08-
 Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
 remeados aqui.
 
+## Decisões fechadas em PB-05-07
+
+| Decisão | Onde está documentada |
+|---|---|
+| Facção jogador `0`, criaturas `1` | `MAP_REGION_CONTRACT.md`; `combatConversion.ts` |
+| `aggroRadius` `0` até o catálogo importar alcance de agressão | `MAP_REGION_CONTRACT.md` |
+| Regeneração `0` porque a ficha não congela ticks/amount | `MAP_REGION_CONTRACT.md`; `PB-05-SELECTION.md` |
+| `buildHuntScenario` devolve `HuntScenarioBuild` com `itemKeys`/`abilityKeys` | `packages/content/src/hunts/buildHuntScenario.ts` |
+| Fixture PB-04 compara geometria, não combate composto | `tests/e2e/support/huntSession.ts` |
+
 ## Decisões fechadas em PB-05-05
 
 | Decisão | Onde está documentada |
@@ -384,6 +469,14 @@ remeados aqui.
 | `PRAGMA foreign_keys` no-op dentro de transação; o runner desliga FK ao redor do apply | `tools/content-catalog/migrations/MigrationRunner.ts` |
 
 ## Modelo e effort
+
+- **Executor PB-05-07:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `hunt-content-pipeline`,
+  `test-driven-development`, `verification-before-completion`.
+- **Validador:** ainda não; a auditoria do playbook é PB-05-12.
+- **Desvio de branch:** a task card pedia `codex/pb-05-07-content-to-combat`; a
+  branch efetiva é `grok/pb-05-07-content-to-combat` porque o executor é Grok.
+  Worktree irmã no path pedido.
 
 - **Executor PB-05-05:** Grok 4.6 no Cursor, effort alto (`xhigh`).
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`,

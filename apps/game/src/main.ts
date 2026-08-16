@@ -7,11 +7,15 @@ import {
   type ResolvedAsset,
 } from '../../../packages/assets/src/index.ts';
 import huntDefinitionJson from '../../../packages/content/src/generated/hunts/venore-rotworm-cave/hunt.json?raw';
+import catalogBundleJson from '../../../packages/content/src/generated/pb-01-contract-coverage.json?raw';
 import {
   buildHuntScenario,
+  createContentRegistry,
   loadHuntDefinition,
-} from '../../../packages/content/src/hunts/index.ts';
+  projectRuntimeBundle,
+} from '../../../packages/content/src/index.ts';
 import {
+  type CatalogContentBundle,
   createSeed,
   type HuntDefinition,
 } from '../../../packages/contracts/src/index.ts';
@@ -182,8 +186,28 @@ export async function bootstrapApp(
     return;
   }
 
+  const runtime = projectRuntimeBundle(
+    JSON.parse(catalogBundleJson) as CatalogContentBundle,
+  );
+  const character = runtime.characters[0];
+  if (character === undefined) {
+    inputMap.detach();
+    setAssetReadiness(shellRoot, false, 0);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(
+        new Error('Generated catalog is missing the hunt character.'),
+      ),
+    });
+    return;
+  }
+
   const scenarioResult = buildHuntScenario(
     hunt,
+    character,
+    createContentRegistry(runtime),
     createSeed('1a2b3c4d5e6f7a8b'),
   );
   if (!scenarioResult.ok) {
@@ -204,7 +228,7 @@ export async function bootstrapApp(
   }
 
   const kernel = createSimulationKernel(
-    scenarioResult.value,
+    scenarioResult.value.scenario,
     createSeed('1a2b3c4d5e6f7a8b'),
   );
   const simulationHost = createSimulationHost(kernel, 0);
