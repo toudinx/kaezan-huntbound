@@ -29,7 +29,7 @@ paralela após PB-05-01 e não depende da fixture.
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
 | PB-05-08 | blocked (B6) | `grok/pb-05-08-combat-fixture` | — | sessão real cobre 10/12 eventos; faltam `target-changed` (aggro 0) e respawn de assento (1800 ticks > 900) |
-| PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
+| PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
 | PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
@@ -113,6 +113,86 @@ tocados.
 
 **Próxima ação:** devolver B6. PB-05-09 pode seguir em paralelo (depende só
 de PB-05-01). Não retomar PB-05-08 sem a decisão.
+
+## Handoff PB-05-09 — 2026-08-16
+
+**Status:** implementação concluída no commit `02b8c4a`; a entrega foi
+validada nos gates de código e assets. O `verify` não fechou por B5
+(`hunt-budget`), já aberto antes desta task e fora do escopo permitido.
+
+**Base:** `main` em `cda9c4849342dc9131cd5ee8b46ac226d37a68e1`.
+
+**Branch/worktree:** `codex/pb-05-09-combat-assets`; worktree irmã
+`C:\Kaezan\kaezan-huntbound-pb05-09-assets`.
+
+**Modelo/effort:** GPT-5 Codex; effort interno não é exposto pelo runtime.
+Revisão independente executada por subagente em modelo diferente, sem
+alterações no workspace.
+
+**Chaves acrescentadas ao pack `pb-04-venore-rotworm-cave`:**
+
+| Stable key | Identidade de origem |
+|---|---|
+| `effect:tibia:draw-blood` | `effectId:1` (`CONST_ME_DRAWBLOOD`) |
+| `item:tibia:small-splash` | `clientId:2889` (`ITEM_SMALLSPLASH`) |
+| `effect:tibia:hit-area` | `effectId:10` (`CONST_ME_HITAREA`) |
+| `effect:tibia:magic-blue` | `effectId:13` (`CONST_ME_MAGIC_BLUE`) |
+| `missile:tibia:weapon-type` | `missileId:254` (`CONST_ANI_WEAPONTYPE`) |
+| `item:tibia:dead-rotworm` | `clientId:5967` (`dead rotworm`) |
+
+O profile `test` usa PNGs sintéticos 1×1 de 68 bytes para as seis chaves.
+O índice `0` da palette continua filtrado antes da contagem.
+
+**Orçamento:**
+
+| Medição | Entradas | Bytes de mídia do pack |
+|---|---:|---:|
+| Antes | 134 | 9112 |
+| Depois | 140 | 9520 |
+| Folga contra 512 / 6291456 | 372 | 6291936 |
+
+`checkHuntPack` confirmou `entries: 140`, `bytes: 9520` e a região
+`a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5`.
+
+**Profiles:**
+
+- `test`: resolve as seis chaves; `assets:check` passou duas vezes seguidas,
+  com o mesmo pack `c1b84127206e0321a61dba4cddb9f59c199365afd9fca5a9f0d24f5fe2c1e3ad`.
+- `product`: o pack sintético permitido passa; o empacotamento de seleção
+  `cipsoft-personal` falhou com `ASSET_PROFILE_FORBIDDEN`; a validação de
+  runtime falhou com `ASSET_PROFILE_FORBIDDEN` e `ASSET_LICENSE_FORBIDDEN`.
+- `personal`: a origem externa não possui `effectId:1`, `effectId:10`,
+  `effectId:13`, `missileId:254`, `clientId:2889` nem `clientId:5967`.
+  `assets:pb04:personal:check` e a geração pessoal retornaram exit `1`, sem
+  placeholder, sem mídia pessoal e sem alterar seleção ou lock. A seleção
+  declarativa de 140 entradas foi atualizada pelo CLI com `--selection-only`;
+  o `personal-source-lock.json` permanece com os 134 arquivos disponíveis.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `corepack pnpm --filter @huntbound/assets test` | `0` | 46 testes |
+| `corepack pnpm exec vitest run --config tools/asset-packer/vitest.config.ts` | `0` | 49 testes |
+| `corepack pnpm exec biome check .` | `0` | 394 arquivos |
+| `corepack pnpm format:check` | `0` | formatação válida |
+| `corepack pnpm typecheck` | `0` | todos os projetos |
+| `corepack pnpm test` | `0` | workspace verde |
+| `corepack pnpm assets:check` | `0` | primeira execução |
+| `corepack pnpm assets:check` | `0` | segunda execução idêntica |
+| `corepack pnpm architecture:check` | `0` | fronteiras verdes |
+| `corepack pnpm build` | `0` | build de produção |
+| `corepack pnpm content:check` | `0` | conteúdo e sidecars verdes |
+| `git diff --check` | `0` | sem whitespace inválido |
+| `corepack pnpm verify` | `124` | timeout em 244 s durante QA browser |
+
+Com build fresco, a reprodução direta de `tests/e2e/hunt-budget.spec.ts`
+retornou exit `1`: `actionableMs` `4995.7` (dentro do teto), mas `77`
+long tasks acima do orçamento, em vez de `<2`. Nenhum arquivo de
+`apps/game`, Playwright ou performance foi alterado para mascarar B5.
+
+**Próxima task elegível:** nenhuma enquanto PB-05-08 permanecer bloqueada em
+B6. Após resolver B6 e o gate B5, PB-05-10 será a próxima task elegível.
 
 ## Handoff PB-05-07 — 2026-08-16
 
