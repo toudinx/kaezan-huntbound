@@ -116,9 +116,12 @@ de PB-05-01). Não retomar PB-05-08 sem a decisão.
 
 ## Handoff PB-05-09 — 2026-08-16
 
-**Status:** implementação concluída no commit `02b8c4a`; a entrega foi
-validada nos gates de código e assets. O `verify` não fechou por B5
-(`hunt-budget`), já aberto antes desta task e fora do escopo permitido.
+**Status:** implementação concluída no commit `02b8c4a` e integrada em
+`ba308e3`; a entrega foi validada nos gates de código e assets. O `verify`
+não fechou: a execução na worktree expirou durante o QA browser por B5
+(`hunt-budget`), já aberto antes desta task, e a execução pós-integração
+parou antes do browser por `EPERM` no staging de assets em Windows. Ambos
+estão fora do escopo permitido.
 
 **Base:** `main` em `cda9c4849342dc9131cd5ee8b46ac226d37a68e1`.
 
@@ -184,12 +187,17 @@ O índice `0` da palette continua filtrado antes da contagem.
 | `corepack pnpm build` | `0` | build de produção |
 | `corepack pnpm content:check` | `0` | conteúdo e sidecars verdes |
 | `git diff --check` | `0` | sem whitespace inválido |
-| `corepack pnpm verify` | `124` | timeout em 244 s durante QA browser |
+| `corepack pnpm verify` na worktree | `124` | timeout em 244 s durante QA browser |
+| `corepack pnpm verify` pós-integração | `1` | `EPERM` ao renomear staging para `apps/game/public/assets/test`; browser não iniciou |
 
 Com build fresco, a reprodução direta de `tests/e2e/hunt-budget.spec.ts`
 retornou exit `1`: `actionableMs` `4995.7` (dentro do teto), mas `77`
 long tasks acima do orçamento, em vez de `<2`. Nenhum arquivo de
 `apps/game`, Playwright ou performance foi alterado para mascarar B5.
+
+Na falha pós-integração não havia processo `node` ativo nem diretório
+`.staging-*` remanescente, e a árvore rastreada permaneceu limpa. O problema
+é o lock/rename ambiental já registrado nos handoffs anteriores.
 
 **Próxima task elegível:** nenhuma enquanto PB-05-08 permanecer bloqueada em
 B6. Após resolver B6 e o gate B5, PB-05-10 será a próxima task elegível.
