@@ -26,12 +26,20 @@ const blueprintId = z
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     'Expected a lowercase kebab-case blueprint id',
   );
+const abilityId = z
+  .string()
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    'Expected a lowercase kebab-case ability id',
+  );
 
 const directionValues = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
 const commandTypeValues = [
   'actor/move-step',
   'actor/face',
   'actor/wait',
+  'actor/attack',
+  'actor/cast-ability',
   'scenario/spawn-actor',
   'scenario/despawn-actor',
 ] as const;
@@ -51,13 +59,23 @@ const diagnosticCodeValues = [
   'SIM_MOVE_ON_COOLDOWN',
   'SIM_SPAWN_TILE_UNAVAILABLE',
   'SIM_TRANSITION_CHAINED',
+  'SIM_TARGET_UNKNOWN',
+  'SIM_TARGET_SAME_FACTION',
+  'SIM_ATTACK_OUT_OF_RANGE',
+  'SIM_ATTACK_ON_COOLDOWN',
+  'SIM_ABILITY_UNKNOWN',
+  'SIM_ABILITY_ON_COOLDOWN',
+  'SIM_ABILITY_NO_RESOURCE',
+  'SIM_ABILITY_OUT_OF_RANGE',
   'SIM_STATE_NOT_INTEGER',
   'SIM_STATE_NOT_SERIALIZABLE',
   'SIM_REPLAY_DIVERGED',
 ] as const;
 
 export const DirectionSchema = z.enum(directionValues);
-export const ActorBehaviorSchema = z.enum(['inert', 'wander']);
+export const ActorBehaviorSchema = z.enum(['inert', 'wander', 'hunter']);
+export const AbilityEffectSchema = z.enum(['damage', 'heal']);
+export const AbilityShapeSchema = z.enum(['self', 'target', 'area']);
 export const CommandIssuerSchema = z.enum(['player', 'ai', 'scenario']);
 const moveBlockedReasonValues = [
   'bounds',
@@ -73,6 +91,7 @@ export const SpawnDeferralReasonSchema = z.enum([
   'no-free-cell',
   'cap-reached',
 ]);
+export const CombatCauseSchema = z.enum(['attack', 'ability']);
 export const SimulationCommandTypeSchema = z.enum(commandTypeValues);
 export const SimulationDiagnosticCodeSchema = z.enum(diagnosticCodeValues);
 
@@ -91,6 +110,118 @@ export const ActorBlueprintSchema = z
     blueprintId,
     stepCooldownTicks: nonNegativeInteger,
     behavior: ActorBehaviorSchema,
+    factionId: nonNegativeInteger,
+    maxHealth: nonNegativeInteger,
+    maxResource: nonNegativeInteger,
+    healthRegenTicks: nonNegativeInteger,
+    healthRegenAmount: nonNegativeInteger,
+    resourceRegenTicks: nonNegativeInteger,
+    resourceRegenAmount: nonNegativeInteger,
+    attackCooldownTicks: nonNegativeInteger,
+    attackMinDamage: nonNegativeInteger,
+    attackMaxDamage: nonNegativeInteger,
+    aggroRadius: nonNegativeInteger,
+    lootTableIndex: nonNegativeInteger.nullable(),
+    abilityIndices: z.array(nonNegativeInteger).readonly(),
+  })
+  .strict()
+  .superRefine((blueprint, context) => {
+    if (blueprint.attackMinDamage > blueprint.attackMaxDamage) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['attackMinDamage'],
+        'attackMinDamage must not exceed attackMaxDamage',
+      );
+    }
+
+    for (let index = 1; index < blueprint.abilityIndices.length; index += 1) {
+      const previous = blueprint.abilityIndices[index - 1];
+      const current = blueprint.abilityIndices[index];
+      if (previous === undefined || current === undefined) {
+        continue;
+      }
+      if (previous === current) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['abilityIndices', index],
+          'abilityIndices must not contain duplicates',
+        );
+      } else if (previous > current) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['abilityIndices', index],
+          'abilityIndices must be strictly ordered',
+        );
+      }
+    }
+  });
+
+export const AbilityDefinitionSchema = z
+  .object({
+    abilityId,
+    effect: AbilityEffectSchema,
+    shape: AbilityShapeSchema,
+    radius: nonNegativeInteger,
+    rangeTiles: nonNegativeInteger,
+    resourceCost: nonNegativeInteger,
+    cooldownTicks: nonNegativeInteger,
+    groupCooldownTicks: nonNegativeInteger,
+    minPower: nonNegativeInteger,
+    maxPower: nonNegativeInteger,
+  })
+  .strict()
+  .superRefine((ability, context) => {
+    if (ability.shape !== 'area' && ability.radius !== 0) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['radius'],
+        'radius must be 0 unless shape is area',
+      );
+    }
+    if (ability.shape !== 'target' && ability.rangeTiles !== 0) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['rangeTiles'],
+        'rangeTiles must be 0 unless shape is target',
+      );
+    }
+    if (ability.minPower > ability.maxPower) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['minPower'],
+        'minPower must not exceed maxPower',
+      );
+    }
+  });
+
+const LootEntryDefinitionSchema = z
+  .object({
+    itemIndex: nonNegativeInteger,
+    chancePerHundredThousand: safeInteger.min(1).max(100_000),
+    minCount: positiveInteger,
+    maxCount: positiveInteger,
+  })
+  .strict()
+  .superRefine((entry, context) => {
+    if (entry.minCount > entry.maxCount) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        ['minCount'],
+        'minCount must not exceed maxCount',
+      );
+    }
+  });
+
+export const LootTableDefinitionSchema = z
+  .object({
+    entries: z.array(LootEntryDefinitionSchema).readonly(),
   })
   .strict();
 
@@ -182,6 +313,8 @@ export const KernelScenarioSchema = z
     transitions: z.array(ScenarioTransitionSchema).readonly(),
     spawnGroups: z.array(ScenarioSpawnGroupSchema).readonly(),
     maxLiveActors: positiveInteger,
+    abilities: z.array(AbilityDefinitionSchema).readonly(),
+    lootTables: z.array(LootTableDefinitionSchema).readonly(),
     blueprints: z.array(ActorBlueprintSchema).readonly(),
     initialActors: z.array(InitialActorSchema).readonly(),
   })
@@ -333,6 +466,42 @@ export const KernelScenarioSchema = z
         );
       }
       blueprintIds.add(blueprint.blueprintId);
+
+      if (
+        blueprint.lootTableIndex !== null &&
+        blueprint.lootTableIndex >= scenario.lootTables.length
+      ) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['blueprints', index, 'lootTableIndex'],
+          `lootTableIndex ${blueprint.lootTableIndex} is outside lootTables`,
+        );
+      }
+
+      blueprint.abilityIndices.forEach((abilityIndex, abilityPosition) => {
+        if (abilityIndex >= scenario.abilities.length) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            ['blueprints', index, 'abilityIndices', abilityPosition],
+            `Unknown ability index ${abilityIndex}`,
+          );
+        }
+      });
+    });
+
+    const abilityIds = new Set<string>();
+    scenario.abilities.forEach((ability, index) => {
+      if (abilityIds.has(ability.abilityId)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['abilities', index, 'abilityId'],
+          'abilityId must be unique',
+        );
+      }
+      abilityIds.add(ability.abilityId);
     });
 
     // The canonical spawn order is derived from `(z, y, x)` of the centre and
@@ -486,6 +655,23 @@ const ActorWaitCommandSchema = z
   })
   .strict();
 
+const ActorAttackCommandSchema = z
+  .object({
+    type: z.literal('actor/attack'),
+    entityId: EntityIdSchema,
+    targetEntityId: EntityIdSchema,
+  })
+  .strict();
+
+const ActorCastAbilityCommandSchema = z
+  .object({
+    type: z.literal('actor/cast-ability'),
+    entityId: EntityIdSchema,
+    abilityIndex: nonNegativeInteger,
+    targetEntityId: EntityIdSchema.nullable(),
+  })
+  .strict();
+
 const ScenarioSpawnActorCommandSchema = z
   .object({
     type: z.literal('scenario/spawn-actor'),
@@ -506,6 +692,8 @@ export const SimulationCommandSchema = z.discriminatedUnion('type', [
   ActorMoveStepCommandSchema,
   ActorFaceCommandSchema,
   ActorWaitCommandSchema,
+  ActorAttackCommandSchema,
+  ActorCastAbilityCommandSchema,
   ScenarioSpawnActorCommandSchema,
   ScenarioDespawnActorCommandSchema,
 ]);
@@ -606,6 +794,71 @@ export const SpawnCappedEventPayloadSchema = z
   })
   .strict();
 
+export const CombatAttackedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/attacked'),
+    entityId: EntityIdSchema,
+    targetEntityId: EntityIdSchema,
+  })
+  .strict();
+
+export const CombatDamagedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/damaged'),
+    entityId: EntityIdSchema,
+    sourceEntityId: EntityIdSchema,
+    amount: nonNegativeInteger,
+    remainingHealth: nonNegativeInteger,
+    cause: CombatCauseSchema,
+  })
+  .strict();
+
+export const CombatHealedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/healed'),
+    entityId: EntityIdSchema,
+    sourceEntityId: EntityIdSchema,
+    amount: nonNegativeInteger,
+    health: nonNegativeInteger,
+  })
+  .strict();
+
+export const AbilityCastEventPayloadSchema = z
+  .object({
+    type: z.literal('ability/cast'),
+    entityId: EntityIdSchema,
+    abilityIndex: nonNegativeInteger,
+    targetEntityId: EntityIdSchema.nullable(),
+  })
+  .strict();
+
+export const CombatTargetChangedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/target-changed'),
+    entityId: EntityIdSchema,
+    targetEntityId: EntityIdSchema.nullable(),
+  })
+  .strict();
+
+export const ActorDiedEventPayloadSchema = z
+  .object({
+    type: z.literal('actor/died'),
+    entityId: EntityIdSchema,
+    killerEntityId: EntityIdSchema.nullable(),
+    position: GridPositionSchema,
+  })
+  .strict();
+
+export const LootGrantedEventPayloadSchema = z
+  .object({
+    type: z.literal('loot/granted'),
+    entityId: EntityIdSchema,
+    sourceEntityId: EntityIdSchema,
+    itemIndex: nonNegativeInteger,
+    count: positiveInteger,
+  })
+  .strict();
+
 export const ActorFacedEventPayloadSchema = z
   .object({
     type: z.literal('actor/faced'),
@@ -639,6 +892,13 @@ export const SimulationEventPayloadSchema = z.discriminatedUnion('type', [
   ActorTransitionedEventPayloadSchema,
   SpawnDeferredEventPayloadSchema,
   SpawnCappedEventPayloadSchema,
+  CombatAttackedEventPayloadSchema,
+  CombatDamagedEventPayloadSchema,
+  CombatHealedEventPayloadSchema,
+  AbilityCastEventPayloadSchema,
+  CombatTargetChangedEventPayloadSchema,
+  ActorDiedEventPayloadSchema,
+  LootGrantedEventPayloadSchema,
   CommandRejectedEventPayloadSchema,
 ]);
 
@@ -669,6 +929,23 @@ export const ActorStateSchema = z
     facing: DirectionSchema,
     readyAtTick: nonNegativeInteger,
     transitionGuard: GridPositionSchema.nullable(),
+    health: nonNegativeInteger,
+    resource: nonNegativeInteger,
+    targetEntityId: EntityIdSchema.nullable(),
+    attackReadyAtTick: nonNegativeInteger,
+    groupReadyAtTick: nonNegativeInteger,
+    abilityCooldowns: z
+      .array(
+        z
+          .object({
+            abilityIndex: nonNegativeInteger,
+            readyAtTick: nonNegativeInteger,
+          })
+          .strict(),
+      )
+      .readonly(),
+    nextHealthRegenTick: nonNegativeInteger,
+    nextResourceRegenTick: nonNegativeInteger,
   })
   .strict();
 
@@ -681,13 +958,28 @@ export const SpawnSlotStateSchema = z
   })
   .strict();
 
-export const PendingIntentStateSchema = z
+const PendingMoveIntentStateSchema = z
   .object({
+    kind: z.literal('move'),
     tick: TickIndexSchema,
     entityId: EntityIdSchema,
     direction: DirectionSchema,
   })
   .strict();
+
+const PendingAttackIntentStateSchema = z
+  .object({
+    kind: z.literal('attack'),
+    tick: TickIndexSchema,
+    entityId: EntityIdSchema,
+    targetEntityId: EntityIdSchema,
+  })
+  .strict();
+
+export const PendingIntentStateSchema = z.discriminatedUnion('kind', [
+  PendingMoveIntentStateSchema,
+  PendingAttackIntentStateSchema,
+]);
 
 function comparePendingIntents(
   left: { readonly tick: number; readonly entityId: number },
@@ -795,6 +1087,63 @@ export const SimulationSnapshotSchema = z
       }
     }
 
+    const actorCells = new Set<string>();
+    const liveEntityIds = new Set<number>();
+    snapshot.actors.forEach((actor, index) => {
+      const key = positionKey(actor.position);
+      if (actorCells.has(key)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['actors', index, 'position'],
+          'actors cannot share a cell',
+        );
+      }
+      actorCells.add(key);
+      liveEntityIds.add(actor.entityId);
+
+      for (
+        let cooldownIndex = 1;
+        cooldownIndex < actor.abilityCooldowns.length;
+        cooldownIndex += 1
+      ) {
+        const previous = actor.abilityCooldowns[cooldownIndex - 1];
+        const current = actor.abilityCooldowns[cooldownIndex];
+        if (previous === undefined || current === undefined) {
+          continue;
+        }
+        if (previous.abilityIndex === current.abilityIndex) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            ['actors', index, 'abilityCooldowns', cooldownIndex],
+            'abilityCooldowns must not repeat an abilityIndex',
+          );
+        } else if (previous.abilityIndex > current.abilityIndex) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            ['actors', index, 'abilityCooldowns', cooldownIndex],
+            'abilityCooldowns must be strictly ordered by abilityIndex',
+          );
+        }
+      }
+    });
+
+    snapshot.actors.forEach((actor, index) => {
+      if (
+        actor.targetEntityId !== null &&
+        !liveEntityIds.has(actor.targetEntityId)
+      ) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['actors', index, 'targetEntityId'],
+          `targetEntityId ${actor.targetEntityId} does not name a live actor`,
+        );
+      }
+    });
+
     snapshot.pendingIntents.forEach((intent, index) => {
       if (intent.tick < snapshot.tick) {
         addSimulationIssue(
@@ -802,6 +1151,18 @@ export const SimulationSnapshotSchema = z
           'SIM_TICK_IN_PAST',
           ['pendingIntents', index, 'tick'],
           'pendingIntents cannot be scheduled before the snapshot tick',
+        );
+      }
+
+      if (
+        intent.kind === 'attack' &&
+        !liveEntityIds.has(intent.targetEntityId)
+      ) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['pendingIntents', index, 'targetEntityId'],
+          `Attack intent target ${intent.targetEntityId} is not in the snapshot`,
         );
       }
 
@@ -828,22 +1189,6 @@ export const SimulationSnapshotSchema = z
           'pendingIntents must be strictly ordered by (tick, entityId)',
         );
       }
-    });
-
-    const actorCells = new Set<string>();
-    const liveEntityIds = new Set<number>();
-    snapshot.actors.forEach((actor, index) => {
-      const key = positionKey(actor.position);
-      if (actorCells.has(key)) {
-        addSimulationIssue(
-          context,
-          'SIM_SCHEMA_INVALID',
-          ['actors', index, 'position'],
-          'actors cannot share a cell',
-        );
-      }
-      actorCells.add(key);
-      liveEntityIds.add(actor.entityId);
     });
 
     snapshot.spawnSlots.forEach((slot, index) => {
@@ -935,8 +1280,26 @@ export function commandPriority(type: SimulationCommandType): number {
       return 1;
     case 'actor/move-step':
       return 2;
-    case 'actor/wait':
+    case 'actor/attack':
       return 3;
+    case 'actor/cast-ability':
+      return 4;
+    case 'actor/wait':
+      return 5;
+  }
+}
+
+export function isConcurrentActorAction(type: SimulationCommandType): boolean {
+  switch (type) {
+    case 'actor/move-step':
+    case 'actor/attack':
+    case 'actor/cast-ability':
+    case 'actor/wait':
+      return true;
+    case 'actor/face':
+    case 'scenario/spawn-actor':
+    case 'scenario/despawn-actor':
+      return false;
   }
 }
 

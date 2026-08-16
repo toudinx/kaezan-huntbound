@@ -31,6 +31,44 @@ function at<T>(values: readonly T[], index: number): T {
   return value;
 }
 
+function combatNeutral(
+  blueprintId: string,
+  stepCooldownTicks: number,
+  behavior: 'inert' | 'wander' | 'hunter',
+) {
+  return {
+    blueprintId,
+    stepCooldownTicks,
+    behavior,
+    factionId: 0,
+    maxHealth: 1,
+    maxResource: 0,
+    healthRegenTicks: 0,
+    healthRegenAmount: 0,
+    resourceRegenTicks: 0,
+    resourceRegenAmount: 0,
+    attackCooldownTicks: 0,
+    attackMinDamage: 0,
+    attackMaxDamage: 0,
+    aggroRadius: 0,
+    lootTableIndex: null as number | null,
+    abilityIndices: [] as number[],
+  };
+}
+
+function combatState() {
+  return {
+    health: 1,
+    resource: 0,
+    targetEntityId: null as number | null,
+    attackReadyAtTick: 0,
+    groupReadyAtTick: 0,
+    abilityCooldowns: [] as { abilityIndex: number; readyAtTick: number }[],
+    nextHealthRegenTick: 0,
+    nextResourceRegenTick: 0,
+  };
+}
+
 function createScenario() {
   return {
     schemaVersion: SIMULATION_SCHEMA_VERSION,
@@ -50,9 +88,11 @@ function createScenario() {
     transitions: [] as { from: unknown; to: unknown }[],
     spawnGroups: [] as unknown[],
     maxLiveActors: 64,
+    abilities: [] as unknown[],
+    lootTables: [] as unknown[],
     blueprints: [
-      { blueprintId: 'walker', stepCooldownTicks: 2, behavior: 'inert' },
-      { blueprintId: 'wanderer', stepCooldownTicks: 3, behavior: 'wander' },
+      combatNeutral('walker', 2, 'inert'),
+      combatNeutral('wanderer', 3, 'wander'),
     ],
     initialActors: [
       {
@@ -135,6 +175,7 @@ function createSnapshot() {
         facing: 'e',
         readyAtTick: 0,
         transitionGuard: null,
+        ...combatState(),
       },
       {
         entityId: 2,
@@ -143,6 +184,7 @@ function createSnapshot() {
         facing: 'nw',
         readyAtTick: 0,
         transitionGuard: null,
+        ...combatState(),
       },
     ],
     spawnSlots: [] as unknown[],
@@ -155,8 +197,8 @@ function createSnapshot() {
       },
     ],
     pendingIntents: [
-      { tick: 0, entityId: 2, direction: 'nw' },
-      { tick: 1, entityId: 1, direction: 'e' },
+      { kind: 'move', tick: 0, entityId: 2, direction: 'nw' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'e' },
     ],
   };
 }
@@ -322,7 +364,9 @@ describe('simulation schemas', () => {
     expect(commandPriority('scenario/despawn-actor')).toBe(0);
     expect(commandPriority('actor/face')).toBe(1);
     expect(commandPriority('actor/move-step')).toBe(2);
-    expect(commandPriority('actor/wait')).toBe(3);
+    expect(commandPriority('actor/attack')).toBe(3);
+    expect(commandPriority('actor/cast-ability')).toBe(4);
+    expect(commandPriority('actor/wait')).toBe(5);
   });
 
   it('requires snapshot collections to use their canonical order', () => {
@@ -345,22 +389,22 @@ describe('simulation schemas', () => {
   it('requires pendingIntents to be ordered by (tick, entityId) without duplicates', () => {
     const unordered = createSnapshot();
     unordered.pendingIntents = [
-      { tick: 1, entityId: 1, direction: 'e' },
-      { tick: 0, entityId: 2, direction: 'nw' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'e' },
+      { kind: 'move', tick: 0, entityId: 2, direction: 'nw' },
     ];
     expectSchemaInvalid(validateSimulationSnapshot(unordered));
 
     const sameTickUnordered = createSnapshot();
     sameTickUnordered.pendingIntents = [
-      { tick: 1, entityId: 2, direction: 'nw' },
-      { tick: 1, entityId: 1, direction: 'e' },
+      { kind: 'move', tick: 1, entityId: 2, direction: 'nw' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'e' },
     ];
     expectSchemaInvalid(validateSimulationSnapshot(sameTickUnordered));
 
     const duplicated = createSnapshot();
     duplicated.pendingIntents = [
-      { tick: 1, entityId: 1, direction: 'e' },
-      { tick: 1, entityId: 1, direction: 'nw' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'e' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'nw' },
     ];
     const duplicateResult = validateSimulationSnapshot(duplicated);
     expectSchemaInvalid(duplicateResult);
@@ -376,27 +420,29 @@ describe('simulation schemas', () => {
   it('rejects a pending intent scheduled before the snapshot tick', () => {
     const past = createSnapshot();
     past.tick = 4;
-    past.pendingIntents = [{ tick: 3, entityId: 1, direction: 'e' }];
+    past.pendingIntents = [
+      { kind: 'move', tick: 3, entityId: 1, direction: 'e' },
+    ];
     expectSchemaInvalid(validateSimulationSnapshot(past), 'SIM_TICK_IN_PAST');
   });
 
   it('rejects a pending intent with an unknown direction or a decimal tick', () => {
     const unknownDirection = createSnapshot();
     unknownDirection.pendingIntents = [
-      { tick: 1, entityId: 1, direction: 'north' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'north' },
     ];
     expectSchemaInvalid(validateSimulationSnapshot(unknownDirection));
 
     const decimalTick = createSnapshot();
-    decimalTick.pendingIntents = [{ tick: 1.5, entityId: 1, direction: 'e' }];
+    decimalTick.pendingIntents = [
+      { kind: 'move', tick: 1.5, entityId: 1, direction: 'e' },
+    ];
     expectSchemaInvalid(validateSimulationSnapshot(decimalTick));
   });
 
-  it('pins the schema version at 3 and the rules version at 2', () => {
-    // Floors, transitions and the spawn system changed both the format and
-    // the kernel semantics, so both numbers moved.
-    expect(SIMULATION_SCHEMA_VERSION).toBe(3);
-    expect(SIMULATION_RULES_VERSION).toBe(2);
+  it('pins the schema version at 4 and the rules version at 3', () => {
+    expect(SIMULATION_SCHEMA_VERSION).toBe(4);
+    expect(SIMULATION_RULES_VERSION).toBe(3);
   });
 
   it('rejects non-increasing command sequences and decreasing ticks in logs', () => {

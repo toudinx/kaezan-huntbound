@@ -28,6 +28,44 @@ function messages(
   return result.ok ? [] : result.diagnostics.map((item) => item.message);
 }
 
+function combatNeutral(
+  blueprintId: string,
+  stepCooldownTicks: number,
+  behavior: 'inert' | 'wander',
+) {
+  return {
+    blueprintId,
+    stepCooldownTicks,
+    behavior,
+    factionId: 0,
+    maxHealth: 1,
+    maxResource: 0,
+    healthRegenTicks: 0,
+    healthRegenAmount: 0,
+    resourceRegenTicks: 0,
+    resourceRegenAmount: 0,
+    attackCooldownTicks: 0,
+    attackMinDamage: 0,
+    attackMaxDamage: 0,
+    aggroRadius: 0,
+    lootTableIndex: null as number | null,
+    abilityIndices: [] as number[],
+  };
+}
+
+function combatState() {
+  return {
+    health: 1,
+    resource: 0,
+    targetEntityId: null as number | null,
+    attackReadyAtTick: 0,
+    groupReadyAtTick: 0,
+    abilityCooldowns: [] as { abilityIndex: number; readyAtTick: number }[],
+    nextHealthRegenTick: 0,
+    nextResourceRegenTick: 0,
+  };
+}
+
 /**
  * A two-floor scenario: `z = 7` on top of `z = 8`, one transition down and one
  * spawn group. Every v3 rule under test mutates a copy of this document.
@@ -58,9 +96,11 @@ function createScenario() {
       },
     ],
     maxLiveActors: 8,
+    abilities: [] as unknown[],
+    lootTables: [] as unknown[],
     blueprints: [
-      { blueprintId: 'walker', stepCooldownTicks: 2, behavior: 'inert' },
-      { blueprintId: 'wanderer', stepCooldownTicks: 3, behavior: 'wander' },
+      combatNeutral('walker', 2, 'inert'),
+      combatNeutral('wanderer', 3, 'wander'),
     ],
     initialActors: [
       { blueprintId: 'walker', position: { x: 0, y: 0, z: 7 }, facing: 'e' },
@@ -93,6 +133,7 @@ function createSnapshot() {
         facing: 'e',
         readyAtTick: 0,
         transitionGuard: null as { x: number; y: number; z: number } | null,
+        ...combatState(),
       },
       {
         entityId: 2,
@@ -101,6 +142,7 @@ function createSnapshot() {
         facing: 'n',
         readyAtTick: 0,
         transitionGuard: { x: 1, y: 2, z: 8 },
+        ...combatState(),
       },
     ],
     pendingCommands: [],
@@ -421,8 +463,8 @@ describe('SimulationSnapshot v3', () => {
 });
 
 describe('frozen versions', () => {
-  it('pins the schema version at 3 and the rules version at 2', () => {
-    expect(SIMULATION_SCHEMA_VERSION).toBe(3);
-    expect(SIMULATION_RULES_VERSION).toBe(2);
+  it('pins the schema version at 4 and the rules version at 3', () => {
+    expect(SIMULATION_SCHEMA_VERSION).toBe(4);
+    expect(SIMULATION_RULES_VERSION).toBe(3);
   });
 });

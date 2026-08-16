@@ -2,18 +2,21 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-02 integrada em `main`** por
-`git merge --ff-only` (`624dac7..f1e8dab`). Follow-up na `main` corrige a migração 002
-em caches SQLite que já tinham a 001 populada. B5 continua aberto e não foi mascarado.
+**Estado geral:** execução em andamento. **PB-05-03 concluída na branch
+`grok/pb-05-03-combat-contracts`, não integrada em `main`.** Um `main` com contrato
+v4 e kernel v3 fica vermelho no gate agregado. A integração das duas branches
+pertence a PB-05-04. B5 continua aberto e não foi mascarado.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** catálogo curado com três spells e a ficha do Knight. Hash do
-bundle `b0b0a0b7a079ab12d89b323bce56f9c8e6d675dfd50967915c83c8ac8c77c770` (SHA-256 do
-arquivo real `packages/content/src/generated/pb-01-contract-coverage.json`). Fórmulas
-novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado.
+**Atualização vigente:** `@huntbound/contracts` publica `KernelScenario` v4
+(`SIMULATION_SCHEMA_VERSION` 4, `SIMULATION_RULES_VERSION` 3) com abilities,
+lootTables, blueprint de combate, `ActorState` estendido, intents discriminadas,
+comandos `actor/attack` e `actor/cast-ability`, eventos de combate/loot e os
+oito diagnósticos novos. Nenhuma linha de `packages/simulation` foi tocada.
 
-**Próxima etapa:** PB-05-03. Contratos de combate em `packages/contracts/src/simulation/**`.
+**Próxima etapa:** PB-05-04. Implementar combate no kernel sobre esta branch e
+integrar o conjunto em `main`.
 
 ## Tasks
 
@@ -21,8 +24,8 @@ novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado
 |---|---|---|---|---|
 | PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
 | PB-05-02 | done | `grok/pb-05-02-import-spells-character` | `f1e8dab` (ff `624dac7..f1e8dab`) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
-| PB-05-03 | pending | `<agente>/pb05-03-combat-contracts` | — | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md` |
-| PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos |
+| PB-05-03 | done (branch preservada) | `grok/pb-05-03-combat-contracts` | — (não integrada; ver handoff) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
+| PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos; **integra esta branch + a de 04** |
 | PB-05-05 | pending | `<agente>/pb05-05-hunter-ai` | — | comportamento `hunter` com varredura de retomada verde |
 | PB-05-06 | pending | `<agente>/pb05-06-loot-autoloot` | — | `loot/granted` determinístico + projeção da bolsa fora do kernel |
 | PB-05-07 | pending | `<agente>/pb05-07-content-to-combat` | — | `buildHuntScenario` com combate; quatro artefatos da hunt inalterados |
@@ -34,17 +37,35 @@ novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado
 
 ## Última task concluída
 
-PB-05-02. Fast-forward em `main` para `f1e8dab`. A ficha e as duas spells novas
-entraram no catálogo só por CLI. `skillAttack` não foi reutilizado. A migração 002
-quebrava `content:check` em caches SQLite que já tinham a 001 com dados; o runner
-agora desliga foreign keys **fora** da transação.
+PB-05-03. Branch `grok/pb-05-03-combat-contracts` **preservada**. Worktree irmã
+`C:\Kaezan\kaezan-huntbound-pb05-03-contracts` removida após o commit. **Não**
+houve fast-forward para `main`: o corte 03/04 deixa o gate agregado vermelho
+por composição (contrato v4, kernel v3), não por defeito mascarado.
 
 ## Próxima task elegível
 
-PB-05-03. Contratos de combate em `packages/contracts/src/simulation/**`. B5 não
-bloqueia.
+PB-05-04. Kernel de combate. Deve partir desta branch (ou integrá-la em
+sequência) e só então fast-forward `main` com o conjunto. B5 não bloqueia.
 
 ## Verificações executadas
+
+PB-05-03, worktree `C:\Kaezan\kaezan-huntbound-pb05-03-contracts`, 2026-08-16.
+Base `main` = `3482381`.
+
+| Comando | Exit |
+|---|---:|
+| `corepack pnpm exec biome check .` | `0` (385 files) |
+| `corepack pnpm --filter @huntbound/contracts test` | `0` (148 testes; 119 pré-existentes + 29 novos em `combatV4.test.ts`) |
+| `corepack pnpm --filter @huntbound/contracts typecheck` | `0` |
+| `corepack pnpm architecture:check` | `0` |
+| `git diff --check` | `0` |
+| `corepack pnpm typecheck` (workspace) | `1` em `@huntbound/content` (faltam `abilities`/`lootTables` e campos de combate no blueprint) |
+| `corepack pnpm --filter @huntbound/simulation typecheck` | `1` (`ActorState` incompleto, `PendingIntentState` sem `kind`) |
+
+`simulation:check`, `hunt:check` e `verify` **não** foram executados como gate
+de aceite: o kernel ainda fala v3. A vermelhidão do `typecheck` agregado é a
+mesma composição — declarada, não mascarada. `packages/simulation` não teve
+nenhum arquivo alterado.
 
 PB-05-02, worktree `C:\Kaezan\kaezan-huntbound-pb05-02-import`, 2026-08-16.
 Snapshot via `HUNTBOUND_CANARY_SOURCE` apontando para
@@ -144,6 +165,16 @@ Pós-integração em `C:\Kaezan\kaezan-huntbound` (`main` = `2933012`), 2026-08-
 Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
 remeados aqui.
 
+## Decisões fechadas em PB-05-03
+
+| Decisão | Onde está documentada |
+|---|---|
+| Documento v3 é reprovado; `schemaVersion: 3` num documento v4 produz `SIM_VERSION_MISMATCH` | `KERNEL_CONTRACT.md`; `combatV4.test.ts` |
+| `health > maxHealth` e `abilityCooldowns` com índice fora do blueprint **não** cabem no schema isolado do snapshot (o snapshot não carrega blueprints). Seguem o padrão de `transitionGuard`: checagem em `restoreSimulationKernel`, PB-05-04 | `KERNEL_CONTRACT.md`, seção Snapshot |
+| Entrada de loot do kernel não se chama `LootEntryDefinition` no export público: esse nome já pertence ao catálogo (`itemKey`). O kernel usa o shape inline em `LootTableDefinition.entries` (`itemIndex`) | `packages/contracts/src/simulation/types.ts` |
+| `isConcurrentActorAction` publica as quatro ações da duplicata de borda; o `CommandBuffer` ainda só cobre `move-step`/`wait` até PB-05-04 | `KERNEL_CONTRACT.md`; `schemas.ts` |
+| Fases S3–S7 são contrato pretendido, não comportamento do kernel atual | `KERNEL_CONTRACT.md`, seção Fases |
+
 ## Decisões descobertas durante a autoria
 
 | Decisão | Onde está documentada |
@@ -182,6 +213,16 @@ remeados aqui.
 
 ## Modelo e effort
 
+- **Executor PB-05-03:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`,
+  `test-driven-development`, `verification-before-completion`.
+- **Validador:** ainda não; a auditoria do playbook é PB-05-12.
+- **Desvio de branch:** a task card pedia `claude/pb-05-03-combat-contracts`; a
+  branch efetiva é `grok/pb-05-03-combat-contracts` porque o executor é Grok.
+  Worktree irmã no path pedido. Integração **não** feita; pertence a PB-05-04.
+
+PB-05-02 (histórico):
+
 - **Executor PB-05-02:** Grok 4.6 no Cursor, effort alto.
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `hunt-content-pipeline`,
   `test-driven-development`, `verification-before-completion`.
@@ -214,7 +255,7 @@ PB-05-01 (histórico):
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
 
-- **B5 (aberto, não bloqueia PB-05-03):** `corepack pnpm verify` vermelho em `qa:browser`.
+- **B5 (aberto, não bloqueia PB-05-04):** `corepack pnpm verify` vermelho em `qa:browser`.
   Esta task não toca `apps/game` nem assets. Na worktree de PB-05-02: hunt-budget
   `overBudget.length` `2` contra teto `< 2` (`actionableMs` `4246.8` ok); hunt-mobile
   (câmera) timeout de boot após três testes do mesmo arquivo terem passado. Sem retry
