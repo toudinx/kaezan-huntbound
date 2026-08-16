@@ -185,8 +185,13 @@ um `actor/move-step` e `rulesVersion` detectados.
 | `corepack pnpm combat:check` | `0` ×2 | árvore inalterada entre as duas |
 | `vitest run --config tools/replay/vitest.config.ts` | `0` | 53 testes, 106.85 s |
 | `corepack pnpm verify` (worktree) | `0` ×2 | 243.6 s e 265.2 s; 29/29 Playwright. hunt-budget `actionableMs` `4402.2` e `4521.9` |
-| `corepack pnpm verify` (pós-ff `main`) | `1` | varredura `0..2700` estourou `180000ms` aos `191803ms` sem divergir |
+| `corepack pnpm verify` (pós-ff `main`) | `1` | 1ª: varredura estourou `180000ms` aos `191803ms` sem divergir. 2ª: `EPERM` no staging `pb04`. 3ª: `EPERM` no cleanup sqlite do content-catalog |
 | `vitest` varredura isolada na `main` após teto `360000ms` | `0` | 62.45 s, `divergent = []` |
+| `corepack pnpm verify` (pós-ff `main`, 4ª) | `0` | 289.9 s; replay suite 69.95 s; 29/29 Playwright; hunt-budget `actionableMs` `4741.9` |
+
+B5 (hunt-budget) não reproduziu nas duas execuções da worktree nem no
+`verify` verde da `main`. Não se declara fechado. Os `EPERM` Windows do
+pós-ff (staging e temp sqlite) limparam na repetição; não foram mascarados.
 
 **Próxima task elegível:** PB-05-10. Não iniciada neste chat.
 
