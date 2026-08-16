@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -178,6 +180,55 @@ function files(
 }
 
 describe('validateCombatSelection', () => {
+  it('freezes unrestricted spell access on the hunt-level Knight sheet', async () => {
+    const frozen = JSON.parse(
+      await readFile(
+        resolve(
+          import.meta.dirname,
+          '../../packages/content/src/selections/pb-05-knight-combat.json',
+        ),
+        'utf8',
+      ),
+    ) as {
+      readonly spellAccess: string;
+      readonly character: {
+        readonly level: number;
+        readonly maxHealth: number;
+        readonly maxMana: number;
+        readonly spellAccess: string;
+        readonly trivializesHunt: boolean;
+      };
+      readonly spells: readonly { readonly huntboundAccess: string }[];
+      readonly resolvedPower: {
+        readonly berserk: {
+          readonly minPower: number;
+          readonly maxPower: number;
+        };
+        readonly melee: {
+          readonly minPower: number;
+          readonly maxPower: number;
+        };
+      };
+    };
+
+    expect(frozen.spellAccess).toBe('unrestricted');
+    expect(frozen.character).toMatchObject({
+      level: 8,
+      maxHealth: 185,
+      maxMana: 185,
+      spellAccess: 'unrestricted',
+      trivializesHunt: false,
+    });
+    expect(
+      frozen.spells.every((spell) => spell.huntboundAccess === 'unrestricted'),
+    ).toBe(true);
+    expect(frozen.resolvedPower.berserk).toEqual({
+      minPower: 14,
+      maxPower: 41,
+    });
+    expect(frozen.resolvedPower.melee).toEqual({ minPower: 1, maxPower: 13 });
+  });
+
   it('accepts a selection whose every declared ID exists in the snapshot files', () => {
     const result = validateCombatSelection(selection(), files());
 

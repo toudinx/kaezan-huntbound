@@ -2,6 +2,7 @@
   "key": "selection:pb-05-knight-combat",
   "huntKey": "hunt:tibia:venore-rotworm-cave",
   "tickDurationMs": 50,
+  "spellAccess": "unrestricted",
   "vocation": {
     "stableKey": "vocation:tibia:knight",
     "sourceId": "4",
@@ -33,7 +34,7 @@
   },
   "character": {
     "vocationKey": "vocation:tibia:knight",
-    "level": 35,
+    "level": 8,
     "skills": {
       "sword": 10,
       "magic": 0
@@ -41,13 +42,14 @@
     "weaponKey": "item:tibia:sword",
     "fightMode": "offensive",
     "attackFactor": 1,
-    "maxHealth": 590,
-    "maxMana": 170,
-    "levelSource": "highest required spell level among the three selected spells (Berserk 35)",
+    "maxHealth": 185,
+    "maxMana": 185,
+    "levelSource": "recommended hunt level from the PB-04 selection / TibiaRoute",
     "skillSource": "schema.sql defaults skill_sword=10 and maglevel=0",
-    "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5; levels 9-35 gain Knight gainhp 15",
-    "manaSource": "schema.sql manamax=0 at level 1; levels 2-8 gain vocation 0 gainmana 5; levels 9-35 gain Knight gainmana 5",
-    "trivializesHunt": true
+    "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5",
+    "manaSource": "Huntbound loadout pool: 115+40+30, the three selected spell costs. Canary at level 8 is 35 and cannot pay Berserk; V0 has no leveling.",
+    "spellAccess": "unrestricted",
+    "trivializesHunt": false
   },
   "spells": [
     {
@@ -63,8 +65,9 @@
       "vocationNames": ["knight", "elite knight"],
       "effect": "CONST_ME_HITAREA",
       "formulaKind": "skillAttack",
-      "minPower": 20,
-      "maxPower": 47
+      "huntboundAccess": "unrestricted",
+      "minPower": 14,
+      "maxPower": 41
     },
     {
       "stableKey": "spell:tibia:brutal-strike",
@@ -81,8 +84,9 @@
       "distanceEffect": "CONST_ANI_WEAPONTYPE",
       "formulaKind": "skillAttackProduct",
       "schemaDecision": "deferred-to-PB-05-02",
-      "minPower": 17,
-      "maxPower": 27
+      "huntboundAccess": "unrestricted",
+      "minPower": 10,
+      "maxPower": 20
     },
     {
       "stableKey": "spell:tibia:wound-cleansing",
@@ -98,8 +102,9 @@
       "effect": "CONST_ME_MAGIC_BLUE",
       "formulaKind": "levelMagic",
       "schemaDecision": "deferred-to-PB-05-02",
-      "minPower": 32,
-      "maxPower": 58
+      "huntboundAccess": "unrestricted",
+      "minPower": 26,
+      "maxPower": 52
     }
   ],
   "conversions": {
@@ -115,7 +120,7 @@
     "stepCooldownTicks": {
       "playerFromVocationBaseSpeed": 11,
       "rotwormFromCreatureSpeed": 21,
-      "playerAtFrozenLevel": 9,
+      "playerAtFrozenLevel": 11,
       "playableCurrent": {
         "player": 10,
         "rotworm": 20
@@ -132,10 +137,10 @@
     }
   },
   "resolvedPower": {
-    "berserk": { "minPower": 20, "maxPower": 47 },
-    "brutalStrike": { "minPower": 17, "maxPower": 27 },
-    "woundCleansing": { "minPower": 32, "maxPower": 58 },
-    "melee": { "minPower": 7, "maxPower": 19 },
+    "berserk": { "minPower": 14, "maxPower": 41 },
+    "brutalStrike": { "minPower": 10, "maxPower": 20 },
+    "woundCleansing": { "minPower": 26, "maxPower": 52 },
+    "melee": { "minPower": 1, "maxPower": 13 },
     "rotwormMelee": { "minPower": 0, "maxPower": 40 },
     "integerConversion": "C++ static_cast<int32_t>(lua_tonumber), truncates toward zero; damage formulas return negatives and minPower/maxPower store the absolute values"
   },

@@ -110,11 +110,14 @@ importer que ele exigiria.
 Sem save no V0, a ficha não é estado persistido: é um documento versionado e validado por schema com
 vocação, level, skills, arma e vida/mana máximas.
 
-**Risco declarado e aceito:** Berserk exige level `35`, e a ficha nasce no maior level entre as três
-spells escolhidas. Um Knight nesse patamar trivializa uma rotworm cave de level 8. É consequência
-honesta da escolha de spells e **não** é gate do V0 — balanceamento não está no aceite deste
-playbook. A alternativa disponível ao usuário, caso prefira, é baixar o level da ficha e remover
-Berserk do conjunto; a decisão pertence a PB-05-01 e fica congelada na seleção.
+**Acesso a spell no V0:** `spell.level` no Lua do snapshot é provenance. Huntbound **não** aplica
+esse número como gate — as três spells do kit estão disponíveis desde o início da run. Castar é
+mecânica do jogo; o mínimo de level existe no Tibia porque ele é um MMORPG com progressão.
+
+**Ficha congelada em PB-05-01:** level `8` (recomendado da hunt), HP Canary `185`, mana loadout
+`185` (soma dos três custos: `115+40+30`). A ficha **não** nasce em `35` por causa do Berserk.
+Canary no level `8` tem `35` de mana e não pagaria Berserk; sem leveling no V0, o pool é loadout,
+não `manamax` de MMORPG. PB-05-02 e PB-05-07 não recusam conjuração por `spell.level`.
 
 ## Parâmetros congelados
 

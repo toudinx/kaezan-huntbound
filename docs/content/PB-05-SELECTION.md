@@ -16,14 +16,19 @@ conteúdo. Nenhuma task posterior redescobre IDs nem reconverte tempos.
 | Spells | `spell:tibia:berserk` (`exori`), `spell:tibia:brutal-strike` (`exori ico`), `spell:tibia:wound-cleansing` (`exura ico`) |
 | Arma | `item:tibia:sword` (`sourceId` `3264`, `attack` `14`) |
 | Criatura | `creature:tibia:rotworm` (`speed` `58`, melee `0–40` / `2000 ms`) |
-| Ficha | level `35`, sword `10`, magic `0`, `maxHealth` `590`, `maxMana` `170` |
+| Ficha | level `8`, sword `10`, magic `0`, `maxHealth` `185`, `maxMana` `185` |
+| Acesso a spell | `unrestricted` — `spell.level` do Lua é provenance, não gate |
 | Ritmo de passo | `player` `11` ticks, `rotworm` `21` ticks |
 | Ritmo de ataque | `player` `40` ticks, `rotworm` `40` ticks |
 | Mitigação | zero |
 
-A alternativa de baixar o level e remover Berserk **foi rejeitada aqui**. A ficha nasce
-no maior level entre as três spells (Berserk `35`). Isso trivializa uma hunt de level
-`8`; o risco já estava declarado na spec e fica aceito, não adiado para PB-05-07.
+Castar é mecânica do V0, não progressão de MMORPG. As três spells entram no kit desde
+o início da run: PB-05-02 e PB-05-07 **não** recusam conjuração por `spell.level`. O
+campo `level` no Lua (Berserk `35`, Brutal Strike `16`, Wound Cleansing `8`) permanece
+como provenance do snapshot.
+
+A ficha nasce no level recomendado da hunt (`8`), não no maior `spell.level`. A
+alternativa da spec — inflar a ficha para `35` ou remover Berserk — **foi rejeitada**.
 
 ## Arquivos-fonte
 
@@ -162,10 +167,11 @@ durationMs = ceil(539 / 50) * 50 = 550
 stepCooldownTicks = 550 / 50 = 11
 ```
 
-O jogador de level `35` teria `baseSpeed + (level - 1) = 144` e derivaria `9`
-ticks. Isso **não** é o valor congelado: o blueprint deriva da estatística da
-vocação/criatura, não da ficha composta. A conta de `144` fica só como
-referência.
+O jogador de level `8` teria `baseSpeed + (level - 1) = 117` e derivaria os
+mesmos `11` ticks. Isso **não** muda o valor congelado: o blueprint deriva da
+estatística da vocação/criatura (`110` → `11`), não da ficha composta. A conta
+de um Knight de `35` (`144` → `9` ticks) fica só como referência do que o gate
+de MMORPG teria inflado.
 
 ### Decisão contra os valores jogáveis atuais
 
@@ -203,35 +209,36 @@ A ficha é conteúdo versionado, não estado persistido.
 | Campo | Valor | Fonte |
 |---|---|---|
 | vocação | `vocation:tibia:knight` | decisão do playbook |
-| level | `35` | maior `spell:level` das três spells |
+| level | `8` | level recomendado da hunt / TibiaRoute |
 | sword | `10` | default `schema.sql` `skill_sword` |
 | magic | `0` | default `schema.sql` `maglevel` |
 | arma | `item:tibia:sword` `3264` `attack 14` | loot do Rotworm, já no catálogo PB-01 |
 | fightMode | offensive, `attackFactor = 1.0` | `Player::getAttackFactor` |
-| `maxHealth` | `590` | conta abaixo |
-| `maxMana` | `170` | conta abaixo |
+| `maxHealth` | `185` | conta Canary abaixo |
+| `maxMana` | `185` | loadout Huntbound, não `manamax` Canary |
+| `spellAccess` | `unrestricted` | kit inteiro desde o início da run |
 
-Skills **não** foram inventadas para “parecer um EK de 35”. O default do snapshot
-é a única fonte sem treino. Inventar sword `50` não tem arquivo-fonte.
+Skills **não** foram inventadas para “parecer um EK”. O default do snapshot é a
+única fonte sem treino. Inventar sword `50` não tem arquivo-fonte.
 
 ### Vida e mana
 
 `schema.sql`: level `1` começa com `healthmax = 150`, `manamax = 0`.
-`Player` usa `vocation 0` (`gainhp 5`, `gainmana 5`) enquanto `level <= 8`, e a
-vocação Knight (`gainhp 15`, `gainmana 5`) de `9` em diante.
+`Player` usa `vocation 0` (`gainhp 5`, `gainmana 5`) enquanto `level <= 8`. A
+vocação Knight (`gainhp 15`, `gainmana 5`) só entra de `9` em diante — e esta
+ficha não passa de `8`.
 
 ```text
-maxHealth = 150 + 7 * 5 + (35 - 8) * 15
-          = 150 + 35 + 27 * 15
-          = 590
-
-maxMana   = 0 + 7 * 5 + (35 - 8) * 5
-          = 35 + 135
-          = 170
+maxHealth = 150 + 7 * 5 = 185   (Canary)
+maxMana   Canary = 0 + 7 * 5 = 35
+maxMana   Huntbound = 115 + 40 + 30 = 185
 ```
 
-Knight de `590` HP contra Rotworm de `0–40` a cada `2 s` trivializa a hunt. Risco
-aceito.
+Canary no level `8` tem `35` de mana e não paga Berserk (`115`) nem o heal
+(`40`). Sem progressão de level no V0, isso deixaria dois terços do kit como
+botão morto — o oposto de “castar é mecânica”. O pool congelado é a soma dos
+três custos, um loadout, não o `manamax` do MMORPG. HP permanece o Canary da
+hunt.
 
 ## Fórmulas resolvidas em inteiros
 
@@ -239,32 +246,32 @@ Canary lê o retorno Lua com `static_cast<int32_t>(lua_tonumber(...))`, truncand
 na direção de zero. Dano sai negativo no Lua; `minPower`/`maxPower` guardam o
 valor absoluto para o kernel.
 
-Ficha: `level = 35`, `skill = 10`, `attack = 14`, `magicLevel = 0`.
+Ficha: `level = 8`, `skill = 10`, `attack = 14`, `magicLevel = 0`.
 
 ### Berserk (`skillAttack`)
 
 ```text
-min = -((35 / 5) + (10 + 14) * 0.5) * 1.1 = -(7 + 12) * 1.1 = -20.9 → -20
-max = -((35 / 5) + (10 + 14) * 1.5) * 1.1 = -(7 + 36) * 1.1 = -47.3 → -47
-minPower = 20, maxPower = 47
+min = -((8 / 5) + (10 + 14) * 0.5) * 1.1 = -(1.6 + 12) * 1.1 = -14.96 → -14
+max = -((8 / 5) + (10 + 14) * 1.5) * 1.1 = -(1.6 + 36) * 1.1 = -41.36 → -41
+minPower = 14, maxPower = 41
 ```
 
 ### Brutal Strike (`skill * attack`)
 
 ```text
 skillTotal = 10 * 14 = 140
-levelTotal = 35 / 5 = 7
-min = -(((140 * 0.02) + 4) + 7) * 1.28 = -13.8 * 1.28 = -17.664 → -17
-max = -(((140 * 0.04) + 9) + 7) * 1.28 = -21.6 * 1.28 = -27.648 → -27
-minPower = 17, maxPower = 27
+levelTotal = 8 / 5 = 1.6
+min = -(((140 * 0.02) + 4) + 1.6) * 1.28 = -8.4 * 1.28 = -10.752 → -10
+max = -(((140 * 0.04) + 9) + 1.6) * 1.28 = -16.2 * 1.28 = -20.736 → -20
+minPower = 10, maxPower = 20
 ```
 
 ### Wound Cleansing (`level + magicLevel`)
 
 ```text
-min = (35 * 0.2 + 0 * 4) + 25 = 32
-max = (35 * 0.2 + 0 * 7.95) + 51 = 58
-minPower = 32, maxPower = 58
+min = (8 * 0.2 + 0 * 4) + 25 = 26.6 → 26
+max = (8 * 0.2 + 0 * 7.95) + 51 = 52.6 → 52
+minPower = 26, maxPower = 52
 ```
 
 ### Golpe físico do Knight
@@ -273,10 +280,10 @@ minPower = 32, maxPower = 58
 `attackFactor = 1.0`, `meleeDamageMultiplier = 1.0`:
 
 ```text
-minValue = level / 5 = 35 / 5 = 7          (divisão inteira uint32)
-maxValue = round(0.085 * 1.0 * 14 * 10 + 35 / 5)
-         = round(11.9 + 7) = round(18.9) = 19
-minPower = 7, maxPower = 19
+minValue = level / 5 = 8 / 5 = 1          (divisão inteira uint32)
+maxValue = round(0.085 * 1.0 * 14 * 10 + 8 / 5)
+         = round(11.9 + 1) = round(12.9) = 13
+minPower = 1, maxPower = 13
 ```
 
 ### Melee do Rotworm
@@ -315,7 +322,8 @@ de ambiente, não bloqueio de playbook.
 
 | Decisão | Onde vale |
 |---|---|
-| Ficha em level `35` com as três spells, trivialização aceita | este documento + JSON |
+| Spells irrestritas; `spell.level` é provenance, não gate | este documento + JSON |
+| Ficha no level `8` da hunt; HP Canary `185`; mana loadout `185` | este documento + JSON |
 | Skills nos defaults do snapshot (`sword 10`, `magic 0`) | este documento |
 | Arma `item:tibia:sword` `3264` | este documento |
 | Ritmo de passo fiel `11` / `21`, não os `10` / `20` jogáveis | este documento; aplicado em PB-05-07 |

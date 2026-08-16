@@ -9,10 +9,9 @@ resolvidos.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** PB-05-01 congelou vocação, três spells, ficha e conversões em
-`docs/content/PB-05-SELECTION.md` + `packages/content/src/selections/pb-05-knight-combat.json`.
-CLI `pb05:selection:check` saiu `0` no snapshot real. Integração serial adiada até `verify`
-verde.
+**Atualização vigente:** freeze revisado — spells irrestritas, ficha no level `8` da hunt,
+HP Canary `185`, mana loadout `185`. CLI `pb05:selection:check` precisa ser reexecutado
+nesta revisão. Integração serial adiada até `verify` verde (B5).
 
 **Próxima etapa:** reexecutar `corepack pnpm verify` nesta worktree quando a máquina estiver
 ociosa; se verde, fast-forward em `main`. **Não iniciar PB-05-02** enquanto a integração não
@@ -57,7 +56,7 @@ commitado).
 | `corepack pnpm typecheck` | `0` |
 | `corepack pnpm test` | `0` na segunda execução; a primeira falhou por timeout de 5s em `ContentCatalogApplication.test.ts` (teste pré-existente, 5269 ms) |
 | `corepack pnpm content:check` | `0`; sidecars da hunt inalterados |
-| `corepack pnpm exec vitest run --config tools/hunt-selection/vitest.config.ts` | `0` (23 testes) |
+| `corepack pnpm exec vitest run --config tools/hunt-selection/vitest.config.ts` | `0` (24 testes, freeze revisado) |
 | `node ... cli.ts check-combat --selection packages/content/src/selections/pb-05-knight-combat.json --source-root-env HUNTBOUND_CANARY_SOURCE` | `0` |
 | `git diff --check` | `0` |
 | `corepack pnpm verify` | `1` em `qa:browser` |
@@ -69,9 +68,10 @@ Saída do verificador de IDs (exit `0`):
 {"command":"check-combat","ok":true,"presentIds":["vocation:4","spell:80","spell:61","spell:123","item:3264","effect:CONST_ME_DRAWBLOOD","effect:CONST_ME_HITAREA","effect:CONST_ME_MAGIC_BLUE","effect:CONST_ANI_WEAPONTYPE","item:5967","item:2889","creature:rotworm"],"diagnostics":[]}
 ```
 
-Hashes dos arquivos-fonte medidos estão em `docs/content/PB-05-SELECTION.md`. Os de
-`vocations.xml`, `berserk.lua`, `rotworm.lua` e `items.xml` coincidem com
-`packages/content/src/sources/canary-157e6f9e.json`.
+Freeze revisado nesta sessão (spells irrestritas, ficha level `8`): `biome check .` exit `0`
+(384 files); `vitest` hunt-selection exit `0` (24 testes); `pb05:selection:check` exit `0` no
+mesmo snapshot. `typecheck`/`test`/`content:check`/`verify` não foram reexecutados nesta
+revisão — `verify` continua B5.
 
 Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
 remeados aqui.
@@ -86,7 +86,7 @@ remeados aqui.
 | Autoloot sem comando de coleta; bolsa é projeção de eventos fora do kernel | spec, §4 |
 | Corpo e sangue são apresentação pura, sem estado no kernel | spec, §4 |
 | Fuga em vida baixa fica fora por ausência de fonte no importer | spec, §5 |
-| Ficha congelada em level 35 trivializa a hunt; risco aceito, alternativa registrada | spec, §6 |
+| `spell.level` é provenance; kit irrestrito desde o início da run | spec, §6; `PB-05-SELECTION.md` |
 | Mitigação zero porque todas as resistências do Rotworm são `0` | spec, "Parâmetros congelados" |
 | Sete sistemas por tick, com `upkeep` antes de `combat` e morte antes de `ai` | spec, "Fases do tick" |
 
@@ -94,7 +94,7 @@ remeados aqui.
 
 | Decisão | Onde está documentada |
 |---|---|
-| Ficha permanece level `35` com as três spells; não remover Berserk | `docs/content/PB-05-SELECTION.md` |
+| Spells irrestritas; ficha no level `8` da hunt; HP `185` Canary; mana loadout `185` | `docs/content/PB-05-SELECTION.md` |
 | Skills nos defaults do snapshot (`sword 10`, `magic 0`), não treino inventado | idem |
 | Arma `item:tibia:sword` `3264` `attack 14` | idem |
 | Ritmo de passo fiel `player 11` / `rotworm 21`, não os `10`/`20` jogáveis de PB-04-FIX-01 | idem |
