@@ -1,7 +1,8 @@
 # Contrato de replay determinístico
 
 **Escopo:** formato canônico, snapshot em disco, command log, CLI `tools/replay`, exit codes, hashes
-congelados da fixture `pb-03-kernel-coverage` e política de regeneração de golden.
+congelados das fixtures `pb-03-kernel-coverage`, `pb04` e `pb04-respawn`, e política de regeneração
+de golden.
 
 **Fonte normativa:** `docs/superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md` e
 `docs/simulation/KERNEL_CONTRACT.md`.
@@ -62,6 +63,7 @@ As demais linhas são comandos achatados:
 node --no-warnings --experimental-transform-types tools/replay/cli.ts run    --scenario <path> --log <path> [--out <dir>]
 node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario <path> --log <path> --snapshot <path> --events <path>
 node --no-warnings --experimental-transform-types tools/replay/cli.ts hash   --file <path>
+node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir <path>
 ```
 
 `run` executa o log do tick zero até `header.tickCount`. Com `--out`, escreve `snapshot.golden.json`,
@@ -71,6 +73,10 @@ node --no-warnings --experimental-transform-types tools/replay/cli.ts hash   --f
 digests `.sha256` contra os arquivos que eles descrevem.
 
 `hash` imprime o SHA-256 dos bytes do arquivo.
+
+`check-hashes` lê o `hashes.md` de uma fixture, hasheia os quatro artefatos no disco e compara
+**arquivo contra sidecar `.sha256` e contra a tabela publicada**. Divergência sai `1`; tabela
+ausente, malformada ou incompleta sai `2`. Não compara prosa contra prosa.
 
 ### Exit codes
 
@@ -104,10 +110,13 @@ pagina e rede sem erros.
 
 ```text
 corepack pnpm simulation:check
+corepack pnpm hunt:check
 ```
 
-Está incluído em `check` e em `verify`, depois de `assets:check`. É idempotente: duas execuções
-seguidas devolvem `0`.
+`simulation:check` verifica a fixture `pb-03-kernel-coverage`. `hunt:check` verifica `pb04` e
+`pb04-respawn` por `verify` e, em seguida, por `hunt:hashes:check` (`check-hashes` em cada
+diretório). Os dois entram em `check` e em `verify`. São idempotentes: duas execuções seguidas
+devolvem `0`.
 
 ## Hashes congelados
 
@@ -171,14 +180,43 @@ O log de 13 comandos cobre passo válido, cooldown, fora de limites, terreno, di
 ocupado, entidade inexistente, spawn e despawn, além de `actor/face` e `actor/wait`. A run emite 59
 eventos e exercita os seis tipos de evento e as cinco causas de bloqueio.
 
+## Hashes congelados — PB-04
+
+Fixture `pb04`, revisão `2`, seed `1a2b3c4d5e6f7a8b`, `600` ticks, `1663` eventos, tick final `600`,
+`SIMULATION_SCHEMA_VERSION = 3`, `SIMULATION_RULES_VERSION = 2`. Retomada fiel em todas as fronteiras
+`0..600`.
+
+| Arquivo | SHA-256 |
+|---|---|
+| `scenario.json` | `f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0` |
+| `commands.jsonl` | `8c88860bd1dd355b37ac2e16dc2e989aaa2c324ad55637058bb51d33634c7e67` |
+| `snapshot.golden.json` | `2e546b17a6905f5be29393b388df0c7dc37919fa75d09d8bcbb776bd75756816` |
+| `events.golden.jsonl` | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
+
+Fixture `pb04-respawn`, mesmo cenário e seed, `1805` ticks, `1185` eventos, tick final `1805`. Prova
+o respawn real: despawn da entidade `2` no tick `1` e `actor/spawned` da entidade `14` no tick `1801`.
+Retomada nas fronteiras `0`, `1`, `2`, `1800`, `1801` e `1805`.
+
+| Arquivo | SHA-256 |
+|---|---|
+| `scenario.json` | `f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0` |
+| `commands.jsonl` | `01e139f9d8fd41fd7c53fc70dcf15286bb49c08ac874da7f43a82d2c22bc1efa` |
+| `snapshot.golden.json` | `2e968f79b850725dd2942ffc2421108b9f4cc09a82b13bda19995fad43e993d3` |
+| `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
+
+A fonte operacional desses digests é o `hashes.md` de cada fixture
+(`packages/test-fixtures/hunt/pb04/hashes.md` e
+`packages/test-fixtures/hunt/pb04-respawn/hashes.md`). `hunt:hashes:check` compara a tabela
+publicada com o arquivo e com o sidecar `.sha256`. Task cards não republicam esses valores.
+
 ## Política de regeneração de golden
 
 Golden divergente **nunca** é reescrito para fazer um teste passar. Regenerar exige, nesta ordem:
 
 1. causa identificada e reproduzida;
 2. quando a semântica das regras mudou, bump explícito de `SIMULATION_RULES_VERSION`;
-3. `run --out` sobre a fixture, com os quatro `.sha256` regerados juntos;
-4. atualização desta tabela de hashes e do handoff em `docs/playbooks/PB-03/STATE.md`;
+3. `run --out` sobre a fixture, com os quatro `.sha256` e o `hashes.md` regerados juntos;
+4. atualização desta tabela de hashes e do handoff no `STATE.md` do playbook correspondente;
 5. registro da causa no handoff.
 
 Divergência intermitente, golden que muda sem causa identificada e necessidade de alterar regra do

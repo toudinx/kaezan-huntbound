@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 
 import type { SimulationDiagnostic } from '../../packages/contracts/src/index.ts';
 
+import { checkPublishedHashes, digestPathFor } from './checkPublishedHashes.ts';
 import {
   buildReplayArtifacts,
   type ReplayArtifacts,
@@ -24,7 +25,8 @@ type ReplayCommand =
       readonly snapshotPath: string;
       readonly eventsPath: string;
     }
-  | { readonly kind: 'hash'; readonly filePath: string };
+  | { readonly kind: 'hash'; readonly filePath: string }
+  | { readonly kind: 'check-hashes'; readonly dir: string };
 
 export interface ReplayCliIo {
   stdout(value: unknown): void;
@@ -36,6 +38,7 @@ const usageText = `Usage:
   node tools/replay/cli.ts run --scenario <path> --log <path> [--out <path>]
   node tools/replay/cli.ts verify --scenario <path> --log <path> --snapshot <path> --events <path>
   node tools/replay/cli.ts hash --file <path>
+  node tools/replay/cli.ts check-hashes --dir <path>
 
 Exit codes: 0 success, 1 divergence, 2 invalid input.`;
 
@@ -101,14 +104,12 @@ function parseCommand(args: readonly string[]): ReplayCommand | undefined {
     return filePath === undefined ? undefined : { kind: 'hash', filePath };
   }
 
-  return undefined;
-}
+  if (verb === 'check-hashes') {
+    const dir = readOption(rest, '--dir');
+    return dir === undefined ? undefined : { kind: 'check-hashes', dir };
+  }
 
-/** `a/b/snapshot.golden.json` -> `a/b/snapshot.golden.sha256`. */
-function digestPathFor(filePath: string): string {
-  const index = filePath.lastIndexOf('.');
-  const base = index <= 0 ? filePath : filePath.slice(0, index);
-  return `${base}.sha256`;
+  return undefined;
 }
 
 async function readTextFile(
@@ -305,6 +306,29 @@ async function runVerify(
   return 0;
 }
 
+async function runCheckHashes(
+  command: Extract<ReplayCommand, { kind: 'check-hashes' }>,
+  io: ReplayCliIo,
+): Promise<number> {
+  const result = await checkPublishedHashes(command.dir);
+  if (!result.ok) {
+    if (result.kind === 'invalid-input') {
+      io.stderr({ kind: 'invalid-input', errors: result.errors });
+      return 2;
+    }
+    io.stderr({ kind: 'divergence', divergences: result.divergences });
+    return 1;
+  }
+
+  io.stdout({
+    ok: true,
+    command: 'check-hashes',
+    dir: command.dir,
+    digests: result.digests,
+  });
+  return 0;
+}
+
 async function runHash(
   command: Extract<ReplayCommand, { kind: 'hash' }>,
   io: ReplayCliIo,
@@ -340,6 +364,8 @@ export async function runReplayCli(
       return runVerify(command, io);
     case 'hash':
       return runHash(command, io);
+    case 'check-hashes':
+      return runCheckHashes(command, io);
   }
 }
 
