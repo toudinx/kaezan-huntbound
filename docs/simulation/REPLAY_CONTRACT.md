@@ -1,8 +1,8 @@
 # Contrato de replay determinístico
 
 **Escopo:** formato canônico, snapshot em disco, command log, CLI `tools/replay`, exit codes, hashes
-congelados das fixtures `pb-03-kernel-coverage`, `pb04` e `pb04-respawn`, e política de regeneração
-de golden.
+congelados das fixtures `pb-03-kernel-coverage`, `pb04`, `pb04-respawn` e `pb-05-hunt-combat`, e
+política de regeneração de golden.
 
 **Fonte normativa:** `docs/superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md` e
 `docs/simulation/KERNEL_CONTRACT.md`.
@@ -111,12 +111,14 @@ pagina e rede sem erros.
 ```text
 corepack pnpm simulation:check
 corepack pnpm hunt:check
+corepack pnpm combat:check
 ```
 
 `simulation:check` verifica a fixture `pb-03-kernel-coverage`. `hunt:check` verifica `pb04` e
 `pb04-respawn` por `verify` e, em seguida, por `hunt:hashes:check` (`check-hashes` em cada
-diretório). Os dois entram em `check` e em `verify`. São idempotentes: duas execuções seguidas
-devolvem `0`.
+diretório). `combat:check` verifica `pb-05-hunt-combat` da mesma forma, com
+`combat:hashes:check`. Os três entram em `check` e em `verify`. São idempotentes: duas
+execuções seguidas devolvem `0`.
 
 ## Hashes congelados
 
@@ -232,6 +234,26 @@ A fonte operacional desses digests é o `hashes.md` de cada fixture
 (`packages/test-fixtures/hunt/pb04/hashes.md` e
 `packages/test-fixtures/hunt/pb04-respawn/hashes.md`). `hunt:hashes:check` compara a tabela
 publicada com o arquivo e com o sidecar `.sha256`. Task cards não republicam esses valores.
+
+## Hashes congelados — PB-05
+
+Fixture `pb-05-hunt-combat`, revisão `2`, seed `2c3d4e5f60718293`, `2700` ticks, `2240` eventos,
+tick final `2700`, `SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`. Retomada fiel
+em todas as fronteiras `0..2700`.
+
+O `tickCount` `2700` é a resolução de B6: todo assento da hunt tem `respawnTicks` `1800`, então
+900 ticks não cabiam morte + respawn. `aggroRadius` do rotworm é `1` (`targetDistance` Canary);
+sem isso o hunter nunca emite `combat/target-changed`.
+
+| Arquivo | SHA-256 |
+|---|---|
+| `scenario.json` | `c34813d1e1a278c9e6fd0b7869e5e55f06cf0c5c8e4b530b04b332f38b1cb8cf` |
+| `commands.jsonl` | `356eee11220f96aea4d3f5cc0f0673deb614cd893c1d7f2060414a4fbc7a1e7b` |
+| `snapshot.golden.json` | `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a` |
+| `events.golden.jsonl` | `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394` |
+
+A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.md`.
+`combat:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.
 
 ## Política de regeneração de golden
 

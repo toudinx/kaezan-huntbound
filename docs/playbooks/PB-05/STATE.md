@@ -2,20 +2,18 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-08 bloqueada** (B6): a sessão
-congelada de 900 ticks sobre o cenário composto da hunt não consegue emitir
-`combat/target-changed` nem `actor/spawned` de respawn de assento. B5
-(hunt-budget) segue aberto e não é este bloqueio.
+**Estado geral:** execução em andamento. **PB-05-08 done.** B6 resolvido
+(`aggroRadius` `1` na composição + `tickCount` `2700`). B5 (hunt-budget)
+segue aberto e não é desta task.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** o compositor em `tools/replay/generatePb05CombatFixture.ts`
-prova que golpe, as três habilidades, recusa de combate, morte e loot saem da
-hunt real. Os dois eventos que faltam exigem mudar decisão congelada — fora de
-escopo desta task.
+**Atualização vigente:** fixture `pb-05-hunt-combat` congelada em
+`packages/test-fixtures/hunt/pb05/`, `combat:check` em `check`/`verify`,
+registro em `docs/simulation/REPLAY_CONTRACT.md` no mesmo commit.
 
-**Próxima etapa:** decidir B6 antes de retomar PB-05-08. PB-05-09 (assets) é
-paralela após PB-05-01 e não depende da fixture.
+**Próxima etapa:** PB-05-10 (HUD, input, números de dano, autoloot e overlay
+de morte). PB-05-09 já está done.
 
 ## Tasks
 
@@ -28,7 +26,7 @@ paralela após PB-05-01 e não depende da fixture.
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
-| PB-05-08 | blocked (B6) | `grok/pb-05-08-combat-fixture` | — | sessão real cobre 10/12 eventos; faltam `target-changed` (aggro 0) e respawn de assento (1800 ticks > 900) |
+| PB-05-08 | done | `grok/pb-05-08-combat-fixture` | este commit | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
@@ -36,8 +34,8 @@ paralela após PB-05-01 e não depende da fixture.
 
 ## Última task concluída
 
-PB-05-07. Branch `grok/pb-05-07-content-to-combat` a partir de `main`
-(`5762fa4`). Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-07-content`.
+PB-05-08. Branch `grok/pb-05-08-combat-fixture` a partir de `main`
+(`3e25fc5`). Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-08-fixture`.
 Fast-forward para `main` autorizado pela task card.
 
 ## Handoff PB-05-08 — 2026-08-16
@@ -113,6 +111,79 @@ tocados.
 
 **Próxima ação:** devolver B6. PB-05-09 pode seguir em paralelo (depende só
 de PB-05-01). Não retomar PB-05-08 sem a decisão.
+
+## Handoff PB-05-08 — 2026-08-16 (fechamento)
+
+**Status:** implementação concluída neste commit. B6 resolvido pelas duas
+decisões autorizadas: `aggroRadius` do rotworm = Canary `targetDistance` `1`
+em `buildHuntScenario`; `tickCount` da fixture `900` → `2700`.
+
+**Base:** `main` em `3e25fc5`.
+
+**Branch/worktree:** `grok/pb-05-08-combat-fixture`; worktree irmã
+`C:\Kaezan\kaezan-huntbound-pb05-08-fixture`.
+
+**Modelo/effort:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+
+**Desvio de branch:** a task card pedia `codex/pb-05-08-combat-fixture`; a
+branch efetiva usa o prefixo `grok/` porque o executor é Grok. Worktree irmã
+no path pedido.
+
+**Desvio de escopo (autorizado):** a task card original exclui tradução de
+conteúdo. A resolução de B6 toca `packages/content/src/hunts/buildHuntScenario.ts`
+e `docs/content/MAP_REGION_CONTRACT.md`. O valor `1` não é inventado: é o
+`monster.flags.targetDistance` de `rotworm.lua`. Jogador e criatura sem
+ataque permanecem `0`. A região extraída não foi regenerada (`hunt.json`
+`a11941b2…15e8eb6` intacto).
+
+**Desvio de parâmetro congelado (autorizado):** spec, README e
+`REPLAY_CONTRACT.md` passam a declarar `2700` ticks e varredura `0..2700`.
+A task card histórica permanece com `900`.
+
+**Cobertura da sessão** (seed `2c3d4e5f60718293`, 2700 ticks):
+
+| Evento | Presente |
+|---|---|
+| `combat/attacked` | sim |
+| `combat/damaged` `cause: attack` | sim |
+| `combat/damaged` `cause: ability` | sim |
+| dano recebido pelo jogador | sim |
+| `combat/healed` (Wound Cleansing) | sim |
+| `ability/cast` das três habilidades | sim |
+| `command/rejected` de combate | sim |
+| `actor/died` | sim (rotworm tick `203`; jogador tick `351`) |
+| `loot/granted` | sim |
+| `combat/target-changed` | sim |
+| `actor/spawned` de respawn de assento | sim (entidade `14`, tick `2003`, célula `(19,7,8)`) |
+
+Command log só com `issuer: player`. Goldens gerados por
+`tools/replay/cli.ts run --out`. Hashes de `Get-FileHash -Algorithm SHA256`:
+
+| Arquivo | SHA-256 |
+|---|---|
+| `scenario.json` | `c34813d1e1a278c9e6fd0b7869e5e55f06cf0c5c8e4b530b04b332f38b1cb8cf` |
+| `commands.jsonl` | `356eee11220f96aea4d3f5cc0f0673deb614cd893c1d7f2060414a4fbc7a1e7b` |
+| `snapshot.golden.json` | `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a` |
+| `events.golden.jsonl` | `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394` |
+
+2240 eventos, tick final `2700`. Retomada `0..2700` sem fronteira divergente
+(108 s). Sensibilidade: seed, um `actor/move-step` e `rulesVersion` detectados.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `biome check .` | `0` | 395 arquivos |
+| `corepack pnpm typecheck` | `0` | 7 pacotes |
+| `corepack pnpm architecture:check` | `0` | fronteiras intactas |
+| `corepack pnpm content:check` | `0` | hunt.json inalterado |
+| `corepack pnpm simulation:check` | `0` | goldens PB-03 intactos |
+| `corepack pnpm hunt:check` | `0` | goldens PB-04 intactos |
+| `corepack pnpm combat:check` | `0` ×2 | árvore inalterada entre as duas |
+| `vitest run --config tools/replay/vitest.config.ts` | `0` | 53 testes, 106.85 s |
+| `corepack pnpm verify` | `0` ×2 | 243.6 s e 265.2 s; 29/29 Playwright. hunt-budget `actionableMs` `4402.2` e `4521.9`. B5 não reproduziu; não se declara fechado. |
+
+**Próxima task elegível:** PB-05-10. Não iniciada neste chat.
 
 ## Handoff PB-05-09 — 2026-08-16
 
@@ -711,11 +782,13 @@ PB-05-01 (histórico):
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
 
-- **B6 (bloqueante de PB-05-08):** a fixture `pb-05-hunt-combat` (900 ticks)
+- ~~**B6 (bloqueante de PB-05-08):** a fixture `pb-05-hunt-combat` (900 ticks)
   sobre o cenário composto da hunt não emite `combat/target-changed` nem
   respawn de assento. Causa: `aggroRadius` `0` (PB-05-07, catálogo sem
-  `targetDistance`) e `respawnTicks` `1800` em todos os slots. Evidência no
-  handoff PB-05-08. Não consertado aqui.
+  `targetDistance`) e `respawnTicks` `1800` em todos os slots.~~
+  **Resolvido em 2026-08-16:** `aggroRadius` do rotworm = `targetDistance`
+  Canary `1` em `buildHuntScenario`; `tickCount` da fixture `2700`. Evidência
+  no handoff de fechamento PB-05-08.
 
 - **B5 (historicamente aberto; reproduziu em PB-05-05):** `qa:browser` /
   hunt-budget já foi vermelho em PB-05-01 (`overBudget.length` `8`) e PB-05-02

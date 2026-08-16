@@ -126,8 +126,8 @@ não `manamax` de MMORPG. PB-05-02 e PB-05-07 não recusam conjuração por `spe
 | `SIMULATION_SCHEMA_VERSION` | `3` → `4` |
 | `SIMULATION_RULES_VERSION` | `2` → `3` |
 | Streams RNG | `ai`, `combat`, `loot`, `movement`, `scenario`, `spawn` |
-| Fixture da sessão | `pb-05-hunt-combat`, seed `2c3d4e5f60718293`, `900` ticks |
-| Retomada | varredura de **todas** as fronteiras `0..900` |
+| Fixture da sessão | `pb-05-hunt-combat`, seed `2c3d4e5f60718293`, `2700` ticks |
+| Retomada | varredura de **todas** as fronteiras `0..2700` |
 | Spells | `spell:tibia:berserk`, `exori ico`, `exura ico` |
 | Alcance de golpe | Chebyshev `1`, mesmo andar |
 | Agressão | raio Chebyshev do blueprint, mesmo andar, sem line of sight |

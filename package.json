@@ -32,6 +32,8 @@
     "simulation:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario packages/test-fixtures/simulation/pb03/scenario.json --log packages/test-fixtures/simulation/pb03/commands.jsonl --snapshot packages/test-fixtures/simulation/pb03/snapshot.golden.json --events packages/test-fixtures/simulation/pb03/events.golden.jsonl",
     "hunt:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario packages/test-fixtures/hunt/pb04/scenario.json --log packages/test-fixtures/hunt/pb04/commands.jsonl --snapshot packages/test-fixtures/hunt/pb04/snapshot.golden.json --events packages/test-fixtures/hunt/pb04/events.golden.jsonl && node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario packages/test-fixtures/hunt/pb04-respawn/scenario.json --log packages/test-fixtures/hunt/pb04-respawn/commands.jsonl --snapshot packages/test-fixtures/hunt/pb04-respawn/snapshot.golden.json --events packages/test-fixtures/hunt/pb04-respawn/events.golden.jsonl && corepack pnpm hunt:hashes:check",
     "hunt:hashes:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb04 && node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb04-respawn",
+    "combat:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario packages/test-fixtures/hunt/pb05/scenario.json --log packages/test-fixtures/hunt/pb05/commands.jsonl --snapshot packages/test-fixtures/hunt/pb05/snapshot.golden.json --events packages/test-fixtures/hunt/pb05/events.golden.jsonl && corepack pnpm combat:hashes:check",
+    "combat:hashes:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb05",
     "build": "corepack pnpm assets:stage:test && corepack pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
     "content:catalog:rebuild": "node tools/content-catalog/cli.ts rebuild",
@@ -49,9 +51,9 @@
     "hunt:extract:check": "node --no-warnings --experimental-transform-types tools/map-extractor/cli.ts build-all --check --selections packages/content/src/selections/hunts --source-root-env HUNTBOUND_CANARY_SOURCE --tile-flags packages/content/src/generated/tile-flags.json --output-root packages/content/src/generated/hunts",
     "hunt:extract:sidecar": "node --no-warnings --experimental-transform-types tools/map-extractor/cli.ts sidecar-check --output packages/content/src/generated/hunts/venore-rotworm-cave",
     "diagnostics:boot-stall": "node tools/diagnostics/runBootStallMatrix.ts",
-    "check": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check && corepack pnpm content:check",
+    "check": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check && corepack pnpm content:check",
     "qa:browser": "corepack pnpm build && playwright test",
-    "verify": "corepack pnpm format:check && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm content:check && corepack pnpm qa:browser"
+    "verify": "corepack pnpm format:check && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm content:check && corepack pnpm qa:browser"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",

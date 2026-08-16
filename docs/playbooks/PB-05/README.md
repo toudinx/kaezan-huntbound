@@ -71,7 +71,7 @@ sem precisar catá-lo, e morre quando erra a leitura da luta.
 | Prova | Verificação |
 |---|---|
 | Repetição | duas execuções limpas da sessão em Node são byte-idênticas |
-| Retomada | todas as fronteiras `0..900` convergem no mesmo snapshot final |
+| Retomada | todas as fronteiras `0..2700` convergem no mesmo snapshot final |
 | Paridade | browser e Node produzem o mesmo SHA-256 do snapshot canônico |
 | Sensibilidade | mudar seed, comando ou `rulesVersion` é detectado como divergência |
 | Regressão | os journals golden de PB-03 e PB-04 permanecem byte-idênticos |
@@ -88,8 +88,8 @@ sem precisar catá-lo, e morre quando erra a leitura da luta.
 | `SIMULATION_SCHEMA_VERSION` | `3` → `4` |
 | `SIMULATION_RULES_VERSION` | `2` → `3` |
 | Streams RNG | `ai`, `combat`, `loot`, `movement`, `scenario`, `spawn` |
-| Fixture da sessão | `pb-05-hunt-combat`, seed `2c3d4e5f60718293`, `900` ticks |
-| Retomada | varredura completa de `0..900` |
+| Fixture da sessão | `pb-05-hunt-combat`, seed `2c3d4e5f60718293`, `2700` ticks |
+| Retomada | varredura completa de `0..2700` |
 | Alcance de golpe | Chebyshev `1`, mesmo andar |
 | Agressão | raio Chebyshev do blueprint, mesmo andar, sem line of sight |
 | Dano e cura | inteiro uniforme em `[min, max]`, um sorteio do stream `combat` |
@@ -232,7 +232,7 @@ Detalhe em `AGENTS.md`; resumo do que já custou tempo neste repositório:
 - [ ] Os journals golden de PB-03 e PB-04 permaneceram byte-idênticos.
 - [ ] Os quatro artefatos gerados da hunt permaneceram byte-idênticos.
 - [ ] Duas execuções limpas da sessão produzem snapshot e journal byte-idênticos.
-- [ ] A retomada converge em todas as fronteiras `0..900`, com vida, mana, alvo e cooldowns
+- [ ] A retomada converge em todas as fronteiras `0..2700`, com vida, mana, alvo e cooldowns
       serializados.
 - [ ] Browser e Node produzem o mesmo SHA-256 do snapshot canônico da sessão.
 - [ ] `combat:check` entra em `check` e `verify` e está registrado em `REPLAY_CONTRACT.md`.

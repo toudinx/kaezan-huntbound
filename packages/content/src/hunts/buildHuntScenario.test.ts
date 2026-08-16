@@ -636,7 +636,7 @@ describe('buildHuntScenario combat blueprints', () => {
       attackCooldownTicks: 40,
       stepCooldownTicks: 21,
       behavior: 'hunter',
-      aggroRadius: 0,
+      aggroRadius: 1,
     });
   });
 
@@ -685,6 +685,7 @@ describe('buildHuntScenario combat blueprints', () => {
       attackMinDamage: 1,
       attackMaxDamage: 13,
       lootTableIndex: null,
+      aggroRadius: 0,
     });
     expect(snake).toMatchObject({
       behavior: 'wander',
@@ -692,6 +693,7 @@ describe('buildHuntScenario combat blueprints', () => {
       attackMinDamage: 0,
       attackMaxDamage: 0,
       attackCooldownTicks: 0,
+      aggroRadius: 0,
     });
     expect(player?.factionId).not.toBe(snake?.factionId);
     expect(player?.factionId).not.toBe(

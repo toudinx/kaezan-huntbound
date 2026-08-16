@@ -340,8 +340,11 @@ com `20` — porque a região **não é reextraída**. O combate é composto em
 `player` `11` e `rotworm` `21`; `attackCooldownTicks` é `intervalMs / 50` e um
 resto não nulo é `HUNT_INTERVAL_NOT_DIVISIBLE`, nunca arredondamento. Criatura com
 ataque vira `hunter`; criatura sem ataque permanece `wander`; o jogador permanece
-`inert`. Facções: jogador `0`, criaturas `1`. `aggroRadius` fica `0` porque o
-catálogo não importa `flags`/`targetDistance`. Regeneração da ficha não foi
+`inert`. Facções: jogador `0`, criaturas `1`. `aggroRadius` do rotworm é `1`,
+o `targetDistance` Canary em `monster.flags` de
+`data-otservbr-global/monster/vermins/rotworm.lua`. O catálogo ainda não
+importa `flags`; o valor entra na composição, não como número inventado.
+Jogador e criatura sem ataque permanecem `0`. Regeneração da ficha não foi
 congelada, então entra `0`.
 `playerStart` é a célula caminhável mais próxima do centro do primeiro grupo de spawn, no andar
 desse grupo, com empate resolvido por `(y, x)`.

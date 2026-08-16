@@ -356,6 +356,7 @@ describe('replay cli check-hashes', () => {
     repoRoot,
     'packages/test-fixtures/hunt/pb04-respawn',
   );
+  const huntPb05 = resolve(repoRoot, 'packages/test-fixtures/hunt/pb05');
 
   it('exits 0 on the committed hunt fixtures', async () => {
     expect((await runCli(['check-hashes', '--dir', huntPb04])).exitCode).toBe(
@@ -364,6 +365,9 @@ describe('replay cli check-hashes', () => {
     expect(
       (await runCli(['check-hashes', '--dir', huntRespawn])).exitCode,
     ).toBe(0);
+    expect((await runCli(['check-hashes', '--dir', huntPb05])).exitCode).toBe(
+      0,
+    );
   });
 
   it('exits 1 when a published hash digit changes', async () => {

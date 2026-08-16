@@ -1,10 +1,8 @@
 /**
  * Composer for the frozen PB-05 combat session (`pb-05-hunt-combat`, seed
- * `2c3d4e5f60718293`, 900 ticks). It can exercise melee, the three kit
- * abilities, a combat command rejection, death and loot. It cannot emit
- * `combat/target-changed` or a seat respawn after death: `aggroRadius` is `0`
- * and every slot has `respawnTicks` `1800`. See playbook STATE.md blockage B6.
- * Do not freeze goldens until that decision lands.
+ * `2c3d4e5f60718293`, 2700 ticks). Rotworm `aggroRadius` is Canary
+ * `targetDistance` 1 via `buildHuntScenario`. Tick count is 2700 so a death
+ * plus every slot's `respawnTicks` 1800 still fits (B6).
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -46,7 +44,7 @@ import {
 } from '../../packages/simulation/src/index.ts';
 
 export const PB05_COMBAT_SEED = '2c3d4e5f60718293';
-export const PB05_COMBAT_TICK_COUNT = 900;
+export const PB05_COMBAT_TICK_COUNT = 2700;
 export const PLAYER_ENTITY_ID = 1;
 export const ABILITY_BERSERK = 0;
 export const ABILITY_BRUTAL_STRIKE = 1;
@@ -69,6 +67,7 @@ export interface SessionCoverage {
   readonly attacked: boolean;
   readonly damagedAttack: boolean;
   readonly damagedAbility: boolean;
+  readonly playerReceivedDamage: boolean;
   readonly healed: boolean;
   readonly castBerserk: boolean;
   readonly castBrutalStrike: boolean;
@@ -197,13 +196,13 @@ export function sessionCoverage(
     );
   });
 
+  const damaged = payloadsOfType(events, 'combat/damaged');
   return {
     attacked: payloadsOfType(events, 'combat/attacked').length > 0,
-    damagedAttack: payloadsOfType(events, 'combat/damaged').some(
-      (payload) => payload.cause === 'attack',
-    ),
-    damagedAbility: payloadsOfType(events, 'combat/damaged').some(
-      (payload) => payload.cause === 'ability',
+    damagedAttack: damaged.some((payload) => payload.cause === 'attack'),
+    damagedAbility: damaged.some((payload) => payload.cause === 'ability'),
+    playerReceivedDamage: damaged.some(
+      (payload) => payload.entityId === PLAYER_ENTITY_ID,
     ),
     healed: payloadsOfType(events, 'combat/healed').length > 0,
     castBerserk: casts.some(
@@ -563,7 +562,12 @@ export async function writePb05CombatSources(
 }
 
 if (import.meta.main) {
-  const session = await composePb05CombatSession();
+  const outIndex = process.argv.indexOf('--out');
+  const outDir = outIndex >= 0 ? process.argv[outIndex + 1] : undefined;
+  const session =
+    outDir === undefined
+      ? await composePb05CombatSession()
+      : await writePb05CombatSources(outDir);
   process.stdout.write(
     `${JSON.stringify(
       { coverage: session.coverage, blockers: session.blockers },

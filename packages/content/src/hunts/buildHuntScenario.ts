@@ -230,7 +230,9 @@ function composeCreature(
     attackCooldownTicks,
     attackMinDamage,
     attackMaxDamage,
-    aggroRadius: 0,
+    // Canary rotworm.lua `flags.targetDistance = 1`. The catalog does not
+    // import flags; using 0 made hunters never acquire a target (B6).
+    aggroRadius: creature.attacks.length > 0 ? 1 : 0,
     lootTableIndex,
     abilityIndices: [],
   };
