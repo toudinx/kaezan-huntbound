@@ -65,36 +65,59 @@ function sourceEntry(file: string) {
   };
 }
 
-function tileIds(hunt: HuntPackSelection): readonly number[] {
-  return hunt.keys
-    .filter((key) => key.startsWith('tile:tibia:'))
-    .map((key) => Number(key.slice('tile:tibia:'.length)))
-    .sort((left, right) => left - right);
+function sourcePathForEntry(
+  entry: AssetSelectionManifest['entries'][number],
+): string {
+  const directory = (() => {
+    switch (entry.sourceIdentity.kind) {
+      case 'lookType':
+        return 'outfits';
+      case 'clientId':
+        return 'objects';
+      case 'effectId':
+        return 'effects';
+      case 'missileId':
+        return 'missiles';
+    }
+  })();
+  return `${directory}/${entry.sourceIdentity.id}.png`;
 }
 
-function syntheticManifest(hunt: HuntPackSelection) {
-  const objects = Object.fromEntries(
-    tileIds(hunt).map((id) => [String(id), sourceEntry(`objects/${id}.png`)]),
-  );
+function syntheticManifest(selection: AssetSelectionManifest) {
+  const maps = {
+    outfits: {} as Record<string, ReturnType<typeof sourceEntry>>,
+    objects: {} as Record<string, ReturnType<typeof sourceEntry>>,
+    effects: {} as Record<string, ReturnType<typeof sourceEntry>>,
+    missiles: {} as Record<string, ReturnType<typeof sourceEntry>>,
+  };
+  for (const entry of selection.entries) {
+    const mapName = (() => {
+      switch (entry.sourceIdentity.kind) {
+        case 'lookType':
+          return 'outfits';
+        case 'clientId':
+          return 'objects';
+        case 'effectId':
+          return 'effects';
+        case 'missileId':
+          return 'missiles';
+      }
+    })();
+    maps[mapName][String(entry.sourceIdentity.id)] = sourceEntry(
+      sourcePathForEntry(entry),
+    );
+  }
   return {
-    outfits: {
-      '26': sourceEntry('outfits/26.png'),
-      '131': sourceEntry('outfits/131.png'),
-    },
-    objects,
-    effects: {},
-    missiles: {},
+    ...maps,
     semantic: {},
     objectNames: {},
   };
 }
 
-function syntheticPaths(hunt: HuntPackSelection): readonly string[] {
+function syntheticPaths(selection: AssetSelectionManifest): readonly string[] {
   return [
-    'outfits/26.png',
-    'outfits/131.png',
-    ...tileIds(hunt).map((id) => `objects/${id}.png`),
-  ];
+    ...new Set(selection.entries.map((entry) => sourcePathForEntry(entry))),
+  ].sort();
 }
 
 async function writeOrCheck(
@@ -116,12 +139,12 @@ async function writeOrCheck(
 }
 
 async function writeSourceFixture(
-  hunt: HuntPackSelection,
+  selection: AssetSelectionManifest,
   check: boolean,
 ): Promise<void> {
-  const manifest = canonicalJson(syntheticManifest(hunt));
+  const manifest = canonicalJson(syntheticManifest(selection));
   await writeOrCheck(join(testSourceRoot, 'manifest.json'), manifest, check);
-  for (const path of syntheticPaths(hunt)) {
+  for (const path of syntheticPaths(selection)) {
     await writeOrCheck(join(testSourceRoot, path), transparentPixel, check);
   }
 }
@@ -150,7 +173,7 @@ async function writeTestArtifacts(
   check: boolean,
 ): Promise<void> {
   const selection = createHuntAssetSelection({ hunt, group: testGroup });
-  await writeSourceFixture(hunt, check);
+  await writeSourceFixture(selection, check);
   const sourceLock = await lockFor({
     sourceRoot: testSourceRoot,
     selection,
@@ -184,6 +207,18 @@ async function writePersonalArtifacts(
     source: personalGroup.source,
     sourceSnapshot: personalGroup.sourceSnapshot,
   });
+  await writePersonalSelection(selection, check);
+  await writeOrCheck(
+    join(testRoot, 'personal-source-lock.json'),
+    canonicalJson(sourceLock),
+    check,
+  );
+}
+
+async function writePersonalSelection(
+  selection: AssetSelectionManifest,
+  check: boolean,
+): Promise<void> {
   await writeOrCheck(
     join(
       repositoryRoot,
@@ -192,22 +227,26 @@ async function writePersonalArtifacts(
     canonicalJson(selection),
     check,
   );
-  await writeOrCheck(
-    join(testRoot, 'personal-source-lock.json'),
-    canonicalJson(sourceLock),
-    check,
-  );
 }
 
 async function main(): Promise<void> {
   const args = new Set(process.argv.slice(2));
   const check = args.has('--check');
   const profile = args.has('--personal') ? 'personal' : 'test';
+  const selectionOnly = args.has('--selection-only');
   const region = await readRegion();
   const hunt = deriveHuntPackSelection(region);
 
   if (profile === 'test') {
     await writeTestArtifacts(hunt, check);
+    return;
+  }
+
+  if (selectionOnly) {
+    await writePersonalSelection(
+      createHuntAssetSelection({ hunt, group: personalGroup }),
+      check,
+    );
     return;
   }
 

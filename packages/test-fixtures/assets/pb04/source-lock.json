@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "d6377c5394864d4192c8d391f2dd8cd179d57522dcc18eb9900f899d60543819",
-    "byteLength": 55739
+    "sha256": "05001aefa4adfa69957f1489e2766ef97ad7ef5be13a24250c2bc88acf23d108",
+    "byteLength": 58218
   },
   "files": [
     {
@@ -16,6 +16,72 @@
         "id": 26
       },
       "path": "outfits/26.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "effect:tibia:draw-blood",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 1
+      },
+      "path": "effects/1.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "effect:tibia:hit-area",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 10
+      },
+      "path": "effects/10.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "effect:tibia:magic-blue",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 13
+      },
+      "path": "effects/13.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:dead-rotworm",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5967
+      },
+      "path": "objects/5967.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:small-splash",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2889
+      },
+      "path": "objects/2889.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "missile:tibia:weapon-type",
+      "category": "missile",
+      "sourceIdentity": {
+        "kind": "missileId",
+        "id": 254
+      },
+      "path": "missiles/254.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

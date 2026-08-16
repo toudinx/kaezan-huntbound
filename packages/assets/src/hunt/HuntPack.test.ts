@@ -30,6 +30,14 @@ function region(palette: readonly number[] = [100, 200]): MapRegion {
 }
 
 const huntExtras = ['creature:tibia:rotworm', 'outfit:tibia:knight'];
+const huntCombatKeys = [
+  'effect:tibia:draw-blood',
+  'item:tibia:small-splash',
+  'effect:tibia:hit-area',
+  'effect:tibia:magic-blue',
+  'missile:tibia:weapon-type',
+  'item:tibia:dead-rotworm',
+];
 
 function selectionFor(
   input: MapRegion,
@@ -39,7 +47,7 @@ function selectionFor(
     packKey: 'pb-04-venore-rotworm-cave',
     huntId: 'hunt:tibia:venore-rotworm-cave',
     regionSha256: hashHuntRegion(input),
-    keys: [...keys, ...huntExtras],
+    keys: [...keys, ...huntExtras, ...huntCombatKeys],
     budget: { maxEntries: 512, maxBytes: 6 * 1024 * 1024 },
   };
 }
@@ -156,5 +164,40 @@ describe('hunt pack validation', () => {
     ).toContainEqual(
       expect.objectContaining({ code: 'HUNT_PACK_REGION_STALE' }),
     );
+  });
+
+  it('reports every combat key missing from one validation', () => {
+    const input = region([0, 100]);
+    const complete = selectionFor(input);
+    const resolvedKeys = complete.keys.filter(
+      (key) => !huntCombatKeys.includes(key),
+    );
+    const diagnostics = validateHuntPack(
+      complete,
+      input,
+      resolved(resolvedKeys),
+    );
+
+    expect(
+      diagnostics
+        .filter(({ code }) => code === 'HUNT_ASSET_KEY_MISSING')
+        .map(({ message }) => message),
+    ).toEqual(huntCombatKeys.map((key) => `Selection is missing ${key}`));
+  });
+
+  it('reports a resolved key that was not declared by the selection', () => {
+    const input = region([100]);
+    const selected = selectionFor(input);
+    const diagnostics = validateHuntPack(
+      selected,
+      input,
+      resolved([...selected.keys, 'item:tibia:unused-combat-asset']),
+    );
+
+    expect(
+      diagnostics
+        .filter(({ code }) => code === 'HUNT_ASSET_KEY_UNEXPECTED')
+        .map(({ message }) => message),
+    ).toEqual(['Selection contains unexpected item:tibia:unused-combat-asset']);
   });
 });

@@ -7,10 +7,26 @@ const VOID_SERVER_ID = 0;
 
 export const HUNT_PACK_CREATURE_KEY = 'creature:tibia:rotworm';
 export const HUNT_PACK_OUTFIT_KEY = 'outfit:tibia:knight';
+export const HUNT_PACK_BLOOD_EFFECT_KEY = 'effect:tibia:draw-blood';
+export const HUNT_PACK_SMALL_SPLASH_KEY = 'item:tibia:small-splash';
+export const HUNT_PACK_HIT_AREA_EFFECT_KEY = 'effect:tibia:hit-area';
+export const HUNT_PACK_MAGIC_BLUE_EFFECT_KEY = 'effect:tibia:magic-blue';
+export const HUNT_PACK_WEAPON_TYPE_MISSILE_KEY = 'missile:tibia:weapon-type';
+export const HUNT_PACK_DEAD_ROTWORM_KEY = 'item:tibia:dead-rotworm';
+
+export const HUNT_PACK_COMBAT_KEYS = [
+  HUNT_PACK_BLOOD_EFFECT_KEY,
+  HUNT_PACK_SMALL_SPLASH_KEY,
+  HUNT_PACK_HIT_AREA_EFFECT_KEY,
+  HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
+  HUNT_PACK_WEAPON_TYPE_MISSILE_KEY,
+  HUNT_PACK_DEAD_ROTWORM_KEY,
+] as const;
 
 const HUNT_PACK_EXTRA_KEYS = [
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_OUTFIT_KEY,
+  ...HUNT_PACK_COMBAT_KEYS,
 ] as const;
 
 export interface HuntPackSelection {

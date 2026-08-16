@@ -3,8 +3,15 @@ import {
   AssetSelectionManifestSchema,
   type AssetSourceGroup,
   deriveHuntPackKeys,
+  HUNT_PACK_BLOOD_EFFECT_KEY,
+  HUNT_PACK_COMBAT_KEYS,
   HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_DEAD_ROTWORM_KEY,
+  HUNT_PACK_HIT_AREA_EFFECT_KEY,
+  HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
   HUNT_PACK_OUTFIT_KEY,
+  HUNT_PACK_SMALL_SPLASH_KEY,
+  HUNT_PACK_WEAPON_TYPE_MISSILE_KEY,
   type HuntPackSelection,
   hashHuntRegion,
   validateHuntPack,
@@ -27,6 +34,7 @@ export function deriveHuntPackSelection(region: MapRegion): HuntPackSelection {
       ...deriveHuntPackKeys(region),
       HUNT_PACK_CREATURE_KEY,
       HUNT_PACK_OUTFIT_KEY,
+      ...HUNT_PACK_COMBAT_KEYS,
     ],
     budget: HUNT_PACK_BUDGET,
   };
@@ -44,10 +52,12 @@ export function deriveHuntPackSelection(region: MapRegion): HuntPackSelection {
 }
 
 function identityForKey(key: string): {
-  readonly category: 'outfit' | 'creature' | 'object';
+  readonly category: 'outfit' | 'creature' | 'object' | 'effect' | 'missile';
   readonly sourceIdentity:
     | { readonly kind: 'lookType'; readonly id: number }
-    | { readonly kind: 'clientId'; readonly id: number };
+    | { readonly kind: 'clientId'; readonly id: number }
+    | { readonly kind: 'effectId'; readonly id: number }
+    | { readonly kind: 'missileId'; readonly id: number };
   readonly pivot: { readonly x: number; readonly y: number };
 } {
   if (key === HUNT_PACK_CREATURE_KEY) {
@@ -61,6 +71,48 @@ function identityForKey(key: string): {
     return {
       category: 'outfit',
       sourceIdentity: { kind: 'lookType', id: 131 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+  if (key === HUNT_PACK_BLOOD_EFFECT_KEY) {
+    return {
+      category: 'effect',
+      sourceIdentity: { kind: 'effectId', id: 1 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  if (key === HUNT_PACK_HIT_AREA_EFFECT_KEY) {
+    return {
+      category: 'effect',
+      sourceIdentity: { kind: 'effectId', id: 10 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  if (key === HUNT_PACK_MAGIC_BLUE_EFFECT_KEY) {
+    return {
+      category: 'effect',
+      sourceIdentity: { kind: 'effectId', id: 13 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  if (key === HUNT_PACK_WEAPON_TYPE_MISSILE_KEY) {
+    return {
+      category: 'missile',
+      sourceIdentity: { kind: 'missileId', id: 254 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  if (key === HUNT_PACK_SMALL_SPLASH_KEY) {
+    return {
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 2889 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  if (key === HUNT_PACK_DEAD_ROTWORM_KEY) {
+    return {
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 5967 },
       pivot: { x: 0.5, y: 1 },
     };
   }

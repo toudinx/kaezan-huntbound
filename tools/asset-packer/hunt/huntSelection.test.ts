@@ -38,6 +38,15 @@ const group = {
   buildProfiles: ['test', 'product'] as const,
 };
 
+const combatKeys = [
+  'effect:tibia:draw-blood',
+  'item:tibia:small-splash',
+  'effect:tibia:hit-area',
+  'effect:tibia:magic-blue',
+  'missile:tibia:weapon-type',
+  'item:tibia:dead-rotworm',
+];
+
 describe('PB-04 hunt selection generation', () => {
   it('derives metadata and tile keys from the region', () => {
     const selection = deriveHuntPackSelection(region());
@@ -47,6 +56,7 @@ describe('PB-04 hunt selection generation', () => {
       'tile:tibia:200',
       HUNT_PACK_CREATURE_KEY,
       HUNT_PACK_OUTFIT_KEY,
+      ...combatKeys,
     ]);
     expect(selection.regionSha256).toMatch(/^[0-9a-f]{64}$/);
   });
@@ -57,13 +67,67 @@ describe('PB-04 hunt selection generation', () => {
       group,
     });
 
-    expect(manifest.hunt?.keys).toHaveLength(4);
+    expect(manifest.hunt?.keys).toHaveLength(10);
     expect(manifest.entries.map(({ key }) => key)).toEqual([
       HUNT_PACK_CREATURE_KEY,
+      'effect:tibia:draw-blood',
+      'effect:tibia:hit-area',
+      'effect:tibia:magic-blue',
+      'item:tibia:dead-rotworm',
+      'item:tibia:small-splash',
+      'missile:tibia:weapon-type',
       HUNT_PACK_OUTFIT_KEY,
       'tile:tibia:100',
       'tile:tibia:200',
     ]);
     expect(JSON.stringify(manifest)).not.toContain('.png');
+  });
+
+  it('maps combat keys to their frozen source identities', () => {
+    const manifest = createHuntAssetSelection({
+      hunt: deriveHuntPackSelection(region()),
+      group,
+    });
+
+    expect(
+      manifest.entries
+        .filter(({ key }) => combatKeys.includes(key))
+        .map(({ key, category, sourceIdentity }) => ({
+          key,
+          category,
+          sourceIdentity,
+        })),
+    ).toEqual([
+      {
+        key: 'effect:tibia:draw-blood',
+        category: 'effect',
+        sourceIdentity: { kind: 'effectId', id: 1 },
+      },
+      {
+        key: 'effect:tibia:hit-area',
+        category: 'effect',
+        sourceIdentity: { kind: 'effectId', id: 10 },
+      },
+      {
+        key: 'effect:tibia:magic-blue',
+        category: 'effect',
+        sourceIdentity: { kind: 'effectId', id: 13 },
+      },
+      {
+        key: 'item:tibia:dead-rotworm',
+        category: 'object',
+        sourceIdentity: { kind: 'clientId', id: 5967 },
+      },
+      {
+        key: 'item:tibia:small-splash',
+        category: 'object',
+        sourceIdentity: { kind: 'clientId', id: 2889 },
+      },
+      {
+        key: 'missile:tibia:weapon-type',
+        category: 'missile',
+        sourceIdentity: { kind: 'missileId', id: 254 },
+      },
+    ]);
   });
 });

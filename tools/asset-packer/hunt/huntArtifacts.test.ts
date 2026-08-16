@@ -22,10 +22,10 @@ describe('PB-04 generated hunt artifacts', () => {
     );
 
     expect(selection.hunt?.packKey).toBe(HUNT_PACK_KEY);
-    expect(selection.hunt?.keys).toHaveLength(134);
+    expect(selection.hunt?.keys).toHaveLength(140);
     expect(selection.hunt?.budget).toEqual(HUNT_PACK_BUDGET);
     expect(selection.hunt?.keys).not.toContain('tile:tibia:0');
-    expect(selection.entries).toHaveLength(134);
+    expect(selection.entries).toHaveLength(140);
     expect(new Set(selection.entries.map((entry) => entry.key))).toEqual(
       new Set(selection.hunt?.keys),
     );
@@ -37,7 +37,7 @@ describe('PB-04 generated hunt artifacts', () => {
     const sourceLock = AssetSourceLockSchema.parse(
       await readJson('packages/test-fixtures/assets/pb04/source-lock.json'),
     );
-    expect(sourceLock.files).toHaveLength(134);
+    expect(sourceLock.files).toHaveLength(140);
     expect(sourceLock.files.every((file) => file.byteLength === 68)).toBe(true);
     expect(sourceLock.sourceSnapshot).toBe('pb04-synthetic-v1');
   });

@@ -738,6 +738,29 @@
       },
       "flags": {}
     },
+    "2889": {
+      "name": "",
+      "file": "objects/2889.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
     "3115": {
       "name": "",
       "file": "objects/3115.png",
@@ -2371,6 +2394,29 @@
       },
       "flags": {}
     },
+    "5967": {
+      "name": "",
+      "file": "objects/5967.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
     "16280": {
       "name": "",
       "file": "objects/16280.png",
@@ -3085,8 +3131,102 @@
       "flags": {}
     }
   },
-  "effects": {},
-  "missiles": {},
+  "effects": {
+    "1": {
+      "name": "",
+      "file": "effects/1.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "10": {
+      "name": "",
+      "file": "effects/10.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "13": {
+      "name": "",
+      "file": "effects/13.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    }
+  },
+  "missiles": {
+    "254": {
+      "name": "",
+      "file": "missiles/254.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    }
+  },
   "semantic": {},
   "objectNames": {}
 }
