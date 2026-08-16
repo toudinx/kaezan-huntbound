@@ -1,0 +1,34 @@
+---
+description: Composição do jogo em Phaser, HUD em DOM e verificação no browser
+globs: apps/game/**,playwright.config.ts,tests/e2e/**
+alwaysApply: false
+---
+
+# Papel de apps/game
+
+`@huntbound/game` é **composition root e adaptador de apresentação**. Ele orquestra; ele não decide.
+
+- Regra de jogo em Phaser scene é violação. Regra vive em `@huntbound/simulation`; a scene traduz
+  input em comando e snapshot/evento em pixel.
+- HUD, menus e acessibilidade em DOM/CSS. Playfield em Phaser.
+- Asset por chave e manifesto, nunca por path literal.
+- A ponte entre kernel e renderer fica em `src/bridge` e `src/simulation`; não espalhe acesso a
+  estado do kernel pelas scenes.
+
+# Rebuild antes do browser
+
+`playwright.config.ts` sobe `vite preview`, que serve o **`dist/game` pré-buildado**. Nada na suíte
+reconstrói. Qualquer edição em `apps/game/src/**` é invisível para o browser até rodar
+`corepack pnpm build`.
+
+- `corepack pnpm qa:browser` e `corepack pnpm verify` buildam antes. Use esses.
+- `playwright test` direto **não** builda. Se usar, builde manualmente antes — inclusive depois de
+  reverter qualquer experimento de mutação.
+- Quando um sintoma no browser contradisser o código que você está lendo, confira a idade do bundle
+  antes de teorizar. Isso já custou uma sessão inteira de debug com um teclado "sem efeito" que era
+  bundle velho.
+
+# Assets em desenvolvimento
+
+`dev` e `build` dependem do staging de assets (`assets:stage:test`). Rodar o Vite direto sem stage
+deixa o jogo sem pack. Use os scripts `dev`, `dev:personal` e `build` do workspace.

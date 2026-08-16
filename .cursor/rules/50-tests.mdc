@@ -1,0 +1,43 @@
+---
+description: Disciplina de testes, fixtures determinísticas e proibição de mascarar falha
+globs: **/*.test.ts,tests/**,packages/test-fixtures/**,vitest.config.ts,tools/**/vitest.config.ts
+alwaysApply: false
+---
+
+# Ordem
+
+Teste antes da implementação sempre que a mudança tiver comportamento testável. Veja o teste
+vermelho, e veja-o falhar **pela razão certa**, antes de escrever o código. Task de auditoria,
+documentação ou spike pode usar outra evidência, mas ela precisa estar declarada na task card.
+
+# Proibido mascarar falha
+
+Nenhum destes fecha um gate:
+
+- `retries` para esconder instabilidade — `retries: 1` mascarando um teste que falhava `10/10` foi o
+  defeito D1 da auditoria do PB-04;
+- `skip`, `only` esquecido, teste comentado ou deletado para "destravar";
+- timeout inflado sem causa comprovada;
+- `try/catch` vazio, warning suprimido, asserção enfraquecida;
+- golden ou snapshot regravado até passar.
+
+Teste vermelho significa que o código está errado **ou** que o teste está errado. Decida qual, prove,
+e conserte o que estiver errado de fato.
+
+# Fixtures e goldens
+
+`packages/test-fixtures/**` guarda seed, command log, snapshot e eventos golden. Eles existem para
+detectar mudança de comportamento não intencional.
+
+- Regenerar golden exige justificativa explícita na task e registro no `STATE.md`.
+- Um replay precisa reproduzir byte a byte em Node e no Chromium.
+- Hash publicado em documento tem que existir no repositório — hash de replay citado em card e
+  inexistente na árvore foi o defeito D2 do PB-04. Se você publicar um hash, gere-o do artefato real.
+- Fixture nova de replay precisa ser registrada em `docs/simulation/REPLAY_CONTRACT.md`.
+
+# Execução
+
+- `corepack pnpm test` cobre Vitest, os testes de fronteira em `tools/architecture` e as suítes dos
+  tools (replay, tile-flags, map-extractor) — cada um com seu próprio `vitest.config.ts`.
+- Suíte de browser: `corepack pnpm qa:browser` (builda antes). Nunca conclua a partir de
+  `playwright test` sobre bundle velho.

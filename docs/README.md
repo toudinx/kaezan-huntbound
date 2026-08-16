@@ -3,6 +3,14 @@
 Este diretório separa **direção vigente** de **evidência histórica**. Quando houver conflito, a
 ordem abaixo vence.
 
+## Entrada dos agentes
+
+`AGENTS.md` na raiz do repositório é a instrução compartilhada por Cursor, Codex e Claude Code
+(que chega até ele por `CLAUDE.md`). Ele resume esta ordem de autoridade, os gates e as regras
+invioláveis; regras com escopo por diretório ficam em `.cursor/rules/*.mdc` e procedimentos longos em
+`.cursor/skills/<nome>/SKILL.md`. Nenhum desses arquivos cria direção nova: em conflito, os
+documentos normativos abaixo vencem.
+
 ## Fonte normativa
 
 1. `05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md` — produto, fontes de verdade, uso pessoal e escopo do V0.

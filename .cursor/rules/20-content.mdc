@@ -1,0 +1,39 @@
+---
+description: Pipeline de conteúdo Canary, artefatos gerados e snapshot offline
+globs: packages/content/**,tools/content-catalog/**,tools/map-extractor/**,tools/tile-flags/**,tools/hunt-selection/**
+alwaysApply: false
+---
+
+# Artefatos gerados
+
+Tudo em `packages/content/src/generated/**` é saída de CLI: catálogo, tile-flags, região de hunt.
+Nunca edite à mão. Para mudar a saída, mude a entrada (seleção, importador, snapshot) e regenere.
+
+Todo gerador tem um par `build` / `build --check`. O `--check` é o gate: ele reexecuta a geração e
+falha se o resultado versionado divergir. Depois de regenerar, rode `corepack pnpm content:check`.
+
+# Snapshot Canary
+
+- Os tools leem o snapshot por `HUNTBOUND_CANARY_SOURCE`. Não hardcode path.
+- `references/` é ignorado pelo Git e pelo Biome; não edite nada lá.
+- `references/canary` é um clone parcial em `157e6f9e` e **não contém o mapa global**. Antes de
+  concluir que um arquivo não existe, procure em `C:\Kaezan\kaezan\canary-3.4.1\`,
+  `C:\Kaezan\kaezan - world\canary-3.4.1\` e `C:\Users\toudi\Downloads\otservbr.otbm`. Nada precisa
+  ser baixado.
+- 3.4.1 e `157e6f9e` são versões diferentes: ao parear arquivos entre elas, compare a região
+  relevante primeiro. Provado no PB-04-04 — `otservbr-monster.xml` difere globalmente e é idêntico
+  dentro do box congelado da hunt.
+
+# Identidade e seleção
+
+- Chaves de conteúdo são estáveis e derivadas do snapshot, conforme `docs/content/IDENTITY_POLICY.md`.
+  Não invente id, slug ou nome "melhor".
+- A hunt vem do catálogo TibiaRoute e é congelada em `packages/content/src/selections/hunts/*.json`.
+  TibiaRoute nunca é acessado em runtime.
+- Uma hunt por vez. Não extraia região, criatura ou loot que a hunt corrente não exija.
+- Mapeamentos de origem estão em `docs/content/CANARY_XML_MAPPING.md`,
+  `docs/content/CANARY_LUA_MAPPING.md` e `docs/content/MAP_REGION_CONTRACT.md`. Preserve as regras de
+  origem em vez de reinterpretá-las.
+
+Gates de conteúdo: `content:check`, `hunt:selection:check`, `hunt:sources:check`,
+`hunt:extract:check`, `content:tileflags:check`.

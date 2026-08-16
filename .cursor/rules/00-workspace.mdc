@@ -1,0 +1,41 @@
+---
+description: Toolchain, gates e autoridade documental do Kaezan Huntbound
+alwaysApply: true
+---
+
+# Workspace
+
+- Node 24.14.0, pnpm 11.21.0 via corepack. Sempre `corepack pnpm <script>`; nunca `npm`, `yarn` ou
+  `pnpm` avulso. Versões são pinadas (`save-exact=true`): não faça bump sem pedido.
+- Windows/PowerShell. Prefira o script pnpm existente a montar a linha de comando na mão.
+- `AGENTS.md` na raiz é a instrução completa. Em conflito entre memória e repositório, o repositório
+  vence.
+
+# Direção vigente
+
+Phaser 4 + TypeScript + Vite, browser-first, simulação determinística fora do renderer, V0 pessoal
+local-first sobre snapshot Canary, gacha só de outfit cosmético.
+
+`docs/00`, `docs/02`, `docs/04`, `docs/C03`–`docs/C06` e `docs/research/**` são **evidência
+histórica**: recomendam Godot ou Angular/C# sob premissas já substituídas. Nunca proponha stack,
+arquitetura ou backlog a partir deles. A ordem normativa está em `docs/README.md`.
+
+# Gates
+
+Antes de declarar qualquer task concluída: `corepack pnpm verify` **e** `biome check .` — `verify`
+roda `format:check` e não pega lint, o que já reprovou um playbook aqui.
+
+Gates focados durante o trabalho: `typecheck`, `test`, `architecture:check`, `content:check`,
+`assets:check`, `simulation:check`, `hunt:check`, `qa:browser`. Detalhe em `AGENTS.md` e na skill
+`run-gates`.
+
+Nenhum resultado de gate pode ser afirmado sem a saída fresca do comando.
+
+# Proibições
+
+- Não editar artefato gerado à mão: `packages/content/src/generated/**`,
+  `packages/test-fixtures/**/expected/**`, packs em `apps/game/public/assets/**`.
+- Não reescrever golden de replay para fazer um teste passar.
+- Não versionar asset pessoal nem mídia Tibia.
+- Não fechar gate com retry, `skip`, timeout inflado, warning suprimido, catch vazio ou asserção
+  enfraquecida.

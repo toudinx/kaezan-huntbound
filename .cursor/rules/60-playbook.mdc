@@ -1,0 +1,57 @@
+---
+description: Formato de playbook, task card, STATE.md e ciclo de integração
+globs: docs/playbooks/**,docs/superpowers/**
+alwaysApply: false
+---
+
+# Estrutura
+
+```text
+docs/playbooks/<PB-ID>/
+  README.md    mapa: objetivo, escopo, decisões congeladas, aceite, tabela de tasks, paralelismo
+  STATE.md     handoff operacional entre chats e modelos
+  tasks/<PB-ID>-NN-<slug>.md
+  artifacts/   relatórios de aceite e auditoria
+```
+
+Especificações e planos ficam em `docs/superpowers/specs/` e `docs/superpowers/plans/`, nomeados
+`AAAA-MM-DD-<slug>.md`.
+
+# Task card
+
+Toda task card declara, no mínimo: objetivo, resultado esperado, dependências, **leitura mínima**,
+decisões congeladas, escopo permitido, fora de escopo, instruções, verificação, critérios de aceite,
+condições de parada, persistência do handoff, commit, ciclo de conclusão (branch-base, branch
+temporária, worktree, modo de integração, verificação pós-integração, limpeza), relatório final e um
+**prompt copiável sem placeholders**. O contrato completo está em
+`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
+
+Perto do cabeçalho a task declara ainda classe da tarefa, modelo/effort sugerido, validador sugerido,
+skills necessárias e se pode rodar em paralelo (`docs/08_POLITICA_MODELOS_AGENTES.md`).
+
+Task é dividida por **fronteira de problema**, nunca por quantidade de arquivos. Uma task coesa que
+toca muitos arquivos é melhor que três fragmentos que deixam o workspace quebrado.
+
+# STATE.md
+
+Só estado operacional: status por task, última concluída e próxima elegível, commits e artefatos,
+verificações executadas e resultado, decisões descobertas e onde foram documentadas, bloqueios reais.
+Decisão durável vai para ADR/spec e é apenas referenciada aqui.
+
+Registre também o modelo e o effort realmente usados, e qualquer desvio da política.
+
+# Ciclo de conclusão
+
+Executar a task já autoriza integrar e limpar. Não peça confirmação para fast-forward local nem para
+remover a worktree que você criou. Detalhe operacional na skill `worktree-cycle`.
+
+Se `--ff-only` falhar, houver conflito, teste vermelho, árvore suja ou dúvida sobre path: a task não
+terminou. Preserve worktree e branch, registre o estado, reporte o impedimento. Não crie merge
+commit, não faça rebase, não force deleção.
+
+# Antipadrões
+
+Um chat para o playbook inteiro; fragmentar mudança coesa para cumprir limite artificial; repetir o
+contexto mestre quando referência precisa basta; marcar task concluída sem verificação fresca; deixar
+decisão ou bloqueio só no relatório do chat; absorver problema independente na task corrente; supor
+que o próximo agente terá acesso a esta conversa.
