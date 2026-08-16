@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { HuntSelectionRegion } from '../hunt-selection/types.ts';
 import {
   applyHuntLayout,
-  parseHuntLayoutRecipe,
   type HuntLayoutRecipe,
+  parseHuntLayoutRecipe,
 } from './layout.ts';
 import type { OtbmTile } from './otbm.ts';
 

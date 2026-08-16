@@ -11,8 +11,8 @@ import type { HuntFileName } from './output.ts';
 import { encodeHuntFiles, HUNT_FILE_NAMES } from './output.ts';
 import type { ResolvedHuntSource } from './sources.ts';
 import { resolveHuntSources } from './sources.ts';
-import { diagnostic, isBlockingDiagnostic } from './types.ts';
 import { analyzeHuntTopology } from './topology.ts';
+import { diagnostic, isBlockingDiagnostic } from './types.ts';
 
 interface MapExtractorCliIo {
   stdout(value: unknown): void;

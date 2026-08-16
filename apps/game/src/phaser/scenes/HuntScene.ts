@@ -203,7 +203,7 @@ export class HuntScene extends Phaser.Scene {
       );
 
     if (this.inputGate.take(this.options.driver.tick) && player) {
-      const action = this.options.input.drain()[0];
+      const action = this.options.input.drain(this.options.driver.tick)[0];
       if (action?.kind === 'step') {
         const acceptance = this.options.driver.enqueue({
           tick: this.options.driver.tick,
@@ -305,6 +305,10 @@ export class HuntScene extends Phaser.Scene {
 
   resetHuntProbe(): void {
     this.inputCommands = [];
+  }
+
+  releaseHeldInput(): void {
+    this.options.input.releaseHeld();
   }
 
   private makeCameraController(): CameraController {

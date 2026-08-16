@@ -10,7 +10,9 @@ export type InputAction =
 export interface InputMap {
   attach(target: HTMLElement): void;
   detach(): void;
-  drain(): readonly InputAction[];
+  drain(tick?: number): readonly InputAction[];
+  /** Ends a hold without dropping a pending edge that has not been drained. */
+  releaseHeld(): void;
 }
 
 export interface InputMapOptions {
@@ -109,9 +111,12 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
   const heldDpadDirections = new Set<Direction>();
   let pendingDirection: Direction | undefined;
   let holdStartedAtMs: number | undefined;
+  let holdGateTicks = 0;
+  let lastHoldTick: number | undefined;
   let repeatEngaged = false;
   let attachedTarget: HTMLElement | undefined;
   let attachedWindow: Window | undefined;
+  const windowCapture: AddEventListenerOptions = { capture: true };
   const now =
     options.now ?? (() => globalThis.performance?.now() ?? Date.now());
 
@@ -136,6 +141,8 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
     if (direction === undefined) return;
     pendingDirection = direction;
     holdStartedAtMs = now();
+    holdGateTicks = 0;
+    lastHoldTick = undefined;
     repeatEngaged = false;
   };
 
@@ -145,7 +152,7 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
       return;
     }
     keyboardEvent.preventDefault();
-    if (heldKeys.has(keyboardEvent.code)) {
+    if (keyboardEvent.repeat || heldKeys.has(keyboardEvent.code)) {
       return;
     }
     heldKeys.add(keyboardEvent.code);
@@ -153,11 +160,19 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
   };
 
   const onKeyUp = (event: Event): void => {
-    const code = (event as KeyboardEvent).code;
-    if (!heldKeys.delete(code)) {
+    const keyboardEvent = event as KeyboardEvent;
+    const identity = keyboardEvent.code || keyboardEvent.key;
+    if (!identity) {
+      if (heldKeys.size === 0) {
+        return;
+      }
+      heldKeys.clear();
+    } else if (!heldKeys.delete(identity)) {
       return;
     }
     holdStartedAtMs = undefined;
+    holdGateTicks = 0;
+    lastHoldTick = undefined;
     repeatEngaged = false;
   };
 
@@ -167,6 +182,19 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
       return;
     }
     event.preventDefault();
+    const pointerEvent = event as PointerEvent;
+    const captureTarget = attachedTarget;
+    if (
+      captureTarget !== undefined &&
+      typeof pointerEvent.pointerId === 'number' &&
+      typeof captureTarget.setPointerCapture === 'function'
+    ) {
+      try {
+        captureTarget.setPointerCapture(pointerEvent.pointerId);
+      } catch {
+        // Capture is best-effort: a lost pointerup still reaches the window listener.
+      }
+    }
     if (heldDpadDirections.has(direction)) {
       return;
     }
@@ -179,20 +207,30 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
     if (direction === undefined) {
       heldDpadDirections.clear();
       holdStartedAtMs = undefined;
+      holdGateTicks = 0;
+      lastHoldTick = undefined;
       repeatEngaged = false;
       return;
     }
     heldDpadDirections.delete(direction);
     holdStartedAtMs = undefined;
+    holdGateTicks = 0;
+    lastHoldTick = undefined;
+    repeatEngaged = false;
+  };
+
+  const releaseHeld = (): void => {
+    heldKeys.clear();
+    heldDpadDirections.clear();
+    holdStartedAtMs = undefined;
+    holdGateTicks = 0;
+    lastHoldTick = undefined;
     repeatEngaged = false;
   };
 
   const clearHeldInput = (): void => {
-    heldKeys.clear();
-    heldDpadDirections.clear();
     pendingDirection = undefined;
-    holdStartedAtMs = undefined;
-    repeatEngaged = false;
+    releaseHeld();
   };
 
   const detach = (): void => {
@@ -209,6 +247,13 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
     target?.removeEventListener('pointerup', onPointerUp);
     target?.removeEventListener('pointercancel', clearHeldInput);
     target?.removeEventListener('blur', clearHeldInput);
+    windowTarget?.removeEventListener('keyup', onKeyUp, windowCapture);
+    windowTarget?.removeEventListener('pointerup', onPointerUp, windowCapture);
+    windowTarget?.removeEventListener(
+      'pointercancel',
+      clearHeldInput,
+      windowCapture,
+    );
     windowTarget?.removeEventListener('blur', clearHeldInput);
     attachedTarget = undefined;
     attachedWindow = undefined;
@@ -226,13 +271,24 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
       target.addEventListener('pointerup', onPointerUp);
       target.addEventListener('pointercancel', clearHeldInput);
       target.addEventListener('blur', clearHeldInput);
+      attachedWindow?.addEventListener('keyup', onKeyUp, windowCapture);
+      attachedWindow?.addEventListener('pointerup', onPointerUp, windowCapture);
+      attachedWindow?.addEventListener(
+        'pointercancel',
+        clearHeldInput,
+        windowCapture,
+      );
       attachedWindow?.addEventListener('blur', clearHeldInput);
     },
     detach,
-    drain: () => {
+    releaseHeld,
+    drain: (tick) => {
       const edgeDirection = pendingDirection;
       if (edgeDirection !== undefined) {
         pendingDirection = undefined;
+        holdStartedAtMs = now();
+        holdGateTicks = 0;
+        lastHoldTick = tick;
         repeatEngaged = false;
         return stepAction(edgeDirection);
       }
@@ -240,8 +296,23 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
       const direction = currentDirection();
       if (direction === undefined) {
         holdStartedAtMs = undefined;
+        holdGateTicks = 0;
+        lastHoldTick = undefined;
         repeatEngaged = false;
         return EMPTY_ACTIONS;
+      }
+
+      if (tick !== undefined) {
+        if (lastHoldTick === tick) {
+          return repeatEngaged ? stepAction(direction) : EMPTY_ACTIONS;
+        }
+        lastHoldTick = tick;
+        holdGateTicks += 1;
+        if (holdGateTicks < HOLD_REPEAT_DELAY_TICKS) {
+          return EMPTY_ACTIONS;
+        }
+        repeatEngaged = true;
+        return stepAction(direction);
       }
 
       if (!repeatEngaged) {

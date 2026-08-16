@@ -2,15 +2,14 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
-
-import {
-  decodeCommandLog,
-  encodeCanonicalJson,
-} from '../../packages/simulation/src/index.ts';
 import {
   SIMULATION_RULES_VERSION,
   validateKernelScenario,
 } from '../../packages/contracts/src/index.ts';
+import {
+  decodeCommandLog,
+  encodeCanonicalJson,
+} from '../../packages/simulation/src/index.ts';
 import { buildReplayArtifacts } from './replayArtifacts.ts';
 
 const fixtureRoot = resolve(

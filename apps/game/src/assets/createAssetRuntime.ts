@@ -1,8 +1,8 @@
 import {
-  createFetchAssetProvider,
   type AssetBuildProfile,
   type AssetKey,
   type AssetProvider,
+  createFetchAssetProvider,
   type ResolvedAsset,
 } from '../../../../packages/assets/src/index.ts';
 

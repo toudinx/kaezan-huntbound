@@ -8,10 +8,10 @@ import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts'
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import type { TileFlagsTable } from '../tile-flags/types.ts';
+import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
 import { readOtbmTiles } from './otbm.ts';
 import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
-import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
 import { analyzeHuntTopology } from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';

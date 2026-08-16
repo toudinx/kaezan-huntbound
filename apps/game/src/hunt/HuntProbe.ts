@@ -94,6 +94,7 @@ export interface HuntProbe {
   events(): readonly HuntProbeEvent[];
   commands?(): readonly HuntProbeCommand[];
   reset(): void;
+  releaseHeld?(): void;
 }
 
 /** Implemented by the scene under observation. */
@@ -101,6 +102,7 @@ export interface HuntProbeSource {
   huntProbeState(): HuntProbeState;
   huntProbeCommands?(): readonly HuntProbeCommand[];
   resetHuntProbe?(): void;
+  releaseHeldInput?(): void;
 }
 
 export type HuntProbeEventFeed = (
@@ -227,6 +229,9 @@ export function installHuntProbe(
     reset: () => {
       recorder.reset();
       source.resetHuntProbe?.();
+    },
+    releaseHeld: () => {
+      source.releaseHeldInput?.();
     },
   });
 

@@ -27,10 +27,6 @@ export interface HuntTopologyReport {
   readonly diagnostics: readonly ExtractionDiagnostic[];
 }
 
-function positionKey(position: GridPosition): string {
-  return `${position.z}:${position.y}:${position.x}`;
-}
-
 function indexOf(position: GridPosition, width: number): number {
   return position.y * width + position.x;
 }
@@ -223,7 +219,6 @@ export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
 
   const diagnostics: ExtractionDiagnostic[] = [];
   const reachablePosition = (position: GridPosition): boolean => {
-    const floor = floorByZ.get(position.z);
     if (!pointWalkable(position, floorByZ, width, height)) return false;
     return reachableByZ.get(position.z)?.has(indexOf(position, width)) ?? false;
   };
