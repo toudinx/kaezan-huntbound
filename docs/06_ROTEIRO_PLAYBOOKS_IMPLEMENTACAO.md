@@ -42,7 +42,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
 | [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **aberto; `REJECTED` por PB-04-10 em `307a3f0`; hunt jogável e aceite de produto dado; desbloqueiam FIX-02/03/04** |
-| PB-05 | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot |
+| [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **playbook escrito; execução bloqueada até PB-04 fechar** |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
 | PB-08 | Gacha cosmético | banner, pulls, garantia, duplicatas e tokens |
@@ -92,6 +92,10 @@ nunca recebeu as fixtures do PB-04; e `biome check` sai `1` com `13` diagnóstic
 **PB-05 não está liberado.** PB-05 é combate e se apoiaria no mesmo caminho de input defeituoso. Os
 próximos a executar são `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`, que podem rodar em paralelo;
 com os três integrados, uma nova rodada de PB-04-10 decide o fechamento.
+
+O **playbook do PB-05 já está escrito** — spec, README, `STATE.md` e doze task cards — porque a
+autoria não depende do veredito e as quatro lições da auditoria do PB-04 já entram nele como critério
+de aceite. Nenhuma task de PB-05 é elegível antes do fechamento do PB-04.
 
 ## PB-00 — Definition of Ready
 
@@ -222,6 +226,56 @@ O gate deve provar que a região reextraída é byte-idêntica, que a sessão da
 SHA-256 em Node e no browser, que a retomada converge em todas as fronteiras, que o journal golden do
 PB-03 permaneceu byte-idêntico após o bump de schema, e que a hunt é jogável nos quatro viewports
 obrigatórios.
+
+## PB-05 — Definition of Ready
+
+**Playbook modular:** `docs/playbooks/PB-05/README.md` — doze task cards, cada uma executável em um
+chat independente. Design aprovado em
+`docs/superpowers/specs/2026-08-15-pb-05-vocation-combat-design.md`.
+
+**Estado:** escrito e **bloqueado**. A execução começa quando PB-04 fechar por auditoria aprovada.
+
+- [x] A vocação é Knight; ela já existe no catálogo PB-01, com ganhos, velocidade e multiplicadores
+      de skill importados.
+- [x] As spells são `exori`, `exori ico` e `exura ico`; só a primeira já está curada, e importar as
+      outras duas é task própria.
+- [x] Toda fórmula Canary é float e é resolvida em `@huntbound/content`; o kernel recebe apenas
+      `min`/`max` inteiros e sorteia entre eles.
+- [x] `itemKey` e `spellKey` entram na proibição executável do kernel, junto das cinco identidades já
+      proibidas.
+- [x] A região **não** é reextraída: o combate é composto ao construir o cenário, e os quatro
+      artefatos gerados da hunt permanecem byte-idênticos.
+- [x] O loot é automático: o kernel rola e concede por evento, e a bolsa da run é projeção fora do
+      kernel. Não há comando de coleta nem campo novo no snapshot.
+- [x] Corpo e sangue são apresentação pura, com TTL visual e sem estado no kernel.
+- [x] Criaturas agridem e perseguem com passo guloso; não há pathfinding, line of sight nem fuga em
+      vida baixa — esta última porque o importer não captura `runOnHealth`.
+- [x] A ficha do personagem é conteúdo congelado, não save. PB-06 continua dono da persistência.
+- [x] Nenhuma dependência externa nova entra no workspace.
+
+Parâmetros congelados: `SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`, streams RNG
+novos `combat` e `loot`, sete sistemas por tick (`lifecycle`, `movement`, `upkeep`, `combat`,
+`death e loot`, `ai`, `spawn`), alcance de golpe Chebyshev 1 no mesmo andar, mitigação zero, e
+fixture `pb-05-hunt-combat` com seed `2c3d4e5f60718293` em 900 ticks, com retomada varrida em todas
+as fronteiras.
+
+Entregáveis mínimos esperados do plano:
+
+```text
+packages/contracts/src/{simulation,content}/
+packages/content/src/{importers,selections,generated,hunts,runtime}/
+packages/simulation/src/{kernel,state}/
+packages/test-fixtures/hunt/pb05/
+packages/assets/catalog/selections/
+apps/game/src/{hunt,ui,input}/
+docs/content/PB-05-SELECTION.md
+```
+
+O gate deve provar que os journals golden de PB-03 e PB-04 sobreviveram byte-idênticos ao bump de
+schema, que a sessão de combate reproduz o mesmo SHA-256 em Node e no browser, que a retomada
+converge em todas as fronteiras com vida, mana, alvo e cooldowns serializados, que `combat:check`
+entrou em `check` e `verify` e está registrado em `REPLAY_CONTRACT.md`, e que a caçada é jogável nos
+quatro viewports com specs estáveis sem `retries`.
 
 ## Contrato para escolher a primeira hunt
 
