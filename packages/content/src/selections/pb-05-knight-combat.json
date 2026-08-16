@@ -1,0 +1,236 @@
+{
+  "key": "selection:pb-05-knight-combat",
+  "huntKey": "hunt:tibia:venore-rotworm-cave",
+  "tickDurationMs": 50,
+  "vocation": {
+    "stableKey": "vocation:tibia:knight",
+    "sourceId": "4",
+    "sourceFile": "data/XML/vocations.xml",
+    "displayName": "Knight",
+    "attackSpeedMs": 2000,
+    "baseSpeed": 110,
+    "gainHp": 15,
+    "gainMana": 5,
+    "manaMultiplier": 3
+  },
+  "creature": {
+    "stableKey": "creature:tibia:rotworm",
+    "sourceFile": "data-otservbr-global/monster/vermins/rotworm.lua",
+    "speed": 58,
+    "intervalMs": 2000,
+    "meleeMinDamage": 0,
+    "meleeMaxDamage": 40,
+    "health": 65,
+    "corpseItemId": 5967,
+    "race": "blood"
+  },
+  "weapon": {
+    "stableKey": "item:tibia:sword",
+    "sourceId": "3264",
+    "sourceFile": "data/items/items.xml",
+    "displayName": "sword",
+    "attack": 14
+  },
+  "character": {
+    "vocationKey": "vocation:tibia:knight",
+    "level": 35,
+    "skills": {
+      "sword": 10,
+      "magic": 0
+    },
+    "weaponKey": "item:tibia:sword",
+    "fightMode": "offensive",
+    "attackFactor": 1,
+    "maxHealth": 590,
+    "maxMana": 170,
+    "levelSource": "highest required spell level among the three selected spells (Berserk 35)",
+    "skillSource": "schema.sql defaults skill_sword=10 and maglevel=0",
+    "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5; levels 9-35 gain Knight gainhp 15",
+    "manaSource": "schema.sql manamax=0 at level 1; levels 2-8 gain vocation 0 gainmana 5; levels 9-35 gain Knight gainmana 5",
+    "trivializesHunt": true
+  },
+  "spells": [
+    {
+      "stableKey": "spell:tibia:berserk",
+      "sourceId": "80",
+      "words": "exori",
+      "displayName": "Berserk",
+      "sourceFile": "data/scripts/spells/attack/berserk.lua",
+      "level": 35,
+      "mana": 115,
+      "cooldownMs": 4000,
+      "groupCooldownMs": 2000,
+      "vocationNames": ["knight", "elite knight"],
+      "effect": "CONST_ME_HITAREA",
+      "formulaKind": "skillAttack",
+      "minPower": 20,
+      "maxPower": 47
+    },
+    {
+      "stableKey": "spell:tibia:brutal-strike",
+      "sourceId": "61",
+      "words": "exori ico",
+      "displayName": "Brutal Strike",
+      "sourceFile": "data/scripts/spells/attack/brutal_strike.lua",
+      "level": 16,
+      "mana": 30,
+      "cooldownMs": 6000,
+      "groupCooldownMs": 2000,
+      "vocationNames": ["knight", "elite knight"],
+      "effect": "CONST_ME_HITAREA",
+      "distanceEffect": "CONST_ANI_WEAPONTYPE",
+      "formulaKind": "skillAttackProduct",
+      "schemaDecision": "deferred-to-PB-05-02",
+      "minPower": 17,
+      "maxPower": 27
+    },
+    {
+      "stableKey": "spell:tibia:wound-cleansing",
+      "sourceId": "123",
+      "words": "exura ico",
+      "displayName": "Wound Cleansing",
+      "sourceFile": "data/scripts/spells/healing/wound_cleansing.lua",
+      "level": 8,
+      "mana": 40,
+      "cooldownMs": 1000,
+      "groupCooldownMs": 1000,
+      "vocationNames": ["knight", "elite knight"],
+      "effect": "CONST_ME_MAGIC_BLUE",
+      "formulaKind": "levelMagic",
+      "schemaDecision": "deferred-to-PB-05-02",
+      "minPower": 32,
+      "maxPower": 58
+    }
+  ],
+  "conversions": {
+    "tickDurationMs": 50,
+    "groundSpeed": 150,
+    "speedFormula": {
+      "speedA": 857.36,
+      "speedB": 261.29,
+      "speedC": -4795.01,
+      "serverBeat": 50,
+      "expression": "calculatedStepSpeed = max(floor(speedA * ln(speed + speedB) + speedC + 0.5), 1); durationMs = ceil(floor(1000 * groundSpeed / calculatedStepSpeed) / serverBeat) * serverBeat; stepCooldownTicks = durationMs / 50"
+    },
+    "stepCooldownTicks": {
+      "playerFromVocationBaseSpeed": 11,
+      "rotwormFromCreatureSpeed": 21,
+      "playerAtFrozenLevel": 9,
+      "playableCurrent": {
+        "player": 10,
+        "rotworm": 20
+      },
+      "chosen": {
+        "player": 11,
+        "rotworm": 21,
+        "rationale": "Faithful derivation from vocation.baseSpeed 110 and creature.speed 58 on default groundSpeed 150. One tick away from the PB-04-FIX-01 playable values; not a silent retune."
+      }
+    },
+    "attackCooldownTicks": {
+      "knight": 40,
+      "rotworm": 40
+    }
+  },
+  "resolvedPower": {
+    "berserk": { "minPower": 20, "maxPower": 47 },
+    "brutalStrike": { "minPower": 17, "maxPower": 27 },
+    "woundCleansing": { "minPower": 32, "maxPower": 58 },
+    "melee": { "minPower": 7, "maxPower": 19 },
+    "rotwormMelee": { "minPower": 0, "maxPower": 40 },
+    "integerConversion": "C++ static_cast<int32_t>(lua_tonumber), truncates toward zero; damage formulas return negatives and minPower/maxPower store the absolute values"
+  },
+  "assets": [
+    {
+      "kind": "effect",
+      "name": "CONST_ME_DRAWBLOOD",
+      "sourceId": 1,
+      "sourceFile": "src/utils/utils_definitions.hpp",
+      "usedBy": ["physical melee against race blood", "blood presentation"]
+    },
+    {
+      "kind": "effect",
+      "name": "CONST_ME_HITAREA",
+      "sourceId": 10,
+      "sourceFile": "src/utils/utils_definitions.hpp",
+      "usedBy": ["spell:tibia:berserk", "spell:tibia:brutal-strike"]
+    },
+    {
+      "kind": "effect",
+      "name": "CONST_ME_MAGIC_BLUE",
+      "sourceId": 13,
+      "sourceFile": "src/utils/utils_definitions.hpp",
+      "usedBy": ["spell:tibia:wound-cleansing"]
+    },
+    {
+      "kind": "effect",
+      "name": "CONST_ANI_WEAPONTYPE",
+      "sourceId": 254,
+      "sourceFile": "src/utils/utils_definitions.hpp",
+      "usedBy": ["spell:tibia:brutal-strike distance effect"]
+    },
+    {
+      "kind": "item",
+      "name": "dead rotworm",
+      "sourceId": "5967",
+      "sourceFile": "data/items/items.xml",
+      "usedBy": ["rotworm corpse"]
+    },
+    {
+      "kind": "item",
+      "name": "small splash",
+      "sourceId": "2889",
+      "sourceFile": "data/items/items.xml",
+      "usedBy": ["blood splash ITEM_SMALLSPLASH"]
+    }
+  ],
+  "sourceFiles": [
+    {
+      "relativePath": "data/XML/vocations.xml",
+      "sha256": "693a179048d5d5c5af519459c8e542cd01013212af1cec88f7c8eb72634f4350"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/berserk.lua",
+      "sha256": "819b628608268aebea355be46a1d86e73c24bdf26d1299aa7d3e9af71d10f89f"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/brutal_strike.lua",
+      "sha256": "08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3"
+    },
+    {
+      "relativePath": "data/scripts/spells/healing/wound_cleansing.lua",
+      "sha256": "e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/vermins/rotworm.lua",
+      "sha256": "f75ed297cd851013cde4e991113bf2d67ab9930852f20fb0c4e8d0937ddb176b"
+    },
+    {
+      "relativePath": "data/items/items.xml",
+      "sha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8"
+    },
+    {
+      "relativePath": "src/creatures/creature.hpp",
+      "sha256": "80da5adc1bc8a12b0fcabd8d868e8166fa04c8fe0fa69a2589cd66ac461069b9"
+    },
+    {
+      "relativePath": "src/creatures/players/player.cpp",
+      "sha256": "6c357271577e4bb6bf30783303025f38d49dea2065ed499ade90be758d7af2d4"
+    },
+    {
+      "relativePath": "src/items/weapons/weapons.cpp",
+      "sha256": "7ee611e8506a48aef1d6ff84133cbfa79af602ce9ba184db5dba95d258aff9c0"
+    },
+    {
+      "relativePath": "src/utils/utils_definitions.hpp",
+      "sha256": "c35faffb5cf6a8f8f988cfe8c071b332a929ef3e48489672307b1b77e171d9a8"
+    },
+    {
+      "relativePath": "src/game/game.hpp",
+      "sha256": "1df771ec63ceb6882c30029f94c373c7a25a54f65d2b7295b431a97b29b00402"
+    },
+    {
+      "relativePath": "schema.sql",
+      "sha256": "81b5727b8b7805025f371e2486e28c9027d876d1155cf4667e5768313be54cd7"
+    }
+  ]
+}

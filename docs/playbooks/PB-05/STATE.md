@@ -2,22 +2,27 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** autoria concluída, execução **não iniciada**. B3 e B4 estão resolvidos.
-**PB-05-01 é elegível.**
+**Estado geral:** execução iniciada. **PB-05-01 implementada na branch, não integrada.**
+`verify` na worktree ficou vermelho em `tests/e2e/hunt-budget.spec.ts` (orçamento de boot/walk
+pré-existente, sem mudança em `apps/game`). Worktree e branch preservadas. B3 e B4 continuam
+resolvidos.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** PB-04 fechou como `APPROVED_WITH_WARNINGS` (commit auditado `9f1c14c`,
-registro `d8253dc`). `playwright.config.ts` está em `retries: 0`. Worktree irmã não traz
-`references/`; PB-05-01/02 apontam o snapshot por `HUNTBOUND_CANARY_SOURCE` sem gravar o path.
+**Atualização vigente:** PB-05-01 congelou vocação, três spells, ficha e conversões em
+`docs/content/PB-05-SELECTION.md` + `packages/content/src/selections/pb-05-knight-combat.json`.
+CLI `pb05:selection:check` saiu `0` no snapshot real. Integração serial adiada até `verify`
+verde.
 
-**Próxima etapa:** **PB-05-01**.
+**Próxima etapa:** reexecutar `corepack pnpm verify` nesta worktree quando a máquina estiver
+ociosa; se verde, fast-forward em `main`. **Não iniciar PB-05-02** enquanto a integração não
+fechar.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-05-01 | pending | `<agente>/pb05-01-vocation-spell-selection` | — | `docs/content/PB-05-SELECTION.md` + CLI de verificação exit 0 no snapshot |
+| PB-05-01 | blocked | `grok/pb-05-01-vocation-spell-selection` | — (commit na branch, sem ff) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0 no snapshot |
 | PB-05-02 | pending | `<agente>/pb05-02-import-spells-character` | — | bundle regenerado com três spells + ficha congelada; `content:check` exit 0 |
 | PB-05-03 | pending | `<agente>/pb05-03-combat-contracts` | — | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md` |
 | PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos |
@@ -32,28 +37,44 @@ registro `d8253dc`). `playwright.config.ts` está em `retries: 0`. Worktree irm�
 
 ## Última task concluída
 
-Nenhuma. A autoria do playbook não é task de PB-05.
+Nenhuma integrada. PB-05-01 está **blocked** na worktree
+`C:\Kaezan\kaezan-huntbound-pb05-01-selection`, branch
+`grok/pb-05-01-vocation-spell-selection`.
 
 ## Próxima task elegível
 
-**Nenhuma task de PB-05 concluída.** A primeira elegível é **PB-05-01**. B3 e B4 estão fechados.
+Nenhuma. PB-05-02 só fica elegível depois do fast-forward de PB-05-01 em `main`.
 
 ## Verificações executadas
 
-Nenhuma verificação de código foi executada por este playbook. Os fatos de baseline citados na spec e
-no README foram lidos do repositório em 2026-08-15, no commit `420b6fb`:
+PB-05-01, worktree `C:\Kaezan\kaezan-huntbound-pb05-01-selection`, 2026-08-16. Snapshot via
+`HUNTBOUND_CANARY_SOURCE` apontando para `C:\Kaezan\kaezan-huntbound\references\canary` (não
+commitado).
 
-| Fato | Fonte lida |
-|---|---|
-| Knight, Berserk, Rotworm e itens no catálogo curado | `packages/content/src/generated/pb-01-contract-coverage.json` |
-| Blueprints atuais `player` inert `10` e `rotworm` wander `20` | `packages/content/src/generated/hunts/venore-rotworm-cave/hunt.json` |
-| `runOnHealth` não é capturado pelo importer | `packages/content/src/importers/canary/lua/parseMonsterLua.ts` |
-| Dívida de cooldown por estatística pertence a PB-05 | `docs/content/MAP_REGION_CONTRACT.md` |
-| Streams e fases atuais do kernel | `docs/simulation/KERNEL_CONTRACT.md` |
+| Comando | Exit |
+|---|---:|
+| `corepack pnpm exec biome check .` | `0` (384 files) |
+| `corepack pnpm typecheck` | `0` |
+| `corepack pnpm test` | `0` na segunda execução; a primeira falhou por timeout de 5s em `ContentCatalogApplication.test.ts` (teste pré-existente, 5269 ms) |
+| `corepack pnpm content:check` | `0`; sidecars da hunt inalterados |
+| `corepack pnpm exec vitest run --config tools/hunt-selection/vitest.config.ts` | `0` (23 testes) |
+| `node ... cli.ts check-combat --selection packages/content/src/selections/pb-05-knight-combat.json --source-root-env HUNTBOUND_CANARY_SOURCE` | `0` |
+| `git diff --check` | `0` |
+| `corepack pnpm verify` | `1` em `qa:browser` |
+| `corepack pnpm qa:browser` (reexecução) | `1` em `hunt-budget.spec.ts` |
 
-Nenhum SHA-256 novo foi publicado por esta autoria: os hashes de baseline são lidos de
-`docs/simulation/REPLAY_CONTRACT.md` no momento da execução de cada task. Isso é deliberado — hash
-publicado sem artefato correspondente foi o defeito D2 da auditoria do PB-04.
+Saída do verificador de IDs (exit `0`):
+
+```text
+{"command":"check-combat","ok":true,"presentIds":["vocation:4","spell:80","spell:61","spell:123","item:3264","effect:CONST_ME_DRAWBLOOD","effect:CONST_ME_HITAREA","effect:CONST_ME_MAGIC_BLUE","effect:CONST_ANI_WEAPONTYPE","item:5967","item:2889","creature:rotworm"],"diagnostics":[]}
+```
+
+Hashes dos arquivos-fonte medidos estão em `docs/content/PB-05-SELECTION.md`. Os de
+`vocations.xml`, `berserk.lua`, `rotworm.lua` e `items.xml` coincidem com
+`packages/content/src/sources/canary-157e6f9e.json`.
+
+Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
+remeados aqui.
 
 ## Decisões descobertas durante a autoria
 
@@ -69,6 +90,28 @@ publicado sem artefato correspondente foi o defeito D2 da auditoria do PB-04.
 | Mitigação zero porque todas as resistências do Rotworm são `0` | spec, "Parâmetros congelados" |
 | Sete sistemas por tick, com `upkeep` antes de `combat` e morte antes de `ai` | spec, "Fases do tick" |
 
+## Decisões fechadas em PB-05-01
+
+| Decisão | Onde está documentada |
+|---|---|
+| Ficha permanece level `35` com as três spells; não remover Berserk | `docs/content/PB-05-SELECTION.md` |
+| Skills nos defaults do snapshot (`sword 10`, `magic 0`), não treino inventado | idem |
+| Arma `item:tibia:sword` `3264` `attack 14` | idem |
+| Ritmo de passo fiel `player 11` / `rotworm 21`, não os `10`/`20` jogáveis de PB-04-FIX-01 | idem |
+| `exura ico` usa `CALLBACK_PARAM_LEVELMAGICVALUE`; schema fica para PB-05-02/03 | idem |
+| `exori ico` usa `skill * attack`, forma fora da allowlist `skillAttack`; schema em PB-05-02 | idem |
+
+## Modelo e effort
+
+- **Executor:** Grok 4.6 no Cursor, effort alto.
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `test-driven-development`,
+  `verification-before-completion`.
+- **Validador:** ainda não; a task não fechou.
+- **Desvio de branch:** a task card pedia `claude/pb-05-01-vocation-spell-selection`; a branch
+  efetiva é `grok/pb-05-01-vocation-spell-selection` porque o executor é Grok. Worktree irmã no
+  path pedido. `tools/hunt-selection` entrou no script `test` da raiz para os testes novos rodarem
+  em `verify`.
+
 ## Bloqueios
 
 - ~~**B3 (bloqueante, externo ao PB-05):** PB-04 aberto.~~ **Resolvido em 2026-08-16** pela
@@ -81,6 +124,14 @@ publicado sem artefato correspondente foi o defeito D2 da auditoria do PB-04.
   era impossível (a branch tinha divergido); o merge commit integrou `AGENTS.md`, `CLAUDE.md`,
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
+
+- **B5 (bloqueante, PB-05-01):** `corepack pnpm verify` vermelho em `qa:browser`. A seleção não
+  toca `apps/game` nem assets. Duas execuções consecutivas de `hunt-budget.spec.ts` falharam por
+  orçamento ADR-001 (primeira: `actionableMs` 5051 e 5161 contra teto 5000; segunda: `actionableMs`
+  4338 ok, mas `overBudget.length === 2` com tarefas de 56 ms e 50 ms). Terceira, isolada, mediu
+  `actionableMs` 14380 com a máquina carregada de processos Chrome. Sem retry mascarado, sem
+  timeout inflado, sem asserção enfraquecida. Worktree e branch preservadas. Reexecutar `verify`
+  com a máquina ociosa; se verde, `git merge --ff-only grok/pb-05-01-vocation-spell-selection`.
 
 ## Regra de atualização
 

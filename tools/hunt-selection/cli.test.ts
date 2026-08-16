@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -86,6 +87,155 @@ async function createFixture() {
   return { root, sourceRoot, selectionPath };
 }
 
+function sha256(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+async function writeSnapshotFile(
+  sourceRoot: string,
+  relativePath: string,
+  contents: string,
+) {
+  const fullPath = join(sourceRoot, relativePath);
+  await mkdir(dirname(fullPath), { recursive: true });
+  await writeFile(fullPath, contents, 'utf8');
+}
+
+async function createCombatFixture() {
+  const root = await mkdtemp(join(tmpdir(), 'combat-selection-cli-'));
+  roots.push(root);
+  const sourceRoot = join(root, 'source');
+  const selectionPath = join(root, 'selection.json');
+  const snapshotFiles: Record<string, string> = {
+    'data/XML/vocations.xml': `<vocations>
+	<vocation id="4" name="Knight" attackspeed="2000" basespeed="110" gainhp="15" gainmana="5" />
+</vocations>
+`,
+    'data/scripts/spells/attack/berserk.lua': `spell:id(80)
+spell:words("exori")
+`,
+    'data/scripts/spells/attack/brutal_strike.lua': `spell:id(61)
+spell:words("exori ico")
+`,
+    'data/scripts/spells/healing/wound_cleansing.lua': `spell:id(123)
+spell:words("exura ico")
+`,
+    'data-otservbr-global/monster/vermins/rotworm.lua': `monster.speed = 58
+monster.corpse = 5967
+`,
+    'data/items/items.xml': `<items>
+	<item id="3264" name="sword"><attribute key="attack" value="14"/></item>
+	<item id="5967" name="dead rotworm"/>
+	<item id="2889" name="small splash"/>
+</items>
+`,
+    'src/utils/utils_definitions.hpp': `CONST_ME_DRAWBLOOD = 1,
+CONST_ME_HITAREA = 10,
+CONST_ME_MAGIC_BLUE = 13,
+CONST_ANI_WEAPONTYPE = 0xFE,
+`,
+  };
+  for (const [relativePath, contents] of Object.entries(snapshotFiles)) {
+    await writeSnapshotFile(sourceRoot, relativePath, contents);
+  }
+  const selection = {
+    key: 'selection:pb-05-knight-combat',
+    huntKey: 'hunt:tibia:venore-rotworm-cave',
+    vocation: {
+      stableKey: 'vocation:tibia:knight',
+      sourceId: '4',
+      sourceFile: 'data/XML/vocations.xml',
+      attackSpeedMs: 2000,
+      baseSpeed: 110,
+    },
+    creature: {
+      stableKey: 'creature:tibia:rotworm',
+      sourceFile: 'data-otservbr-global/monster/vermins/rotworm.lua',
+      speed: 58,
+      intervalMs: 2000,
+      corpseItemId: 5967,
+    },
+    weapon: {
+      stableKey: 'item:tibia:sword',
+      sourceId: '3264',
+      sourceFile: 'data/items/items.xml',
+      attack: 14,
+    },
+    spells: [
+      {
+        stableKey: 'spell:tibia:berserk',
+        sourceId: '80',
+        words: 'exori',
+        sourceFile: 'data/scripts/spells/attack/berserk.lua',
+        cooldownMs: 4000,
+        groupCooldownMs: 2000,
+      },
+      {
+        stableKey: 'spell:tibia:brutal-strike',
+        sourceId: '61',
+        words: 'exori ico',
+        sourceFile: 'data/scripts/spells/attack/brutal_strike.lua',
+        cooldownMs: 6000,
+        groupCooldownMs: 2000,
+      },
+      {
+        stableKey: 'spell:tibia:wound-cleansing',
+        sourceId: '123',
+        words: 'exura ico',
+        sourceFile: 'data/scripts/spells/healing/wound_cleansing.lua',
+        cooldownMs: 1000,
+        groupCooldownMs: 1000,
+      },
+    ],
+    assets: [
+      {
+        kind: 'effect',
+        name: 'CONST_ME_DRAWBLOOD',
+        sourceId: 1,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ME_HITAREA',
+        sourceId: 10,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ME_MAGIC_BLUE',
+        sourceId: 13,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ANI_WEAPONTYPE',
+        sourceId: 254,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'item',
+        name: 'dead rotworm',
+        sourceId: '5967',
+        sourceFile: 'data/items/items.xml',
+      },
+      {
+        kind: 'item',
+        name: 'small splash',
+        sourceId: '2889',
+        sourceFile: 'data/items/items.xml',
+      },
+    ],
+    sourceFiles: Object.entries(snapshotFiles).map(
+      ([relativePath, contents]) => ({
+        relativePath,
+        sha256: sha256(contents),
+      }),
+    ),
+  };
+  await writeFile(selectionPath, `${JSON.stringify(selection)}\n`, 'utf8');
+  return { root, sourceRoot, selectionPath };
+}
+
 afterEach(async () => {
   await Promise.all(
     roots.splice(0).map((root) => rm(root, { force: true, recursive: true })),
@@ -166,7 +316,71 @@ describe('hunt selection CLI', () => {
     expect(packageJson.scripts['hunt:selection:check']).toBe(
       'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/hunts/venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE',
     );
+    expect(packageJson.scripts['pb05:selection:check']).toBe(
+      'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check-combat --selection packages/content/src/selections/pb-05-knight-combat.json --source-root-env HUNTBOUND_CANARY_SOURCE',
+    );
     expect(packageJson.scripts.check).not.toContain('hunt:selection:check');
     expect(packageJson.scripts.verify).not.toContain('hunt:selection:check');
+    expect(packageJson.scripts.check).not.toContain('pb05:selection:check');
+    expect(packageJson.scripts.verify).not.toContain('pb05:selection:check');
+  });
+
+  it('returns a combat ID report with exit code 0', async () => {
+    const fixture = await createCombatFixture();
+
+    const result = await runCli([
+      'check-combat',
+      '--selection',
+      fixture.selectionPath,
+      '--source-root',
+      fixture.sourceRoot,
+    ]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe('');
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      ok: true,
+      command: 'check-combat',
+      presentIds: expect.arrayContaining(['vocation:4', 'spell:80']),
+      diagnostics: [],
+    });
+  });
+
+  it('returns exit code 1 listing every missing combat ID', async () => {
+    const fixture = await createCombatFixture();
+    const selection = JSON.parse(
+      await readFile(fixture.selectionPath, 'utf8'),
+    ) as { vocation: { sourceId: string }; weapon: { sourceId: string } };
+    selection.vocation.sourceId = '99';
+    selection.weapon.sourceId = '1';
+    await writeFile(
+      fixture.selectionPath,
+      `${JSON.stringify(selection)}\n`,
+      'utf8',
+    );
+
+    const result = await runCli([
+      'check-combat',
+      '--selection',
+      fixture.selectionPath,
+      '--source-root',
+      fixture.sourceRoot,
+    ]);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe('');
+    const report = JSON.parse(result.stderr) as {
+      diagnostics: { path: string; code: string }[];
+    };
+    expect(report.diagnostics).toEqual([
+      expect.objectContaining({
+        path: 'vocation.sourceId',
+        code: 'PB05_ID_MISSING',
+      }),
+      expect.objectContaining({
+        path: 'weapon.sourceId',
+        code: 'PB05_ID_MISSING',
+      }),
+    ]);
   });
 });

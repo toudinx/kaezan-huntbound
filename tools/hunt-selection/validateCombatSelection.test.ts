@@ -1,0 +1,329 @@
+import { createHash } from 'node:crypto';
+
+import { describe, expect, it } from 'vitest';
+
+import { validateCombatSelection } from './validateCombatSelection.ts';
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+const vocationsXml = `<vocations>
+	<vocation id="4" name="Knight" attackspeed="2000" basespeed="110" gainhp="15" gainmana="5" />
+</vocations>
+`;
+
+const berserkLua = `spell:id(80)
+spell:words("exori")
+spell:cooldown(4 * 1000)
+spell:groupCooldown(2 * 1000)
+`;
+
+const brutalStrikeLua = `spell:id(61)
+spell:words("exori ico")
+spell:cooldown(6 * 1000)
+spell:groupCooldown(2 * 1000)
+`;
+
+const woundCleansingLua = `spell:id(123)
+spell:words("exura ico")
+spell:cooldown(1 * 1000)
+spell:groupCooldown(1 * 1000)
+`;
+
+const rotwormLua = `monster.speed = 58
+monster.corpse = 5967
+monster.attacks = {
+	{ name = "melee", interval = 2000, minDamage = 0, maxDamage = -40 },
+}
+`;
+
+const itemsXml = `<items>
+	<item id="3264" name="sword"><attribute key="attack" value="14"/></item>
+	<item id="5967" name="dead rotworm"/>
+	<item id="2889" name="small splash"/>
+</items>
+`;
+
+const effectsHeader = `enum MagicEffectClasses : uint16_t {
+	CONST_ME_DRAWBLOOD = 1,
+	CONST_ME_HITAREA = 10,
+	CONST_ME_MAGIC_BLUE = 13,
+};
+enum ShootType_t : uint8_t {
+	CONST_ANI_WEAPONTYPE = 0xFE,
+};
+`;
+
+const sourceFiles = {
+  'data/XML/vocations.xml': vocationsXml,
+  'data/scripts/spells/attack/berserk.lua': berserkLua,
+  'data/scripts/spells/attack/brutal_strike.lua': brutalStrikeLua,
+  'data/scripts/spells/healing/wound_cleansing.lua': woundCleansingLua,
+  'data-otservbr-global/monster/vermins/rotworm.lua': rotwormLua,
+  'data/items/items.xml': itemsXml,
+  'src/utils/utils_definitions.hpp': effectsHeader,
+} as const;
+
+function hashedSources() {
+  return Object.entries(sourceFiles).map(([relativePath, contents]) => ({
+    relativePath,
+    sha256: sha256(contents),
+  }));
+}
+
+function selection(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    key: 'selection:pb-05-knight-combat',
+    huntKey: 'hunt:tibia:venore-rotworm-cave',
+    vocation: {
+      stableKey: 'vocation:tibia:knight',
+      sourceId: '4',
+      sourceFile: 'data/XML/vocations.xml',
+      attackSpeedMs: 2000,
+      baseSpeed: 110,
+    },
+    creature: {
+      stableKey: 'creature:tibia:rotworm',
+      sourceFile: 'data-otservbr-global/monster/vermins/rotworm.lua',
+      speed: 58,
+      intervalMs: 2000,
+      corpseItemId: 5967,
+    },
+    weapon: {
+      stableKey: 'item:tibia:sword',
+      sourceId: '3264',
+      sourceFile: 'data/items/items.xml',
+      attack: 14,
+    },
+    spells: [
+      {
+        stableKey: 'spell:tibia:berserk',
+        sourceId: '80',
+        words: 'exori',
+        sourceFile: 'data/scripts/spells/attack/berserk.lua',
+        cooldownMs: 4000,
+        groupCooldownMs: 2000,
+      },
+      {
+        stableKey: 'spell:tibia:brutal-strike',
+        sourceId: '61',
+        words: 'exori ico',
+        sourceFile: 'data/scripts/spells/attack/brutal_strike.lua',
+        cooldownMs: 6000,
+        groupCooldownMs: 2000,
+      },
+      {
+        stableKey: 'spell:tibia:wound-cleansing',
+        sourceId: '123',
+        words: 'exura ico',
+        sourceFile: 'data/scripts/spells/healing/wound_cleansing.lua',
+        cooldownMs: 1000,
+        groupCooldownMs: 1000,
+      },
+    ],
+    assets: [
+      {
+        kind: 'effect',
+        name: 'CONST_ME_DRAWBLOOD',
+        sourceId: 1,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ME_HITAREA',
+        sourceId: 10,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ME_MAGIC_BLUE',
+        sourceId: 13,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'effect',
+        name: 'CONST_ANI_WEAPONTYPE',
+        sourceId: 254,
+        sourceFile: 'src/utils/utils_definitions.hpp',
+      },
+      {
+        kind: 'item',
+        name: 'dead rotworm',
+        sourceId: '5967',
+        sourceFile: 'data/items/items.xml',
+      },
+      {
+        kind: 'item',
+        name: 'small splash',
+        sourceId: '2889',
+        sourceFile: 'data/items/items.xml',
+      },
+    ],
+    sourceFiles: hashedSources(),
+    ...overrides,
+  };
+}
+
+function files(
+  overrides: Record<string, string | undefined> = {},
+): ReadonlyMap<string, string> {
+  const entries = Object.entries({ ...sourceFiles, ...overrides }).flatMap(
+    ([path, contents]) =>
+      contents === undefined ? [] : ([[path, contents]] as const),
+  );
+  return new Map(entries);
+}
+
+describe('validateCombatSelection', () => {
+  it('accepts a selection whose every declared ID exists in the snapshot files', () => {
+    const result = validateCombatSelection(selection(), files());
+
+    expect(result).toEqual({
+      ok: true,
+      presentIds: [
+        'vocation:4',
+        'spell:80',
+        'spell:61',
+        'spell:123',
+        'item:3264',
+        'effect:CONST_ME_DRAWBLOOD',
+        'effect:CONST_ME_HITAREA',
+        'effect:CONST_ME_MAGIC_BLUE',
+        'effect:CONST_ANI_WEAPONTYPE',
+        'item:5967',
+        'item:2889',
+        'creature:rotworm',
+      ],
+      diagnostics: [],
+    });
+  });
+
+  it('lists every missing ID in one report instead of stopping at the first', () => {
+    const result = validateCombatSelection(
+      selection({
+        vocation: {
+          stableKey: 'vocation:tibia:knight',
+          sourceId: '99',
+          sourceFile: 'data/XML/vocations.xml',
+          attackSpeedMs: 2000,
+          baseSpeed: 110,
+        },
+        weapon: {
+          stableKey: 'item:tibia:sword',
+          sourceId: '1',
+          sourceFile: 'data/items/items.xml',
+          attack: 14,
+        },
+        spells: [
+          {
+            stableKey: 'spell:tibia:berserk',
+            sourceId: '1',
+            words: 'exori',
+            sourceFile: 'data/scripts/spells/attack/berserk.lua',
+            cooldownMs: 4000,
+            groupCooldownMs: 2000,
+          },
+        ],
+        assets: [
+          {
+            kind: 'effect',
+            name: 'CONST_ME_POFF',
+            sourceId: 3,
+            sourceFile: 'src/utils/utils_definitions.hpp',
+          },
+        ],
+      }),
+      files(),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
+      'PB05_ID_MISSING',
+      'PB05_ID_MISSING',
+      'PB05_ID_MISSING',
+      'PB05_ID_MISSING',
+    ]);
+    expect(result.diagnostics.map((diagnostic) => diagnostic.path)).toEqual([
+      'vocation.sourceId',
+      'spells[0].sourceId',
+      'weapon.sourceId',
+      'assets[0].sourceId',
+    ]);
+  });
+
+  it('reports a hash mismatch and a missing source file together', () => {
+    const result = validateCombatSelection(
+      selection({
+        sourceFiles: [
+          {
+            relativePath: 'data/XML/vocations.xml',
+            sha256: '0'.repeat(64),
+          },
+          {
+            relativePath: 'data/scripts/spells/attack/missing.lua',
+            sha256: '1'.repeat(64),
+          },
+        ],
+      }),
+      files(),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        path: 'sourceFiles[0].sha256',
+        code: 'PB05_SOURCE_HASH_MISMATCH',
+      }),
+      expect.objectContaining({
+        path: 'sourceFiles[1].relativePath',
+        code: 'PB05_SOURCE_MISSING',
+      }),
+    ]);
+  });
+
+  it('reports every interval that does not divide exactly by 50', () => {
+    const result = validateCombatSelection(
+      selection({
+        vocation: {
+          stableKey: 'vocation:tibia:knight',
+          sourceId: '4',
+          sourceFile: 'data/XML/vocations.xml',
+          attackSpeedMs: 2001,
+          baseSpeed: 110,
+        },
+        creature: {
+          stableKey: 'creature:tibia:rotworm',
+          sourceFile: 'data-otservbr-global/monster/vermins/rotworm.lua',
+          speed: 58,
+          intervalMs: 1999,
+          corpseItemId: 5967,
+        },
+        spells: [
+          {
+            stableKey: 'spell:tibia:berserk',
+            sourceId: '80',
+            words: 'exori',
+            sourceFile: 'data/scripts/spells/attack/berserk.lua',
+            cooldownMs: 4001,
+            groupCooldownMs: 2000,
+          },
+        ],
+      }),
+      files(),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(
+      result.diagnostics.filter(
+        (diagnostic) => diagnostic.code === 'PB05_INTERVAL_NOT_DIVISIBLE',
+      ),
+    ).toEqual([
+      expect.objectContaining({ path: 'vocation.attackSpeedMs' }),
+      expect.objectContaining({ path: 'creature.intervalMs' }),
+      expect.objectContaining({ path: 'spells[0].cooldownMs' }),
+    ]);
+  });
+});

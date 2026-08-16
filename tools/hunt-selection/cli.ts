@@ -1,6 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import { validateCombatSelection } from './validateCombatSelection.ts';
 import { validateHuntSelection } from './validateHuntSelection.ts';
 
 interface UnknownRecord {
@@ -13,15 +14,17 @@ interface HuntSelectionCliIo {
   usage(): void;
 }
 
-interface HuntSelectionCheckCommand {
-  readonly kind: 'check';
+interface SelectionCheckCommand {
+  readonly kind: 'check' | 'check-combat';
   readonly selectionPath: string;
   readonly sourceRoot: string;
 }
 
 const usageText = `Usage:
   node tools/hunt-selection/cli.ts check --selection <path> --source-root <path>
-  node tools/hunt-selection/cli.ts check --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE`;
+  node tools/hunt-selection/cli.ts check --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE
+  node tools/hunt-selection/cli.ts check-combat --selection <path> --source-root <path>
+  node tools/hunt-selection/cli.ts check-combat --selection <path> --source-root-env HUNTBOUND_CANARY_SOURCE`;
 
 const processIo: HuntSelectionCliIo = {
   stdout(value) {
@@ -72,8 +75,9 @@ function requiredValue(
 
 function parseCommand(
   args: readonly string[],
-): HuntSelectionCheckCommand | undefined {
-  if (args[0] !== 'check') return undefined;
+): SelectionCheckCommand | undefined {
+  const kind = args[0];
+  if (kind !== 'check' && kind !== 'check-combat') return undefined;
   const values = parseOptions(
     args.slice(1),
     new Set(['--selection', '--source-root', '--source-root-env']),
@@ -98,7 +102,7 @@ function parseCommand(
       : undefined);
   return sourceRoot === undefined
     ? undefined
-    : { kind: 'check', selectionPath, sourceRoot };
+    : { kind, selectionPath, sourceRoot };
 }
 
 function readJson(path: string): unknown {
@@ -122,14 +126,54 @@ function catalogCreatureKeys(root: unknown): readonly string[] {
   });
 }
 
+function collectSourcePaths(value: unknown, paths: Set<string>): void {
+  if (Array.isArray(value)) {
+    for (const entry of value) collectSourcePaths(entry, paths);
+    return;
+  }
+  if (typeof value !== 'object' || value === null) return;
+  const record = value as UnknownRecord;
+  if (typeof record.sourceFile === 'string') paths.add(record.sourceFile);
+  if (typeof record.relativePath === 'string') paths.add(record.relativePath);
+  for (const nested of Object.values(record)) collectSourcePaths(nested, paths);
+}
+
+function readSnapshotFiles(
+  sourceRoot: string,
+  selection: unknown,
+): Map<string, string> {
+  const paths = new Set<string>();
+  collectSourcePaths(selection, paths);
+  const files = new Map<string, string>();
+  for (const relativePath of paths) {
+    const fullPath = join(sourceRoot, relativePath);
+    if (existsSync(fullPath) === false) continue;
+    files.set(relativePath, readFileSync(fullPath, 'utf8'));
+  }
+  return files;
+}
+
 function runCheck(
-  command: HuntSelectionCheckCommand,
+  command: SelectionCheckCommand,
   io: HuntSelectionCliIo,
 ): number {
   try {
     const workspaceRoot = resolve(import.meta.dirname, '../..');
     const selection = readJson(resolve(command.selectionPath));
     const sourceRoot = resolve(command.sourceRoot);
+    if (command.kind === 'check-combat') {
+      const report = validateCombatSelection(
+        selection,
+        readSnapshotFiles(sourceRoot, selection),
+      );
+      const result = { command: 'check-combat', ...report };
+      if (!report.ok) {
+        io.stderr(result);
+        return 1;
+      }
+      io.stdout(result);
+      return 0;
+    }
     const monsterXml = readFileSync(
       join(sourceRoot, 'data-otservbr-global', 'world', 'otservbr-monster.xml'),
       'utf8',
