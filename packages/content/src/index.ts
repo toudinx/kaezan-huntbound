@@ -4,4 +4,5 @@ export * from './application/ImportCanarySlice.ts';
 export type { SourceSnapshotLock } from './application/sourceLockTypes.ts';
 export * from './hunts/index.ts';
 export * from './runtime/contentRegistry.ts';
+export * from './runtime/runBag.ts';
 export * from './selections/validateSliceSelection.ts';

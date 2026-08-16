@@ -4,8 +4,8 @@ Este documento congela a linguagem pública compartilhada por `@huntbound/contra
 headless. PB-03 entregou tick, RNG, grid de um andar, comandos, eventos, snapshot e replay; PB-04-05
 acrescentou andares, transição automática e o sistema de spawn. PB-05-04 implementa no kernel o
 vocabulário de combate publicado no contrato (`schemaVersion` 4, `rulesVersion` 3): as sete fases do
-tick, `S3 upkeep`, `S4 combat` e a morte de `S5`. O comportamento `hunter` fica para PB-05-05 e a
-rolagem de `loot/granted` para PB-05-06.
+tick, `S3 upkeep`, `S4 combat`, a morte de `S5` e a rolagem determinística de `loot/granted`. O
+comportamento `hunter` foi entregue por PB-05-05.
 
 ## Versões e tempo
 
@@ -315,6 +315,13 @@ aceita um inteiro em `[1, 2^32]`, calcula a maior faixa múltipla de `bound` con
 descarta valores fora dessa faixa e só então aplica o módulo. Cada valor descartado também incrementa
 `drawCount`, portanto o contador audita exatamente o consumo do stream.
 
+O sistema de loot consome somente o stream `loot`. Para cada entrada da tabela, na ordem declarada,
+consome um `nextBelow(100000)` e concede quando o valor é **menor** que
+`chancePerHundredThousand`. Uma entrada concedida com `minCount < maxCount` consome então um
+`nextBelow(maxCount - minCount + 1)` para a contagem; quando os limites são iguais, nenhum sorteio
+de contagem é consumido. Sem matador identificável, sem tabela ou para o blueprint `player`, a morte
+não consome o stream `loot`.
+
 O estado serializado é `{ label, s0, s1, s2, s3, drawCount }`. `KernelRandomStreams.serialize()`
 ordena os estados por `label`: `ai`, `combat`, `loot`, `movement`, `scenario`, `spawn`. Restaurar
 estado zero, label ausente, duplicado ou desconhecido é erro, e um conjunto com menos de seis
@@ -491,9 +498,10 @@ Justificativa das fases:
   aleatoriedade.
 - **S4 combat** resolve golpes e conjurações **depois** do movimento, para que a adjacência avaliada
   seja a do fim do passo.
-- **S5 death** remove quem chegou a `health <= 0` e emite `actor/died` com a posição. Vir antes de
-  `S6` impede a IA de mirar um morto; vir antes de `S7` libera célula e assento de spawn no mesmo
-  tick. A rolagem de `loot/granted` fica para PB-05-06.
+- **S5 death** remove quem chegou a `health <= 0` e emite `actor/died` com a posição. Para uma
+  criatura com tabela e matador identificável, emite depois os `loot/granted` daquela morte, na ordem
+  das entradas e no mesmo tick. Vir antes de `S6` impede a IA de mirar um morto; vir antes de `S7`
+  libera célula e assento de spawn no mesmo tick.
 - **S6 ai** decide para `currentTick + 1`, como em PB-03. Ator `wander` continua idêntico; ator
   `hunter` mantém alvo, adquire, persegue ou golpeia, e cai em `wander` quando não tem alvo.
 - **S7 spawn** continua por último, pelas duas razões já congeladas em PB-04: o nascimento do tick
@@ -584,7 +592,19 @@ Mitigação é zero.
 `S5 death` remove quem tem `health <= 0`, em ordem crescente de `EntityId`, emite `actor/died` com a
 posição e libera o assento de spawn com `readyAtTick = tickDaMorte + respawnTicks`. Jogador não tem
 assento e simplesmente sai do mundo — o kernel não o respawna. `EntityId` nunca é reaproveitado.
-`loot/granted` não é emitido nesta versão.
+
+Depois de cada `actor/died`, a morte de uma criatura com `lootTableIndex` não nulo e matador
+identificável percorre a tabela correspondente em ordem declarada. Cada entrada consome exatamente
+um `nextBelow(100000)` do stream `loot` e cai quando o valor é estritamente menor que
+`chancePerHundredThousand`. Quando cai, `minCount < maxCount` consome um segundo sorteio
+`nextBelow(maxCount - minCount + 1)` e soma o resultado a `minCount`; limites iguais não consomem
+esse segundo sorteio. Cada queda emite `loot/granted` com `entityId` igual ao matador,
+`sourceEntityId` igual ao morto e `itemIndex` inteiro da entrada. Sem matador, sem tabela ou para o
+blueprint `player`, nada é emitido e nenhum sorteio é consumido.
+
+O kernel não conhece `itemKey`, não possui comando de coleta e não guarda bolsa, capacidade ou peso.
+A bolsa da run é uma projeção pura e incremental de `loot/granted` em `@huntbound/content`, usando
+a tabela ordenada de `itemKeys`; portanto ela não é estado do kernel e não aparece no snapshot.
 
 `S6 ai` percorre os atores em ordem crescente de `EntityId`. Ator `inert` é ignorado e jamais
 consome o stream `ai`. Ator `wander` decide somente fora de cooldown (`currentTick >= readyAtTick`):

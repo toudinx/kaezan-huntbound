@@ -744,7 +744,16 @@ export function createSimulationKernel(
       combatIntents,
       killers,
     );
-    resolveDeath(world, journal, currentTick, killers, releaseSpawnSlot);
+    resolveDeath(
+      world,
+      journal,
+      currentTick,
+      killers,
+      releaseSpawnSlot,
+      streams.loot,
+      blueprints,
+      scenario.lootTables,
+    );
     runAi();
     runSpawn();
 

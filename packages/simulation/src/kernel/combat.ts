@@ -4,6 +4,7 @@ import type {
   ActorState,
   EntityId,
   GridPosition,
+  LootTableDefinition,
   SimulationCommandType,
   SimulationDiagnosticCode,
   TickIndex,
@@ -12,6 +13,7 @@ import type { EventJournal } from '../events/journal.ts';
 import { chebyshevDistance } from '../grid/directions.ts';
 import type { RandomSource } from '../random/source.ts';
 import type { MutableWorld } from '../state/worldState.ts';
+import { resolveLoot } from './loot.ts';
 
 export type CombatIntent =
   | {
@@ -601,6 +603,9 @@ export function resolveDeath(
   tick: TickIndex,
   killers: ReadonlyMap<number, EntityId | null>,
   releaseSpawnSlot: (entityId: EntityId, tick: number) => void,
+  lootStream: RandomSource,
+  blueprints: ReadonlyMap<string, ActorBlueprint>,
+  lootTables: readonly LootTableDefinition[],
 ): void {
   const dying = world
     .actors()
@@ -610,13 +615,23 @@ export function resolveDeath(
   for (const actor of dying) {
     const position = actor.position;
     const entityId = actor.entityId;
+    const killerEntityId = killers.get(entityId) ?? null;
     world.remove(entityId);
     releaseSpawnSlot(entityId, tick);
     journal.emit(tick, {
       type: 'actor/died',
       entityId,
-      killerEntityId: killers.get(entityId) ?? null,
+      killerEntityId,
       position,
     });
+    resolveLoot(
+      journal,
+      lootStream,
+      tick,
+      actor,
+      killerEntityId,
+      blueprints,
+      lootTables,
+    );
   }
 }
