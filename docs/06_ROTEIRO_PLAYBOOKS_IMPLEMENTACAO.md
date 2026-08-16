@@ -41,8 +41,8 @@ contagem de arquivos, linhas ou minutos.
 | [PB-01](playbooks/PB-01/README.md) | Catálogo curado de conteúdo | identidade estável, SQLite de authoring, operação versionada e bundle runtime — **fechado** |
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
-| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **aberto; FIX-02/03/04 integrados; nova rodada de PB-04-10 decide o fechamento** |
-| [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **playbook escrito; execução bloqueada até PB-04 fechar** |
+| [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **fechado** em `9f1c14c` como `APPROVED_WITH_WARNINGS` |
+| [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **próximo a executar** |
 | PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
 | PB-08 | Gacha cosmético | banner, pulls, garantia, duplicatas e tokens |
@@ -75,26 +75,19 @@ o Chromium reproduziu o mesmo snapshot canônico e o mesmo SHA-256
 remanescentes são não bloqueantes e estão priorizados em
 [`playbooks/PB-03/artifacts/acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
 
-**PB-04 está aberto e REPROVADO.** PB-00, PB-01, PB-02 e PB-03 estão fechados. A auditoria integrada
-PB-04-10 rodou em 2026-08-15 sobre o commit `307a3f0` e emitiu **`REJECTED`**.
-
-A hunt **é jogável** — a auditoria andou, colidiu, desceu, subiu e mediu o cooldown em Chromium real,
-sem um único erro de runtime — e o aceite de produto do usuário está registrado em
-[`playbooks/PB-04/artifacts/product-acceptance.md`](playbooks/PB-04/artifacts/product-acceptance.md).
-B2 deixou de ser bloqueante e migrou para pré-requisito de PB-07.
-
-A reprovação é de integridade de gate e de documentação: um toque curto produz um ou dois passos
-conforme a fase do tick e o teste que prova isso falha `10/10` mascarado por `retries: 1`; os cinco
-hashes de replay publicados no card do PB-04-FIX-01 não existem no repositório; `REPLAY_CONTRACT.md`
-nunca recebeu as fixtures do PB-04; e `biome check` sai `1` com `13` diagnósticos. Detalhe em
+**PB-04 está fechado** como `APPROVED_WITH_WARNINGS`. PB-00, PB-01, PB-02, PB-03 e PB-04 estão
+fechados. A auditoria integrada PB-04-10 reprovou primeiro em `307a3f0` (2026-08-15) por D1–D4;
+FIX-02, FIX-03 e FIX-04 fecharam esses defeitos; a reavaliação em 2026-08-16 sobre `9f1c14c` emitiu
+o veredito vigente. Detalhe em
 [`playbooks/PB-04/artifacts/acceptance-report.md`](playbooks/PB-04/artifacts/acceptance-report.md).
 
-**PB-05 não está liberado.** PB-05 é combate e espera o fechamento do PB-04. FIX-02, FIX-03 e FIX-04
-já estão em `main`; uma nova rodada de PB-04-10 decide o fechamento.
+A hunt **é jogável** — a reavaliação andou, colidiu, desceu, subiu e viu rotworms andarem em
+Chromium real, sem um único erro de runtime — e o aceite de produto do usuário está registrado em
+[`playbooks/PB-04/artifacts/product-acceptance.md`](playbooks/PB-04/artifacts/product-acceptance.md).
+B2 permanece não bloqueante e é pré-requisito de PB-07.
 
-O **playbook do PB-05 já está escrito** — spec, README, `STATE.md` e doze task cards — porque a
-autoria não depende do veredito e as quatro lições da auditoria do PB-04 já entram nele como critério
-de aceite. Nenhuma task de PB-05 é elegível antes do fechamento do PB-04.
+**PB-05 está liberado** e é o próximo playbook a executar. O playbook já está escrito — spec,
+README, `STATE.md` e doze task cards. A primeira task elegível é PB-05-01.
 
 ## PB-00 — Definition of Ready
 
@@ -234,7 +227,8 @@ obrigatórios.
 chat independente. Design aprovado em
 `docs/superpowers/specs/2026-08-15-pb-05-vocation-combat-design.md`.
 
-**Estado:** escrito e **bloqueado**. A execução começa quando PB-04 fechar por auditoria aprovada.
+**Estado:** escrito e **elegível**. PB-04 fechou como `APPROVED_WITH_WARNINGS` em `9f1c14c`. A
+execução começa em PB-05-01.
 
 - [x] A vocação é Knight; ela já existe no catálogo PB-01, com ganhos, velocidade e multiplicadores
       de skill importados.

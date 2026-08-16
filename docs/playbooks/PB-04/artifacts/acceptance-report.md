@@ -1,68 +1,85 @@
-# PB-04 — Relatório de aceite (PB-04-10)
+# PB-04 — Relatório de aceite (PB-04-10, segunda rodada)
 
-**Decisão:** `REJECTED`
+**Decisão final: `APPROVED_WITH_WARNINGS`** em `9f1c14c`.
 
-A hunt é jogável e o aceite de produto do usuário está registrado e honrado. A reprovação **não é do
-produto**: é da integridade do gate e da documentação congelada. Três afirmações documentadas por
-PB-04-FIX-01 não sobrevivem à reexecução, e um teste que prova um entregável central do FIX-01 falha
-de forma determinística, verde apenas porque `retries: 1` o mascara.
+PB-04 está **fechado**. PB-05 é **elegível**. Os warnings remanescentes estão em §8 e nenhum deles
+é risco de produto nem de integridade de gate.
+
+Este relatório tem dois momentos. A auditoria original, sobre `307a3f0` em 2026-08-15, decidiu
+**`REJECTED`** por D1–D4; esse registro está preservado no commit da primeira entrega de PB-04-10 e
+é resumido em §10. FIX-02, FIX-03 e FIX-04 foram implementados e integrados. Esta reavaliação é
+fresca sobre o resultado integrado, em checkout limpo. Nenhuma afirmação de handoff foi aceita sem
+reexecução.
+
+Nenhum código, schema, fixture, golden, teste ou configuração foi alterado durante esta auditoria.
 
 ## 1. Identificação
 
 | Item | Valor |
 |---|---|
-| Data da auditoria | 2026-08-15 |
-| Commit auditado | `307a3f026c4bdc1238ef86df152d2708c3c394f8` (`feat: refine PB-04 hunt experience`) |
+| Data da reavaliação | 2026-08-16 |
+| Commit auditado | `9f1c14cbf36597471cc08ba28eec3d020df9d723` (`docs: record PB-04-FIX-03 and FIX-04 integration`) |
 | Branch/worktree | `codex/pb04-10-integrated-gate` em `C:\Kaezan\kaezan-huntbound-pb04-10-integrated-gate` |
 | SO | Microsoft Windows 11 Home Single Language, `10.0.26200` |
 | Node | `v24.14.0` |
 | pnpm | `11.21.0` via Corepack |
-| Playwright | `1.62.1` |
-| Modelo/effort | Claude Opus 5; effort não é exposto pelo runtime desta sessão |
+| Playwright | `1.62.1`, Chromium `chromium_headless_shell-1234` |
+| Modelo/effort | Cursor Grok 4.6; effort não é exposto pelo runtime desta sessão |
 | Skill obrigatória | `superpowers:verification-before-completion` |
 
-A auditoria é read-only para código, contratos, fixtures, golden e testes. Nenhum arquivo fora dos
-paths documentais permitidos foi alterado. Os scripts de jogo escritos para esta auditoria viveram
-no scratchpad da sessão e importam Playwright por caminho absoluto justamente para não tocar a
-árvore auditada.
+A política pede Claude Opus 5 (ou GPT-5.6 Sol `xhigh`) e modelo **diferente** dos implementadores.
+FIX-02 foi Codex/GPT-5; FIX-03/FIX-04 também não foram Grok. O desvio em relação ao modelo sugerido
+está registrado: a plataforma desta sessão é Grok 4.6, que é distinto dos implementadores das
+correções auditadas.
+
+A primeira tentativa de `verify` nesta worktree saiu `1` com `29 failed` porque
+`PLAYWRIGHT_BROWSERS_PATH` apontava para o cache vazio do sandbox do Cursor
+(`…\cursor-sandbox-cache\…\playwright`). Os browsers já existiam em
+`%USERPROFILE%\AppData\Local\ms-playwright`. As duas execuções que contam para o aceite rodaram com
+esse cache. Isso é limitação de ambiente, não defeito do produto.
 
 ## 2. Estado inicial
 
 ```text
-git status --porcelain=v1 --untracked-files=all   -> vazio (árvore limpa)
-git rev-parse HEAD                                -> 307a3f026c4bdc1238ef86df152d2708c3c394f8
+git status --porcelain=v1 --untracked-files=all   -> vazio (árvore limpa em main)
+git rev-parse HEAD                                -> 9f1c14cbf36597471cc08ba28eec3d020df9d723
 git branch codex/pb04-10-integrated-gate main     -> ok
-git worktree add ...                              -> ok, HEAD em 307a3f0
-corepack pnpm install --prefer-offline            -> exit 0; 70 pacotes; 3,1 s
+git worktree add …                                -> ok, HEAD em 9f1c14c
+corepack pnpm install --prefer-offline            -> exit 0; 70 pacotes; 2,3 s
 ```
+
+FIX-02 (`6cd63c6`), FIX-03 (`911ce2f` + merge `695b6a7`) e FIX-04 (`96c7628` + merge `6aeefec`)
+estão em `main`. `retries: 0` em `playwright.config.ts:12`.
 
 ## 3. Matriz de critérios
 
 | Critério | Comando / prova | Resultado | Evidência |
 |---|---|---|---|
-| Árvore limpa em `main` | `git status --porcelain=v1 -uall` | PASS | saída vazia; `307a3f0` |
-| `verify` 1ª execução | `corepack pnpm verify` | PASS | exit `0`; `26 passed`, **`2 flaky`** |
+| Árvore limpa em `main` | `git status --porcelain=v1 -uall` | PASS | saída vazia; `9f1c14c` |
+| `verify` 1ª execução | `corepack pnpm verify` | PASS | exit `0`; **`29 passed`**, 0 flaky; 139 999 ms |
 | Árvore inalterada entre execuções | `git status --porcelain=v1 -uall` | PASS | saída vazia |
-| `verify` 2ª execução | `corepack pnpm verify` | PASS | exit `0`; `27 passed`, **`1 flaky`** |
+| `verify` 2ª execução | `corepack pnpm verify` | PASS | exit `0`; **`29 passed`**, 0 flaky; 139 641 ms |
 | Árvore inalterada após a 2ª | `git status --porcelain=v1 -uall` | PASS | saída vazia |
-| Determinismo da simulação | `corepack pnpm simulation:check` | PASS | exit `0`; 4 digests |
-| Determinismo da hunt (2×) | `corepack pnpm hunt:check` ×2 | PASS | exit `0`; digests idênticos nas duas passadas |
-| Golden do PB-03 byte-idêntico | `sha256sum events.golden.jsonl` | PASS | `31f86d62…555888d4`, igual ao congelado |
-| Fronteira de identidade Tibia | `rg 'serverId\|clientId\|lookType\|huntId\|regionId' packages/simulation/src` | PASS | zero ocorrências (exit `1`) |
-| Fronteira de relógio/aleatório | `rg 'Date\|performance\|Math.random\|setTimeout\|crypto' packages/simulation/src` | PASS | zero ocorrências (exit `1`) |
+| Lint (fora de `verify`) | `corepack pnpm exec biome check .` | PASS | exit `0`; `Checked 381 files`; **fecha D4** |
+| Determinismo da simulação | `corepack pnpm simulation:check` | PASS | exit `0`; 4 digests = contrato |
+| Determinismo da hunt (2×) | `corepack pnpm hunt:check` ×2 | PASS | exit `0`; digests idênticos nas duas |
+| Hashes publicados = arquivos | `hunt:hashes:check` + `Get-FileHash` | PASS | §4; **fecha D2 e D3** |
+| Golden do PB-03 byte-idêntico | `Get-FileHash` de `events.golden.jsonl` | PASS | `31f86d62…555888d4` |
+| Fronteira de identidade Tibia | `rg` em `packages/simulation/src` | PASS | zero ocorrências (exit `1`) |
+| Fronteira de relógio/aleatório | `rg` em `packages/simulation/src` | PASS | zero ocorrências (exit `1`) |
 | Gate de arquitetura | `corepack pnpm architecture:check` | PASS | exit `0` |
-| Sem mídia pessoal versionada | inspeção de todos os `.png` rastreados | PASS | §6 |
+| Kernel sem dependência externa | `packages/simulation/package.json` | PASS | só `@huntbound/contracts`; `vitest` como devDep |
+| Kernel sem DOM | `packages/simulation/tsconfig.json` | PASS | `"lib": ["ES2022"]` |
+| Sem mídia pessoal versionada | `git ls-files '*.png'` + hash | PASS | §6 |
 | `product` recusa `cipsoft-personal` | `FetchAssetProvider.ts:158`, `validateAssetProfileTree.ts:54` | PASS | recusa em runtime e em empacotamento |
+| Gate de input (D1) | `playwright test -g "one paced command" --retries=0 --repeat-each=10` | PASS | **`20 passed`**, exit `0`; **fecha D1** |
 | Hunt jogável de fato | sessão dirigida em Chromium real | PASS | §5 |
-| Checklist de seleção | `docs/content/PB-04-SELECTION.md` | PASS com warning | §7 |
-| **Teste do gate de input** | `playwright test -g "one paced command" --retries=0 --repeat-each=10` | **FAIL** | **`10 failed`, exit `1`** — D1 |
-| **Hashes de replay do FIX-01** | busca literal no repositório | **FAIL** | **5 de 5 não existem** — D2 |
-| **Contrato de replay do PB-04** | `docs/simulation/REPLAY_CONTRACT.md` | **FAIL** | fixtures do PB-04 ausentes — D3 |
-| `corepack pnpm check` | `biome check .` | **FAIL** | exit `1`; 10 erros, 2 warnings — D4 |
+| Checklist de seleção | `docs/content/PB-04-SELECTION.md` | PASS | 8/8 com evidência; W13 fechado |
+| Aceite de produto | `artifacts/product-acceptance.md` | PASS | `APPROVED` em 2026-08-15; cobre jogabilidade, não mídia pessoal |
 
 ## 4. Determinismo — números medidos
 
-`simulation:check`, exit `0`:
+`simulation:check`, exit `0`, idêntico ao congelado em `docs/simulation/REPLAY_CONTRACT.md` §PB-03:
 
 | Artefato | SHA-256 |
 |---|---|
@@ -71,10 +88,11 @@ corepack pnpm install --prefer-offline            -> exit 0; 70 pacotes; 3,1 s
 | `snapshot.golden.json` | `84528f5246c156b65e46343d713851d064943c3550281bba0ab0e5d18d10d341` |
 | `events.golden.jsonl` | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
 
-Os quatro batem com `docs/simulation/REPLAY_CONTRACT.md` §PB-03. O golden do PB-03 sobreviveu ao
-bump de schema e a todo o PB-04.
+O golden do PB-03 sobreviveu ao bump de schema e a todo o PB-04. Conferido por `Get-FileHash`
+independente, não só pela ferramenta de replay.
 
-`hunt:check`, exit `0`, **idêntico nas duas execuções consecutivas**:
+`hunt:check`, exit `0`, **idêntico nas duas execuções consecutivas**, e idêntico a
+`REPLAY_CONTRACT.md` §PB-04 e aos `hashes.md` versionados:
 
 | Fixture | Artefato | SHA-256 |
 |---|---|---|
@@ -86,259 +104,150 @@ bump de schema e a todo o PB-04.
 | `pb04-respawn` | `snapshot.golden.json` | `2e968f79b850725dd2942ffc2421108b9f4cc09a82b13bda19995fad43e993d3` |
 | `pb04-respawn` | `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
 
-Esses valores batem com os `hashes.md` versionados dentro de cada fixture. **As fixtures estão
-corretas e determinísticas.** O problema é documental e está em D2.
-
-Conteúdo, conferido por `sha256sum` direto — os três batem com o card do FIX-01:
+Conteúdo, conferido por `Get-FileHash` direto:
 
 | Artefato | SHA-256 |
 |---|---|
 | recipe `layouts/hunts/venore-rotworm-cave.json` | `180aab488ab80426ce5b9c7c5e5472db450a83f44e864abbb16cc1ef3f18702e` |
 | `generated/hunts/venore-rotworm-cave/region.json` | `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5` |
-| pack `test` `pb-04-venore-rotworm-cave/pack.json` | `1f5c9f849d2ba577d88bdc6b1b096018b5c74fd2d2d301df1925ca4eee6def6f` |
+| pack `test` `pb-04-venore-rotworm-cave` | `1f5c9f849d2ba577d88bdc6b1b096018b5c74fd2d2d301df1925ca4eee6def6f` |
 
-Região medida: `24 × 24`, andares `[8, 9]`, palette de `133`.
+`hunt:extract:check` **não foi reexecutado**: `HUNTBOUND_CANARY_SOURCE` está vazio nesta worktree
+irmã e `references/` é gitignorado, então o snapshot não veio no checkout. `hunt:extract:sidecar`
+entrou em `content:check` dentro de `verify` (exit `0` nas duas). A suíte do extrator passou
+`113/113`. Limitação de ambiente, não divergência medida.
 
 ## 5. O produto foi jogado, não só testado
 
-Sessão dirigida pelo auditor em Chromium real (`vite preview --mode test`, porta `4188`), com
-teclado real, lendo apenas o `HuntProbe` — o estado que a `HuntScene` de fato desenhou. Não foram
-reexecutados os specs do repositório: o roteiro de jogo é do auditor.
+Sessão dirigida pelo auditor em Chromium real (`vite preview --mode test`, porta `4188`), teclado
+real (`ArrowUp`/`Down`/`Left`/`Right`), lendo apenas o `HuntProbe`. O script viveu em
+`%TEMP%\pb04-10-audit-play.mjs` e importou Playwright por `file://` absoluto, para não tocar a
+árvore auditada.
 
-**Boot:** andar `8`, jogador em `(21, 7, 8)`, `11` criaturas vivas, `visibleRows = 11` (a spec pede
-10–12), zoom `2,18`, `641` objetos desenhados (`ground 424`, `objectsBelow 213`, `actors 4`).
+**Boot:** andar `8`, jogador em `(21, 7, 8)`, facing `s`, `10` rotworms vivos (mais o jogador = `11`
+atores), `visibleRows = 11`, zoom `2,18`, `641` objetos desenhados (`ground 424`, `objectsBelow 213`,
+`actors 4`).
 
-**Colisão:** de `(21, 7, 8)`, `n` e `e` são recusados e não movem; `s` e `w` são aceitos. A recusa é
-silenciosa e sem exceção.
+**Colisão:** de `(21, 7, 8)`, `n` recusado `terrain` no tick `15` para `(21, 6, 8)`; `e` recusado
+`terrain` no tick `34` para `(22, 7, 8)`. Posição inalterada. Sem exceção.
 
-**Cooldown:** medido em jogo. Um segundo comando dentro da janela responde
-`actor/move-blocked reason="cooldown"`. O cooldown do jogador é de `10` ticks (`500 ms`); passos a
-cada `290 ms` são recusados, a cada `700 ms` são aceitos.
+**Passo:** `s` aceito no tick `50`: `(21, 7, 8) → (21, 8, 8)`, **um** comando. Retorno `n` no tick
+`66`. Cada toque produziu exatamente um comando — o defeito D1 não se reproduz em jogo.
 
-**Descida:** `w` a partir do start produz `actor/moved (21,7,8) → (20,7,8)` seguido de
-`actor/transitioned (20,7,8) → (21,4,9)`, no mesmo tick `39`.
+**Descida:** o primeiro `w` no tick `82` foi `occupied` (criatura na escada). O segundo `w` no tick
+`113` emitiu `actor/moved (21,7,8) → (20,7,8)` e `actor/transitioned (20,7,8) → (21,4,9)` no mesmo
+tick. Andar desenhado passou a `9`; `613` objetos (`ground 375`, `objectsBelow 225`, `actors 8`,
+`objectsAbove 5`); `7` rotworms visíveis no andar `9`.
 
-**Subida:** `n` a partir de `(21,5,9)` produz `actor/moved (21,5,9) → (21,4,9)` seguido de
-`actor/transitioned (21,4,9) → (20,7,8)`, no tick `75`. **A hunt sobe e desce.** A tabela congelada
-tem exatamente as duas transições opostas:
+**Subida:** `s` no tick `131` saiu da célula da escada `(21,4,9) → (21,5,9)`. `n` no tick `148`
+emitiu `actor/moved (21,5,9) → (21,4,9)` e `actor/transitioned (21,4,9) → (20,7,8)`. Andar
+desenhado voltou a `8`. **A hunt sobe e desce.**
 
-```json
-{"from":{"x":20,"y":7,"z":8},"to":{"x":21,"y":4,"z":9}}
-{"from":{"x":21,"y":4,"z":9},"to":{"x":20,"y":7,"z":8}}
-```
+**Criaturas:** `10` rotworms no boot, com posições distintas nos dois andares. Entre boot e
+pós-descida, a entidade `3` andou `(14,10,8) → (12,10,8)` e a `4` andou `(12,15,8) → (10,13,8)` —
+wander real, não sprite estático. O respawn de `1800` ticks permanece na fixture `pb04-respawn`,
+verificada com exit `0` (despawn no tick `1`, `actor/spawned` da entidade `14` no tick `1801`).
 
-Isso **fecha o W7** herdado de PB-04-04: a hunt não "só desce" mais.
+**Erros:** `0` de console, `0` de página, `0` de requisição falha e `0` resposta HTTP `≥ 400`.
 
-**`transition-blocked` é legítimo.** No boot, três tentativas de `w` foram recusadas com
-`reason="transition-blocked"` para `(20,7,8)`, e a quarta passou sem que o jogador tivesse feito
-nada diferente. A causa é tráfego de criatura: a entidade `2` estava na célula de destino `(21,4,9)`
-e saiu. No tick `77` a própria entidade `2` recebeu `transition-blocked` para `(21,4,9)`. A regra é
-coerente — não se toma a escada se o destino está ocupado — e não é defeito.
-
-**Criaturas vivas:** `11` no boot, movendo-se por conta própria (`actor/moved` de entidades `3`,
-`4`, `6`, `10`, `12` observados) e sendo bloqueadas por terreno. O respawn real está provado
-deterministicamente pela fixture `pb04-respawn` (despawn em ticks `1`/`2`, `actor/spawned` da
-entidade `14` no tick `1801`), verificada com exit `0`.
-
-**Erros:** `0` de console, `0` de página, `0` de requisição falha e `0` resposta HTTP `≥ 400` em
-toda a sessão.
-
-**`unresolvedGroundCells` não é defeito.** `424` compostas + `152` não resolvidas = `576` = `24 × 24`.
-São as células vazias fora do recorte da caverna, não asset faltando. Verificado em
-`GroundCompositor.ts:45-62`.
-
-**Limitação declarada:** o profile `test` serve um PNG sintético de `1 × 1` para todas as chaves, então
-a screenshot mostra um campo de pontos sobre o backdrop. A sessão prova geometria, colisão,
-transição, câmera e cadência — **não** identidade visual. Ver `product-acceptance.md`.
+**Limitação declarada:** o profile `test` serve um PNG sintético `1 × 1` de `68` bytes para todas as
+chaves. A sessão prova geometria, colisão, transição, câmera e cadência — **não** identidade visual.
+Ver `product-acceptance.md`.
 
 ## 6. Política de licença e mídia
 
-- `156` arquivos binários rastreados. Dos `152` PNG fora de `docs/`, **`147` são a mesma fixture
-  sintética** (`68` bytes, `431ced69…f265460`).
-- Os `5` restantes são **baselines de screenshot do Playwright** em
-  `tests/e2e/shell.spec.ts-snapshots/`, com dimensões de viewport (`390×844`, `768×1024`,
-  `1366×768` ×2, `1920×1080`). Não são mídia Tibia.
-- As `4` screenshots de `docs/playbooks/PB-04/artifacts/screenshots/` são artefato de QA gerado com
-  o profile `test`.
+- `156` PNGs rastreados. **`147` são a fixture sintética** (`68` bytes,
+  `431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460`).
+- `5` são baselines de `tests/e2e/shell.spec.ts-snapshots/` (viewports). Não são mídia Tibia.
+- `4` são screenshots de QA em `docs/playbooks/PB-04/artifacts/screenshots/`, geradas com o profile
+  `test`.
+- `git ls-files 'apps/game/public/assets/**'` está vazio.
 - **Nenhuma mídia pessoal está versionada.**
-- `product` recusa `cipsoft-personal` em dois pontos independentes: `FetchAssetProvider.ts:158`
-  (runtime) e `validateAssetProfileTree.ts:54` (empacotamento).
-- A varredura por path de `references/` em código encontrou apenas: comentários de proveniência em
-  `tools/map-extractor` e `tools/tile-flags`, os literais do **próprio guard** em
-  `tools/architecture/asset-boundaries.*`, e `tools/content-catalog/.../ContentCatalogApplication.test.ts:12`,
-  que monta `references/canary` como raiz de leitura — ver W16.
+- `product` recusa `cipsoft-personal` em `FetchAssetProvider.ts:158` (runtime) e
+  `validateAssetProfileTree.ts:54` (empacotamento).
+- A varredura por `assets/personal` e `references/` em código encontra o guard de fronteira, testes
+  do guard, exclusões do Biome/hooks, scripts que escrevem em diretório gitignorado via
+  `HUNTBOUND_PERSONAL_ASSET_SOURCE`, e comentários de proveniência em `tools/map-extractor` e
+  `tools/tile-flags`. Nenhum path de mídia pessoal ou de `references/` é lido em runtime de jogo.
+  `tools/content-catalog` **já não** monta `references/canary` por literal (W16 fechado).
 
 ## 7. Checklist de seleção
 
-Os `8` itens do "Contrato para escolher a primeira hunt" têm evidência em
-`docs/content/PB-04-SELECTION.md`. Nenhum item é falso. Um item carrega **proveniência obsoleta**:
+Os `8` itens do “Contrato para escolher a primeira hunt” têm evidência em
+`docs/content/PB-04-SELECTION.md`. Nenhum item é falso. A linha que citava `canary.otbm` como mapa
+da hunt está riscada; o mapa nomeado agora é `data-otservbr-global/world/otservbr.otbm`. W13 fechado
+por FIX-04.
 
-> "Região localizável e extraível — … O mapa local é `data-canary/world/canary.otbm`;
-> `config.lua.dist` declara `mapName = "otservbr"`, pareando o mapa com
-> `data-otservbr-global/world/otservbr-monster.xml`."
+## 8. Defeitos da rodada anterior — reexecução
 
-Essa é exatamente a inferência que PB-04-04 **refutou com medição** e que `STATE.md` já marca como
-riscada: `canary.otbm` não contém a caixa congelada; `otservbr.otbm` contém. A conclusão do item
-("é extraível") é verdadeira — a região foi extraída —, mas a evidência citada é falsa. Warning W13,
-não reprovação.
+| ID | O que a 1ª auditoria mediu | O que esta rodada mediu | Estado |
+|---|---|---|---|
+| D1 | `one paced command` `10/10 failed` com `--retries=0`; `verify` mascarava com `retries: 1` | `--retries=0 --repeat-each=10` → **`20 passed`**, exit `0`. `playwright.config.ts:12` é `retries: 0`. As duas `verify` saíram `29 passed`, 0 flaky. Em jogo, cada toque gerou 1 comando. | **fechado** |
+| D2 | 5 hashes do card FIX-01 inexistentes no repositório | o card aponta para `hashes.md`; `hunt:hashes:check` compara tabela, arquivo e sidecar, exit `0`. Prefixos antigos só aparecem como histórico do defeito. | **fechado** |
+| D3 | `REPLAY_CONTRACT.md` sem seção PB-04 | seção “Hashes congelados — PB-04” presente; valores idênticos aos arquivos e aos sidecars. | **fechado** |
+| D4 | `biome check .` exit `1`, 13 diagnósticos | `biome check .` exit `0`, `381` arquivos. | **fechado** |
+| W13 | seleção citava `canary.otbm` | riscado; mapa é `otservbr.otbm`. | **fechado** |
+| W14 | roteiro/README exigiam reextração OTBM | critério passou a materializar o recipe; envelope OTBM é fonte de spawn e material. | **fechado** |
+| W15 | `retries: 1` | `retries: 0`. | **fechado** |
+| W16 | testes de `content-catalog` fora do `test` | `test` inclui `tools/content-catalog/vitest.config.ts`; nesta worktree `13 passed \| 1 skipped` por ausência do snapshot (`skipIf` declarado). | **fechado** |
 
-## 8. Defeitos bloqueantes
+Nenhum defeito bloqueante novo.
 
-### D1 — o teste que prova o gate de input falha 10/10; o gate esconde
-
-`tests/e2e/hunt-play.spec.ts:265` — *"turns a short held direction into one paced command"*.
-
-```text
-playwright test -g "one paced command" --retries=0 --repeat-each=10  -> 10 failed, exit 1
-```
-
-Falhou também na **primeira tentativa das duas execuções de `verify`**, com dados diferentes
-(ticks `11`/`12` e `13`/`14`), e passou no retry das duas. `verify` sai `0` porque
-`playwright.config.ts:12` define `retries: 1` — e `trace: 'on-first-retry'` muda o timing o
-suficiente para o retry passar. Ou seja: **um teste que falha em 100% das primeiras tentativas é
-reportado como suite verde.**
-
-A causa é real e é de produto, não só de teste. `InputMap.drain()` (`InputMap.ts:166-180`) é
-**level-triggered**: devolve a direção *segurada* no momento em que o `inputGate` abre, uma vez por
-tick. Um toque de `40 ms` contra tick de `50 ms` atravessa duas aberturas de tick conforme a fase, e
-vira **dois passos**. Medido em jogo: um toque de `70 ms` gerou `3` comandos numa ocasião e `1` em
-outra, sem mudança de intenção do jogador.
-
-O efeito é que **um toque curto não é um passo**: é um ou dois passos, dependendo de onde o toque
-cai dentro do tick. Para um jogo de grid isso é precisão de movimento não determinística — o
-jogador não consegue dar exatamente um passo de propósito.
-
-O card do FIX-01 e `STATE.md` afirmam "hold curto com um comando por tick" e "`27/27` testes
-Playwright passaram". A reexecução não confirma nenhuma das duas.
-
-Card: **PB-04-FIX-02**.
-
-### D2 — os 5 hashes de replay do FIX-01 não existem no repositório
-
-O card `PB-04-FIX-01-corrigir-experiencia-da-hunt.md` publica, como evidência determinística:
-
-| Alegado | Existe no repositório? |
-|---|---|
-| cenário `pb04` `986b23df…` | não |
-| snapshot `pb04` `89879376…` | não |
-| eventos `pb04` `74bd1a51…` | não |
-| snapshot `pb04-respawn` `0cf24215…` | não |
-| eventos `pb04-respawn` `5803374b…` | não |
-
-Busca literal por cada prefixo no repositório inteiro (excluindo `.git` e `node_modules`) retorna
-**um único arquivo: o próprio card**. Os valores reais estão em §4 e nos `hashes.md` versionados.
-
-O card ainda diz "Os hashes abreviados acima têm os valores completos nos `hashes.md` de cada
-fixture" — o que é falso: os prefixos não batem com nenhum `hashes.md`.
-
-Isso é grave por ser exatamente o que a auditoria existe para pegar: uma tabela de hashes congelados
-que não descreve os artefatos. As fixtures estão certas; a documentação de congelamento, não.
-
-Card: **PB-04-FIX-03**.
-
-### D3 — `REPLAY_CONTRACT.md` nunca recebeu as fixtures do PB-04
-
-O card do PB-04-10 manda "confirmar os hashes contra os congelados em
-`docs/simulation/REPLAY_CONTRACT.md`". Isso é **impossível para o PB-04**: o contrato congela apenas
-a fixture `pb-03-kernel-coverage`. Não há nenhuma seção para `pb04` nem `pb04-respawn`.
-
-`STATE.md` declara W11 fechado "com sidecars e hash tables versionados". Sidecars existem; a
-atualização do contrato de replay, não. O roteiro (`06_ROTEIRO…`, §gate) lista
-`packages/test-fixtures/hunt/pb04/` como área do gate, o que pressupõe o congelamento documental.
-
-Card: **PB-04-FIX-03** (mesmo card de D2 — é a mesma superfície documental).
-
-### D4 — `corepack pnpm check` está vermelho, e o PB-04 piorou o número
-
-```text
-biome check .  -> exit 1; Found 10 errors, 2 warnings, 1 info (370 arquivos)
-```
-
-- `assist/source/organizeImports`: **10 erros**
-- `lint/correctness/noUnusedVariables`: **2 warnings**, ambos em `tools/map-extractor/topology.ts`
-- `lint/style/useTemplate`: 1 info
-
-`verify` não pega porque roda `format:check`, não `biome check`. PB-04-09 registrou este warning como
-W10 com **6** diagnósticos; agora são **13**. Sete dos arquivos ofensores são território do PB-04:
-`apps/game/src/hunt/HuntPresentation.ts`, `apps/game/src/hunt/huntRuntime.ts`,
-`apps/game/src/main.ts`, `tools/map-extractor/cli.ts`, `tools/map-extractor/extract.ts`,
-`tools/map-extractor/layout.test.ts` e `tools/replay/pb04HuntFixture.test.ts`. E
-`topology.ts` — arquivo **novo do FIX-01** — entrou com duas variáveis não usadas.
-
-Um playbook não deve fechar deixando o gate `check` vermelho por código que ele mesmo escreveu.
-
-Card: **PB-04-FIX-04**.
-
-## 9. Warnings priorizados
+## 9. Warnings remanescentes, priorizados
 
 | ID | Descrição | Classe | Prioridade |
 |---|---|---|---|
-| W13 | `PB-04-SELECTION.md` cita `canary.otbm` como o mapa da hunt — inferência que PB-04-04 refutou e `STATE.md` já riscou. Conclusão do item continua verdadeira. | `FIXABLE` | alta |
-| W14 | A geometria jogável é **autorada por recipe**, não extraída do mapa real. É decisão de supervisor documentada no design do FIX-01, mas o roteiro ainda exige "a região reextraída é byte-idêntica" e o README ainda lista "Reextrair a região do mesmo snapshot produz JSON byte-idêntico". Contrato e realidade divergem. | `FIXABLE` | alta |
-| W15 | `verify` esconde falha atrás de `retries: 1`. Independente de D1: qualquer teste que falhe sempre na 1ª tentativa passa no gate. Considerar `retries: 0` local e reportar flaky como falha. | `FIXABLE` | alta |
-| W16 | `tools/content-catalog` tem `14` arquivos de teste e `vitest.config.ts` próprio, mas **nenhum script os executa**. O `test` da raiz enumera `replay`, `tile-flags` e `map-extractor` e omite `content-catalog`. São testes que leem `references/canary` e nunca rodam em gate. | `FIXABLE` | alta |
-| W9 | Em `390 × 844` a chrome de canto morde o terço centro-inferior do playfield (d-pad `7,0 px`, painel `12,3 px`). Herdado de PB-04-09, não reverificado aqui. | `FIXABLE` | média |
-| W12 | Nenhum `tsconfig` inclui `tests/`; specs Playwright não são checadas por tipo em gate nenhum. Herdado de PB-04-09. | `FIXABLE` | média |
-| W8 | `region.palette` tem `133` entradas com o índice `0` como marcador de vazio; todo consumidor precisa filtrar antes de contar. Normativo em `MAP_REGION_CONTRACT.md`. | `ACCEPTED` | baixa |
-| B2 | `67` dos `137` ids reais da palette não existem na origem pessoal; o profile `personal` do PB-04 não é gerável. **Deixa de ser bloqueante** por decisão de aceite do usuário; migra para pré-requisito de PB-07. | `ACCEPTED` | média |
+| W9 | Em `390 × 844` a chrome de canto morde o terço centro-inferior do playfield (d-pad `7,0 px`, painel `12,3 px`). O quinto central, onde a câmera mantém o jogador, está livre. Fechar exige encolher as caixas de canto — layout, não gate. Medido em `artifacts/browser-qa.md` §4. | `FIXABLE` | média |
+| W12 | Nenhum `tsconfig` inclui `tests/`; specs Playwright não entram em typecheck de gate. Herdado de PB-04-09. | `FIXABLE` | média |
+| W17 | `biome.json` ainda não exclui `.worktrees`. Worktree aninhada derruba `format:check` na raiz. Esta auditoria usou worktree irmã e não foi atingida. Pertence a higiene de workspace, não ao produto da hunt. | `FIXABLE` | média |
+| W8 | Palette com índice `0` = vazio `serverId 0`; consumidores precisam filtrar antes de contar. Normativo em `MAP_REGION_CONTRACT.md`. | `ACCEPTED` | baixa |
+| B2 | Profile `personal` do PB-04 não é gerável neste workspace (`HUNTBOUND_PERSONAL_ASSET_SOURCE` vazio; lock exige manifesto que não é o de `kaezan-arena-fable`). Aceite de produto cobre jogabilidade, não identidade visual. Pré-requisito de **PB-07**. | `ACCEPTED` | média |
 | W1, W2, W4, W5, W6 | Herdados de PB-03-08, não reverificados. Continuam em `docs/playbooks/PB-03/artifacts/acceptance-report.md` §10. | `ACCEPTED` | baixa |
 
-Warnings herdados de PB-02 (`FIXABLE`) continuam em
+Warnings `FIXABLE` herdados de PB-02 continuam em
 `docs/playbooks/PB-02/artifacts/acceptance-report.md` §11 e não foram absorvidos.
 
-## 10. O que passou e deve ser dito
+## 10. Auditoria original (`REJECTED` em `307a3f0`)
 
-A reprovação é estreita. Estas coisas foram medidas e estão corretas:
-
-- `verify` é **idempotente**: exit `0` duas vezes, árvore byte-idêntica entre e depois.
-- O golden do PB-03 sobreviveu ao bump de `SIMULATION_SCHEMA_VERSION` e ao PB-04 inteiro.
-- `hunt:check` é determinístico e as fixtures batem com seus próprios sidecars.
-- O kernel continua sem identidade Tibia, sem relógio e sem aleatoriedade global.
-- Nenhuma mídia pessoal foi versionada, e `product` recusa `cipsoft-personal` em dois pontos.
-- **A hunt é jogável de verdade**: anda, colide, desce, sobe, respeita cooldown, tem criaturas vivas
-  e não emite um único erro. O W7 está fechado.
-- O aceite de produto do usuário está registrado em `product-acceptance.md` e é honrado.
+Em 2026-08-15 a primeira PB-04-10 reprovou o playbook: D1 (input level-triggered mascarado por
+retry), D2 (hashes de replay publicados e inexistentes), D3 (`REPLAY_CONTRACT.md` sem as fixtures
+do PB-04) e D4 (`biome check` vermelho). A hunt já era jogável e o aceite de produto já existia. O
+texto integral dessa reprovação está no commit da primeira entrega de PB-04-10; esta reavaliação o
+substitui como veredito vigente.
 
 ## 11. Elegibilidade de PB-05
 
-**PB-05 NÃO está liberado.**
+**PB-05 está liberado.**
 
-O motivo é D1: PB-05 é combate, e combate se dá em cima do mesmo caminho de input que hoje entrega
-um número não determinístico de passos por toque. Construir combate sobre um input que não distingue
-toque de hold significa herdar o defeito em ataque, alvo e posicionamento — onde ele custa muito
-mais caro para corrigir.
+O motivo da retenção era D1: combate sobre um input que não distinguia toque de hold. D1 não se
+reproduz. D2–D4, a superfície documental que a próxima auditoria reusa como baseline, também
+fecharam. Os warnings remanescentes não atravessam a fronteira de combate.
 
-D2, D3 e D4 são baratos e devem ser resolvidos junto, porque são a superfície documental e de gate
-que a próxima auditoria vai reusar como baseline.
-
-PB-04 permanece **aberto**. Os cards que o desbloqueiam são `PB-04-FIX-02`, `PB-04-FIX-03` e
-`PB-04-FIX-04`. Quando os três estiverem `done` e integrados, uma nova rodada de PB-04-10 decide o
-fechamento.
+A primeira task elegível é `PB-05-01`. Este chat **não** a inicia.
 
 ## 12. Comandos executados, com exit code
 
 ```text
 git status --porcelain=v1 -uall (main)                    -> 0, vazio
-git rev-parse HEAD                                        -> 307a3f026c4bdc1238ef86df152d2708c3c394f8
+git rev-parse HEAD                                        -> 9f1c14cbf36597471cc08ba28eec3d020df9d723
 git worktree add                                          -> 0
 corepack pnpm install --prefer-offline                    -> 0
-corepack pnpm verify                            (1ª)      -> 0   [26 passed, 2 flaky]
+corepack pnpm verify   (sandbox browsers)                 -> 1   [29 failed; Chromium ausente no cache]
+corepack pnpm verify                            (1ª)      -> 0   [29 passed, 0 flaky]
 git status --porcelain=v1 -uall (worktree)                -> 0, vazio
-corepack pnpm verify                            (2ª)      -> 0   [27 passed, 1 flaky]
+corepack pnpm verify                            (2ª)      -> 0   [29 passed, 0 flaky]
 git status --porcelain=v1 -uall (worktree)                -> 0, vazio
-playwright test -g "one paced command" --retries=0
-                --repeat-each=10                          -> 1   [10 failed]
+corepack pnpm exec biome check .                          -> 0   [381 files]
 corepack pnpm simulation:check                            -> 0
-sha256sum events.golden.jsonl                             -> 31f86d62…555888d4
 corepack pnpm hunt:check                        (1ª)      -> 0
 corepack pnpm hunt:check                        (2ª)      -> 0, digests idênticos
 corepack pnpm architecture:check                          -> 0
+Get-FileHash events.golden.jsonl (PB-03)                  -> 31f86d62…555888d4
 rg identidade Tibia em packages/simulation/src            -> 1 (zero ocorrência)
 rg relógio/aleatório em packages/simulation/src           -> 1 (zero ocorrência)
-sha256sum recipe / region / pack                          -> conferem com o card do FIX-01
-busca literal dos 5 hashes de replay do FIX-01            -> só o próprio card
-corepack pnpm exec biome check .                          -> 1   [10 errors, 2 warnings, 1 info]
+playwright test -g "one paced command" --retries=0
+                --repeat-each=10                          -> 0   [20 passed]
 sessão de jogo dirigida em Chromium (auditor)             -> 0, zero erro de runtime
-prova dirigida das duas transições                        -> 0, descida e subida confirmadas
-git status --porcelain=v1 -uall (final)                   -> 0, vazio
+prova dirigida das duas transições                        -> descida tick 113, subida tick 148
+git status --porcelain=v1 -uall (final, pré-docs)         -> 0, vazio
 ```

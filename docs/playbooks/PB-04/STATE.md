@@ -2,24 +2,21 @@
 
 **Playbook:** `docs/playbooks/PB-04/README.md`
 
-**Estado geral:** **aberto.** A auditoria PB-04-10 sobre `307a3f0` permanece `REJECTED` no histórico.
-FIX-02, FIX-03 e FIX-04 estão integrados em `main`. Uma nova rodada de PB-04-10 decide o fechamento.
-**PB-05 ainda não está liberado.**
+**Estado geral:** **closed** como `APPROVED_WITH_WARNINGS` em `9f1c14c`. A auditoria original sobre
+`307a3f0` permanece `REJECTED` no histórico; FIX-02/03/04 fecharam D1–D4. **PB-05 está liberado.**
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** FIX-03 (`911ce2f`, merge `695b6a7`) e FIX-04 (`96c7628`, merge `6aeefec`)
-entraram em `main` por merge commit — `--ff-only` era impossível porque `main` já tinha os dois
-commits documentais do PB-05 (`544f53c`, `8506d46`). As instruções compartilhadas entraram em
-`5aeb8bb`. Um follow-up de integração fechou a corrida CDP do toque curto no d-pad, que `retries: 0`
-passou a mostrar. Próxima task: nova rodada de **PB-04-10**.
+**Atualização vigente:** reavaliação PB-04-10 sobre `9f1c14c`. `verify` exit `0` duas vezes, `29/29`
+E2E sem flaky, `biome check .` exit `0`, D1 `20/20` com `--retries=0 --repeat-each=10`, hunt jogada
+de fato (descida tick `113`, subida tick `148`). Próxima task: **PB-05-01**.
 
 **Aceite de produto:** `APPROVED` pelo usuário em 2026-08-15, registrado em
 `artifacts/product-acceptance.md`. A auditoria mediu que o profile `personal` não é gerável neste
 workspace, então o aceite cobre a experiência jogável, não identidade visual. **B2 deixa de ser
 bloqueante** e migra para pré-requisito de PB-07.
 
-**Próxima etapa:** nova rodada de `PB-04-10` sobre o resultado integrado. **PB-05 não está liberado.**
+**Próxima etapa:** `PB-05-01`. **PB-05 está liberado.** Não iniciar neste chat.
 
 ## Tasks
 
@@ -30,12 +27,12 @@ bloqueante** e migra para pré-requisito de PB-07.
 | PB-04-03 | done | `codex/pb04-03-tile-flags` | `53d6d09` | `packages/content/src/generated/tile-flags.json` + `verify-ids` exit 0 no snapshot |
 | PB-04-04 | done | `codex/pb04-04-extract-region` | (ver handoff) | região congelada em `packages/content/src/generated/hunts/venore-rotworm-cave/**`, `dropped=0`, `--check` exit 0 |
 | PB-04-05 | done | `codex/pb04-05-kernel-floors-spawn` | (ver handoff) | kernel v3 com andares, transições e `S4 spawn`; `events.golden.jsonl` do PB-03 byte-idêntico |
-| PB-04-06 | partial → replay fixed by FIX-01 | `codex/pb04-06-hunt-replay` | `5e98e91` + FIX-01 | `packages/test-fixtures/hunt/**` + `hunt:check`; auditoria histórica ainda aguarda PB-04-10 |
+| PB-04-06 | done | `codex/pb04-06-hunt-replay` | `5e98e91` + FIX-01 | `packages/test-fixtures/hunt/**` + `hunt:check` |
 | PB-04-07 | done | `codex/pb04-07-hunt-assets` | `5ae830e` | pack PB-04 sintético, profiles e seleção de chaves verificados |
 | PB-04-08 | done | `codex/pb04-08-hunt-scene` | `e97f72b` | HuntScene, InputMap, câmera, projeção de camadas e bootstrap integrados |
 | PB-04-09 | done | `codex/pb04-09-hunt-browser-qa` | (ver handoff) | `docs/playbooks/PB-04/artifacts/browser-qa.md` + 4 screenshots + `verify` exit `0` |
-| PB-04-FIX-01 | done, com defeitos apontados por PB-04-10 | — | `307a3f0` | `hunt:check` + QA Chromium; tabela de hashes reprovada (D2) |
-| PB-04-10 | done — veredito `REJECTED` | `codex/pb04-10-integrated-gate` | (esta entrega) | `docs/playbooks/PB-04/artifacts/acceptance-report.md` |
+| PB-04-FIX-01 | done | — | `307a3f0` | `hunt:check` + QA Chromium; D2 da 1ª auditoria fechado por FIX-03 |
+| PB-04-10 | done — 1ª rodada `REJECTED`; 2ª `APPROVED_WITH_WARNINGS` | `codex/pb04-10-integrated-gate` | (esta entrega, sobre `9f1c14c`) | `docs/playbooks/PB-04/artifacts/acceptance-report.md` |
 | PB-04-FIX-02 | done | `codex/pb-04-fix-02-input-edge` | `6cd63c6` | `InputMap` edge/hold + pointer real; `verify` exit `0`, 29/29 E2E, digests inalterados |
 | PB-04-FIX-03 | done | `codex/pb-04-fix-03-replay-hashes` | `911ce2f` + merge `695b6a7` | `hunt:hashes:check` exit 0; seção PB-04 em `REPLAY_CONTRACT.md` |
 | PB-04-FIX-04 | done | `codex/pb-04-fix-04-gates-contratos` | `96c7628` + merge `6aeefec` | `biome check .` exit 0; `retries: 0`; `content-catalog` no `test` |
@@ -766,6 +763,36 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   ticks `23` e `25`). O driver passou a disparar pointerdown/up no mesmo `page.evaluate`, no molde de
   `holdKeyboardFor`. `InputMap` `18/18`; hunt-play + hunt-mobile `14/14`.
 - **Próxima task elegível:** nova rodada de **PB-04-10**. PB-05 não está liberado.
+
+## PB-04-10 — reavaliação e fechamento
+
+- **Status:** done. **Veredito `APPROVED_WITH_WARNINGS`**. Playbook **closed**.
+- **Commit auditado:** `9f1c14cbf36597471cc08ba28eec3d020df9d723`, árvore limpa, worktree irmã
+  `codex/pb04-10-integrated-gate`.
+- **Artefato:** `artifacts/acceptance-report.md` (substitui o veredito vigente; a reprovação de
+  `307a3f0` permanece no histórico git).
+- **Passou:** `verify` exit `0` **duas vezes**, `29 passed` / 0 flaky, árvore vazia entre e depois;
+  `biome check .` exit `0` (`381` arquivos); `simulation:check` `0`; `hunt:check` `0` **duas vezes
+  com digests idênticos**; `architecture:check` `0`; golden do PB-03 `31f86d62…555888d4`; varreduras
+  do kernel vazias (exit `1`); nenhuma mídia pessoal versionada; D1 `20/20` com `--retries=0
+  --repeat-each=10`.
+- **Jogou de fato:** Chromium real, teclado real, `HuntProbe`. Boot `(21,7,8)` andar `8`, `10`
+  rotworms, `visibleRows = 11`. Colisão `n`/`e` `terrain`. Descida tick `113`
+  `(20,7,8) → (21,4,9)`. Subida tick `148` `(21,4,9) → (20,7,8)`. Zero erro de console, página,
+  rede ou HTTP `≥ 400`.
+- **Warnings remanescentes:** W9, W12, W17 `FIXABLE`; W8 e B2 `ACCEPTED`; W1–W6 herdados de PB-03.
+- **Escopo:** somente documentação. Nenhum código, contrato, fixture, golden ou teste foi alterado.
+  O script de jogo ficou em `%TEMP%\pb04-10-audit-play.mjs`.
+- **Ambiente:** a primeira `verify` saiu `1` porque `PLAYWRIGHT_BROWSERS_PATH` apontava ao cache
+  vazio do sandbox do Cursor. As duas execuções que contam usaram
+  `%USERPROFILE%\AppData\Local\ms-playwright`. `HUNTBOUND_CANARY_SOURCE` vazio nesta worktree;
+  `hunt:extract:check` não foi reexecutado; sidecar e suíte do extrator passaram dentro de `verify`.
+- **Modelo/effort efetivos:** Cursor Grok 4.6; effort não exposto. Desvio do modelo sugerido
+  (Claude Opus 5): a plataforma desta sessão é Grok, distinto dos implementadores das correções.
+- **Skills e validador:** `playbook-task`, `independent-audit`, `worktree-cycle`, `run-gates`,
+  `superpowers:verification-before-completion`. Validação por reexecução dos gates, SHA-256
+  direto, varredura de fronteiras, inspeção de PNGs rastreados e sessão de jogo dirigida.
+- **Próxima task elegível:** **PB-05-01**. PB-05 está liberado. Este chat não a inicia.
 
 ## Regra de atualização
 
