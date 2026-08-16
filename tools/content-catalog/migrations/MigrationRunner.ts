@@ -134,6 +134,13 @@ export function applyMigrations(
           new Date().toISOString(),
         );
     });
-    applyOne();
+    // SQLite ignores PRAGMA foreign_keys inside a transaction. Table rebuilds
+    // (DROP + RENAME) must run with constraints off around the transaction.
+    database.pragma('foreign_keys = OFF');
+    try {
+      applyOne();
+    } finally {
+      database.pragma('foreign_keys = ON');
+    }
   }
 }

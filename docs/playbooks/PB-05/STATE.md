@@ -2,9 +2,9 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-02 commitada** na branch
-`grok/pb-05-02-import-spells-character` (integração `--ff-only` a seguir neste chat).
-PB-05-01 permanece em `main` (`2933012`). B5 continua aberto e não foi mascarado.
+**Estado geral:** execução em andamento. **PB-05-02 integrada em `main`** por
+`git merge --ff-only` (`624dac7..f1e8dab`). Follow-up na `main` corrige a migração 002
+em caches SQLite que já tinham a 001 populada. B5 continua aberto e não foi mascarado.
 
 **Última atualização:** 2026-08-16
 
@@ -13,14 +13,14 @@ bundle `b0b0a0b7a079ab12d89b323bce56f9c8e6d675dfd50967915c83c8ac8c77c770` (SHA-2
 arquivo real `packages/content/src/generated/pb-01-contract-coverage.json`). Fórmulas
 novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado.
 
-**Próxima etapa:** integrar PB-05-02 por `--ff-only` e, depois disso, PB-05-03.
+**Próxima etapa:** PB-05-03. Contratos de combate em `packages/contracts/src/simulation/**`.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
-| PB-05-02 | done | `grok/pb-05-02-import-spells-character` | — (ff a seguir) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
+| PB-05-02 | done | `grok/pb-05-02-import-spells-character` | `f1e8dab` (ff `624dac7..f1e8dab`) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
 | PB-05-03 | pending | `<agente>/pb05-03-combat-contracts` | — | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md` |
 | PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos |
 | PB-05-05 | pending | `<agente>/pb05-05-hunter-ai` | — | comportamento `hunter` com varredura de retomada verde |
@@ -34,13 +34,15 @@ novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado
 
 ## Última task concluída
 
-PB-05-02 (commit na worktree; ff na `main` a seguir). A ficha e as duas spells novas
-entraram no catálogo só por CLI. `skillAttack` não foi reutilizado.
+PB-05-02. Fast-forward em `main` para `f1e8dab`. A ficha e as duas spells novas
+entraram no catálogo só por CLI. `skillAttack` não foi reutilizado. A migração 002
+quebrava `content:check` em caches SQLite que já tinham a 001 com dados; o runner
+agora desliga foreign keys **fora** da transação.
 
 ## Próxima task elegível
 
-PB-05-03 depois do fast-forward de PB-05-02. Contratos de combate em
-`packages/contracts/src/simulation/**`. B5 não bloqueia.
+PB-05-03. Contratos de combate em `packages/contracts/src/simulation/**`. B5 não
+bloqueia.
 
 ## Verificações executadas
 
@@ -82,6 +84,21 @@ Sidecars da hunt inalterados.
    `apps/game` nem assets. Não reexecutado para pescar verde.
 
 Os outros 27 specs e2e passaram. Goldens de PB-03 e PB-04 byte-idênticos.
+
+Pós-integração em `C:\Kaezan\kaezan-huntbound` (`main` = `f1e8dab`), 2026-08-16:
+
+| Comando | Exit |
+|---|---:|
+| `git merge --ff-only grok/pb-05-02-import-spells-character` | `0` (`624dac7..f1e8dab`) |
+| `corepack pnpm verify` (1ª, cache SQLite de 2026-08-13) | `1` em `content:check`: `FOREIGN KEY constraint failed` ao aplicar `002_spell_formulas_and_characters.sql` |
+| `corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts` | `0` (54 testes, incluindo rebuild com child rows) |
+| `corepack pnpm content:check` (após o fix do runner, mesmo cache) | `0` |
+| `corepack pnpm exec biome check .` | `0` (384 files) |
+
+Causa: `PRAGMA foreign_keys` é no-op dentro de transação; o cache da `main` já tinha a 001
+com linhas em `spell_vocation_families`. A worktree criou cache vazio e não reproduziu.
+Correção: desligar foreign keys **ao redor** da transação em `MigrationRunner`. Sem retry
+mascarado no `verify` vermelho.
 
 PB-05-01, worktree `C:\Kaezan\kaezan-huntbound-pb05-01-selection`, 2026-08-16. Snapshot via
 `HUNTBOUND_CANARY_SOURCE` apontando para `C:\Kaezan\kaezan-huntbound\references\canary` (não
@@ -161,6 +178,7 @@ remeados aqui.
 | Ficha é conteúdo Huntbound (`character:huntbound:…`), não entidade Tibia | `CANARY_LUA_MAPPING.md`; `CharacterDefinitionSchema` |
 | `setArea` é opcional; spells sem área omitem o campo | parser + schema |
 | Forma de fórmula não reconhecida → `lua.invalid-formula`, nunca aceitação silenciosa | `parseSpellLua.ts` + testes |
+| `PRAGMA foreign_keys` no-op dentro de transação; o runner desliga FK ao redor do apply | `tools/content-catalog/migrations/MigrationRunner.ts` |
 
 ## Modelo e effort
 

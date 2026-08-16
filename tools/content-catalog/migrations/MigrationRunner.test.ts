@@ -134,6 +134,43 @@ describe('MigrationRunner', () => {
     );
   });
 
+  it('rebuilds a referenced table while child rows exist', () => {
+    const initial = `${migrationTable}
+CREATE TABLE parent (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+CREATE TABLE child (
+  id INTEGER PRIMARY KEY,
+  parent_id INTEGER NOT NULL,
+  FOREIGN KEY (parent_id) REFERENCES parent(id) ON DELETE RESTRICT
+);
+INSERT INTO parent (id, name) VALUES (1, 'keep');
+INSERT INTO child (id, parent_id) VALUES (1, 1);
+`;
+    withTemporaryDatabase({ '001_one.sql': initial }, (database, directory) => {
+      applyMigrations(database, directory);
+      const nextDirectory = createTemporaryMigrationDirectory({
+        '001_one.sql': initial,
+        '002_rebuild_parent.sql': `
+CREATE TABLE parent_new (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+INSERT INTO parent_new SELECT id, name FROM parent;
+DROP TABLE parent;
+ALTER TABLE parent_new RENAME TO parent;
+`,
+      });
+      temporaryCleanups.push(nextDirectory.cleanup);
+      applyMigrations(database, nextDirectory.path);
+      expect(database.pragma('foreign_keys', { simple: true })).toBe(1);
+      expect(
+        database.prepare('SELECT name FROM parent WHERE id = 1').pluck().get(),
+      ).toBe('keep');
+      expect(
+        database
+          .prepare('SELECT parent_id FROM child WHERE id = 1')
+          .pluck()
+          .get(),
+      ).toBe(1);
+    });
+  });
+
   it('rolls back schema and migration row when SQL fails', () => {
     withTemporaryDatabase(
       {
