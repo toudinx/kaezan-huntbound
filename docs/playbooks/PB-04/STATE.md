@@ -26,8 +26,8 @@ Detalhe em `artifacts/acceptance-report.md`.
 workspace, então o aceite cobre a experiência jogável, não identidade visual. **B2 deixa de ser
 bloqueante** e migra para pré-requisito de PB-07.
 
-**Próxima etapa:** executar `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04` — podem rodar em
-paralelo. Com os três `done` e integrados, uma nova rodada de PB-04-10 decide o fechamento.
+**Próxima etapa:** executar `PB-04-FIX-03` e `PB-04-FIX-04` — podem rodar em paralelo. Com os
+três fixes `done` e integrados, uma nova rodada de PB-04-10 decide o fechamento.
 **PB-05 não está liberado.**
 
 ## Tasks
@@ -45,7 +45,7 @@ paralelo. Com os três `done` e integrados, uma nova rodada de PB-04-10 decide o
 | PB-04-09 | done | `codex/pb04-09-hunt-browser-qa` | (ver handoff) | `docs/playbooks/PB-04/artifacts/browser-qa.md` + 4 screenshots + `verify` exit `0` |
 | PB-04-FIX-01 | done, com defeitos apontados por PB-04-10 | — | `307a3f0` | `hunt:check` + QA Chromium; tabela de hashes reprovada (D2) |
 | PB-04-10 | done — veredito `REJECTED` | `codex/pb04-10-integrated-gate` | (esta entrega) | `docs/playbooks/PB-04/artifacts/acceptance-report.md` |
-| PB-04-FIX-02 | pending | — | — | `tasks/PB-04-FIX-02-tornar-o-toque-um-passo.md` |
+| PB-04-FIX-02 | done | `codex/pb-04-fix-02-input-edge` | `6cd63c6` | `InputMap` edge/hold + pointer real; `verify` exit `0`, 29/29 E2E, digests inalterados |
 | PB-04-FIX-03 | pending | — | — | `tasks/PB-04-FIX-03-corrigir-hashes-congelados.md` |
 | PB-04-FIX-04 | pending | — | — | `tasks/PB-04-FIX-04-fechar-gates-e-contratos.md` |
 
@@ -639,6 +639,32 @@ em uma janela povoada do próprio mapa (`x = 4980..5029`, `y = 4980..5029`, anda
   jogo dirigida e instrumentada.
 - **Próximas tasks elegíveis:** `PB-04-FIX-02`, `PB-04-FIX-03` e `PB-04-FIX-04`, em paralelo. Depois,
   nova rodada de PB-04-10. **PB-05 não está liberado.**
+
+## PB-04-FIX-02 — handoff concluído
+
+- **Status:** done; implementação concluída em worktree isolada, pronta para integração fast-forward.
+- **Branch:** `codex/pb-04-fix-02-input-edge`.
+- **Commit de implementação:** `6cd63c6` (`fix: make hunt taps single-step`).
+- **Conteúdo:** `InputMap` passou a capturar `keydown`/`pointerdown` como borda única, repetir hold
+  após `HOLD_REPEAT_DELAY_TICKS = 2`, ignorar keyups irrelevantes e limpar estado em blur da janela,
+  `pointercancel` e `detach`. O kernel, `HuntScene`, fixtures, goldens e `playwright.config.ts`
+  não foram alterados.
+- **Testes:** `InputMap` `10/10`; mutação que neutraliza a borda derruba `6/10` e a restauração volta
+  a `10/10`; o caso E2E de toque curto passou `10` vezes no teclado e `10` no d-pad por pointer real.
+- **Gates:** `corepack pnpm verify` exit `0`, `29/29` testes E2E; `hunt:check` e
+  `simulation:check` exit `0` com os mesmos digests do baseline; typecheck do workspace e Biome dos
+  arquivos alterados passaram.
+- **Lint global:** `corepack pnpm format:check` exit `0`; `corepack pnpm exec biome check .` exit `1`
+  com `10` erros de `organizeImports`, `2` warnings e `1` info já existentes em arquivos fora do
+  escopo desta task (D4, destinado ao `PB-04-FIX-04`). Os arquivos alterados por esta task passaram.
+- **Spec:** `docs/superpowers/specs/2026-08-15-pb-04-corrective-hunt-experience-design.md` registra
+  o limiar temporal e a limpeza do blur na janela proprietária.
+- **Revisão independente:** Boole classificou o estado final como `Ready`, sem achados críticos,
+  importantes ou menores bloqueantes.
+- **Modelo/effort efetivos:** Codex/GPT-5; effort não exposto pelo runtime. Skills: TDD, debugging
+  sistemático, worktree isolada, verificação antes da conclusão e revisão independente.
+- **Próximas tasks elegíveis:** `PB-04-FIX-03` e `PB-04-FIX-04`, em paralelo. Depois, nova rodada de
+  PB-04-10. **PB-05 não está liberado.**
 
 ## Bloqueios
 
