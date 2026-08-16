@@ -18,6 +18,8 @@ const movement = 'movement' as StreamLabel;
 const ai = 'ai' as StreamLabel;
 const scenario = 'scenario' as StreamLabel;
 const spawn = 'spawn' as StreamLabel;
+const combat = 'combat' as StreamLabel;
+const loot = 'loot' as StreamLabel;
 const UINT32_RANGE = 0x1_0000_0000;
 
 function drawMany(
@@ -159,6 +161,8 @@ describe('kernel random streams', () => {
 
     expect(streams.serialize().map((state) => state.label)).toEqual([
       ai,
+      combat,
+      loot,
       movement,
       scenario,
       spawn,
@@ -170,6 +174,8 @@ describe('kernel random streams', () => {
 
     expect(restored.serialize()).toEqual(saved);
     expect(restored.ai.drawCount).toBe(0);
+    expect(restored.combat.drawCount).toBe(0);
+    expect(restored.loot.drawCount).toBe(0);
     expect(restored.movement.drawCount).toBe(1);
     expect(restored.scenario.drawCount).toBe(1);
   });
@@ -178,16 +184,9 @@ describe('kernel random streams', () => {
     const states = createKernelRandomStreams(seed).serialize();
     const first = states[0];
     const second = states[1];
-    const third = states[2];
-    const fourth = states[3];
 
-    if (
-      first === undefined ||
-      second === undefined ||
-      third === undefined ||
-      fourth === undefined
-    ) {
-      throw new Error('Expected four kernel random stream states.');
+    if (first === undefined || second === undefined || states.length !== 6) {
+      throw new Error('Expected six kernel random stream states.');
     }
     expect(() => restoreKernelRandomStreams(states.slice(1))).toThrow();
     expect(() =>
@@ -197,25 +196,33 @@ describe('kernel random streams', () => {
       ]),
     ).toThrow();
     expect(() =>
-      restoreKernelRandomStreams([
-        first,
-        { ...second, label: first.label },
-        third,
-        fourth,
-      ]),
+      restoreKernelRandomStreams(
+        states.map((state, index) =>
+          index === 1 ? { ...second, label: first.label } : state,
+        ),
+      ),
     ).toThrow();
   });
 
   /**
    * The vectors below are the ones PB-03-02 froze. A stream is derived by
-   * hashing its own label, so adding `spawn` must not shift any of them; if one
-   * moves, label derivation is broken and the bump is not a format change.
+   * hashing its own label, so adding `combat` and `loot` must not shift any of
+   * them; if one moves, label derivation is broken and the bump is not a
+   * format change.
    */
   it('freezes golden vectors for the kernel streams', () => {
     const expected: Record<string, readonly number[]> = {
       ai: [
         0xf1d5ad77, 0xce8a401b, 0x9ead377c, 0xedd33fe5, 0x327526b4, 0x2f753712,
         0x826067ea, 0x387f9b0a,
+      ],
+      combat: [
+        0xe66fd11d, 0x3b856526, 0x99ce4fa0, 0x9df4f5bc, 0xc7d62962, 0x92ff8526,
+        0x819a261f, 0x1538ef49,
+      ],
+      loot: [
+        0x26036bf2, 0xc88e45ba, 0x04a57152, 0x0645c023, 0x785f789f, 0x9ce1127a,
+        0x5b7213ef, 0x937f21c9,
       ],
       movement: [
         0x9046423d, 0xfcd233cd, 0x207a837d, 0xa83cf41a, 0x1adb5830, 0x2241cdbd,
@@ -234,6 +241,8 @@ describe('kernel random streams', () => {
 
     for (const [label, source] of [
       [ai, streams.ai],
+      [combat, streams.combat],
+      [loot, streams.loot],
       [movement, streams.movement],
       [scenario, streams.scenario],
       [spawn, streams.spawn],
@@ -242,23 +251,27 @@ describe('kernel random streams', () => {
     }
   });
 
-  it('adds spawn as the fourth canonical stream without moving the others', () => {
+  it('adds combat and loot without moving the previously frozen streams', () => {
     const streams = createKernelRandomStreams(seed);
 
     expect(streams.serialize().map((state) => state.label)).toEqual([
       ai,
+      combat,
+      loot,
       movement,
       scenario,
       spawn,
     ]);
   });
 
-  it('refuses to restore a three-stream snapshot from the previous schema', () => {
+  it('refuses to restore a four-stream snapshot from the previous schema', () => {
     const states = createKernelRandomStreams(seed).serialize();
 
     expect(() =>
       restoreKernelRandomStreams(
-        states.filter((state) => state.label !== spawn),
+        states.filter(
+          (state) => state.label !== combat && state.label !== loot,
+        ),
       ),
     ).toThrow();
   });

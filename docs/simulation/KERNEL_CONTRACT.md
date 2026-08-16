@@ -2,11 +2,10 @@
 
 Este documento congela a linguagem pública compartilhada por `@huntbound/contracts` e pelo kernel
 headless. PB-03 entregou tick, RNG, grid de um andar, comandos, eventos, snapshot e replay; PB-04-05
-acrescentou andares, transição automática e o sistema de spawn. PB-05 publica o vocabulário de
-combate no contrato (`schemaVersion` 4, `rulesVersion` 3). **As sete fases do tick, o comportamento
-`hunter`, o loot e as regras de dano ainda não estão no kernel** — a implementação chega em
-PB-05-04. O que este documento descreve sobre combate e sobre as fases novas é o **contrato
-pretendido**, não comportamento observável hoje.
+acrescentou andares, transição automática e o sistema de spawn. PB-05-04 implementa no kernel o
+vocabulário de combate publicado no contrato (`schemaVersion` 4, `rulesVersion` 3): as sete fases do
+tick, `S3 upkeep`, `S4 combat` e a morte de `S5`. O comportamento `hunter` fica para PB-05-05 e a
+rolagem de `loot/granted` para PB-05-06.
 
 ## Versões e tempo
 
@@ -55,7 +54,7 @@ v2 → v3. `schemaVersion: 3` num documento que já tem a forma v4 produz `SIM_V
   slot referencia um blueprint existente, fica em célula livre de terreno do andar do centro e
   dentro do raio Chebyshev do grupo. Centros de grupo são únicos e dois slots do mesmo grupo não
   compartilham célula: as duas unicidades são o que torna a ordem canônica **total**.
-- `maxLiveActors` é positivo e é o teto de atores vivos verificado por `S4`.
+- `maxLiveActors` é positivo e é o teto de atores vivos verificado por `S7`.
 - `blueprintId` é kebab-case e único.
 - `stepCooldownTicks` e `respawnTicks` são inteiros seguros não negativos.
 - Os comportamentos de blueprint são `inert`, `wander` e `hunter`.
@@ -146,8 +145,9 @@ monotônica global na execução.
 
 `cause` é `'attack'` ou `'ability'`. `actor/died` exige `position` — é ela que ancora corpo, sangue e
 o arco de autoloot na apresentação. `killerEntityId` é `null` quando não há matador identificável.
-`ability/cast` e `combat/target-changed` aceitam `targetEntityId` nulo. Os eventos de combate e loot
-são vocabulário publicado; o kernel ainda não os emite.
+`ability/cast` e `combat/target-changed` aceitam `targetEntityId` nulo. O kernel emite os eventos de
+combate, cura, conjuração e morte; `loot/granted` e `combat/target-changed` ficam para PB-05-06 e
+PB-05-05.
 
 As causas de bloqueio são `bounds`, `terrain`, `occupied`, `diagonal-corner`, `cooldown` e
 `transition-blocked`. As razões de `spawn/deferred` são `no-free-cell` e `cap-reached`.
@@ -179,7 +179,7 @@ As coleções têm ordem canônica parte do contrato:
 duplicata. `health` e `resource` são inteiros não negativos. `targetEntityId` é `null` ou o
 `EntityId` de um ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a
 restrição de `abilityCooldowns` aos índices declarados no blueprint dependem do cenário e seguem o
-mesmo padrão de `transitionGuard`: a checagem mora em `restoreSimulationKernel` (PB-05-04), não no
+mesmo padrão de `transitionGuard`: a checagem mora em `restoreSimulationKernel`, não no
 schema isolado do snapshot. `SpawnSlotState` guarda `groupIndex`, `slotIndex`, `readyAtTick` e `entityId`,
 que é `null` quando o assento está vago. Um `entityId` de slot que não corresponda a nenhum ator do
 snapshot é reprovado.
@@ -202,7 +202,7 @@ schema: o snapshot não declara terreno, então só o cenário permite avaliá-l
 
 ### `pendingIntents`
 
-`S3 ai` decide no fim do tick `T` uma intent aplicada no tick `T + 1`. Essa fila é interna: ela não
+`S6 ai` decide no fim do tick `T` uma intent aplicada no tick `T + 1`. Essa fila é interna: ela não
 passa pelo command log e `pendingCommands` carrega apenas comandos externos. `pendingIntents` é o
 campo que a serializa, e é ele que torna `restoreSimulationKernel` fiel em **qualquer** fronteira.
 
@@ -299,19 +299,16 @@ calcula FNV-1a 32 do rótulo kebab-case e mistura esse hash com `s0`–`s3` do e
 Os streams do kernel em v3 eram exatamente `movement`, `ai`, `scenario` e `spawn`. O contrato v4
 acrescenta `combat` e `loot`. Separar os dois impede que alterar uma tabela de loot desloque as
 rolagens de dano. Como a derivação é por hash do rótulo, acrescentar rótulos **não** desloca os
-já existentes — a mesma prova que valeu para `spawn` vale para `combat` e `loot`, e será exigida
-em PB-05-04 junto dos vetores golden novos.
+já existentes — a mesma prova que valeu para `spawn` vale para `combat` e `loot`.
 
-O kernel **ainda não** deriva `combat` nem `loot`: até PB-05-04 os streams serializados continuam
-sendo os quatro de v3. Documentar os rótulos aqui não os torna observáveis.
-
-Como a derivação é por hash do rótulo, acrescentar `spawn` **não** desloca os outros três. Isso é
-afirmação testável, não suposição: `packages/simulation/src/random/random.test.ts` compara os oito
-primeiros `nextUint32()` de `ai`, `movement` e `scenario` com os vetores golden de PB-03-02 e
-registra o vetor novo de `spawn` para a seed `0f1e2d3c4b5a6978`:
+O kernel deriva os seis streams. `packages/simulation/src/random/random.test.ts` compara os oito
+primeiros `nextUint32()` de `ai`, `movement`, `scenario` e `spawn` com os vetores golden de PB-03-02
+e registra os vetores novos de `combat` e `loot` para a seed `0f1e2d3c4b5a6978`:
 
 ```text
-spawn: c4e46756 97d5fe29 e8f89ef4 2187ecdc 9b4bb0ce e6e26967 236ed8ca ed821c3f
+combat: e66fd11d 3b856526 99ce4fa0 9df4f5bc c7d62962 92ff8526 819a261f 1538ef49
+loot:   26036bf2 c88e45ba 04a57152 0645c023 785f789f 9ce1127a 5b7213ef 937f21c9
+spawn:  c4e46756 97d5fe29 e8f89ef4 2187ecdc 9b4bb0ce e6e26967 236ed8ca ed821c3f
 ```
 
 `nextUint32()` é a única primitiva que avança o estado e incrementa `drawCount`. `nextBelow(bound)`
@@ -320,11 +317,11 @@ descarta valores fora dessa faixa e só então aplica o módulo. Cada valor desc
 `drawCount`, portanto o contador audita exatamente o consumo do stream.
 
 O estado serializado é `{ label, s0, s1, s2, s3, drawCount }`. `KernelRandomStreams.serialize()`
-ordena os estados por `label`: `ai`, `movement`, `scenario`, `spawn`. Restaurar estado zero, label
-ausente, duplicado ou desconhecido é erro, e um conjunto de três estados — a forma do schema `2` — é
-recusado por contagem. Trocar o algoritmo, as constantes, a ordem da mistura ou a regra de
-rejeição altera a sequência observável e exige incremento de `SIMULATION_RULES_VERSION` com novos
-vetores golden.
+ordena os estados por `label`: `ai`, `combat`, `loot`, `movement`, `scenario`, `spawn`. Restaurar
+estado zero, label ausente, duplicado ou desconhecido é erro, e um conjunto com menos de seis
+estados — a forma dos schemas `2` e `3` — é recusado por contagem. Trocar o algoritmo, as
+constantes, a ordem da mistura ou a regra de rejeição altera a sequência observável e exige
+incremento de `SIMULATION_RULES_VERSION` com novos vetores golden.
 
 ## Command log
 
@@ -353,8 +350,8 @@ comandos e expoe os registros ainda pendentes por `(tick, sequence)`, que e a or
 snapshot. A duplicata de borda e o mesmo emissor, ator e tick com duas acoes concorrentes
 (`actor/move-step`, `actor/attack`, `actor/cast-ability` ou `actor/wait`); o segundo retorna `SIM_COMMAND_DUPLICATE`. `actor/face` nao
 conflita, e emissores diferentes nao conflitam nesta camada. O contrato publica
-`isConcurrentActorAction(type)` para essa tabela. O `CommandBuffer` do kernel ainda consulta só
-`move-step` e `wait` — a cobertura das quatro ações chega em PB-05-04.
+`isConcurrentActorAction(type)` para essa tabela, e o `CommandBuffer` do kernel consulta as quatro
+ações.
 
 O encoder de `@huntbound/simulation` escreve somente comandos externos em JSONL. A primeira linha e
 o header; cada linha seguinte usa `kind: "command"`, os campos `tick`, `sequence`, `issuer`, `type`
@@ -477,45 +474,33 @@ produziria os mesmos eventos, mas deixaria um journal não drenado que o snapsho
 
 ### Fases
 
-A ordem **em vigor no kernel hoje** (até PB-05-04) continua:
+A ordem em vigor no kernel:
 
 ```text
 1. intake    comandos externos com tick == currentTick saem do buffer já ordenados;
-             intents internas decididas em ticks anteriores para este tick entram na fila de passo
+             intents internas decididas em ticks anteriores para este tick entram na fila
 2. apply     validação e mutação por comando, na ordem (prioridade, sequence)
-3. systems   S1 lifecycle -> S2 movement (com transição no fim) -> S3 ai -> S4 spawn
+3. systems   S1 lifecycle -> S2 movement (com transição no fim) -> S3 upkeep
+                          -> S4 combat -> S5 death -> S6 ai -> S7 spawn
 4. flush     o journal do tick é fechado e devolvido; currentTick += 1
 ```
 
-O contrato pretendido de PB-05, a ser implementado em PB-05-04, é:
-
-```text
-1. intake    comandos externos do tick + intents internas decididas antes
-2. apply     validação e mutação por comando, na ordem (prioridade, sequence)
-3. systems   S1 lifecycle -> S2 movement -> S3 upkeep -> S4 combat
-                          -> S5 death e loot -> S6 ai -> S7 spawn
-4. flush     journal fechado e devolvido; currentTick += 1
-```
-
-Justificativa das fases novas, ainda sem implementação:
+Justificativa das fases:
 
 - **S3 upkeep** aplica regeneração de vida e mana antes de qualquer gasto do tick, para que o
   recurso regenerado já possa custear uma conjuração do mesmo tick. É aritmético e não consome
   aleatoriedade.
 - **S4 combat** resolve golpes e conjurações **depois** do movimento, para que a adjacência avaliada
   seja a do fim do passo.
-- **S5 death e loot** remove quem chegou a `health <= 0`, emite `actor/died` e em seguida os
-  `loot/granted` daquela morte. Vir antes de `S6` impede a IA de mirar um morto; vir antes de `S7`
-  libera célula e assento de spawn no mesmo tick.
-- **S6 ai** decide para `currentTick + 1`, como em PB-03, e passa a conhecer `hunter`.
-- **S7 spawn** continua por último, pelas duas razões já congeladas em PB-04.
-
-Documentar essas fases aqui não as torna observáveis. Um journal de PB-03 ou PB-04 rodado contra o
-kernel atual ainda percorre só as quatro fases velhas.
-
-`S4` **atual** (spawn) é o último por duas razões congeladas: o nascimento do tick `T` só pode ser observado a partir
-de `T`, e ele nunca disputa célula com um passo do mesmo tick — uma célula liberada por `S2` já pode
-receber um nascimento no mesmo tick, e o recém-nascido só é considerado por `S3` no tick seguinte.
+- **S5 death** remove quem chegou a `health <= 0` e emite `actor/died` com a posição. Vir antes de
+  `S6` impede a IA de mirar um morto; vir antes de `S7` libera célula e assento de spawn no mesmo
+  tick. A rolagem de `loot/granted` fica para PB-05-06.
+- **S6 ai** decide para `currentTick + 1`, como em PB-03. Continua conhecendo só `wander`; `hunter`
+  chega em PB-05-05.
+- **S7 spawn** continua por último, pelas duas razões já congeladas em PB-04: o nascimento do tick
+  `T` só pode ser observado a partir de `T`, e ele nunca disputa célula com um passo do mesmo tick —
+  uma célula liberada por `S2` ou por `S5` já pode receber um nascimento no mesmo tick, e o
+  recém-nascido só é considerado por `S6` no tick seguinte.
 
 `advance(ticks)` concatena os journals na ordem dos ticks e é equivalente a `ticks` chamadas de
 `advanceOne()`. `advance(0)` não avança e devolve vazio; `ticks` negativo, fracionário ou `NaN`
@@ -532,6 +517,8 @@ journal: `advanceOne()` devolve os eventos daquele tick e esvazia o buffer.
 | `scenario/despawn-actor` | enfileira o despawn para S1 e torna a entidade inendereçável no tick |
 | `actor/face` | muda `facing` e emite `actor/faced` imediatamente |
 | `actor/move-step` | enfileira a intent de passo para S2 |
+| `actor/attack` | enfileira a intent de golpe para S4 |
+| `actor/cast-ability` | enfileira a intent de conjuração para S4 |
 | `actor/wait` | não muta nada e não emite evento |
 
 Rejeições congeladas, todas com `command/rejected` e sem qualquer mutação de estado:
@@ -572,18 +559,46 @@ Como a resolução é sequencial, dois atores disputando a mesma célula no mesm
 pelo menor `EntityId`: o primeiro move e o segundo recebe `occupied`. Pelo mesmo motivo, a célula
 liberada por um ator já pode ser ocupada por um ator de `EntityId` maior no mesmo tick.
 
-`S3 ai` percorre os atores com `behavior: 'wander'` em ordem crescente de `EntityId` e decide
+`S3 upkeep` percorre os atores vivos em ordem crescente de `EntityId`. Para cada um, se
+`healthRegenTicks > 0` e `healthRegenAmount > 0` e `currentTick >= nextHealthRegenTick`, soma o
+amount a `health` sem ultrapassar `maxHealth` e avança `nextHealthRegenTick` para
+`currentTick + healthRegenTicks`. O mesmo vale para mana com `resource` / `maxResource`. Ticks ou
+amount iguais a zero nunca regeneram. O sistema não emite evento e não consome nenhum stream.
+
+`S4 combat` resolve as intents de golpe e conjuração em ordem crescente de `EntityId`, desempatando
+pelo `sourceRank` (externa antes da interna) e depois pela ordem de entrada. Recusas emitem
+`command/rejected` e não mutam estado nem consomem o stream `combat`.
+
+Golpe: alcance Chebyshev `1`, mesmo andar, alvo de facção diferente, `currentTick >=
+attackReadyAtTick`. Emite `combat/attacked` e em seguida `combat/damaged`. O dano é inteiro uniforme
+em `[attackMinDamage, attackMaxDamage]` por um `nextBelow(max - min + 1)` do stream `combat`; quando
+`min == max`, nenhum sorteio é consumido. `remainingHealth` no evento é clampado em `0`. O atacante
+passa a `attackReadyAtTick = currentTick + attackCooldownTicks`.
+
+Conjuração: consome `resourceCost` só depois de validar índice, recurso, cooldown próprio e cooldown
+de grupo. Emite `ability/cast` e então um `combat/damaged` ou `combat/healed` por alvo. `self` cura o
+conjurador; `target` exige alcance e, para dano, facção diferente; `area` atinge o quadrado de raio
+declarado centrado no conjurador, em ordem crescente de `EntityId`, com **um** sorteio por alvo.
+Cura só atinge a mesma facção; dano só atravessa facções diferentes. Ninguém fere a si mesmo.
+Mitigação é zero.
+
+`S5 death` remove quem tem `health <= 0`, em ordem crescente de `EntityId`, emite `actor/died` com a
+posição e libera o assento de spawn com `readyAtTick = tickDaMorte + respawnTicks`. Jogador não tem
+assento e simplesmente sai do mundo — o kernel não o respawna. `EntityId` nunca é reaproveitado.
+`loot/granted` não é emitido nesta versão.
+
+`S6 ai` percorre os atores com `behavior: 'wander'` em ordem crescente de `EntityId` e decide
 somente para quem está fora de cooldown no tick corrente. A decisão consome exatamente um
 `nextBelow(8)` do stream `ai` e indexa a ordem canônica de direções; um bloqueio não gera nova
 tentativa no mesmo tick. A intent resultante é enfileirada para `currentTick + 1` e nunca para o
 tick corrente. Ator `inert` jamais consome o stream `ai`, portanto acrescentar ou remover atores
 inertes não altera as decisões de wander; remover um ator `wander` altera as decisões seguintes de
-forma determinística, porque muda o consumo do stream.
+forma determinística, porque muda o consumo do stream. `hunter` ainda não decide.
 
-Comandos internos gerados por `S3` usam uma fila interna própria, ordenada por `EntityId`. Eles não
+Comandos internos gerados por `S6` usam uma fila interna própria, ordenada por `EntityId`. Eles não
 entram no command log e não consomem `sequence` de comando externo.
 
-`S4 spawn` percorre a tabela do cenário em ordem `(groupIndex, slotIndex)` — a ordem canônica
+`S7 spawn` percorre a tabela do cenário em ordem `(groupIndex, slotIndex)` — a ordem canônica
 descrita acima, não a de declaração. Para cada slot vago cujo `readyAtTick` já chegou:
 
 1. se o número de atores vivos já alcançou `maxLiveActors`, emite `spawn/capped` e, em seguida,
@@ -594,12 +609,12 @@ descrita acima, não a de declaração. Para cada slot vago cujo `readyAtTick` j
 4. sem nenhuma célula livre, emite `spawn/deferred` com `no-free-cell`, **não** consome
    aleatoriedade e tenta de novo no tick seguinte.
 
-Um ator nascido por `S4` entra com `facing: 's'`, `readyAtTick = currentTick` e
+Um ator nascido por `S7` entra com `facing: 's'`, `readyAtTick = currentTick` e
 `transitionGuard = null`, e emite `actor/spawned` como qualquer outro nascimento. Quando o ator de um
-slot é removido por `scenario/despawn-actor`, o assento fica `null` e
-`readyAtTick = tickDoDespawn + respawnTicks`. Não existe morte em PB-04; o despawn é a única saída.
+slot é removido por `scenario/despawn-actor` ou por morte em `S5`, o assento fica `null` e
+`readyAtTick = tickDaSaída + respawnTicks`.
 
-O teto vale apenas para `S4`. Um `scenario/spawn-actor` externo continua governado pelas rejeições de
+O teto vale apenas para `S7`. Um `scenario/spawn-actor` externo continua governado pelas rejeições de
 `apply`, e não por `maxLiveActors`.
 
 ### Determinismo
@@ -614,10 +629,10 @@ pacote externo tolerado, e apenas em arquivos `*.test.ts`.
 ## Fronteira kernel × conteúdo
 
 O kernel recebe geometria e comportamento, nunca identidade Tibia. As identidades `serverId`,
-`clientId`, `lookType`, `huntId` e `regionId` são proibidas em `packages/simulation/src/**` e a
-mesma regra executável as reprova. Diferente dos globais acima, elas são reprovadas em **qualquer**
-posição — acesso a propriedade e declaração incluídos —, porque é exatamente assim que um campo
-desses vaza. Comentários e strings continuam fora do escaneamento.
+`clientId`, `lookType`, `huntId`, `regionId`, `itemKey` e `spellKey` são proibidas em
+`packages/simulation/src/**` e a mesma regra executável as reprova. Diferente dos globais acima,
+elas são reprovadas em **qualquer** posição — acesso a propriedade e declaração incluídos —, porque
+é exatamente assim que um campo desses vaza. Comentários e strings continuam fora do escaneamento.
 
 `simulation-boundaries.test.ts` e `content-boundaries.test.ts` entram no enumerador de `node --test`
 do script `test` da raiz, portanto a regra roda no gate agregado.

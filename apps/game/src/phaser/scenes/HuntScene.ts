@@ -95,7 +95,15 @@ function isStructuralEvent(event: SimulationEvent): boolean {
     case 'spawn/deferred':
     case 'spawn/capped':
     case 'command/rejected':
+    case 'combat/attacked':
+    case 'combat/damaged':
+    case 'combat/healed':
+    case 'ability/cast':
+    case 'combat/target-changed':
+    case 'loot/granted':
       return false;
+    case 'actor/died':
+      return true;
   }
 }
 

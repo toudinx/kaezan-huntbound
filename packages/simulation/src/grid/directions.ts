@@ -52,3 +52,12 @@ export function translate(
     z: position.z,
   };
 }
+
+export function chebyshevDistance(
+  left: GridPosition,
+  right: GridPosition,
+): number {
+  const dx = left.x < right.x ? right.x - left.x : left.x - right.x;
+  const dy = left.y < right.y ? right.y - left.y : left.y - right.y;
+  return dx < dy ? dy : dx;
+}

@@ -9,9 +9,9 @@ and to the sidecar `.sha256`.
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0` |
-| `commands.jsonl` | `01e139f9d8fd41fd7c53fc70dcf15286bb49c08ac874da7f43a82d2c22bc1efa` |
-| `snapshot.golden.json` | `2e968f79b850725dd2942ffc2421108b9f4cc09a82b13bda19995fad43e993d3` |
+| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
+| `commands.jsonl` | `14df54ca5ee4d2731fba85368e1d8df055e2f5ea0b47b1dfcc69fa7c5f00abf5` |
+| `snapshot.golden.json` | `93cbf723d7e8e7b795d6b25a60e678a804f707861f58efcf97e7e19fabea28bf` |
 | `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
 
 Entity `2` is despawned at tick `1`; its slot becomes ready at tick `1801`

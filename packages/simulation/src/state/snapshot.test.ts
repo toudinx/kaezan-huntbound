@@ -108,6 +108,8 @@ describe('snapshotKernel', () => {
     ]);
     expect(snapshot.randomStreams.map((stream) => stream.label)).toEqual([
       'ai',
+      'combat',
+      'loot',
       'movement',
       'scenario',
       'spawn',
@@ -283,7 +285,7 @@ describe('restoreSimulationKernel', () => {
   });
 
   it('resumes a boundary that still owes a decided AI intent', () => {
-    // S3 decides at the end of tick T an intent applied at T + 1, so tick 1 of
+    // S6 decides at the end of tick T an intent applied at T + 1, so tick 1 of
     // this scenario owes a decision. The snapshot carries it in pendingIntents;
     // without that field the resumed run silently loses the decision.
     expect(resumeReport(1)).toEqual([]);

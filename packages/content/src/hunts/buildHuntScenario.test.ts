@@ -11,6 +11,31 @@ import { describe, expect, it } from 'vitest';
 import { buildHuntScenario } from './buildHuntScenario.ts';
 import { loadHuntDefinition } from './loadHuntDefinition.ts';
 
+function combatNeutral(
+  blueprintId: string,
+  stepCooldownTicks: number,
+  behavior: 'inert' | 'wander',
+) {
+  return {
+    blueprintId,
+    stepCooldownTicks,
+    behavior,
+    factionId: 0,
+    maxHealth: 1,
+    maxResource: 0,
+    healthRegenTicks: 0,
+    healthRegenAmount: 0,
+    resourceRegenTicks: 0,
+    resourceRegenAmount: 0,
+    attackCooldownTicks: 0,
+    attackMinDamage: 0,
+    attackMaxDamage: 0,
+    aggroRadius: 0,
+    lootTableIndex: null as number | null,
+    abilityIndices: [] as number[],
+  };
+}
+
 function syntheticHunt(): HuntDefinition {
   return {
     schemaVersion: HUNT_SCHEMA_VERSION,
@@ -83,8 +108,8 @@ function syntheticHunt(): HuntDefinition {
       maxLiveActors: 64,
     },
     blueprints: [
-      { blueprintId: 'player', stepCooldownTicks: 2, behavior: 'inert' },
-      { blueprintId: 'rotworm', stepCooldownTicks: 3, behavior: 'wander' },
+      combatNeutral('player', 2, 'inert'),
+      combatNeutral('rotworm', 3, 'wander'),
     ],
     playerStart: { x: 0, y: 0, z: 7 },
     playerBlueprintId: 'player',
@@ -99,7 +124,7 @@ function unwrapSuccess<T>(result: SimulationValidationResult<T>): T {
 }
 
 describe('buildHuntScenario', () => {
-  it('projects floors, transitions, spawn slots and the player into KernelScenario v3', () => {
+  it('projects floors, transitions, spawn slots and the player into KernelScenario v4', () => {
     const result = buildHuntScenario(
       syntheticHunt(),
       createSeed('1a2b3c4d5e6f7a8b'),
@@ -152,9 +177,11 @@ describe('buildHuntScenario', () => {
           },
         ],
         maxLiveActors: 64,
+        abilities: [],
+        lootTables: [],
         blueprints: [
-          { blueprintId: 'player', stepCooldownTicks: 2, behavior: 'inert' },
-          { blueprintId: 'rotworm', stepCooldownTicks: 3, behavior: 'wander' },
+          combatNeutral('player', 2, 'inert'),
+          combatNeutral('rotworm', 3, 'wander'),
         ],
         initialActors: [
           {

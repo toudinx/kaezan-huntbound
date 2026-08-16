@@ -1,4 +1,8 @@
 import type {
+  AbilityDefinition,
+  ActorBehavior,
+  ActorBlueprint,
+  ActorState,
   CommandIssuer,
   Direction,
   GridPosition,
@@ -44,6 +48,34 @@ export function twoFloors(
   ];
 }
 
+/** Combat-neutral stats so a v3-era actor keeps its movement-only behaviour. */
+export function combatNeutralBlueprint(
+  blueprintId: string,
+  stepCooldownTicks: number,
+  behavior: ActorBehavior,
+  overrides: Partial<ActorBlueprint> = {},
+): ActorBlueprint {
+  return {
+    blueprintId,
+    stepCooldownTicks,
+    behavior,
+    factionId: 0,
+    maxHealth: 1,
+    maxResource: 0,
+    healthRegenTicks: 0,
+    healthRegenAmount: 0,
+    resourceRegenTicks: 0,
+    resourceRegenAmount: 0,
+    attackCooldownTicks: 0,
+    attackMinDamage: 0,
+    attackMaxDamage: 0,
+    aggroRadius: 0,
+    lootTableIndex: null,
+    abilityIndices: [],
+    ...overrides,
+  };
+}
+
 export function kernelScenario(
   overrides: Partial<KernelScenario> = {},
 ): KernelScenario {
@@ -57,10 +89,12 @@ export function kernelScenario(
     transitions: [],
     spawnGroups: [],
     maxLiveActors: 64,
+    abilities: [],
+    lootTables: [],
     blueprints: [
-      { blueprintId: 'walker', stepCooldownTicks: 2, behavior: 'inert' },
-      { blueprintId: 'wanderer', stepCooldownTicks: 3, behavior: 'wander' },
-      { blueprintId: 'statue', stepCooldownTicks: 0, behavior: 'inert' },
+      combatNeutralBlueprint('walker', 2, 'inert'),
+      combatNeutralBlueprint('wanderer', 3, 'wander'),
+      combatNeutralBlueprint('statue', 0, 'inert'),
     ],
     initialActors: [],
     ...overrides,
@@ -117,6 +151,43 @@ export function wait(
   };
 }
 
+export function attack(
+  entityId: number,
+  targetEntityId: number,
+  tick = 0,
+  issuer: CommandIssuer = 'player',
+): SimulationCommandInput {
+  return {
+    tick: tickOf(tick),
+    issuer,
+    command: {
+      type: 'actor/attack',
+      entityId: createEntityId(entityId),
+      targetEntityId: createEntityId(targetEntityId),
+    },
+  };
+}
+
+export function castAbility(
+  entityId: number,
+  abilityIndex: number,
+  targetEntityId: number | null = null,
+  tick = 0,
+  issuer: CommandIssuer = 'player',
+): SimulationCommandInput {
+  return {
+    tick: tickOf(tick),
+    issuer,
+    command: {
+      type: 'actor/cast-ability',
+      entityId: createEntityId(entityId),
+      abilityIndex,
+      targetEntityId:
+        targetEntityId === null ? null : createEntityId(targetEntityId),
+    },
+  };
+}
+
 export function spawnActor(
   blueprintId: string,
   position: GridPosition,
@@ -163,4 +234,90 @@ export function payloadsOfType<Type extends SimulationEventPayload['type']>(
     }
   }
   return matching;
+}
+
+export function healSelfAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'wound-cleansing',
+    effect: 'heal',
+    shape: 'self',
+    radius: 0,
+    rangeTiles: 0,
+    resourceCost: 4,
+    cooldownTicks: 4,
+    groupCooldownTicks: 2,
+    minPower: 3,
+    maxPower: 3,
+    ...overrides,
+  };
+}
+
+export function damageTargetAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'brutal-strike',
+    effect: 'damage',
+    shape: 'target',
+    radius: 0,
+    rangeTiles: 1,
+    resourceCost: 5,
+    cooldownTicks: 4,
+    groupCooldownTicks: 2,
+    minPower: 4,
+    maxPower: 4,
+    ...overrides,
+  };
+}
+
+export function damageAreaAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'berserk',
+    effect: 'damage',
+    shape: 'area',
+    radius: 1,
+    rangeTiles: 0,
+    resourceCost: 6,
+    cooldownTicks: 8,
+    groupCooldownTicks: 4,
+    minPower: 2,
+    maxPower: 5,
+    ...overrides,
+  };
+}
+
+export function actorCombatFields(
+  blueprint: ActorBlueprint,
+  bornAtTick = 0,
+): Pick<
+  ActorState,
+  | 'health'
+  | 'resource'
+  | 'targetEntityId'
+  | 'attackReadyAtTick'
+  | 'groupReadyAtTick'
+  | 'abilityCooldowns'
+  | 'nextHealthRegenTick'
+  | 'nextResourceRegenTick'
+> {
+  return {
+    health: blueprint.maxHealth,
+    resource: blueprint.maxResource,
+    targetEntityId: null,
+    attackReadyAtTick: 0,
+    groupReadyAtTick: 0,
+    abilityCooldowns: [],
+    nextHealthRegenTick:
+      blueprint.healthRegenTicks === 0
+        ? 0
+        : bornAtTick + blueprint.healthRegenTicks,
+    nextResourceRegenTick:
+      blueprint.resourceRegenTicks === 0
+        ? 0
+        : bornAtTick + blueprint.resourceRegenTicks,
+  };
 }

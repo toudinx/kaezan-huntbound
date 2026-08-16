@@ -32,9 +32,11 @@ const forbiddenMembers: readonly (readonly [string, string])[] = [
 const forbiddenIdentities: readonly string[] = [
   'clientId',
   'huntId',
+  'itemKey',
   'lookType',
   'regionId',
   'serverId',
+  'spellKey',
 ];
 
 async function filesUnder(root: string): Promise<string[]> {

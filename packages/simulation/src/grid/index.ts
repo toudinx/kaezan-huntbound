@@ -1,4 +1,5 @@
 export {
+  chebyshevDistance,
   DIRECTIONS,
   directionDelta,
   isDiagonal,

@@ -147,6 +147,9 @@ export function restoreSimulationKernel(
   // The snapshot schema cannot see the grid, so the cell a guard names is only
   // checkable once the scenario is in hand.
   const grid = createStaticGrid(scenario);
+  const blueprints = new Map(
+    scenario.blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
+  );
   value.actors.forEach((actor, index) => {
     const guard = actor.transitionGuard;
     if (guard !== null && !grid.isInside(guard)) {
@@ -158,6 +161,52 @@ export function restoreSimulationKernel(
         ),
       );
     }
+    const blueprint = blueprints.get(actor.blueprintId);
+    if (blueprint === undefined) {
+      diagnostics.push(
+        diagnostic(
+          'SIM_SCHEMA_INVALID',
+          `Unknown blueprint ${actor.blueprintId}`,
+          ['actors', index, 'blueprintId'],
+        ),
+      );
+      return;
+    }
+    if (actor.health > blueprint.maxHealth) {
+      diagnostics.push(
+        diagnostic(
+          'SIM_SCHEMA_INVALID',
+          `health ${actor.health} exceeds maxHealth ${blueprint.maxHealth}`,
+          ['actors', index, 'health'],
+        ),
+      );
+    }
+    if (actor.resource > blueprint.maxResource) {
+      diagnostics.push(
+        diagnostic(
+          'SIM_SCHEMA_INVALID',
+          `resource ${actor.resource} exceeds maxResource ${blueprint.maxResource}`,
+          ['actors', index, 'resource'],
+        ),
+      );
+    }
+    actor.abilityCooldowns.forEach((entry, cooldownIndex) => {
+      if (!blueprint.abilityIndices.includes(entry.abilityIndex)) {
+        diagnostics.push(
+          diagnostic(
+            'SIM_SCHEMA_INVALID',
+            `abilityCooldowns index ${entry.abilityIndex} is not declared on the blueprint`,
+            [
+              'actors',
+              index,
+              'abilityCooldowns',
+              cooldownIndex,
+              'abilityIndex',
+            ],
+          ),
+        );
+      }
+    });
   });
 
   if (diagnostics.length > 0) {

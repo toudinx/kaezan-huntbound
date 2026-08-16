@@ -40,6 +40,8 @@ function scenarioForHunt(hunt: HuntDefinition): KernelScenario {
       })),
     })),
     maxLiveActors: hunt.spawns.maxLiveActors,
+    abilities: [],
+    lootTables: [],
     blueprints: hunt.blueprints.map((blueprint) => ({ ...blueprint })),
     initialActors: [
       {

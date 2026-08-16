@@ -38,10 +38,17 @@ import {
   type KernelStateCarrier,
 } from '../state/kernelState.ts';
 import {
+  createActorState,
   createWorld,
   restoreWorld,
   type WorldState,
 } from '../state/worldState.ts';
+import {
+  applyUpkeep,
+  type CombatIntent,
+  resolveCombat,
+  resolveDeath,
+} from './combat.ts';
 import { KernelInvariantError } from './errors.ts';
 import {
   createSpawnTable,
@@ -72,11 +79,22 @@ type PendingLifecycle =
     };
 
 interface MoveIntent {
+  readonly kind: 'move';
   readonly entityId: EntityId;
   readonly direction: Direction;
   readonly sourceRank: number;
   readonly order: number;
 }
+
+interface AttackIntent {
+  readonly kind: 'attack';
+  readonly entityId: EntityId;
+  readonly targetEntityId: EntityId;
+  readonly sourceRank: number;
+  readonly order: number;
+}
+
+type InternalIntent = MoveIntent | AttackIntent;
 
 function tileKey(position: GridPosition): string {
   return `${position.x}:${position.y}:${position.z}`;
@@ -177,7 +195,7 @@ export function createSimulationKernel(
   const wanders = (actor: ActorState): boolean =>
     blueprints.get(actor.blueprintId)?.behavior === 'wander';
 
-  const internalIntents = new Map<number, MoveIntent[]>();
+  const internalIntents = new Map<number, InternalIntent[]>();
   let internalOrder = 0;
 
   const queueInternalIntent = (
@@ -186,13 +204,40 @@ export function createSimulationKernel(
     direction: Direction,
   ): void => {
     const queued = internalIntents.get(tick) ?? [];
-    queued.push({ entityId, direction, sourceRank: 1, order: internalOrder });
+    queued.push({
+      kind: 'move',
+      entityId,
+      direction,
+      sourceRank: 1,
+      order: internalOrder,
+    });
+    internalOrder += 1;
+    internalIntents.set(tick, queued);
+  };
+
+  const queueInternalAttack = (
+    tick: number,
+    entityId: EntityId,
+    targetEntityId: EntityId,
+  ): void => {
+    const queued = internalIntents.get(tick) ?? [];
+    queued.push({
+      kind: 'attack',
+      entityId,
+      targetEntityId,
+      sourceRank: 1,
+      order: internalOrder,
+    });
     internalOrder += 1;
     internalIntents.set(tick, queued);
   };
 
   for (const intent of restore?.pendingIntents ?? []) {
-    queueInternalIntent(intent.tick, intent.entityId, intent.direction);
+    if (intent.kind === 'move') {
+      queueInternalIntent(intent.tick, intent.entityId, intent.direction);
+    } else {
+      queueInternalAttack(intent.tick, intent.entityId, intent.targetEntityId);
+    }
   }
 
   const spawnTable = createSpawnTable(scenario);
@@ -214,8 +259,21 @@ export function createSimulationKernel(
     emitBootEvents();
     const currentTick = world.tick;
     const lifecycle: PendingLifecycle[] = [];
-    const intents: MoveIntent[] = [...(internalIntents.get(currentTick) ?? [])];
+    const queuedInternal = internalIntents.get(currentTick) ?? [];
     internalIntents.delete(currentTick);
+    const intents: MoveIntent[] = queuedInternal.filter(
+      (intent): intent is MoveIntent => intent.kind === 'move',
+    );
+    const combatIntents: CombatIntent[] = queuedInternal
+      .filter((intent): intent is AttackIntent => intent.kind === 'attack')
+      .map((intent) => ({
+        kind: 'attack' as const,
+        entityId: intent.entityId,
+        targetEntityId: intent.targetEntityId,
+        sourceRank: intent.sourceRank,
+        order: intent.order,
+        sequence: null,
+      }));
     const despawning = new Set<number>();
     const reservedTiles = new Set<string>();
 
@@ -289,10 +347,36 @@ export function createSimulationKernel(
 
       if (command.type === 'actor/move-step') {
         intents.push({
+          kind: 'move',
           entityId: command.entityId,
           direction: command.direction,
           sourceRank: 0,
           order: sequence,
+        });
+        return;
+      }
+
+      if (command.type === 'actor/attack') {
+        combatIntents.push({
+          kind: 'attack',
+          entityId: command.entityId,
+          targetEntityId: command.targetEntityId,
+          sourceRank: 0,
+          order: sequence,
+          sequence,
+        });
+        return;
+      }
+
+      if (command.type === 'actor/cast-ability') {
+        combatIntents.push({
+          kind: 'cast',
+          entityId: command.entityId,
+          abilityIndex: command.abilityIndex,
+          targetEntityId: command.targetEntityId,
+          sourceRank: 0,
+          order: sequence,
+          sequence,
         });
       }
     };
@@ -302,15 +386,21 @@ export function createSimulationKernel(
         (left, right) => left.sequence - right.sequence,
       )) {
         if (entry.kind === 'spawn') {
+          const blueprint = blueprints.get(entry.blueprintId);
+          if (blueprint === undefined) {
+            continue;
+          }
           const entityId = world.allocateEntityId();
-          world.insert({
-            entityId,
-            blueprintId: entry.blueprintId,
-            position: entry.position,
-            facing: entry.facing,
-            readyAtTick: currentTick,
-            transitionGuard: null,
-          });
+          world.insert(
+            createActorState(
+              entityId,
+              blueprint,
+              entry.position,
+              entry.facing,
+              currentTick,
+              currentTick,
+            ),
+          );
           journal.emit(currentTick, {
             type: 'actor/spawned',
             entityId,
@@ -434,7 +524,7 @@ export function createSimulationKernel(
     };
 
     /**
-     * `S4` is last so a birth of tick `T` is only observable from `T` on, and
+     * `S7` is last so a birth of tick `T` is only observable from `T` on, and
      * so it can never race a step of the same tick for a cell.
      */
     const runSpawn = (): void => {
@@ -483,15 +573,21 @@ export function createSimulationKernel(
           continue;
         }
 
+        const blueprint = blueprints.get(slot.blueprintId);
+        if (blueprint === undefined) {
+          continue;
+        }
         const entityId = world.allocateEntityId();
-        world.insert({
-          entityId,
-          blueprintId: slot.blueprintId,
-          position,
-          facing: 's',
-          readyAtTick: currentTick,
-          transitionGuard: null,
-        });
+        world.insert(
+          createActorState(
+            entityId,
+            blueprint,
+            position,
+            's',
+            currentTick,
+            currentTick,
+          ),
+        );
         slot.entityId = entityId;
         journal.emit(currentTick, {
           type: 'actor/spawned',
@@ -509,6 +605,19 @@ export function createSimulationKernel(
 
     runLifecycle();
     runMovement();
+    applyUpkeep(world, blueprints, currentTick);
+    const killers = new Map<number, EntityId | null>();
+    resolveCombat(
+      world,
+      journal,
+      streams,
+      blueprints,
+      scenario.abilities,
+      currentTick,
+      combatIntents,
+      killers,
+    );
+    resolveDeath(world, journal, currentTick, killers, releaseSpawnSlot);
     runAi();
     runSpawn();
 
@@ -535,13 +644,22 @@ export function createSimulationKernel(
       spawnSlots: serializeSpawnTable(spawnTable),
       pendingInternalIntents: [...internalIntents.entries()].flatMap(
         ([tick, queued]) =>
-          queued.map(
-            (intent): PendingIntentState => ({
+          queued.map((intent): PendingIntentState => {
+            if (intent.kind === 'attack') {
+              return {
+                kind: 'attack',
+                tick: tick as TickIndex,
+                entityId: intent.entityId,
+                targetEntityId: intent.targetEntityId,
+              };
+            }
+            return {
+              kind: 'move',
               tick: tick as TickIndex,
               entityId: intent.entityId,
               direction: intent.direction,
-            }),
-          ),
+            };
+          }),
       ),
     }),
     advanceOne: runTick,

@@ -347,7 +347,8 @@ export function createHuntPresentation(
           activeFloor = payload.to.z;
           break;
         }
-        case 'actor/despawned': {
+        case 'actor/despawned':
+        case 'actor/died': {
           actorsById.delete(payload.entityId);
           break;
         }
@@ -356,6 +357,12 @@ export function createHuntPresentation(
         case 'spawn/deferred':
         case 'spawn/capped':
         case 'command/rejected':
+        case 'combat/attacked':
+        case 'combat/damaged':
+        case 'combat/healed':
+        case 'ability/cast':
+        case 'combat/target-changed':
+        case 'loot/granted':
           break;
       }
     }

@@ -254,7 +254,7 @@ describe('PB-04 hunt replay fixture', () => {
   it('keeps scenario JSON canonical', async () => {
     const fixture = await readFixture('pb04');
     expect(fixture.scenarioText).toBe(
-      encodeCanonicalJson(JSON.parse(fixture.scenarioText)),
+      `${encodeCanonicalJson(JSON.parse(fixture.scenarioText))}\n`,
     );
   });
 });

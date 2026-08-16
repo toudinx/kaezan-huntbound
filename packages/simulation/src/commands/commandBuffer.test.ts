@@ -68,6 +68,40 @@ function face(
   };
 }
 
+function attack(
+  tick: number,
+  issuer: 'player' | 'ai',
+  entityId: number,
+  targetEntityId: number,
+): SimulationCommandInput {
+  return {
+    tick: createTickIndex(tick),
+    issuer,
+    command: {
+      type: 'actor/attack',
+      entityId: createEntityId(entityId),
+      targetEntityId: createEntityId(targetEntityId),
+    },
+  };
+}
+
+function cast(
+  tick: number,
+  issuer: 'player' | 'ai',
+  entityId: number,
+): SimulationCommandInput {
+  return {
+    tick: createTickIndex(tick),
+    issuer,
+    command: {
+      type: 'actor/cast-ability',
+      entityId: createEntityId(entityId),
+      abilityIndex: 0,
+      targetEntityId: null,
+    },
+  };
+}
+
 function despawn(tick: number, entityId: number): SimulationCommandInput {
   return {
     tick: createTickIndex(tick),
@@ -202,6 +236,22 @@ describe('command buffer intake', () => {
     expect(buffer.enqueue(wait(0, 'player', 2), createTickIndex(0))).toEqual({
       ok: true,
       sequence: 4,
+    });
+    expect(
+      buffer.enqueue(attack(0, 'player', 1, 2), createTickIndex(0)),
+    ).toEqual({
+      ok: false,
+      code: 'SIM_COMMAND_DUPLICATE',
+    });
+    expect(buffer.enqueue(cast(1, 'player', 1), createTickIndex(0))).toEqual({
+      ok: true,
+      sequence: 5,
+    });
+    expect(
+      buffer.enqueue(move(1, 'player', 1, 'e'), createTickIndex(0)),
+    ).toEqual({
+      ok: false,
+      code: 'SIM_COMMAND_DUPLICATE',
     });
   });
 

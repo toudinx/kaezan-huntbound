@@ -20,12 +20,39 @@ import { diagnostic, sortDiagnostics } from './types.ts';
 /**
  * Blueprint of the hunt's player actor.
  *
- * PB-04 has no combat, so a blueprint is only an id, a behavior and a step
- * cooldown. The values reuse the ones PB-03 already exercised in
- * `packages/test-fixtures/simulation/pb03`: the player is command-driven and
- * therefore `inert`, and creatures wander. Deriving them from creature stats
- * belongs to combat, which is PB-05.
+ * Step cadence reuses the values PB-03 already exercised: the player is
+ * command-driven and therefore `inert`, and creatures wander. Combat stats on
+ * these blueprints stay neutral until PB-05-07 composes the vocation kit.
  */
+/**
+ * Combat-neutral stats keep a movement-only actor valid under KernelScenario
+ * v4. Real vocation, health and spells are composed in PB-05-07.
+ */
+function combatNeutralBlueprint(
+  blueprintId: string,
+  stepCooldownTicks: number,
+  behavior: KernelBlueprint['behavior'],
+): KernelBlueprint {
+  return {
+    blueprintId,
+    stepCooldownTicks,
+    behavior,
+    factionId: 0,
+    maxHealth: 1,
+    maxResource: 0,
+    healthRegenTicks: 0,
+    healthRegenAmount: 0,
+    resourceRegenTicks: 0,
+    resourceRegenAmount: 0,
+    attackCooldownTicks: 0,
+    attackMinDamage: 0,
+    attackMaxDamage: 0,
+    aggroRadius: 0,
+    lootTableIndex: null,
+    abilityIndices: [],
+  };
+}
+
 export const PLAYER_BLUEPRINT_ID = 'player';
 /**
  * Steps are paced to read as walking rather than sliding: at 50 ms a tick these
@@ -183,19 +210,20 @@ export function extractHunt(
         };
   const spawns = buildSpawnTable(monsterXml, selection, built.region, layout);
 
-  const player: KernelBlueprint = {
-    blueprintId: PLAYER_BLUEPRINT_ID,
-    stepCooldownTicks: PLAYER_STEP_COOLDOWN_TICKS,
-    behavior: 'inert',
-  };
+  const player = combatNeutralBlueprint(
+    PLAYER_BLUEPRINT_ID,
+    PLAYER_STEP_COOLDOWN_TICKS,
+    'inert',
+  );
   const blueprints: KernelBlueprint[] = [
     player,
     ...spawns.creatureKeys.map(
-      (key): KernelBlueprint => ({
-        blueprintId: blueprintIdForCreature(key),
-        stepCooldownTicks: CREATURE_STEP_COOLDOWN_TICKS,
-        behavior: 'wander',
-      }),
+      (key): KernelBlueprint =>
+        combatNeutralBlueprint(
+          blueprintIdForCreature(key),
+          CREATURE_STEP_COOLDOWN_TICKS,
+          'wander',
+        ),
     ),
   ].sort((left, right) => left.blueprintId.localeCompare(right.blueprintId));
 

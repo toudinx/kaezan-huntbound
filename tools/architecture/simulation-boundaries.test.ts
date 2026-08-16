@@ -198,6 +198,33 @@ describe('simulation architecture boundaries', () => {
     }
   });
 
+  it('rejects itemKey and spellKey leaking into the kernel', async () => {
+    const root = await scratchRoot('huntbound-simulation-item-spell-');
+    const file = join(root, 'leak.ts');
+    await writeFile(
+      file,
+      [
+        'export interface Loadout {',
+        '  readonly itemKey: string;',
+        '  readonly spellKey: string;',
+        '}',
+        '',
+        'export function names(loadout: Loadout) {',
+        '  return loadout.itemKey + loadout.spellKey;',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const report = (
+      await checkSimulationBoundaries(root, { sourceFiles: [file] })
+    ).join('\n');
+
+    for (const identity of ['itemKey', 'spellKey']) {
+      assert.match(report, new RegExp(`"${identity}"`), `missing ${identity}`);
+    }
+  });
+
   it('accepts a kernel module that names no Tibia identity', async () => {
     const root = await scratchRoot('huntbound-simulation-no-identity-');
     const file = join(root, 'clean.ts');

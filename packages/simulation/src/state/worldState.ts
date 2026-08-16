@@ -1,5 +1,7 @@
 import type {
+  ActorBlueprint,
   ActorState,
+  Direction,
   EntityId,
   GridPosition,
   KernelScenario,
@@ -39,6 +41,49 @@ export function cloneActor(actor: ActorState): ActorState {
       actor.transitionGuard === null
         ? null
         : clonePosition(actor.transitionGuard),
+    health: actor.health,
+    resource: actor.resource,
+    targetEntityId: actor.targetEntityId,
+    attackReadyAtTick: actor.attackReadyAtTick,
+    groupReadyAtTick: actor.groupReadyAtTick,
+    abilityCooldowns: actor.abilityCooldowns.map((entry) => ({
+      abilityIndex: entry.abilityIndex,
+      readyAtTick: entry.readyAtTick,
+    })),
+    nextHealthRegenTick: actor.nextHealthRegenTick,
+    nextResourceRegenTick: actor.nextResourceRegenTick,
+  };
+}
+
+export function createActorState(
+  entityId: EntityId,
+  blueprint: ActorBlueprint,
+  position: GridPosition,
+  facing: Direction,
+  readyAtTick: number,
+  bornAtTick: number,
+): ActorState {
+  return {
+    entityId,
+    blueprintId: blueprint.blueprintId,
+    position: clonePosition(position),
+    facing,
+    readyAtTick,
+    transitionGuard: null,
+    health: blueprint.maxHealth,
+    resource: blueprint.maxResource,
+    targetEntityId: null,
+    attackReadyAtTick: 0,
+    groupReadyAtTick: 0,
+    abilityCooldowns: [],
+    nextHealthRegenTick:
+      blueprint.healthRegenTicks === 0
+        ? 0
+        : bornAtTick + blueprint.healthRegenTicks,
+    nextResourceRegenTick:
+      blueprint.resourceRegenTicks === 0
+        ? 0
+        : bornAtTick + blueprint.resourceRegenTicks,
   };
 }
 
@@ -110,16 +155,25 @@ function createEmptyWorld(startEntityId: number, startTick: TickIndex) {
 
 export function createWorld(scenario: KernelScenario): MutableWorld {
   const world = createEmptyWorld(1, 0 as TickIndex);
+  const blueprints = new Map(
+    scenario.blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
+  );
 
   for (const initial of scenario.initialActors) {
-    world.insert({
-      entityId: world.allocateEntityId(),
-      blueprintId: initial.blueprintId,
-      position: initial.position,
-      facing: initial.facing,
-      readyAtTick: 0,
-      transitionGuard: null,
-    });
+    const blueprint = blueprints.get(initial.blueprintId);
+    if (blueprint === undefined) {
+      throw new RangeError(`Unknown blueprint ${initial.blueprintId}`);
+    }
+    world.insert(
+      createActorState(
+        world.allocateEntityId(),
+        blueprint,
+        initial.position,
+        initial.facing,
+        0,
+        0,
+      ),
+    );
   }
 
   return world;

@@ -175,7 +175,7 @@ describe('kernel wander ai', () => {
     kernel.advanceOne();
 
     expect(snapshotKernel(kernel).pendingIntents).toEqual([
-      { tick: 1, entityId: 1, direction: 'nw' },
+      { kind: 'move', tick: 1, entityId: 1, direction: 'nw' },
     ]);
 
     kernel.enqueue(moveStep(1, 'e', 1));

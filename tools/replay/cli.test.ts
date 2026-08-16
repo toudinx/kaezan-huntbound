@@ -386,8 +386,8 @@ describe('replay cli check-hashes', () => {
     await writeFile(
       join(root, 'hashes.md'),
       original.replace(
-        'f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0',
-        'f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e1',
+        '2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758',
+        '2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b759',
       ),
       'utf8',
     );

@@ -80,6 +80,14 @@ describe('kernel movement system', () => {
       facing: 'se',
       readyAtTick: 4,
       transitionGuard: null,
+      health: 1,
+      resource: 0,
+      targetEntityId: null,
+      attackReadyAtTick: 0,
+      groupReadyAtTick: 0,
+      abilityCooldowns: [],
+      nextHealthRegenTick: 0,
+      nextResourceRegenTick: 0,
     });
   });
 

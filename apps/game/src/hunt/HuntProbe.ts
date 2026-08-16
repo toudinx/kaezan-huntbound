@@ -180,6 +180,13 @@ function probeEvent(event: SimulationEvent): HuntProbeEvent | undefined {
     case 'spawn/deferred':
     case 'spawn/capped':
     case 'command/rejected':
+    case 'combat/attacked':
+    case 'combat/damaged':
+    case 'combat/healed':
+    case 'ability/cast':
+    case 'combat/target-changed':
+    case 'loot/granted':
+    case 'actor/died':
       return undefined;
   }
 }

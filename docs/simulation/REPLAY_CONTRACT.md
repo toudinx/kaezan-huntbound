@@ -27,7 +27,7 @@ de assets de PB-02: o formatador reescreveria o JSON canônico e quebraria os di
 Os campos e as ordens canônicas estão em `docs/simulation/KERNEL_CONTRACT.md`, seção "Snapshot".
 O snapshot não contém terreno, ocupação nem hash do cenário.
 
-**Retomada é fiel em qualquer fronteira.** As intents decididas por `S3 ai` no fim do tick `T` para o
+**Retomada é fiel em qualquer fronteira.** As intents decididas por `S6 ai` no fim do tick `T` para o
 tick `T + 1` viajam no snapshot em `pendingIntents`, então `buildReplayArtifacts` não recusa mais
 retomada por quiescência e `isKernelQuiescent` não existe. A fronteira congelada da fixture continua
 sendo o tick `117`; os testes de `tools/replay` cobrem também o tick `13`, que comprovadamente deve
@@ -38,7 +38,7 @@ uma intent decidida, e varrem todas as fronteiras de `0` a `24`.
 JSONL. Primeira linha é o cabeçalho:
 
 ```text
-{"kind":"header","rulesVersion":2,"scenarioId":"...","scenarioRevision":1,"schemaVersion":3,"seed":"...","tickCount":200}
+{"kind":"header","rulesVersion":3,"scenarioId":"...","scenarioRevision":1,"schemaVersion":4,"seed":"...","tickCount":200}
 ```
 
 As demais linhas são comandos achatados:
@@ -121,13 +121,13 @@ devolvem `0`.
 ## Hashes congelados
 
 Fixture `pb-03-kernel-coverage`, revisão `1`, seed `0f1e2d3c4b5a6978`, `200` ticks, retomada em `117`,
-`SIMULATION_SCHEMA_VERSION = 3`, `SIMULATION_RULES_VERSION = 2`:
+`SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `72d006552742691fbb71cd41bc84a80aebf0afd27faef027e358b4d92fcc23e9` |
-| `commands.jsonl` | `88ec73de434a7bf092c68bb3a3601caaef1bfca2b59d9b84f20f334462749d66` |
-| `snapshot.golden.json` | `84528f5246c156b65e46343d713851d064943c3550281bba0ab0e5d18d10d341` |
+| `scenario.json` | `36a2aa01ceeed45368de6279fa89dc71b8e27a641b9325f9a2780026422943b5` |
+| `commands.jsonl` | `4edbda41497dc4e21e117061bc7e67819973037df2f50447589aa2105bf29a12` |
+| `snapshot.golden.json` | `9621f9e02bc5df1d156d9cddced3dfe4d1a78669f1ddf1cbf3794e7359196be0` |
 | `events.golden.jsonl` | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
 
 ### Migração de `SIMULATION_SCHEMA_VERSION` `1` para `2`
@@ -166,6 +166,30 @@ Se o journal tivesse mudado, a migração teria de parar.
 Um snapshot ou cenário escrito na versão `2` é recusado pelo schema estrito, e um snapshot com três
 streams de RNG é recusado por contagem na restauração.
 
+### Migração de `SIMULATION_SCHEMA_VERSION` `3` para `4`
+
+A versão `4` acrescenta `abilities` e `lootTables` ao cenário, os campos de combate ao blueprint e ao
+`ActorState`, a união `kind` em `pendingIntents`, os comandos `actor/attack` e `actor/cast-ability`,
+os eventos de combate e os streams `combat` e `loot`. `SIMULATION_RULES_VERSION` sobe para `3` porque
+o kernel passa a ter sete fases, golpe, conjuração, regeneração e morte.
+
+Os três documentos que declaram versão — `scenario.json`, o header de `commands.jsonl` e
+`snapshot.golden.json` — mudaram de hash. O cenário ganhou campos neutros de combate (`abilities`
+e `lootTables` vazios, dano e regeneração zero). O snapshot ganhou os campos de combate nos atores e
+os dois streams novos. Os journals de PB-03 e PB-04 **não** mudaram: blueprints neutros não emitem
+evento de combate, e a ordem `S6 ai` / `S7 spawn` preserva o consumo de `ai` e `spawn`.
+
+`events.golden.jsonl` de PB-03 permanece **byte-idêntico**, com o mesmo
+`31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` de PB-03-06 e das migrações
+anteriores. Os journals de `pb04` e `pb04-respawn` permanecem com
+`6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` e
+`613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30`. Esse é o critério bloqueante
+desta migração: se algum journal tivesse mudado, a regra existente teria mudado e a migração teria
+de parar.
+
+Um snapshot ou cenário escrito na versão `3` é recusado pelo schema estrito, e um snapshot com quatro
+streams de RNG é recusado por contagem na restauração.
+
 ## Cobertura da fixture
 
 Grid 16×16 com um único andar `z = 7`, declarado em `floors`. Parede horizontal em `y = 8`, corredor
@@ -183,14 +207,14 @@ eventos e exercita os seis tipos de evento e as cinco causas de bloqueio.
 ## Hashes congelados — PB-04
 
 Fixture `pb04`, revisão `2`, seed `1a2b3c4d5e6f7a8b`, `600` ticks, `1663` eventos, tick final `600`,
-`SIMULATION_SCHEMA_VERSION = 3`, `SIMULATION_RULES_VERSION = 2`. Retomada fiel em todas as fronteiras
+`SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`. Retomada fiel em todas as fronteiras
 `0..600`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0` |
-| `commands.jsonl` | `8c88860bd1dd355b37ac2e16dc2e989aaa2c324ad55637058bb51d33634c7e67` |
-| `snapshot.golden.json` | `2e546b17a6905f5be29393b388df0c7dc37919fa75d09d8bcbb776bd75756816` |
+| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
+| `commands.jsonl` | `d18c520a5d90614f30ceb4c8989de67578c736e3a2d59516f0b04dc92d9e3636` |
+| `snapshot.golden.json` | `56f68258d004c869c47a4f46e84c8a9f7289da9d0dffb7f133cae9c6fac42bca` |
 | `events.golden.jsonl` | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
 
 Fixture `pb04-respawn`, mesmo cenário e seed, `1805` ticks, `1185` eventos, tick final `1805`. Prova
@@ -199,9 +223,9 @@ Retomada nas fronteiras `0`, `1`, `2`, `1800`, `1801` e `1805`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `f8ecff35694c0ba8557546f40d0f7ad384746a0027f0bc3a5c51b2777f88c6e0` |
-| `commands.jsonl` | `01e139f9d8fd41fd7c53fc70dcf15286bb49c08ac874da7f43a82d2c22bc1efa` |
-| `snapshot.golden.json` | `2e968f79b850725dd2942ffc2421108b9f4cc09a82b13bda19995fad43e993d3` |
+| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
+| `commands.jsonl` | `14df54ca5ee4d2731fba85368e1d8df055e2f5ea0b47b1dfcc69fa7c5f00abf5` |
+| `snapshot.golden.json` | `93cbf723d7e8e7b795d6b25a60e678a804f707861f58efcf97e7e19fabea28bf` |
 | `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
 
 A fonte operacional desses digests é o `hashes.md` de cada fixture

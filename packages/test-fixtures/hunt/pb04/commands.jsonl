@@ -1,4 +1,4 @@
-{"kind":"header","rulesVersion":2,"scenarioId":"scenario:hunt:tibia:venore-rotworm-cave","scenarioRevision":2,"schemaVersion":3,"seed":"1a2b3c4d5e6f7a8b","tickCount":600}
+{"kind":"header","rulesVersion":3,"scenarioId":"scenario:hunt:tibia:venore-rotworm-cave","scenarioRevision":2,"schemaVersion":4,"seed":"1a2b3c4d5e6f7a8b","tickCount":600}
 {"issuer":"player","kind":"command","payload":{"direction":"n","entityId":999},"sequence":1,"tick":0,"type":"actor/move-step"}
 {"issuer":"player","kind":"command","payload":{"direction":"e","entityId":1},"sequence":2,"tick":20,"type":"actor/move-step"}
 {"issuer":"player","kind":"command","payload":{"direction":"w","entityId":1},"sequence":3,"tick":40,"type":"actor/move-step"}

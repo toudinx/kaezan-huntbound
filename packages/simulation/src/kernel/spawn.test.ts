@@ -52,7 +52,7 @@ function spawnedAt(
   return payload.type === 'actor/spawned' ? payload.position : undefined;
 }
 
-describe('S4 spawn', () => {
+describe('S7 spawn', () => {
   it('births a slot on its declared cell when that cell is free', () => {
     const kernel = createSimulationKernel(spawnScenario(), TEST_SEED);
 
@@ -244,7 +244,7 @@ describe('S4 spawn', () => {
   });
 
   it('runs after the AI, so a newborn wanderer only decides on the next tick', () => {
-    // S3 has already walked the actor list when S4 births, so the creature born
+    // S6 has already walked the actor list when S7 births, so the creature born
     // at tick 0 decides at tick 1 and steps at tick 2.
     const kernel = createSimulationKernel(
       spawnScenario({

@@ -10,7 +10,14 @@ import {
   restoreSeededRandom,
 } from './source.ts';
 
-const streamLabels = ['ai', 'movement', 'scenario', 'spawn'] as const;
+const streamLabels = [
+  'ai',
+  'combat',
+  'loot',
+  'movement',
+  'scenario',
+  'spawn',
+] as const;
 type KernelStreamLabel = (typeof streamLabels)[number];
 
 export interface KernelRandomStreams {
@@ -18,6 +25,8 @@ export interface KernelRandomStreams {
   readonly ai: RandomSource;
   readonly scenario: RandomSource;
   readonly spawn: RandomSource;
+  readonly combat: RandomSource;
+  readonly loot: RandomSource;
   serialize(): readonly RandomStreamState[];
 }
 
@@ -30,6 +39,8 @@ function createStreams(
 ): KernelRandomStreams {
   return {
     ai: sources.ai,
+    combat: sources.combat,
+    loot: sources.loot,
     movement: sources.movement,
     scenario: sources.scenario,
     spawn: sources.spawn,
@@ -42,6 +53,8 @@ function createStreams(
 export function createKernelRandomStreams(seed: Seed): KernelRandomStreams {
   return createStreams({
     ai: createSeededRandom(seed, 'ai' as StreamLabel),
+    combat: createSeededRandom(seed, 'combat' as StreamLabel),
+    loot: createSeededRandom(seed, 'loot' as StreamLabel),
     movement: createSeededRandom(seed, 'movement' as StreamLabel),
     scenario: createSeededRandom(seed, 'scenario' as StreamLabel),
     spawn: createSeededRandom(seed, 'spawn' as StreamLabel),

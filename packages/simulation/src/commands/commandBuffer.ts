@@ -7,6 +7,7 @@ import type {
 } from '@huntbound/contracts';
 import {
   commandPriority,
+  isConcurrentActorAction,
   SimulationCommandInputSchema,
   SimulationCommandRecordSchema,
   simulationDiagnosticsFromZodError,
@@ -75,7 +76,7 @@ function cloneRecord(record: SimulationCommandRecord): SimulationCommandRecord {
 
 function actionKey(input: SimulationCommandInput): string | undefined {
   const { command } = input;
-  if (command.type !== 'actor/move-step' && command.type !== 'actor/wait') {
+  if (!('entityId' in command) || !isConcurrentActorAction(command.type)) {
     return undefined;
   }
   return `${input.issuer}:${command.entityId}:${input.tick}`;

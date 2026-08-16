@@ -1289,7 +1289,13 @@ export function commandPriority(type: SimulationCommandType): number {
   }
 }
 
-export function isConcurrentActorAction(type: SimulationCommandType): boolean {
+export function isConcurrentActorAction(
+  type: SimulationCommandType,
+): type is
+  | 'actor/move-step'
+  | 'actor/attack'
+  | 'actor/cast-ability'
+  | 'actor/wait' {
   switch (type) {
     case 'actor/move-step':
     case 'actor/attack':

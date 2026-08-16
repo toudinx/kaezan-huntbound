@@ -19,7 +19,7 @@ import {
 } from './index.ts';
 
 const scenario: KernelScenario = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   scenarioId: 'grid-test',
   scenarioRevision: 1,
   width: 4,
@@ -37,11 +37,26 @@ const scenario: KernelScenario = {
   transitions: [],
   spawnGroups: [],
   maxLiveActors: 8,
+  abilities: [],
+  lootTables: [],
   blueprints: [
     {
       blueprintId: 'walker',
       stepCooldownTicks: 2,
       behavior: 'inert',
+      factionId: 0,
+      maxHealth: 1,
+      maxResource: 0,
+      healthRegenTicks: 0,
+      healthRegenAmount: 0,
+      resourceRegenTicks: 0,
+      resourceRegenAmount: 0,
+      attackCooldownTicks: 0,
+      attackMinDamage: 0,
+      attackMaxDamage: 0,
+      aggroRadius: 0,
+      lootTableIndex: null,
+      abilityIndices: [],
     },
   ],
   initialActors: [],
@@ -58,6 +73,14 @@ function actor(
     facing: 's',
     readyAtTick: 0,
     transitionGuard: null,
+    health: 1,
+    resource: 0,
+    targetEntityId: null,
+    attackReadyAtTick: 0,
+    groupReadyAtTick: 0,
+    abilityCooldowns: [],
+    nextHealthRegenTick: 0,
+    nextResourceRegenTick: 0,
   };
 }
 
