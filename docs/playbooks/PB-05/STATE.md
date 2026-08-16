@@ -2,26 +2,25 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução iniciada. **PB-05-01 implementada na branch, não integrada.**
-`verify` na worktree ficou vermelho em `tests/e2e/hunt-budget.spec.ts` (orçamento de boot/walk
-pré-existente, sem mudança em `apps/game`). Worktree e branch preservadas. B3 e B4 continuam
-resolvidos.
+**Estado geral:** execução iniciada. **PB-05-01 integrada em `main`** por `git merge --ff-only`
+(`2f455d5..2933012`). `verify` pós-integração ficou vermelho em
+`tests/e2e/hunt-budget.spec.ts` (B5, orçamento ADR-001 pré-existente; a seleção não toca
+`apps/game`). Worktree e branch preservadas até B5 fechar. B3 e B4 continuam resolvidos.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** freeze revisado — spells irrestritas, ficha no level `8` da hunt,
-HP Canary `185`, mana loadout `185`. CLI `pb05:selection:check` precisa ser reexecutado
-nesta revisão. Integração serial adiada até `verify` verde (B5).
+**Atualização vigente:** freeze na `main` em `2933012` — spells irrestritas, ficha no level `8`
+da hunt, HP Canary `185`, mana loadout `185`. Fast-forward feito a pedido; `verify` integrado
+ainda vermelho em hunt-budget.
 
-**Próxima etapa:** reexecutar `corepack pnpm verify` nesta worktree quando a máquina estiver
-ociosa; se verde, fast-forward em `main`. **Não iniciar PB-05-02** enquanto a integração não
-fechar.
+**Próxima etapa:** PB-05-02 está elegível (a seleção congelada já está em `main`). B5 não
+bloqueia import de conteúdo. Não iniciar PB-05-02 neste chat.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-05-01 | blocked | `grok/pb-05-01-vocation-spell-selection` | — (commit na branch, sem ff) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0 no snapshot |
+| PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
 | PB-05-02 | pending | `<agente>/pb05-02-import-spells-character` | — | bundle regenerado com três spells + ficha congelada; `content:check` exit 0 |
 | PB-05-03 | pending | `<agente>/pb05-03-combat-contracts` | — | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md` |
 | PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos |
@@ -36,13 +35,15 @@ fechar.
 
 ## Última task concluída
 
-Nenhuma integrada. PB-05-01 está **blocked** na worktree
-`C:\Kaezan\kaezan-huntbound-pb05-01-selection`, branch
-`grok/pb-05-01-vocation-spell-selection`.
+PB-05-01. Fast-forward em `main` para `2933012`. Worktree
+`C:\Kaezan\kaezan-huntbound-pb05-01-selection` e branch
+`grok/pb-05-01-vocation-spell-selection` preservadas porque o `verify` pós-integração
+ficou vermelho (B5).
 
 ## Próxima task elegível
 
-Nenhuma. PB-05-02 só fica elegível depois do fast-forward de PB-05-01 em `main`.
+PB-05-02. A seleção congelada está em `main`. B5 é orçamento de browser pré-existente e
+não impede o import das spells.
 
 ## Verificações executadas
 
@@ -72,6 +73,20 @@ Freeze revisado nesta sessão (spells irrestritas, ficha level `8`): `biome chec
 (384 files); `vitest` hunt-selection exit `0` (24 testes); `pb05:selection:check` exit `0` no
 mesmo snapshot. `typecheck`/`test`/`content:check`/`verify` não foram reexecutados nesta
 revisão — `verify` continua B5.
+
+Pós-integração em `C:\Kaezan\kaezan-huntbound` (`main` = `2933012`), 2026-08-16:
+
+| Comando | Exit |
+|---|---:|
+| `git merge --ff-only grok/pb-05-01-vocation-spell-selection` | `0` (`2f455d5..2933012`) |
+| `corepack pnpm exec biome check .` | `0` (384 files) |
+| `corepack pnpm verify` | `1` em `qa:browser` / `hunt-budget.spec.ts` |
+
+`verify` passou `format:check`, `assets:check`, `simulation:check`, `hunt:check`,
+`architecture:check`, `typecheck`, `test`, `build` e `content:check`. Falhou em
+`tests/e2e/hunt-budget.spec.ts`: `actionableMs` `4467` (teto `5000` ok),
+`overBudget.length` `8` (teto `< 2`), tarefas `122,54,83,64,92,54,56,58` ms. Os outros
+28 specs e2e passaram. Sem retry mascarado.
 
 Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
 remeados aqui.
@@ -106,7 +121,7 @@ remeados aqui.
 - **Executor:** Grok 4.6 no Cursor, effort alto.
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `test-driven-development`,
   `verification-before-completion`.
-- **Validador:** ainda não; a task não fechou.
+- **Validador:** ainda não; a auditoria do playbook é PB-05-12.
 - **Desvio de branch:** a task card pedia `claude/pb-05-01-vocation-spell-selection`; a branch
   efetiva é `grok/pb-05-01-vocation-spell-selection` porque o executor é Grok. Worktree irmã no
   path pedido. `tools/hunt-selection` entrou no script `test` da raiz para os testes novos rodarem
@@ -125,13 +140,13 @@ remeados aqui.
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
 
-- **B5 (bloqueante, PB-05-01):** `corepack pnpm verify` vermelho em `qa:browser`. A seleção não
-  toca `apps/game` nem assets. Duas execuções consecutivas de `hunt-budget.spec.ts` falharam por
-  orçamento ADR-001 (primeira: `actionableMs` 5051 e 5161 contra teto 5000; segunda: `actionableMs`
-  4338 ok, mas `overBudget.length === 2` com tarefas de 56 ms e 50 ms). Terceira, isolada, mediu
-  `actionableMs` 14380 com a máquina carregada de processos Chrome. Sem retry mascarado, sem
-  timeout inflado, sem asserção enfraquecida. Worktree e branch preservadas. Reexecutar `verify`
-  com a máquina ociosa; se verde, `git merge --ff-only grok/pb-05-01-vocation-spell-selection`.
+- **B5 (aberto, não bloqueia PB-05-02):** `corepack pnpm verify` vermelho em `qa:browser` /
+  `hunt-budget.spec.ts` depois do ff em `main`. A seleção não toca `apps/game` nem assets.
+  Histórico: worktree (actionableMs 5051/5161; depois overBudget.length 2; isolado 14380 ms);
+  pós-ff em `main`: actionableMs 4467 ok, `overBudget.length` 8 contra teto `< 2`. Sem retry
+  mascarado, sem timeout inflado, sem asserção enfraquecida. Fast-forward feito a pedido.
+  Worktree e branch preservadas até este gate ficar verde; aí `git worktree prune` +
+  `git branch -d grok/pb-05-01-vocation-spell-selection`.
 
 ## Regra de atualização
 
