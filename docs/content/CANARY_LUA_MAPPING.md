@@ -20,7 +20,8 @@ Allowlisted forms are:
 - literal tables with named fields or sequential values;
 - allowlisted symbolic constants and finite literal arithmetic for numeric configuration;
 - the exact configuration calls documented below;
-- the exact `onGetFormulaValues` AST shape and the exact source-only `spell.onCastSpell` callback shape.
+- the three exact `onGetFormulaValues` AST shapes and the exact source-only
+  `spell.onCastSpell` callback shape (`var` or `variant`).
 
 Loops, conditionals, computed indexes, arbitrary functions, dynamic mutation, unknown identifiers,
 unknown calls, string/table-call sugar, and unsupported operators are blocking diagnostics. No generic
@@ -90,32 +91,83 @@ Source form: `Combat()` configuration, exact formula callback, `Spell("instant")
 | `spell:groupCooldown(expr)` | `groupCooldownMs` | Non-negative integer milliseconds; literal arithmetic only | Shared timing |
 | `spell:vocation("name;true", ...)` | `vocationNames[]` | Semicolon suffix removed; order and raw names preserved | PB-01-06 family projection |
 | `combat:setParameter(COMBAT_PARAM_TYPE, type)` | `damageType` | Known combat constant mapped to vocabulary | Spell damage |
-| `combat:setArea(createCombatArea(AREA_SQUARE1X1))` | `area` | `{shape: "square", radius: 1}` | Area contract |
-| exact `onGetFormulaValues` | `formula` | Function becomes four numeric coefficients; no function is returned | Declarative skill attack |
+| `combat:setArea(createCombatArea(AREA_SQUARE1X1))` | `area` | `{shape: "square", radius: 1}`; optional | Area contract |
+| `CALLBACK_PARAM_SKILLVALUE` + Berserk shape | `formula.kind: skillAttack` | Four numeric coefficients; no function is returned | Declarative skill+attack sum |
+| `CALLBACK_PARAM_SKILLVALUE` + Brutal Strike shape | `formula.kind: skillAttackProduct` | Coefficients of `skill * attack` plus addends | Declarative skill×attack product |
+| `CALLBACK_PARAM_LEVELMAGICVALUE` + Wound Cleansing shape | `formula.kind: levelMagic` | Coefficients of `level` and `magicLevel` plus addends | Declarative healing |
 
-The exact formula is:
+`setArea` is required only for the Berserk shape. Brutal Strike and Wound Cleansing omit it; the DTO
+then has no `area` field.
+
+#### `skillAttack` (Berserk / `exori`)
 
 ```lua
-local level = player:getLevel()
-local min = (level / <level-denominator>) + (skill + attack) * <min-factor>
-local max = (level / <level-denominator>) + (skill + attack) * <max-factor>
-return -min * <final-multiplier>, -max * <final-multiplier>
+function onGetFormulaValues(player, skill, attack, factor)
+  local level = player:getLevel()
+  local min = (level / <level-denominator>) + (skill + attack) * <min-factor>
+  local max = (level / <level-denominator>) + (skill + attack) * <max-factor>
+  return -min * <final-multiplier>, -max * <final-multiplier>
+end
 ```
 
 The DTO stores `levelFactor` as the reciprocal of the denominator and stores the two skill/attack
-factors and final multiplier as finite numbers. Any changed operator, extra statement, extra call,
-different identifier, or different return shape produces `lua.invalid-formula`.
+factors and final multiplier as finite numbers.
+
+#### `skillAttackProduct` (Brutal Strike / `exori ico`)
+
+```lua
+function onGetFormulaValues(player, skill, attack, factor)
+  local skillTotal = skill * attack
+  local levelTotal = player:getLevel() / <level-denominator>
+  return -(((skillTotal * <min-factor>) + <min-addend>) + levelTotal) * <final-multiplier>,
+         -(((skillTotal * <max-factor>) + <max-addend>) + levelTotal) * <final-multiplier>
+end
+```
+
+This is not `skillAttack`. `skillAttack` is `(skill + attack) * factor`; Brutal Strike is
+`(skill * attack) * factor + addend`. Reusing `skillAttack` would drop the product, the addends, or
+both. PB-05-02 therefore added `kind: "skillAttackProduct"` instead of stretching the existing kind.
+
+#### `levelMagic` (Wound Cleansing / `exura ico`)
+
+```lua
+function onGetFormulaValues(player, level, magicLevel)
+  local min = (level * <level-factor> + magicLevel * <min-magic-factor>) + <min-addend>
+  local max = (level * <level-factor> + magicLevel * <max-magic-factor>) + <max-addend>
+  return min, max
+end
+```
+
+The callback is `CALLBACK_PARAM_LEVELMAGICVALUE`, the parameters are `(player, level, magicLevel)`,
+and the return is a positive heal range. None of that fits `skillAttack`. PB-05-02 added
+`kind: "levelMagic"` rather than overloading the attack formula.
+
+Any changed operator, extra statement, extra call, different identifier, different callback
+parameter, or different return shape produces `lua.invalid-formula`. An unrecognized
+`onGetFormulaValues` is a diagnostic, never silent acceptance.
 
 ### Spell forms intentionally ignored
 
 The following are explicit source-only allowlist entries and have no DTO consumer:
 
-- `combat:setParameter` for effect, block-armor, and use-charges parameters;
-- `spell:group`, `spell:castSound`, `spell:isPremium`, and `spell:needWeapon`;
-- the exact `spell.onCastSpell(creature, var)` callback that returns
-  `combat:execute(creature, var)`.
+- `combat:setParameter` for effect, distance-effect, dispel, aggressive, block-armor, and
+  use-charges parameters;
+- `spell:group`, `spell:castSound`, `spell:isPremium`, `spell:needWeapon`, `spell:range`,
+  `spell:needTarget`, `spell:blockWalls`, `spell:isSelfTarget`, and `spell:isAggressive`;
+- the exact `spell.onCastSpell(creature, var)` or `spell.onCastSpell(creature, variant)` callback
+  that returns `combat:execute` with the same two arguments.
 
 The callback is recognized by AST shape and never invoked. An arbitrary callback body is rejected.
+
+## Frozen Huntbound character sheet
+
+The Knight sheet is curated Huntbound content, not a Tibia entity. It is declared on the slice
+selection, validated by `CharacterDefinitionSchema`, and stored in the catalog bundle. Identity
+policy (`docs/content/IDENTITY_POLICY.md`) does not assign it a `tibia` `sourceId`; the stable key
+is `character:huntbound:knight-venore-rotworm-cave`. Values are the freeze in
+`docs/content/PB-05-SELECTION.md`: level `8`, sword `10`, magic `0`, weapon `item:tibia:sword`
+(`3264`, attack `14`), vitals `185`/`185`, and the three imported spell keys. The sheet is versioned
+JSON. It is not a save.
 
 ## Diagnostics
 
@@ -129,7 +181,7 @@ All diagnostics are blocking and returned without a partial DTO. Stable categori
 - `lua.unsupported-expression` / `lua.unknown-identifier` for expressions outside the value whitelist;
 - `lua.invalid-value` for wrong types, units, ranges, or numeric values;
 - `lua.missing-field` for required source declarations or fields;
-- `lua.invalid-formula` for a function that is not the frozen declarative formula shape.
+- `lua.invalid-formula` for a function that is not one of the three frozen declarative formula shapes.
 
 Diagnostics include a source line and one-based column whenever the source node exists. Missing fields
 use the nearest declaration anchor so they remain actionable.

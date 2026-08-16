@@ -81,6 +81,12 @@ function canonicalRuntimeBundle(
         allowedVocationFamilies: [...spell.allowedVocationFamilies].sort(),
       }))
       .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
+    characters: [...bundle.characters]
+      .map((character) => ({
+        ...character,
+        spellKeys: [...character.spellKeys],
+      }))
+      .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
   };
 }
 
@@ -180,6 +186,27 @@ export function generateCatalogDocumentation(
       `- Relations: ${relations.length === 0 ? 'none' : relations.join(', ')}`,
       '',
     );
+  }
+  if (bundle.characters.length > 0) {
+    lines.push('## Characters', '');
+    for (const character of [...bundle.characters].sort((left, right) =>
+      left.stableKey.localeCompare(right.stableKey),
+    )) {
+      lines.push(
+        `### ${character.stableKey}`,
+        '',
+        `- Vocation: ${character.vocationKey}`,
+        `- Level: ${character.level}`,
+        `- Skills: ${Object.entries(character.skills)
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([skill, value]) => `${skill} ${value}`)
+          .join(', ')}`,
+        `- Weapon: ${character.weaponItemKey} attack ${character.weaponAttack}`,
+        `- Vitals: health ${character.maxHealth}, mana ${character.maxMana}`,
+        `- Spells: ${character.spellKeys.join(', ')}`,
+        '',
+      );
+    }
   }
   return `${lines.join('\n').replace(/\n+$/u, '')}\n`;
 }

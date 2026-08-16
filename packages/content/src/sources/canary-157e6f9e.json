@@ -41,6 +41,16 @@
       "purpose": "spell"
     },
     {
+      "relativePath": "data/scripts/spells/attack/brutal_strike.lua",
+      "sha256": "08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3",
+      "purpose": "spell"
+    },
+    {
+      "relativePath": "data/scripts/spells/healing/wound_cleansing.lua",
+      "sha256": "e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b",
+      "purpose": "spell"
+    },
+    {
       "relativePath": "data-otservbr-global/monster/vermins/rotworm.lua",
       "sha256": "f75ed297cd851013cde4e991113bf2d67ab9930852f20fb0c4e8d0937ddb176b",
       "purpose": "creature"

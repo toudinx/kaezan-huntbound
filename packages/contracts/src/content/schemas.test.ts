@@ -6,7 +6,9 @@ import {
 import { createContentGuid } from './identity';
 import {
   CatalogContentBundleSchema,
+  CharacterDefinitionSchema,
   RuntimeContentBundleSchema,
+  SpellFormulaDefinitionSchema,
 } from './schemas';
 
 const source = {
@@ -22,6 +24,9 @@ const snakeGuid = createContentGuid('creature', 'tibia', '6');
 const itemGuid = createContentGuid('item', 'tibia', '3031');
 const vocationGuid = createContentGuid('vocation', 'tibia', '4');
 const spellGuid = createContentGuid('spell', 'tibia', '80');
+const brutalStrikeGuid = createContentGuid('spell', 'tibia', '61');
+const woundCleansingGuid = createContentGuid('spell', 'tibia', '123');
+const swordGuid = createContentGuid('item', 'tibia', '3264');
 
 function first<T>(values: readonly T[]): T {
   const value = values[0];
@@ -231,6 +236,47 @@ function createSpell() {
   };
 }
 
+function createLevelMagicFormula() {
+  return {
+    kind: 'levelMagic' as const,
+    levelFactor: 0.2,
+    minMagicFactor: 4,
+    maxMagicFactor: 7.95,
+    minAddend: 25,
+    maxAddend: 51,
+  };
+}
+
+function createSkillAttackProductFormula() {
+  return {
+    kind: 'skillAttackProduct' as const,
+    levelFactor: 0.2,
+    minSkillAttackFactor: 0.02,
+    maxSkillAttackFactor: 0.04,
+    minAddend: 4,
+    maxAddend: 9,
+    finalMultiplier: 1.28,
+  };
+}
+
+function createCharacter() {
+  return {
+    stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+    vocationKey: 'vocation:tibia:knight',
+    level: 8,
+    skills: { sword: 10, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponAttack: 14,
+    maxHealth: 185,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+    ],
+  };
+}
+
 function createCatalogBundle() {
   return {
     schemaVersion: '1',
@@ -247,6 +293,7 @@ function createCatalogBundle() {
     creatures: [createCreature(), createSnake()],
     items: [createItem()],
     spells: [createSpell()],
+    characters: [],
     projectionAudits: [
       {
         entityKey: 'spell:tibia:berserk',
@@ -293,6 +340,7 @@ function createRuntimeBundle() {
     creatures,
     items: [item],
     spells: [spell],
+    characters: bundle.characters,
   };
 }
 
@@ -446,5 +494,184 @@ describe('content schemas', () => {
 
     const runtimeResult = validateRuntimeContentBundle({ schemaVersion: 1 });
     expect(runtimeResult.ok).toBe(false);
+  });
+
+  it('accepts the measured Wound Cleansing levelMagic formula', () => {
+    expect(
+      SpellFormulaDefinitionSchema.safeParse(createLevelMagicFormula()).success,
+    ).toBe(true);
+  });
+
+  it('rejects nearby invalid levelMagic formulas', () => {
+    const reversedMagic = {
+      ...createLevelMagicFormula(),
+      minMagicFactor: 8,
+      maxMagicFactor: 4,
+    };
+    const reversedAddend = {
+      ...createLevelMagicFormula(),
+      minAddend: 51,
+      maxAddend: 25,
+    };
+    const extraField = { ...createLevelMagicFormula(), skill: 10 };
+    const missingAddend = {
+      kind: 'levelMagic',
+      levelFactor: 0.2,
+      minMagicFactor: 4,
+      maxMagicFactor: 7.95,
+      minAddend: 25,
+    };
+    const asSkillAttack = {
+      kind: 'skillAttack',
+      levelFactor: 0.2,
+      minMagicFactor: 4,
+      maxMagicFactor: 7.95,
+      minAddend: 25,
+      maxAddend: 51,
+    };
+
+    expect(SpellFormulaDefinitionSchema.safeParse(reversedMagic).success).toBe(
+      false,
+    );
+    expect(SpellFormulaDefinitionSchema.safeParse(reversedAddend).success).toBe(
+      false,
+    );
+    expect(SpellFormulaDefinitionSchema.safeParse(extraField).success).toBe(
+      false,
+    );
+    expect(SpellFormulaDefinitionSchema.safeParse(missingAddend).success).toBe(
+      false,
+    );
+    expect(SpellFormulaDefinitionSchema.safeParse(asSkillAttack).success).toBe(
+      false,
+    );
+  });
+
+  it('accepts Brutal Strike skillAttackProduct and refuses to store it as skillAttack', () => {
+    expect(
+      SpellFormulaDefinitionSchema.safeParse(createSkillAttackProductFormula())
+        .success,
+    ).toBe(true);
+    expect(
+      SpellFormulaDefinitionSchema.safeParse({
+        ...createSkillAttackProductFormula(),
+        kind: 'skillAttack',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('accepts the frozen Knight character sheet', () => {
+    expect(CharacterDefinitionSchema.safeParse(createCharacter()).success).toBe(
+      true,
+    );
+  });
+
+  it('rejects a character with negative level, negative skill, or non-positive vitals', () => {
+    const negativeLevel = { ...createCharacter(), level: -1 };
+    const negativeSkill = {
+      ...createCharacter(),
+      skills: { sword: -1, magic: 0 },
+    };
+    const zeroHealth = { ...createCharacter(), maxHealth: 0 };
+    const zeroMana = { ...createCharacter(), maxMana: 0 };
+
+    expect(CharacterDefinitionSchema.safeParse(negativeLevel).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(negativeSkill).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(zeroHealth).success).toBe(false);
+    expect(CharacterDefinitionSchema.safeParse(zeroMana).success).toBe(false);
+  });
+
+  it('rejects empty spellKeys, unknown keys, and unknown fields on a character', () => {
+    const emptySpells = { ...createCharacter(), spellKeys: [] };
+    const unknownSkill = {
+      ...createCharacter(),
+      skills: { sword: 10, magic: 0, shielding: 10 },
+    };
+    const unknownField = { ...createCharacter(), experience: 0 };
+    const unknownStableKey = {
+      ...createCharacter(),
+      stableKey: 'character:tibia:knight',
+    };
+
+    expect(CharacterDefinitionSchema.safeParse(emptySpells).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(unknownSkill).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(unknownField).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(unknownStableKey).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects a character that references a spell whose allowed families omit Knight', () => {
+    const druidSpell = {
+      ...createSpell(),
+      guid: woundCleansingGuid,
+      stableKey: 'spell:tibia:wound-cleansing',
+      displayName: 'Wound Cleansing',
+      source: {
+        ...source,
+        sourceId: '123',
+        sourcePath: 'data/scripts/spells/healing/wound_cleansing.lua',
+      },
+      words: 'exura ico',
+      allowedVocationFamilies: ['vocation-family:huntbound:druid'],
+      formula: createLevelMagicFormula(),
+    };
+    const bundle = {
+      ...createCatalogBundle(),
+      vocationFamilies: [
+        ...createCatalogBundle().vocationFamilies,
+        {
+          key: 'vocation-family:huntbound:druid',
+          displayName: 'Druid',
+          vocationKeys: [],
+        },
+      ],
+      items: [
+        ...createCatalogBundle().items,
+        {
+          guid: swordGuid,
+          stableKey: 'item:tibia:sword',
+          displayName: 'sword',
+          includedFacets: ['identity', 'item'] as const,
+          source: {
+            ...source,
+            sourceId: '3264',
+            sourcePath: 'data/items/items.xml',
+          },
+          aliases: [],
+        },
+      ],
+      spells: [
+        createSpell(),
+        {
+          ...createSpell(),
+          guid: brutalStrikeGuid,
+          stableKey: 'spell:tibia:brutal-strike',
+          displayName: 'Brutal Strike',
+          source: {
+            ...source,
+            sourceId: '61',
+            sourcePath: 'data/scripts/spells/attack/brutal_strike.lua',
+          },
+          words: 'exori ico',
+          area: undefined,
+          formula: createSkillAttackProductFormula(),
+        },
+        druidSpell,
+      ],
+      characters: [createCharacter()],
+    };
+
+    expect(CatalogContentBundleSchema.safeParse(bundle).success).toBe(false);
   });
 });

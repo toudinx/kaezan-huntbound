@@ -306,6 +306,7 @@ export function createCatalogBundleFixture(): CatalogContentBundle {
         },
       },
     ],
+    characters: [],
   };
 }
 

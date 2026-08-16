@@ -17,12 +17,7 @@ import {
   readStaticValue,
 } from './staticValues.ts';
 
-interface FormulaValues {
-  readonly levelFactor: number;
-  readonly minSkillAttackFactor: number;
-  readonly maxSkillAttackFactor: number;
-  readonly finalMultiplier: number;
-}
+type FormulaValues = CanarySpellDto['formula'];
 
 interface SpellState {
   readonly damageType: string | undefined;
@@ -43,7 +38,10 @@ interface SpellState {
 }
 
 const combatParameters = new Set([
+  'COMBAT_PARAM_AGGRESSIVE',
   'COMBAT_PARAM_BLOCKARMOR',
+  'COMBAT_PARAM_DISPEL',
+  'COMBAT_PARAM_DISTANCEEFFECT',
   'COMBAT_PARAM_EFFECT',
   'COMBAT_PARAM_TYPE',
   'COMBAT_PARAM_USECHARGES',
@@ -237,27 +235,114 @@ function readFormulaReturn(
   return numericLiteral(expression.right);
 }
 
-function parseFormula(
+function readIdentTimesNumber(
+  expression: Expression | undefined,
+  name: string,
+): number | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*')
+    return undefined;
+  return identifierIs(expression.left, name)
+    ? numericLiteral(expression.right)
+    : undefined;
+}
+
+function readGetLevelDivided(
+  expression: Expression | undefined,
+): number | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '/')
+    return undefined;
+  const denominator = numericLiteral(expression.right);
+  return callGetLevel(expression.left) &&
+    denominator !== undefined &&
+    denominator !== 0
+    ? 1 / denominator
+    : undefined;
+}
+
+function readSkillTimesAttack(expression: Expression | undefined): boolean {
+  return (
+    expression?.type === 'BinaryExpression' &&
+    expression.operator === '*' &&
+    identifierIs(expression.left, 'skill') &&
+    identifierIs(expression.right, 'attack')
+  );
+}
+
+function readProductReturn(
+  expression: Expression | undefined,
+  skillTotal: string,
+  levelTotal: string,
+):
+  | {
+      readonly factor: number;
+      readonly addend: number;
+      readonly multiplier: number;
+    }
+  | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*')
+    return undefined;
+  const multiplier = numericLiteral(expression.right);
+  if (
+    multiplier === undefined ||
+    expression.left.type !== 'UnaryExpression' ||
+    expression.left.operator !== '-'
+  ) {
+    return undefined;
+  }
+  const inner = expression.left.argument;
+  if (
+    inner.type !== 'BinaryExpression' ||
+    inner.operator !== '+' ||
+    !identifierIs(inner.right, levelTotal)
+  ) {
+    return undefined;
+  }
+  const scaled = inner.left;
+  if (scaled.type !== 'BinaryExpression' || scaled.operator !== '+')
+    return undefined;
+  const addend = numericLiteral(scaled.right);
+  const product = scaled.left;
+  if (
+    addend === undefined ||
+    product.type !== 'BinaryExpression' ||
+    product.operator !== '*' ||
+    !identifierIs(product.left, skillTotal)
+  ) {
+    return undefined;
+  }
+  const factor = numericLiteral(product.right);
+  return factor === undefined ? undefined : { factor, addend, multiplier };
+}
+
+function readLevelMagicAssignment(expression: Expression | undefined):
+  | {
+      readonly levelFactor: number;
+      readonly magicFactor: number;
+      readonly addend: number;
+    }
+  | undefined {
+  if (expression?.type !== 'BinaryExpression' || expression.operator !== '+')
+    return undefined;
+  const addend = numericLiteral(expression.right);
+  const sum = expression.left;
+  if (
+    addend === undefined ||
+    sum.type !== 'BinaryExpression' ||
+    sum.operator !== '+'
+  ) {
+    return undefined;
+  }
+  const levelFactor = readIdentTimesNumber(sum.left, 'level');
+  const magicFactor = readIdentTimesNumber(sum.right, 'magicLevel');
+  return levelFactor === undefined || magicFactor === undefined
+    ? undefined
+    : { levelFactor, magicFactor, addend };
+}
+
+function parseSkillAttackFormula(
   declaration: FunctionDeclaration,
   diagnostics: ContentDiagnostic[],
 ): FormulaValues | undefined {
-  const parameters = declaration.parameters;
-  const expected = ['player', 'skill', 'attack', 'factor'];
-  if (
-    parameters.length !== expected.length ||
-    parameters.some(
-      (parameter, index) =>
-        parameter.type !== 'Identifier' || parameter.name !== expected[index],
-    )
-  ) {
-    pushDiagnostic(
-      diagnostics,
-      declaration,
-      'lua.invalid-formula',
-      'Formula parameters are not allowlisted',
-    );
-    return undefined;
-  }
   const [levelStatement, minStatement, maxStatement, returnStatement] =
     declaration.body;
   if (
@@ -334,6 +419,7 @@ function parseFormula(
     return undefined;
   }
   return {
+    kind: 'skillAttack',
     levelFactor: min.levelFactor,
     minSkillAttackFactor: min.skillAttackFactor,
     maxSkillAttackFactor: max.skillAttackFactor,
@@ -341,7 +427,202 @@ function parseFormula(
   };
 }
 
+function parseSkillAttackProductFormula(
+  declaration: FunctionDeclaration,
+  diagnostics: ContentDiagnostic[],
+): FormulaValues | undefined {
+  const [skillTotalStatement, levelTotalStatement, returnStatement] =
+    declaration.body;
+  if (
+    skillTotalStatement?.type !== 'LocalStatement' ||
+    levelTotalStatement?.type !== 'LocalStatement' ||
+    returnStatement?.type !== 'ReturnStatement' ||
+    declaration.body.length !== 3
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula body shape is not allowlisted',
+    );
+    return undefined;
+  }
+  if (
+    skillTotalStatement.variables.length !== 1 ||
+    skillTotalStatement.variables[0]?.name !== 'skillTotal' ||
+    skillTotalStatement.init.length !== 1 ||
+    !readSkillTimesAttack(skillTotalStatement.init[0])
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      skillTotalStatement,
+      'lua.invalid-formula',
+      'Formula skill product is not allowlisted',
+    );
+    return undefined;
+  }
+  const levelFactor =
+    levelTotalStatement.variables.length === 1 &&
+    levelTotalStatement.variables[0]?.name === 'levelTotal' &&
+    levelTotalStatement.init.length === 1
+      ? readGetLevelDivided(levelTotalStatement.init[0])
+      : undefined;
+  if (levelFactor === undefined) {
+    pushDiagnostic(
+      diagnostics,
+      levelTotalStatement,
+      'lua.invalid-formula',
+      'Formula level lookup is not allowlisted',
+    );
+    return undefined;
+  }
+  if (returnStatement.arguments.length !== 2) {
+    pushDiagnostic(
+      diagnostics,
+      returnStatement,
+      'lua.invalid-formula',
+      'Formula return expressions are not allowlisted',
+    );
+    return undefined;
+  }
+  const min = readProductReturn(
+    returnStatement.arguments[0],
+    'skillTotal',
+    'levelTotal',
+  );
+  const max = readProductReturn(
+    returnStatement.arguments[1],
+    'skillTotal',
+    'levelTotal',
+  );
+  if (
+    min === undefined ||
+    max === undefined ||
+    min.multiplier !== max.multiplier
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      returnStatement,
+      'lua.invalid-formula',
+      'Formula return expressions are not allowlisted',
+    );
+    return undefined;
+  }
+  return {
+    kind: 'skillAttackProduct',
+    levelFactor,
+    minSkillAttackFactor: min.factor,
+    maxSkillAttackFactor: max.factor,
+    minAddend: min.addend,
+    maxAddend: max.addend,
+    finalMultiplier: min.multiplier,
+  };
+}
+
+function parseLevelMagicFormula(
+  declaration: FunctionDeclaration,
+  diagnostics: ContentDiagnostic[],
+): FormulaValues | undefined {
+  const [minStatement, maxStatement, returnStatement] = declaration.body;
+  if (
+    minStatement?.type !== 'LocalStatement' ||
+    maxStatement?.type !== 'LocalStatement' ||
+    returnStatement?.type !== 'ReturnStatement' ||
+    declaration.body.length !== 3
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula body shape is not allowlisted',
+    );
+    return undefined;
+  }
+  const min =
+    minStatement.variables.length === 1 &&
+    minStatement.variables[0]?.name === 'min' &&
+    minStatement.init.length === 1
+      ? readLevelMagicAssignment(minStatement.init[0])
+      : undefined;
+  const max =
+    maxStatement.variables.length === 1 &&
+    maxStatement.variables[0]?.name === 'max' &&
+    maxStatement.init.length === 1
+      ? readLevelMagicAssignment(maxStatement.init[0])
+      : undefined;
+  if (
+    min === undefined ||
+    max === undefined ||
+    min.levelFactor !== max.levelFactor ||
+    returnStatement.arguments.length !== 2 ||
+    !identifierIs(returnStatement.arguments[0], 'min') ||
+    !identifierIs(returnStatement.arguments[1], 'max')
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula coefficients are not allowlisted',
+    );
+    return undefined;
+  }
+  return {
+    kind: 'levelMagic',
+    levelFactor: min.levelFactor,
+    minMagicFactor: min.magicFactor,
+    maxMagicFactor: max.magicFactor,
+    minAddend: min.addend,
+    maxAddend: max.addend,
+  };
+}
+
+function parseFormula(
+  declaration: FunctionDeclaration,
+  diagnostics: ContentDiagnostic[],
+): FormulaValues | undefined {
+  const names = declaration.parameters.map((parameter) =>
+    parameter.type === 'Identifier' ? parameter.name : undefined,
+  );
+  if (
+    names.length === 4 &&
+    names[0] === 'player' &&
+    names[1] === 'skill' &&
+    names[2] === 'attack' &&
+    names[3] === 'factor'
+  ) {
+    if (declaration.body.length === 4)
+      return parseSkillAttackFormula(declaration, diagnostics);
+    if (declaration.body.length === 3)
+      return parseSkillAttackProductFormula(declaration, diagnostics);
+    pushDiagnostic(
+      diagnostics,
+      declaration,
+      'lua.invalid-formula',
+      'Formula body shape is not allowlisted',
+    );
+    return undefined;
+  }
+  if (
+    names.length === 3 &&
+    names[0] === 'player' &&
+    names[1] === 'level' &&
+    names[2] === 'magicLevel'
+  ) {
+    return parseLevelMagicFormula(declaration, diagnostics);
+  }
+  pushDiagnostic(
+    diagnostics,
+    declaration,
+    'lua.invalid-formula',
+    'Formula parameters are not allowlisted',
+  );
+  return undefined;
+}
+
 function isIgnoredCastCallback(declaration: FunctionDeclaration): boolean {
+  const secondParameter = declaration.parameters[1];
+  const secondName =
+    secondParameter?.type === 'Identifier' ? secondParameter.name : undefined;
   if (
     declaration.identifier?.type !== 'MemberExpression' ||
     declaration.identifier.indexer !== '.' ||
@@ -350,7 +631,7 @@ function isIgnoredCastCallback(declaration: FunctionDeclaration): boolean {
     declaration.identifier.identifier.name !== 'onCastSpell' ||
     declaration.parameters.length !== 2 ||
     !identifierIs(declaration.parameters[0], 'creature') ||
-    !identifierIs(declaration.parameters[1], 'var') ||
+    (secondName !== 'var' && secondName !== 'variant') ||
     declaration.body.length !== 1
   ) {
     return false;
@@ -363,7 +644,7 @@ function isIgnoredCastCallback(declaration: FunctionDeclaration): boolean {
     expression?.type === 'CallExpression' &&
     expression.arguments.length === 2 &&
     identifierIs(expression.arguments[0], 'creature') &&
-    identifierIs(expression.arguments[1], 'var') &&
+    identifierIs(expression.arguments[1], secondName) &&
     expression.base.type === 'MemberExpression' &&
     expression.base.indexer === ':' &&
     expression.base.base.type === 'Identifier' &&
@@ -535,14 +816,15 @@ function parseSpellCall(
         diagnostics,
       );
       if (
-        callbackParameter !== 'CALLBACK_PARAM_SKILLVALUE' ||
+        (callbackParameter !== 'CALLBACK_PARAM_SKILLVALUE' &&
+          callbackParameter !== 'CALLBACK_PARAM_LEVELMAGICVALUE') ||
         callbackName !== 'onGetFormulaValues'
       ) {
         pushDiagnostic(
           diagnostics,
           call,
           'lua.invalid-value',
-          'Only the skill-value callback is allowlisted',
+          'Only the skill-value and level-magic callbacks are allowlisted',
         );
       }
       return;
@@ -622,6 +904,28 @@ function parseSpellCall(
         'lua.invalid-value',
         `spell:${method} expects a boolean`,
       );
+    return;
+  }
+  if (
+    method === 'needTarget' ||
+    method === 'blockWalls' ||
+    method === 'isSelfTarget' ||
+    method === 'isAggressive'
+  ) {
+    const args = readMethodArguments(call, 1, `spell:${method}`, diagnostics);
+    if (args !== undefined && args[0]?.type !== 'BooleanLiteral')
+      pushDiagnostic(
+        diagnostics,
+        args[0],
+        'lua.invalid-value',
+        `spell:${method} expects a boolean`,
+      );
+    return;
+  }
+  if (method === 'range') {
+    const args = readMethodArguments(call, 1, 'spell:range', diagnostics);
+    if (args !== undefined)
+      readNonNegativeInteger(args[0], 'spell range', diagnostics);
     return;
   }
   if (
@@ -838,7 +1142,6 @@ export function parseCanarySpellLua(
     ['cooldownMs', state.cooldownMs],
     ['groupCooldownMs', state.groupCooldownMs],
     ['damageType', state.damageType],
-    ['area', state.area],
     ['formula', state.formula],
   ];
   for (const [field, value] of required) {
@@ -870,11 +1173,8 @@ export function parseCanarySpellLua(
       groupCooldownMs: state.groupCooldownMs as number,
       vocationNames: state.vocationNames,
       damageType: state.damageType as string,
-      area: state.area as { readonly shape: 'square'; readonly radius: number },
-      formula: {
-        kind: 'skillAttack',
-        ...(state.formula as FormulaValues),
-      },
+      ...(state.area === undefined ? {} : { area: state.area }),
+      formula: state.formula as FormulaValues,
     },
   };
 }

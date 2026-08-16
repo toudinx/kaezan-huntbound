@@ -41,6 +41,21 @@ interface SelectionManifest extends ContentSliceDefinition {
     }[];
     readonly aliases: readonly string[];
   };
+  readonly character: {
+    readonly stableKey: string;
+    readonly vocationKey: string;
+    readonly level: number;
+    readonly skills: Readonly<{
+      readonly sword: number;
+      readonly magic: number;
+    }>;
+    readonly weaponItemKey: string;
+    readonly weaponSourceId: string;
+    readonly weaponAttack: number;
+    readonly maxHealth: number;
+    readonly maxMana: number;
+    readonly spellKeys: readonly string[];
+  };
 }
 
 export interface ImportCanarySliceDependencies {
@@ -301,7 +316,9 @@ function spellDefinition(
     cooldownMs: dto.cooldownMs,
     groupCooldownMs: dto.groupCooldownMs,
     damageType: dto.damageType as CatalogSpellDefinition['damageType'],
-    area: { shape: dto.area.shape, radiusTiles: dto.area.radius },
+    ...(dto.area === undefined
+      ? {}
+      : { area: { shape: dto.area.shape, radiusTiles: dto.area.radius } }),
     allowedVocationFamilies:
       allowedVocationFamilies as CatalogSpellDefinition['allowedVocationFamilies'],
     formula: dto.formula,
@@ -344,13 +361,13 @@ export function importCanarySlice(
   const pathsByPurpose = {
     vocation: metadataLookup(lock, 'vocations')[0],
     items: metadataLookup(lock, 'items')[0],
-    spell: metadataLookup(lock, 'spell')[0],
+    spells: metadataLookup(lock, 'spell'),
     creatures: metadataLookup(lock, 'creature'),
   };
   if (
     pathsByPurpose.vocation === undefined ||
     pathsByPurpose.items === undefined ||
-    pathsByPurpose.spell === undefined
+    pathsByPurpose.spells.length === 0
   ) {
     throw new ContentImportError(
       'Source lock is missing a required source file',
@@ -383,10 +400,11 @@ export function importCanarySlice(
     ),
     diagnostics,
   )?.[0];
-  const spellDto = parseResult(
-    parseCanarySpellLua(read(pathsByPurpose.spell)),
-    diagnostics,
-  );
+  const spellDtos = new Map<string, { dto: CanarySpellDto; path: string }>();
+  for (const path of pathsByPurpose.spells) {
+    const dto = parseResult(parseCanarySpellLua(read(path)), diagnostics);
+    if (dto !== undefined) spellDtos.set(dto.sourceId, { dto, path });
+  }
   const creatureDtos = new Map<
     string,
     {
@@ -402,11 +420,7 @@ export function importCanarySlice(
       creatureDtos.set(dto.sourceId, { dto, loot, path });
     }
   }
-  if (
-    diagnostics.length > 0 ||
-    vocationDto === undefined ||
-    spellDto === undefined
-  ) {
+  if (diagnostics.length > 0 || vocationDto === undefined) {
     throw new ContentImportError('Canary parsing failed', diagnostics);
   }
 
@@ -419,6 +433,17 @@ export function importCanarySlice(
       errorDiagnostic(
         'import.creature-missing',
         `Selected creatures were not parsed: ${missingCreatureIds.join(', ')}`,
+      ),
+    );
+  }
+  const missingSpellIds = input.rootSourceIds.spell.filter(
+    (sourceId) => !spellDtos.has(sourceId),
+  );
+  if (missingSpellIds.length > 0) {
+    diagnostics.push(
+      errorDiagnostic(
+        'import.spell-missing',
+        `Selected spells were not parsed: ${missingSpellIds.join(', ')}`,
       ),
     );
   }
@@ -449,9 +474,12 @@ export function importCanarySlice(
   const itemRefs = [...input.rootSourceIds.creature].flatMap(
     (sourceId) => creatureDtos.get(sourceId)?.dto.lootRefs ?? [],
   );
-  const itemIds = itemRefs.flatMap((reference) =>
-    'sourceId' in reference ? [reference.sourceId] : [],
-  );
+  const itemIds = [
+    ...itemRefs.flatMap((reference) =>
+      'sourceId' in reference ? [reference.sourceId] : [],
+    ),
+    input.character.weaponSourceId,
+  ];
   const itemNames = itemRefs.flatMap((reference) =>
     'sourceName' in reference ? [reference.sourceName] : [],
   );
@@ -491,8 +519,14 @@ export function importCanarySlice(
   };
 
   const vocationKey = mapping.get(`vocation:${vocationDto.sourceId}`);
-  const spellKey = mapping.get(`spell:${spellDto.sourceId}`);
-  if (vocationKey === undefined || spellKey === undefined) {
+  const selectedSpells = input.rootSourceIds.spell.flatMap((sourceId) => {
+    const entry = spellDtos.get(sourceId);
+    const key = mapping.get(`spell:${sourceId}`);
+    return entry === undefined || key === undefined
+      ? []
+      : [{ sourceId, entry, key }];
+  });
+  if (vocationKey === undefined || selectedSpells.length === 0) {
     throw new ContentImportError(
       'Selected XML/Lua root was not mapped to a stable key',
       [
@@ -519,30 +553,60 @@ export function importCanarySlice(
       itemRequiredBy.set(itemKey, requiredBy);
     }
   }
+  const weaponItem = itemById.get(input.character.weaponSourceId);
+  if (weaponItem === undefined) {
+    throw new ContentImportError('Character weapon resolution failed', [
+      errorDiagnostic(
+        'import.weapon-item-missing',
+        `Could not resolve character weapon ${input.character.weaponSourceId}`,
+      ),
+    ]);
+  }
+  const weaponKey = asContentKey(
+    `item:tibia:${stableSlug(weaponItem.displayName)}`,
+  );
+  if (weaponKey !== asContentKey(input.character.weaponItemKey)) {
+    throw new ContentImportError('Character weapon key mismatch', [
+      errorDiagnostic(
+        'import.weapon-key-mismatch',
+        `Weapon source ${input.character.weaponSourceId} resolved to ${weaponKey}`,
+      ),
+    ]);
+  }
+  const weaponRequiredBy = itemRequiredBy.get(weaponKey) ?? [];
+  weaponRequiredBy.push(asContentKey(input.character.stableKey));
+  itemRequiredBy.set(weaponKey, weaponRequiredBy);
   for (const [itemKey, requiredBy] of itemRequiredBy) {
+    const fromCharacter = requiredBy.some((key) =>
+      String(key).startsWith('character:'),
+    );
     projections.set(itemKey, {
       entityKey: itemKey,
       facets: ['identity', 'item'],
-      consumer: 'creature contract tests',
-      rationale: `Required by ${[...new Set(requiredBy)].sort().join(', ')} loot`,
+      consumer: fromCharacter
+        ? 'frozen character sheet'
+        : 'creature contract tests',
+      rationale: fromCharacter
+        ? `Required by ${[...new Set(requiredBy)].sort().join(', ')}`
+        : `Required by ${[...new Set(requiredBy)].sort().join(', ')} loot`,
     });
   }
 
-  const mappedVocationNames = spellDto.vocationNames.map((name) => {
-    const mappingEntry = input.projectionPolicy.rawReferenceMappings.find(
-      (entry) => normalizedName(entry.rawReference) === normalizedName(name),
-    );
-    if (mappingEntry === undefined) {
-      throw new ContentImportError('Spell vocation projection failed', [
-        errorDiagnostic(
-          'import.vocation-reference-unmapped',
-          `No projection policy exists for raw vocation reference ${name}`,
-        ),
-      ]);
-    }
-    return mappingEntry.targetFamilyKey;
-  });
-  const allowedVocationFamilies = [...new Set(mappedVocationNames)];
+  const mapVocationNames = (names: readonly string[]): readonly string[] =>
+    names.map((name) => {
+      const mappingEntry = input.projectionPolicy.rawReferenceMappings.find(
+        (entry) => normalizedName(entry.rawReference) === normalizedName(name),
+      );
+      if (mappingEntry === undefined) {
+        throw new ContentImportError('Spell vocation projection failed', [
+          errorDiagnostic(
+            'import.vocation-reference-unmapped',
+            `No projection policy exists for raw vocation reference ${name}`,
+          ),
+        ]);
+      }
+      return mappingEntry.targetFamilyKey;
+    });
   const projection = (key: ContentKey) => {
     const value = projections.get(key);
     if (value === undefined)
@@ -594,34 +658,46 @@ export function importCanarySlice(
       vocationDto.sourceId,
     ),
   );
-  const spell = spellDefinition(
-    spellDto,
-    spellKey,
-    projection(spellKey),
-    sourceFor(
-      lock,
-      input.snapshot,
-      pathsByPurpose.spell as string,
-      spellDto.sourceId,
-    ),
-    allowedVocationFamilies,
-  );
-  const projectionAudits = spellDto.vocationNames.map(
-    (rawReference, index) => ({
-      entityKey: spellKey,
+  const spells = selectedSpells
+    .map(({ sourceId, entry, key }) =>
+      spellDefinition(
+        entry.dto,
+        key,
+        projection(key),
+        sourceFor(lock, input.snapshot, entry.path, sourceId),
+        [...new Set(mapVocationNames(entry.dto.vocationNames))],
+      ),
+    )
+    .sort((left, right) => left.stableKey.localeCompare(right.stableKey));
+  const projectionAudits = selectedSpells.flatMap(({ entry, key }) => {
+    const mappedVocationNames = mapVocationNames(entry.dto.vocationNames);
+    return entry.dto.vocationNames.map((rawReference, index) => ({
+      entityKey: key,
       rawReference,
       relation: 'allowed-vocation-family' as const,
       targetFamilyKey: mappedVocationNames[
         index
       ] as CatalogSpellDefinition['allowedVocationFamilies'][number],
-    }),
-  );
+    }));
+  });
+  const character = {
+    stableKey: input.character.stableKey,
+    vocationKey: input.character.vocationKey,
+    level: input.character.level,
+    skills: input.character.skills,
+    weaponItemKey: input.character.weaponItemKey,
+    weaponAttack: input.character.weaponAttack,
+    maxHealth: input.character.maxHealth,
+    maxMana: input.character.maxMana,
+    spellKeys: input.character.spellKeys,
+  };
 
   const entities = {
     vocations: [vocation],
     creatures: creatureDefinitions,
     items,
-    spells: [spell],
+    spells,
+    characters: [character],
   };
   const allKeys = [
     ...entities.vocations,

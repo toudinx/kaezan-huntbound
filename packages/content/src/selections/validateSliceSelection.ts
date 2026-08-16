@@ -22,15 +22,31 @@ interface ProjectionPolicy {
   readonly aliases: readonly string[];
 }
 
+interface FrozenCharacter {
+  readonly stableKey: string;
+  readonly vocationKey: string;
+  readonly level: number;
+  readonly skills: Readonly<Record<string, number>>;
+  readonly weaponItemKey: string;
+  readonly weaponSourceId: string;
+  readonly weaponAttack: number;
+  readonly maxHealth: number;
+  readonly maxMana: number;
+  readonly spellKeys: readonly string[];
+}
+
 interface CuratedSelectionInput extends ContentSliceDefinition {
   readonly rootSourceIds: SourceIdGroups;
   readonly dependencySourceIds: Readonly<Record<string, readonly string[]>>;
   readonly projectionPolicy: ProjectionPolicy;
+  readonly character: FrozenCharacter;
 }
 
 const expectedRoots = [
   'vocation:tibia:knight',
   'spell:tibia:berserk',
+  'spell:tibia:brutal-strike',
+  'spell:tibia:wound-cleansing',
   'creature:tibia:rotworm',
   'creature:tibia:amazon',
   'creature:tibia:orc-shaman',
@@ -42,15 +58,36 @@ const expectedSourceFiles = [
   'data/XML/vocations.xml',
   'data/items/items.xml',
   'data/scripts/spells/attack/berserk.lua',
+  'data/scripts/spells/attack/brutal_strike.lua',
+  'data/scripts/spells/healing/wound_cleansing.lua',
   'data-otservbr-global/monster/vermins/rotworm.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
   'data-otservbr-global/monster/reptiles/snake.lua',
 ] as const;
 
+const expectedCharacter: FrozenCharacter = {
+  stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+  vocationKey: 'vocation:tibia:knight',
+  level: 8,
+  skills: { sword: 10, magic: 0 },
+  weaponItemKey: 'item:tibia:sword',
+  weaponSourceId: '3264',
+  weaponAttack: 14,
+  maxHealth: 185,
+  maxMana: 185,
+  spellKeys: [
+    'spell:tibia:berserk',
+    'spell:tibia:brutal-strike',
+    'spell:tibia:wound-cleansing',
+  ],
+};
+
 const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
   'vocation:tibia:knight': ['identity', 'progression'],
   'spell:tibia:berserk': ['identity', 'spell'],
+  'spell:tibia:brutal-strike': ['identity', 'spell'],
+  'spell:tibia:wound-cleansing': ['identity', 'spell'],
   'creature:tibia:rotworm': [
     'identity',
     'stats',
@@ -111,7 +148,7 @@ function validateSourceIdGroups(
   const diagnostics: ContentDiagnostic[] = [];
   const expected: SourceIdGroups = {
     vocation: ['4'],
-    spell: ['80'],
+    spell: ['80', '61', '123'],
     creature: ['26', '77', '6'],
   };
 
@@ -199,6 +236,7 @@ export function validateSliceSelection(
     rootSourceIds: _rootSourceIds,
     dependencySourceIds: _dependencySourceIds,
     projectionPolicy: _projectionPolicy,
+    character: _character,
     ...definition
   } = input as unknown as Record<string, unknown>;
   const diagnostics: ContentDiagnostic[] = [];
@@ -220,7 +258,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain exactly Knight, Berserk, Rotworm, Amazon, and Orc Shaman as roots',
+        'Selection must contain Knight, three combat spells, Rotworm, Amazon, and Orc Shaman as roots',
       ),
     );
   }
@@ -252,7 +290,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.source-file-set-mismatch',
-        'Selection source files must match the seven source-lock paths',
+        'Selection source files must match the catalog source-lock paths',
       ),
     );
   }
@@ -307,5 +345,23 @@ export function validateSliceSelection(
 
   diagnostics.push(...validateSourceIdGroups(input));
   diagnostics.push(...validateProjectionPolicy(input.projectionPolicy));
+  diagnostics.push(...validateFrozenCharacter(input.character));
   return diagnostics;
+}
+
+function validateFrozenCharacter(
+  character: FrozenCharacter | undefined,
+): ContentDiagnostic[] {
+  if (
+    character === undefined ||
+    JSON.stringify(character) !== JSON.stringify(expectedCharacter)
+  ) {
+    return [
+      selectionDiagnostic(
+        'selection.character-mismatch',
+        'Character sheet must match the frozen PB-05 Knight loadout',
+      ),
+    ];
+  }
+  return [];
 }

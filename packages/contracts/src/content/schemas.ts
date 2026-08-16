@@ -399,13 +399,15 @@ export const ItemDefinitionSchema = EntityIdentitySchema.extend({
   });
 export type ItemDefinition = z.infer<typeof ItemDefinitionSchema>;
 
-export const SpellFormulaDefinitionSchema = z
+const finiteNumber = z.number().finite();
+
+const SkillAttackFormulaSchema = z
   .object({
     kind: z.literal('skillAttack'),
-    levelFactor: z.number().finite(),
-    minSkillAttackFactor: z.number().finite(),
-    maxSkillAttackFactor: z.number().finite(),
-    finalMultiplier: z.number().finite(),
+    levelFactor: finiteNumber,
+    minSkillAttackFactor: finiteNumber,
+    maxSkillAttackFactor: finiteNumber,
+    finalMultiplier: finiteNumber,
   })
   .strict()
   .refine(
@@ -416,9 +418,98 @@ export const SpellFormulaDefinitionSchema = z
         'minSkillAttackFactor must be less than or equal to maxSkillAttackFactor',
     },
   );
+
+const SkillAttackProductFormulaSchema = z
+  .object({
+    kind: z.literal('skillAttackProduct'),
+    levelFactor: finiteNumber,
+    minSkillAttackFactor: finiteNumber,
+    maxSkillAttackFactor: finiteNumber,
+    minAddend: finiteNumber,
+    maxAddend: finiteNumber,
+    finalMultiplier: finiteNumber,
+  })
+  .strict()
+  .refine(
+    (formula) => formula.minSkillAttackFactor <= formula.maxSkillAttackFactor,
+    {
+      path: ['maxSkillAttackFactor'],
+      message:
+        'minSkillAttackFactor must be less than or equal to maxSkillAttackFactor',
+    },
+  )
+  .refine((formula) => formula.minAddend <= formula.maxAddend, {
+    path: ['maxAddend'],
+    message: 'minAddend must be less than or equal to maxAddend',
+  });
+
+const LevelMagicFormulaSchema = z
+  .object({
+    kind: z.literal('levelMagic'),
+    levelFactor: finiteNumber,
+    minMagicFactor: finiteNumber,
+    maxMagicFactor: finiteNumber,
+    minAddend: finiteNumber,
+    maxAddend: finiteNumber,
+  })
+  .strict()
+  .refine((formula) => formula.minMagicFactor <= formula.maxMagicFactor, {
+    path: ['maxMagicFactor'],
+    message: 'minMagicFactor must be less than or equal to maxMagicFactor',
+  })
+  .refine((formula) => formula.minAddend <= formula.maxAddend, {
+    path: ['maxAddend'],
+    message: 'minAddend must be less than or equal to maxAddend',
+  });
+
+export const SpellFormulaDefinitionSchema = z.union([
+  SkillAttackFormulaSchema,
+  SkillAttackProductFormulaSchema,
+  LevelMagicFormulaSchema,
+]);
 export type SpellFormulaDefinition = z.infer<
   typeof SpellFormulaDefinitionSchema
 >;
+
+const CharacterKeySchema = z
+  .string()
+  .regex(
+    /^character:huntbound:[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    'Expected a lowercase Huntbound character key',
+  );
+
+const vocationContentKey = ContentKeySchema.refine(
+  (value) => value.startsWith('vocation:tibia:'),
+  'vocationKey must be a vocation content key',
+);
+const itemContentKey = ContentKeySchema.refine(
+  (value) => value.startsWith('item:tibia:'),
+  'weaponItemKey must be an item content key',
+);
+const spellContentKey = ContentKeySchema.refine(
+  (value) => value.startsWith('spell:tibia:'),
+  'spellKeys must contain spell content keys',
+);
+
+export const CharacterDefinitionSchema = z
+  .object({
+    stableKey: CharacterKeySchema,
+    vocationKey: vocationContentKey,
+    level: nonNegativeInteger,
+    skills: z
+      .object({
+        sword: nonNegativeNumber,
+        magic: nonNegativeNumber,
+      })
+      .strict(),
+    weaponItemKey: itemContentKey,
+    weaponAttack: nonNegativeInteger,
+    maxHealth: positiveInteger,
+    maxMana: positiveInteger,
+    spellKeys: uniqueReadonlyArray(spellContentKey).min(1).readonly(),
+  })
+  .strict();
+export type CharacterDefinition = z.infer<typeof CharacterDefinitionSchema>;
 
 export const SpellDefinitionSchema = EntityIdentitySchema.extend({
   words: nonEmptyString,
@@ -484,8 +575,12 @@ const RuntimeBundleBaseSchema = z
 function addReferenceIssues(
   bundle: {
     readonly vocationFamilies: readonly { readonly key: string }[];
-    readonly vocations: readonly { readonly familyKey: string }[];
+    readonly vocations: readonly {
+      readonly stableKey: string;
+      readonly familyKey: string;
+    }[];
     readonly spells: readonly {
+      readonly stableKey: string;
       readonly allowedVocationFamilies: readonly string[];
     }[];
     readonly creatures: readonly {
@@ -494,6 +589,11 @@ function addReferenceIssues(
       readonly loot: readonly { readonly itemKey: string }[];
     }[];
     readonly items: readonly { readonly stableKey: string }[];
+    readonly characters: readonly {
+      readonly vocationKey: string;
+      readonly weaponItemKey: string;
+      readonly spellKeys: readonly string[];
+    }[];
   },
   context: z.RefinementCtx,
 ) {
@@ -503,6 +603,12 @@ function addReferenceIssues(
   const itemKeys = new Set(bundle.items.map((item) => item.stableKey));
   const creatureKeys = new Set(
     bundle.creatures.map((creature) => creature.stableKey),
+  );
+  const vocationByKey = new Map(
+    bundle.vocations.map((vocation) => [vocation.stableKey, vocation]),
+  );
+  const spellByKey = new Map(
+    bundle.spells.map((spell) => [spell.stableKey, spell]),
   );
 
   bundle.vocations.forEach((vocation, index) => {
@@ -553,6 +659,45 @@ function addReferenceIssues(
       }
     });
   });
+
+  bundle.characters.forEach((character, index) => {
+    const vocation = vocationByKey.get(character.vocationKey);
+    if (vocation === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['characters', index, 'vocationKey'],
+        message: `Unknown vocation ${character.vocationKey}`,
+      });
+    }
+    if (!itemKeys.has(character.weaponItemKey)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['characters', index, 'weaponItemKey'],
+        message: `Unknown weapon item ${character.weaponItemKey}`,
+      });
+    }
+    character.spellKeys.forEach((spellKey, spellIndex) => {
+      const spell = spellByKey.get(spellKey);
+      if (spell === undefined) {
+        context.addIssue({
+          code: 'custom',
+          path: ['characters', index, 'spellKeys', spellIndex],
+          message: `Unknown spell ${spellKey}`,
+        });
+        return;
+      }
+      if (
+        vocation !== undefined &&
+        !spell.allowedVocationFamilies.includes(vocation.familyKey)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['characters', index, 'spellKeys', spellIndex],
+          message: `Spell ${spellKey} does not allow vocation family ${vocation.familyKey}`,
+        });
+      }
+    });
+  });
 }
 
 export const CatalogContentBundleSchema = CatalogBundleBaseSchema.extend({
@@ -560,6 +705,7 @@ export const CatalogContentBundleSchema = CatalogBundleBaseSchema.extend({
   creatures: z.array(CatalogCreatureDefinitionSchema).readonly(),
   items: z.array(CatalogItemDefinitionSchema).readonly(),
   spells: z.array(CatalogSpellDefinitionSchema).readonly(),
+  characters: z.array(CharacterDefinitionSchema).readonly(),
 })
   .strict()
   .superRefine(addReferenceIssues);
@@ -570,6 +716,7 @@ export const RuntimeContentBundleSchema = RuntimeBundleBaseSchema.extend({
   creatures: z.array(CreatureDefinitionSchema).readonly(),
   items: z.array(ItemDefinitionSchema).readonly(),
   spells: z.array(SpellDefinitionSchema).readonly(),
+  characters: z.array(CharacterDefinitionSchema).readonly(),
 })
   .strict()
   .superRefine(addReferenceIssues);

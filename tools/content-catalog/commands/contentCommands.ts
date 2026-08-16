@@ -46,7 +46,8 @@ export function defaultContentCommandPaths(
 ): ContentCommandPaths {
   return {
     root,
-    snapshotRoot: join(root, 'references', 'canary'),
+    snapshotRoot:
+      process.env.HUNTBOUND_CANARY_SOURCE ?? join(root, 'references', 'canary'),
     selectionPath: join(
       root,
       'packages',

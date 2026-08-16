@@ -54,6 +54,7 @@ const bundle = {
   ],
   items: [],
   spells: [],
+  characters: [],
 } as unknown as CatalogContentBundle;
 
 describe('runtime content registry', () => {

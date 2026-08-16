@@ -2,26 +2,25 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução iniciada. **PB-05-01 integrada em `main`** por `git merge --ff-only`
-(`2f455d5..2933012`). `verify` pós-integração ficou vermelho em
-`tests/e2e/hunt-budget.spec.ts` (B5, orçamento ADR-001 pré-existente; a seleção não toca
-`apps/game`). Worktree e branch preservadas até B5 fechar. B3 e B4 continuam resolvidos.
+**Estado geral:** execução em andamento. **PB-05-02 commitada** na branch
+`grok/pb-05-02-import-spells-character` (integração `--ff-only` a seguir neste chat).
+PB-05-01 permanece em `main` (`2933012`). B5 continua aberto e não foi mascarado.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** freeze na `main` em `2933012` — spells irrestritas, ficha no level `8`
-da hunt, HP Canary `185`, mana loadout `185`. Fast-forward feito a pedido; `verify` integrado
-ainda vermelho em hunt-budget.
+**Atualização vigente:** catálogo curado com três spells e a ficha do Knight. Hash do
+bundle `b0b0a0b7a079ab12d89b323bce56f9c8e6d675dfd50967915c83c8ac8c77c770` (SHA-256 do
+arquivo real `packages/content/src/generated/pb-01-contract-coverage.json`). Fórmulas
+novas `skillAttackProduct` e `levelMagic` — `skillAttack` não foi reutilizado.
 
-**Próxima etapa:** PB-05-02 está elegível (a seleção congelada já está em `main`). B5 não
-bloqueia import de conteúdo. Não iniciar PB-05-02 neste chat.
+**Próxima etapa:** integrar PB-05-02 por `--ff-only` e, depois disso, PB-05-03.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
-| PB-05-02 | pending | `<agente>/pb05-02-import-spells-character` | — | bundle regenerado com três spells + ficha congelada; `content:check` exit 0 |
+| PB-05-02 | done | `grok/pb-05-02-import-spells-character` | — (ff a seguir) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
 | PB-05-03 | pending | `<agente>/pb05-03-combat-contracts` | — | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md` |
 | PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos |
 | PB-05-05 | pending | `<agente>/pb05-05-hunter-ai` | — | comportamento `hunter` com varredura de retomada verde |
@@ -35,17 +34,54 @@ bloqueia import de conteúdo. Não iniciar PB-05-02 neste chat.
 
 ## Última task concluída
 
-PB-05-01. Fast-forward em `main` para `2933012`. Worktree
-`C:\Kaezan\kaezan-huntbound-pb05-01-selection` e branch
-`grok/pb-05-01-vocation-spell-selection` preservadas porque o `verify` pós-integração
-ficou vermelho (B5).
+PB-05-02 (commit na worktree; ff na `main` a seguir). A ficha e as duas spells novas
+entraram no catálogo só por CLI. `skillAttack` não foi reutilizado.
 
 ## Próxima task elegível
 
-PB-05-02. A seleção congelada está em `main`. B5 é orçamento de browser pré-existente e
-não impede o import das spells.
+PB-05-03 depois do fast-forward de PB-05-02. Contratos de combate em
+`packages/contracts/src/simulation/**`. B5 não bloqueia.
 
 ## Verificações executadas
+
+PB-05-02, worktree `C:\Kaezan\kaezan-huntbound-pb05-02-import`, 2026-08-16.
+Snapshot via `HUNTBOUND_CANARY_SOURCE` apontando para
+`C:\Kaezan\kaezan-huntbound\references\canary` (não commitado). O CLI de catálogo
+passa a honrar essa variável; worktree irmã não copia `references/`.
+
+Hash do bundle **antes:** `d9df3338743365710fed991c185976b9dbbd59e6d5f9d43a679550db8fa154f3`  
+Hash do bundle **depois:** `b0b0a0b7a079ab12d89b323bce56f9c8e6d675dfd50967915c83c8ac8c77c770`  
+(SHA-256 do arquivo real; conferido com `Get-FileHash -Algorithm SHA256`.)
+
+`content:check` duas vezes seguidas, exit `0`, `git status --porcelain` idêntico entre
+elas. `import-canary --check` exit `0` (reimport byte-idêntico à operation versionada).
+Sidecars da hunt inalterados.
+
+| Comando | Exit |
+|---|---:|
+| `corepack pnpm exec biome check .` | `0` (384 files) |
+| `corepack pnpm --filter @huntbound/contracts test` | `0` (119 testes) |
+| `corepack pnpm --filter @huntbound/content test` | `0` (65 testes) |
+| `corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts` | `0` (53 testes) |
+| `corepack pnpm typecheck` | `0` |
+| `corepack pnpm architecture:check` | `0` |
+| `corepack pnpm content:check` (1ª) | `0` |
+| `corepack pnpm content:check` (2ª) | `0` |
+| `node tools/content-catalog/cli.ts import-canary --check` | `0` |
+| `corepack pnpm verify` | `1` em `qa:browser` |
+
+`verify` passou `format:check`, `assets:check`, `simulation:check`, `hunt:check`,
+`architecture:check`, `typecheck`, `test`, `build` e `content:check`. Falhou em
+`qa:browser` (2 specs):
+
+1. `tests/e2e/hunt-budget.spec.ts` — B5. `actionableMs` `4246.8` (teto `5000` ok),
+   `overBudget.length` `2` (teto `< 2`), tarefas `68,61` ms. Sem retry mascarado.
+2. `tests/e2e/hunt-mobile.spec.ts` — timeout de 15s em
+   `#shell-root[data-assets-ready="true"]` no teste de câmera. Os três testes
+   anteriores do mesmo arquivo passaram o mesmo `waitForHunt`. Esta task não toca
+   `apps/game` nem assets. Não reexecutado para pescar verde.
+
+Os outros 27 specs e2e passaram. Goldens de PB-03 e PB-04 byte-idênticos.
 
 PB-05-01, worktree `C:\Kaezan\kaezan-huntbound-pb05-01-selection`, 2026-08-16. Snapshot via
 `HUNTBOUND_CANARY_SOURCE` apontando para `C:\Kaezan\kaezan-huntbound\references\canary` (não
@@ -116,7 +152,27 @@ remeados aqui.
 | `exura ico` usa `CALLBACK_PARAM_LEVELMAGICVALUE`; schema fica para PB-05-02/03 | idem |
 | `exori ico` usa `skill * attack`, forma fora da allowlist `skillAttack`; schema em PB-05-02 | idem |
 
+## Decisões fechadas em PB-05-02
+
+| Decisão | Onde está documentada |
+|---|---|
+| Brutal Strike não cabe em `skillAttack`; kind novo `skillAttackProduct` (`skill * attack` + addends) | `docs/content/CANARY_LUA_MAPPING.md`; schema em `packages/contracts/src/content/schemas.ts` |
+| Wound Cleansing não cabe em `skillAttack`; kind novo `levelMagic` (`level` + `magicLevel`, cura positiva) | idem |
+| Ficha é conteúdo Huntbound (`character:huntbound:…`), não entidade Tibia | `CANARY_LUA_MAPPING.md`; `CharacterDefinitionSchema` |
+| `setArea` é opcional; spells sem área omitem o campo | parser + schema |
+| Forma de fórmula não reconhecida → `lua.invalid-formula`, nunca aceitação silenciosa | `parseSpellLua.ts` + testes |
+
 ## Modelo e effort
+
+- **Executor PB-05-02:** Grok 4.6 no Cursor, effort alto.
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `hunt-content-pipeline`,
+  `test-driven-development`, `verification-before-completion`.
+- **Validador:** ainda não; a auditoria do playbook é PB-05-12.
+- **Desvio de branch:** a task card pedia `codex/pb-05-02-import-spells-character`; a branch
+  efetiva é `grok/pb-05-02-import-spells-character` porque o executor é Grok. Worktree irmã
+  no path pedido.
+
+PB-05-01 (histórico):
 
 - **Executor:** Grok 4.6 no Cursor, effort alto.
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `test-driven-development`,
@@ -140,13 +196,13 @@ remeados aqui.
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
 
-- **B5 (aberto, não bloqueia PB-05-02):** `corepack pnpm verify` vermelho em `qa:browser` /
-  `hunt-budget.spec.ts` depois do ff em `main`. A seleção não toca `apps/game` nem assets.
-  Histórico: worktree (actionableMs 5051/5161; depois overBudget.length 2; isolado 14380 ms);
-  pós-ff em `main`: actionableMs 4467 ok, `overBudget.length` 8 contra teto `< 2`. Sem retry
-  mascarado, sem timeout inflado, sem asserção enfraquecida. Fast-forward feito a pedido.
-  Worktree e branch preservadas até este gate ficar verde; aí `git worktree prune` +
-  `git branch -d grok/pb-05-01-vocation-spell-selection`.
+- **B5 (aberto, não bloqueia PB-05-03):** `corepack pnpm verify` vermelho em `qa:browser`.
+  Esta task não toca `apps/game` nem assets. Na worktree de PB-05-02: hunt-budget
+  `overBudget.length` `2` contra teto `< 2` (`actionableMs` `4246.8` ok); hunt-mobile
+  (câmera) timeout de boot após três testes do mesmo arquivo terem passado. Sem retry
+  mascarado, sem timeout inflado, sem asserção enfraquecida. Histórico pós-ff de
+  PB-05-01 em `main`: hunt-budget `overBudget.length` `8`. Worktree e branch de
+  PB-05-01 preservadas até este gate ficar verde.
 
 ## Regra de atualização
 

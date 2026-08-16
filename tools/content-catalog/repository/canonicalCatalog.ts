@@ -222,6 +222,10 @@ function assertSliceClosure(bundle: CatalogContentBundle): void {
     if (entity.kind === 'vocation' || entity.kind === 'spell')
       reachable.add(entity.stableKey);
   }
+  for (const character of bundle.characters) {
+    add(character.weaponItemKey);
+    for (const spellKey of character.spellKeys) add(spellKey);
+  }
 
   if ([...dependencies].some((dependency) => !reachable.has(dependency))) {
     fail('slice contains an unreachable dependency');
@@ -349,7 +353,11 @@ export function canonicalizeCatalogBundle(
         vocationKeys: [...family.vocationKeys].sort(),
       }))
       .sort((left, right) => left.key.localeCompare(right.key)),
-    projectionAudits: [...bundle.projectionAudits],
+    projectionAudits: [...bundle.projectionAudits].sort((left, right) => {
+      const byEntity = left.entityKey.localeCompare(right.entityKey);
+      if (byEntity !== 0) return byEntity;
+      return left.rawReference.localeCompare(right.rawReference);
+    }),
     vocations: sortByKey(bundle.vocations).map((entity) => ({
       ...entity,
       includedFacets: sortFacets(entity.includedFacets),
@@ -397,6 +405,12 @@ export function canonicalizeCatalogBundle(
       ),
       allowedVocationFamilies: [...entity.allowedVocationFamilies].sort(),
     })),
+    characters: [...bundle.characters]
+      .map((character) => ({
+        ...character,
+        spellKeys: [...character.spellKeys],
+      }))
+      .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
   };
 }
 

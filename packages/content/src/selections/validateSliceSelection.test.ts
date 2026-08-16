@@ -22,6 +22,8 @@ function selectionFixture(): SelectionInput {
     roots: [
       'vocation:tibia:knight',
       'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
@@ -39,6 +41,18 @@ function selectionFixture(): SelectionInput {
         facets: ['identity', 'spell'],
         consumer: 'spell tests',
         rationale: 'spell fixture',
+      },
+      {
+        entityKey: 'spell:tibia:brutal-strike',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'brutal strike fixture',
+      },
+      {
+        entityKey: 'spell:tibia:wound-cleansing',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'wound cleansing fixture',
       },
       ...[
         'creature:tibia:rotworm',
@@ -65,6 +79,8 @@ function selectionFixture(): SelectionInput {
       'data/XML/vocations.xml',
       'data/items/items.xml',
       'data/scripts/spells/attack/berserk.lua',
+      'data/scripts/spells/attack/brutal_strike.lua',
+      'data/scripts/spells/healing/wound_cleansing.lua',
       'data-otservbr-global/monster/vermins/rotworm.lua',
       'data-otservbr-global/monster/humans/amazon.lua',
       'data-otservbr-global/monster/humanoids/orc_shaman.lua',
@@ -72,7 +88,7 @@ function selectionFixture(): SelectionInput {
     ],
     rootSourceIds: {
       vocation: ['4'],
-      spell: ['80'],
+      spell: ['80', '61', '123'],
       creature: ['26', '77', '6'],
     },
     projectionPolicy: {
@@ -90,17 +106,33 @@ function selectionFixture(): SelectionInput {
       aliases: [],
     },
     dependencySourceIds: { creature: ['28'] },
+    character: {
+      stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+      vocationKey: 'vocation:tibia:knight',
+      level: 8,
+      skills: { sword: 10, magic: 0 },
+      weaponItemKey: 'item:tibia:sword',
+      weaponSourceId: '3264',
+      weaponAttack: 14,
+      maxHealth: 185,
+      maxMana: 185,
+      spellKeys: [
+        'spell:tibia:berserk',
+        'spell:tibia:brutal-strike',
+        'spell:tibia:wound-cleansing',
+      ],
+    },
   };
 }
 
 describe('curated slice selection', () => {
-  it('accepts the frozen five-root selection and its dependency projection', () => {
+  it('accepts the frozen seven-root selection and its dependency projection', () => {
     expect(
       validateSliceSelection(asSliceDefinition(selectionFixture())),
     ).toEqual([]);
   });
 
-  it('rejects a root outside the frozen five-root set', () => {
+  it('rejects a root outside the frozen seven-root set', () => {
     const selection = selectionFixture();
     selection.roots.push('creature:tibia:snake');
 

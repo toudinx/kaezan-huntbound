@@ -486,13 +486,9 @@ export class SqliteContentCatalog
             (family) =>
               family.family_key as CatalogContentBundle['vocationFamilies'][number]['key'],
           ),
-          formula: {
-            kind: 'skillAttack' as const,
-            levelFactor: spell.level_factor as number,
-            minSkillAttackFactor: spell.min_skill_attack_factor as number,
-            maxSkillAttackFactor: spell.max_skill_attack_factor as number,
-            finalMultiplier: spell.final_multiplier as number,
-          },
+          formula: JSON.parse(
+            spell.formula_json as string,
+          ) as CatalogContentBundle['spells'][number]['formula'],
         };
       });
 
@@ -561,6 +557,7 @@ export class SqliteContentCatalog
       creatures,
       items,
       spells,
+      characters: this.readCharacters(sliceKey),
     } as unknown as CatalogContentBundle;
     return canonicalizeCatalogBundle(bundle);
   }
@@ -974,8 +971,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO spells
-           (slice_key, entity_guid, words, level, mana, cooldown_ms, group_cooldown_ms, damage_type, area_shape, area_radius_tiles, formula_kind, level_factor, min_skill_attack_factor, max_skill_attack_factor, final_multiplier)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           (slice_key, entity_guid, words, level, mana, cooldown_ms, group_cooldown_ms, damage_type, area_shape, area_radius_tiles, formula_kind, formula_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           bundle.slice.key,
@@ -989,10 +986,7 @@ export class SqliteContentCatalog
           spell.area?.shape ?? null,
           spell.area?.radiusTiles ?? null,
           spell.formula.kind,
-          spell.formula.levelFactor,
-          spell.formula.minSkillAttackFactor,
-          spell.formula.maxSkillAttackFactor,
-          spell.formula.finalMultiplier,
+          JSON.stringify(spell.formula),
         );
       for (const family of spell.allowedVocationFamilies) {
         this.database
@@ -1021,11 +1015,100 @@ export class SqliteContentCatalog
           audit.targetFamilyKey,
         );
     }
+    this.writeCharacters(bundle);
     this.cleanupUnreferencedRows();
+  }
+
+  private readCharacters(sliceKey: string): CatalogContentBundle['characters'] {
+    const rows = this.database
+      .prepare(
+        'SELECT * FROM characters WHERE slice_key = ? ORDER BY stable_key',
+      )
+      .all(sliceKey) as Array<{
+      readonly stable_key: string;
+      readonly vocation_key: string;
+      readonly level: number;
+      readonly weapon_item_key: string;
+      readonly weapon_attack: number;
+      readonly max_health: number;
+      readonly max_mana: number;
+    }>;
+    return rows.map((row) => {
+      const skills = Object.fromEntries(
+        (
+          this.database
+            .prepare(
+              'SELECT skill, value FROM character_skills WHERE slice_key = ? AND character_key = ? ORDER BY skill',
+            )
+            .all(sliceKey, row.stable_key) as Array<{
+            readonly skill: string;
+            readonly value: number;
+          }>
+        ).map((skill) => [skill.skill, skill.value]),
+      );
+      const spellKeys = (
+        this.database
+          .prepare(
+            'SELECT spell_key FROM character_spells WHERE slice_key = ? AND character_key = ? ORDER BY ordinal',
+          )
+          .all(sliceKey, row.stable_key) as Array<{
+          readonly spell_key: string;
+        }>
+      ).map((entry) => entry.spell_key);
+      return {
+        stableKey: row.stable_key,
+        vocationKey: row.vocation_key,
+        level: row.level,
+        skills: skills as CatalogContentBundle['characters'][number]['skills'],
+        weaponItemKey: row.weapon_item_key,
+        weaponAttack: row.weapon_attack,
+        maxHealth: row.max_health,
+        maxMana: row.max_mana,
+        spellKeys,
+      };
+    }) as CatalogContentBundle['characters'];
+  }
+
+  private writeCharacters(bundle: CatalogContentBundle): void {
+    for (const character of bundle.characters) {
+      this.database
+        .prepare(
+          `INSERT INTO characters
+           (slice_key, stable_key, vocation_key, level, weapon_item_key, weapon_attack, max_health, max_mana)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          bundle.slice.key,
+          character.stableKey,
+          character.vocationKey,
+          character.level,
+          character.weaponItemKey,
+          character.weaponAttack,
+          character.maxHealth,
+          character.maxMana,
+        );
+      for (const [skill, value] of Object.entries(character.skills)) {
+        this.database
+          .prepare(
+            'INSERT INTO character_skills (slice_key, character_key, skill, value) VALUES (?, ?, ?, ?)',
+          )
+          .run(bundle.slice.key, character.stableKey, skill, value);
+      }
+      for (const [ordinal, spellKey] of character.spellKeys.entries()) {
+        this.database
+          .prepare(
+            'INSERT INTO character_spells (slice_key, character_key, ordinal, spell_key) VALUES (?, ?, ?, ?)',
+          )
+          .run(bundle.slice.key, character.stableKey, ordinal, spellKey);
+      }
+    }
   }
 
   private deleteSlice(sliceKey: string): void {
     const statements = [
+      'DELETE FROM character_spells WHERE slice_key = ?',
+      'DELETE FROM character_skills WHERE slice_key = ?',
+      'DELETE FROM characters WHERE slice_key = ?',
       'DELETE FROM spell_source_vocation_refs WHERE slice_key = ?',
       'DELETE FROM spell_vocation_families WHERE slice_key = ?',
       'DELETE FROM spells WHERE slice_key = ?',

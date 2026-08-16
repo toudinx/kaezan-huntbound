@@ -73,12 +73,30 @@ export interface CanarySpellDto {
   readonly groupCooldownMs: number;
   readonly vocationNames: readonly string[];
   readonly damageType: string;
-  readonly area: { readonly shape: 'square'; readonly radius: number };
-  readonly formula: {
-    readonly kind: 'skillAttack';
-    readonly levelFactor: number;
-    readonly minSkillAttackFactor: number;
-    readonly maxSkillAttackFactor: number;
-    readonly finalMultiplier: number;
-  };
+  readonly area?: { readonly shape: 'square'; readonly radius: number };
+  readonly formula:
+    | {
+        readonly kind: 'skillAttack';
+        readonly levelFactor: number;
+        readonly minSkillAttackFactor: number;
+        readonly maxSkillAttackFactor: number;
+        readonly finalMultiplier: number;
+      }
+    | {
+        readonly kind: 'skillAttackProduct';
+        readonly levelFactor: number;
+        readonly minSkillAttackFactor: number;
+        readonly maxSkillAttackFactor: number;
+        readonly minAddend: number;
+        readonly maxAddend: number;
+        readonly finalMultiplier: number;
+      }
+    | {
+        readonly kind: 'levelMagic';
+        readonly levelFactor: number;
+        readonly minMagicFactor: number;
+        readonly maxMagicFactor: number;
+        readonly minAddend: number;
+        readonly maxAddend: number;
+      };
 }

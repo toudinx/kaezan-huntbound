@@ -3,7 +3,7 @@
 - Slice: fixture:pb-01-contract-coverage
 - Content version: pb-01-contract-coverage-v1
 - Snapshot: 157e6f9e21318bd3033eea553fe9275b429faf72
-- Roots: creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, vocation:tibia:knight
+- Roots: creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, vocation:tibia:knight
 - Dependencies: creature:tibia:snake, item:tibia:book, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:chain-armor, item:tibia:corncob, item:tibia:crystal-necklace, item:tibia:dagger, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:ham, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:lump-of-dirt, item:tibia:mace, item:tibia:meat, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:protective-charm, item:tibia:sabre, item:tibia:shamanic-hood, item:tibia:skull, item:tibia:small-ruby, item:tibia:spear, item:tibia:sword, item:tibia:torch, item:tibia:wand-of-decay, item:tibia:worm
 
 ## Entities
@@ -311,8 +311,8 @@
 - GUID: bf749ad4-7f98-5777-8b65-39a515150871
 - Display name: sword
 - Facets: identity, item
-- Consumer: creature contract tests
-- Rationale: Required by creature:tibia:rotworm loot
+- Consumer: frozen character sheet
+- Rationale: Required by character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3264 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -360,6 +360,28 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/attack/berserk.lua / 80 / 819b628608268aebea355be46a1d86e73c24bdf26d1299aa7d3e9af71d10f89f
 - Relations: vocation-family:huntbound:knight
 
+### spell:tibia:brutal-strike
+
+- Kind: spell
+- GUID: feedfed9-2e06-5521-98dd-fdb2512bc0e1
+- Display name: Brutal Strike
+- Facets: identity, spell
+- Consumer: knight combat contract tests
+- Rationale: The root covers the skill-attack-product formula and single-target knight strike.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/attack/brutal_strike.lua / 61 / 08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3
+- Relations: vocation-family:huntbound:knight
+
+### spell:tibia:wound-cleansing
+
+- Kind: spell
+- GUID: bdf37570-5158-55ec-a5f7-09f38afba8f6
+- Display name: Wound Cleansing
+- Facets: identity, spell
+- Consumer: knight combat contract tests
+- Rationale: The root covers the level-magic healing formula.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/healing/wound_cleansing.lua / 123 / e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b
+- Relations: vocation-family:huntbound:knight
+
 ### vocation:tibia:knight
 
 - Kind: vocation
@@ -370,3 +392,14 @@
 - Rationale: The root covers vocation family membership, gains, speed, and skill multipliers.
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/XML/vocations.xml / 4 / 693a179048d5d5c5af519459c8e542cd01013212af1cec88f7c8eb72634f4350
 - Relations: none
+
+## Characters
+
+### character:huntbound:knight-venore-rotworm-cave
+
+- Vocation: vocation:tibia:knight
+- Level: 8
+- Skills: magic 0, sword 10
+- Weapon: item:tibia:sword attack 14
+- Vitals: health 185, mana 185
+- Spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing

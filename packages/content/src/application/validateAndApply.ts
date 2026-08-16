@@ -191,6 +191,10 @@ function assertApplicationInvariants(bundle: CatalogContentBundle): void {
     }
     for (const vocation of bundle.vocations) reachable.add(vocation.stableKey);
     for (const spell of bundle.spells) reachable.add(spell.stableKey);
+    for (const character of bundle.characters) {
+      reachable.add(character.weaponItemKey);
+      for (const spellKey of character.spellKeys) reachable.add(spellKey);
+    }
   }
   for (const dependency of dependencies) {
     if (!reachable.has(dependency)) {

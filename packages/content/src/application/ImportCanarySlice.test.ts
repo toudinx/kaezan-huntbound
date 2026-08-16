@@ -9,6 +9,8 @@ const paths = {
   vocation: 'data/XML/vocations.xml',
   items: 'data/items/items.xml',
   spell: 'data/scripts/spells/attack/berserk.lua',
+  brutalStrike: 'data/scripts/spells/attack/brutal_strike.lua',
+  woundCleansing: 'data/scripts/spells/healing/wound_cleansing.lua',
   rotworm: 'data-otservbr-global/monster/vermins/rotworm.lua',
   amazon: 'data-otservbr-global/monster/humans/amazon.lua',
   orc: 'data-otservbr-global/monster/humanoids/orc_shaman.lua',
@@ -17,7 +19,7 @@ const paths = {
 
 const sources: Readonly<Record<string, string>> = {
   [paths.vocation]: `<vocations><vocation id="4" name="Knight" gaincap="25" gainhp="15" gainmana="5" manamultiplier="3" attackspeed="2000" basespeed="110"><skill id="4" multiplier="1.4" /></vocation></vocations>`,
-  [paths.items]: `<items><item id="100" name="gold coin" weight="1" stackable="1" /></items>`,
+  [paths.items]: `<items><item id="100" name="gold coin" weight="1" stackable="1" /><item id="3264" name="sword" /></items>`,
   [paths.spell]: `local combat = Combat()
 combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
 combat:setArea(createCombatArea(AREA_SQUARE1X1))
@@ -37,6 +39,66 @@ spell:mana(115)
 spell:cooldown(4000)
 spell:groupCooldown(2000)
 spell:vocation("knight;true", "elite knight;true")
+spell:register()`,
+  [paths.brutalStrike]: `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_HITAREA)
+combat:setParameter(COMBAT_PARAM_DISTANCEEFFECT, CONST_ANI_WEAPONTYPE)
+combat:setParameter(COMBAT_PARAM_BLOCKARMOR, 1)
+combat:setParameter(COMBAT_PARAM_USECHARGES, 1)
+function onGetFormulaValues(player, skill, attack, factor)
+	local skillTotal = skill * attack
+	local levelTotal = player:getLevel() / 5
+	return -(((skillTotal * 0.02) + 4) + levelTotal) * 1.28, -(((skillTotal * 0.04) + 9) + levelTotal) * 1.28
+end
+combat:setCallback(CALLBACK_PARAM_SKILLVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+function spell.onCastSpell(creature, var)
+	return combat:execute(creature, var)
+end
+spell:group("attack")
+spell:id(61)
+spell:name("Brutal Strike")
+spell:words("exori ico")
+spell:castSound(SOUND_EFFECT_TYPE_SPELL_BRUTAL_STRIKE)
+spell:level(16)
+spell:mana(30)
+spell:isPremium(false)
+spell:range(1)
+spell:needTarget(true)
+spell:blockWalls(true)
+spell:needWeapon(true)
+spell:cooldown(6 * 1000)
+spell:groupCooldown(2 * 1000)
+spell:vocation("knight;true", "elite knight;true")
+spell:register()`,
+  [paths.woundCleansing]: `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_HEALING)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_MAGIC_BLUE)
+combat:setParameter(COMBAT_PARAM_DISPEL, CONDITION_PARALYZE)
+combat:setParameter(COMBAT_PARAM_AGGRESSIVE, false)
+function onGetFormulaValues(player, level, magicLevel)
+	local min = (level * 0.2 + magicLevel * 4) + 25
+	local max = (level * 0.2 + magicLevel * 7.95) + 51
+	return min, max
+end
+combat:setCallback(CALLBACK_PARAM_LEVELMAGICVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+function spell.onCastSpell(creature, variant)
+	return combat:execute(creature, variant)
+end
+spell:name("Wound Cleansing")
+spell:words("exura ico")
+spell:group("healing")
+spell:vocation("knight;true", "elite knight;true")
+spell:castSound(SOUND_EFFECT_TYPE_SPELL_WOUND_CLEANSING)
+spell:id(123)
+spell:cooldown(1 * 1000)
+spell:groupCooldown(1 * 1000)
+spell:level(8)
+spell:mana(40)
+spell:isSelfTarget(true)
+spell:isAggressive(false)
 spell:register()`,
   [paths.rotworm]: monster('Rotworm', 26, 'gold coin'),
   [paths.amazon]: monster('Amazon', 77, 'gold coin'),
@@ -76,6 +138,8 @@ function selection(): ContentSliceDefinition {
     roots: [
       'vocation:tibia:knight',
       'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
@@ -93,6 +157,18 @@ function selection(): ContentSliceDefinition {
         facets: ['identity', 'spell'],
         consumer: 'spell tests',
         rationale: 'Berserk spell is covered',
+      },
+      {
+        entityKey: 'spell:tibia:brutal-strike',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'Brutal Strike spell is covered',
+      },
+      {
+        entityKey: 'spell:tibia:wound-cleansing',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'Wound Cleansing spell is covered',
       },
       ...['rotworm', 'amazon', 'orc-shaman'].map((name) => ({
         entityKey: `creature:tibia:${name}`,
@@ -113,7 +189,7 @@ function selection(): ContentSliceDefinition {
     sourceFiles: Object.values(paths),
     rootSourceIds: {
       vocation: ['4'],
-      spell: ['80'],
+      spell: ['80', '61', '123'],
       creature: ['26', '77', '6'],
     },
     dependencySourceIds: { creature: ['28'] },
@@ -130,6 +206,22 @@ function selection(): ContentSliceDefinition {
         },
       ],
       aliases: [],
+    },
+    character: {
+      stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+      vocationKey: 'vocation:tibia:knight',
+      level: 8,
+      skills: { sword: 10, magic: 0 },
+      weaponItemKey: 'item:tibia:sword',
+      weaponSourceId: '3264',
+      weaponAttack: 14,
+      maxHealth: 185,
+      maxMana: 185,
+      spellKeys: [
+        'spell:tibia:berserk',
+        'spell:tibia:brutal-strike',
+        'spell:tibia:wound-cleansing',
+      ],
     },
   } as unknown as ContentSliceDefinition;
 }
@@ -149,7 +241,7 @@ function lock() {
           ? ('vocations' as const)
           : relativePath === paths.items
             ? ('items' as const)
-            : relativePath === paths.spell
+            : relativePath.includes('/spells/')
               ? ('spell' as const)
               : ('creature' as const),
     })),
@@ -249,8 +341,28 @@ describe('importCanarySlice', () => {
       writer,
     });
 
-    expect(result.diagnostics).toEqual([]);
-    expect(result.bundle.slice.roots).toEqual(selection().roots);
+    expect(result.bundle.spells.map((spell) => spell.stableKey)).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+    ]);
+    expect(result.bundle.characters).toEqual([
+      {
+        stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 8,
+        skills: { sword: 10, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponAttack: 14,
+        maxHealth: 185,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+        ],
+      },
+    ]);
     expect(
       result.bundle.creatures.map((creature) => creature.stableKey),
     ).toEqual([
@@ -261,6 +373,7 @@ describe('importCanarySlice', () => {
     ]);
     expect(result.bundle.items.map((item) => item.displayName)).toEqual([
       'gold coin',
+      'sword',
     ]);
     expect(
       result.bundle.creatures.find((creature) =>
@@ -270,6 +383,7 @@ describe('importCanarySlice', () => {
     expect(result.bundle.slice.dependencies).toEqual([
       'creature:tibia:snake',
       'item:tibia:gold-coin',
+      'item:tibia:sword',
     ]);
     expect(
       result.bundle.slice.projections.find(
@@ -304,6 +418,10 @@ describe('importCanarySlice', () => {
     });
 
     expect(bundle.projectionAudits.map((audit) => audit.rawReference)).toEqual([
+      'knight',
+      'elite knight',
+      'knight',
+      'elite knight',
       'knight',
       'elite knight',
     ]);

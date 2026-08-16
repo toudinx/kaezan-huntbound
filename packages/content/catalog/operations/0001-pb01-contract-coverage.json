@@ -1,4 +1,24 @@
 {
+  "characters": [
+    {
+      "level": 8,
+      "maxHealth": 185,
+      "maxMana": 185,
+      "skills": {
+        "magic": 0,
+        "sword": 10
+      },
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing"
+      ],
+      "stableKey": "character:huntbound:knight-venore-rotworm-cave",
+      "vocationKey": "vocation:tibia:knight",
+      "weaponAttack": 14,
+      "weaponItemKey": "item:tibia:sword"
+    }
+  ],
   "contentVersion": "pb-01-contract-coverage-v1",
   "creatures": [
     {
@@ -941,13 +961,37 @@
   "projectionAudits": [
     {
       "entityKey": "spell:tibia:berserk",
-      "rawReference": "knight",
+      "rawReference": "elite knight",
       "relation": "allowed-vocation-family",
       "targetFamilyKey": "vocation-family:huntbound:knight"
     },
     {
       "entityKey": "spell:tibia:berserk",
+      "rawReference": "knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    },
+    {
+      "entityKey": "spell:tibia:brutal-strike",
       "rawReference": "elite knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    },
+    {
+      "entityKey": "spell:tibia:brutal-strike",
+      "rawReference": "knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    },
+    {
+      "entityKey": "spell:tibia:wound-cleansing",
+      "rawReference": "elite knight",
+      "relation": "allowed-vocation-family",
+      "targetFamilyKey": "vocation-family:huntbound:knight"
+    },
+    {
+      "entityKey": "spell:tibia:wound-cleansing",
+      "rawReference": "knight",
       "relation": "allowed-vocation-family",
       "targetFamilyKey": "vocation-family:huntbound:knight"
     }
@@ -1247,13 +1291,13 @@
         "rationale": "Required by creature:tibia:orc-shaman loot"
       },
       {
-        "consumer": "creature contract tests",
+        "consumer": "frozen character sheet",
         "entityKey": "item:tibia:sword",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:rotworm loot"
+        "rationale": "Required by character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",
@@ -1292,6 +1336,24 @@
         "rationale": "The root covers costs, cooldowns, area, formula, and vocation references."
       },
       {
+        "consumer": "knight combat contract tests",
+        "entityKey": "spell:tibia:brutal-strike",
+        "facets": [
+          "identity",
+          "spell"
+        ],
+        "rationale": "The root covers the skill-attack-product formula and single-target knight strike."
+      },
+      {
+        "consumer": "knight combat contract tests",
+        "entityKey": "spell:tibia:wound-cleansing",
+        "facets": [
+          "identity",
+          "spell"
+        ],
+        "rationale": "The root covers the level-magic healing formula."
+      },
+      {
         "consumer": "spell access and progression contract tests",
         "entityKey": "vocation:tibia:knight",
         "facets": [
@@ -1306,6 +1368,8 @@
       "creature:tibia:orc-shaman",
       "creature:tibia:rotworm",
       "spell:tibia:berserk",
+      "spell:tibia:brutal-strike",
+      "spell:tibia:wound-cleansing",
       "vocation:tibia:knight"
     ],
     "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
@@ -1316,7 +1380,9 @@
       "data-otservbr-global/monster/vermins/rotworm.lua",
       "data/XML/vocations.xml",
       "data/items/items.xml",
-      "data/scripts/spells/attack/berserk.lua"
+      "data/scripts/spells/attack/berserk.lua",
+      "data/scripts/spells/attack/brutal_strike.lua",
+      "data/scripts/spells/healing/wound_cleansing.lua"
     ]
   },
   "spells": [
@@ -1356,6 +1422,75 @@
       },
       "stableKey": "spell:tibia:berserk",
       "words": "exori"
+    },
+    {
+      "aliases": [],
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight"
+      ],
+      "cooldownMs": 6000,
+      "damageType": "physical",
+      "displayName": "Brutal Strike",
+      "formula": {
+        "finalMultiplier": 1.28,
+        "kind": "skillAttackProduct",
+        "levelFactor": 0.2,
+        "maxAddend": 9,
+        "maxSkillAttackFactor": 0.04,
+        "minAddend": 4,
+        "minSkillAttackFactor": 0.02
+      },
+      "groupCooldownMs": 2000,
+      "guid": "feedfed9-2e06-5521-98dd-fdb2512bc0e1",
+      "includedFacets": [
+        "identity",
+        "spell"
+      ],
+      "level": 16,
+      "mana": 30,
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "61",
+        "sourcePath": "data/scripts/spells/attack/brutal_strike.lua",
+        "sourceSha256": "08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3",
+        "system": "canary"
+      },
+      "stableKey": "spell:tibia:brutal-strike",
+      "words": "exori ico"
+    },
+    {
+      "aliases": [],
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight"
+      ],
+      "cooldownMs": 1000,
+      "damageType": "healing",
+      "displayName": "Wound Cleansing",
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.2,
+        "maxAddend": 51,
+        "maxMagicFactor": 7.95,
+        "minAddend": 25,
+        "minMagicFactor": 4
+      },
+      "groupCooldownMs": 1000,
+      "guid": "bdf37570-5158-55ec-a5f7-09f38afba8f6",
+      "includedFacets": [
+        "identity",
+        "spell"
+      ],
+      "level": 8,
+      "mana": 40,
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "123",
+        "sourcePath": "data/scripts/spells/healing/wound_cleansing.lua",
+        "sourceSha256": "e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b",
+        "system": "canary"
+      },
+      "stableKey": "spell:tibia:wound-cleansing",
+      "words": "exura ico"
     }
   ],
   "vocationFamilies": [

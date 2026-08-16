@@ -63,6 +63,7 @@ export function projectRuntimeBundle(
     creatures: bundle.creatures.map(withoutCatalogMetadata),
     items: bundle.items.map(withoutCatalogMetadata),
     spells: bundle.spells.map(withoutCatalogMetadata),
+    characters: bundle.characters,
   };
   return RuntimeContentBundleSchema.parse(runtime);
 }

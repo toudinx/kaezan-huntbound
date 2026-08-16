@@ -65,6 +65,72 @@ function diagnosticsOf<T>(result: {
   return result.ok ? [] : (result.diagnostics ?? []);
 }
 
+const brutalStrikeFixture = `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_HITAREA)
+combat:setParameter(COMBAT_PARAM_DISTANCEEFFECT, CONST_ANI_WEAPONTYPE)
+combat:setParameter(COMBAT_PARAM_BLOCKARMOR, 1)
+combat:setParameter(COMBAT_PARAM_USECHARGES, 1)
+
+function onGetFormulaValues(player, skill, attack, factor)
+	local skillTotal = skill * attack
+	local levelTotal = player:getLevel() / 5
+	return -(((skillTotal * 0.02) + 4) + levelTotal) * 1.28, -(((skillTotal * 0.04) + 9) + levelTotal) * 1.28
+end
+
+combat:setCallback(CALLBACK_PARAM_SKILLVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+function spell.onCastSpell(creature, var)
+	return combat:execute(creature, var)
+end
+spell:group("attack")
+spell:id(61)
+spell:name("Brutal Strike")
+spell:words("exori ico")
+spell:castSound(SOUND_EFFECT_TYPE_SPELL_BRUTAL_STRIKE)
+spell:level(16)
+spell:mana(30)
+spell:isPremium(false)
+spell:range(1)
+spell:needTarget(true)
+spell:blockWalls(true)
+spell:needWeapon(true)
+spell:cooldown(6 * 1000)
+spell:groupCooldown(2 * 1000)
+spell:vocation("knight;true", "elite knight;true")
+spell:register()`;
+
+const woundCleansingFixture = `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_HEALING)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_MAGIC_BLUE)
+combat:setParameter(COMBAT_PARAM_DISPEL, CONDITION_PARALYZE)
+combat:setParameter(COMBAT_PARAM_AGGRESSIVE, false)
+
+function onGetFormulaValues(player, level, magicLevel)
+	local min = (level * 0.2 + magicLevel * 4) + 25
+	local max = (level * 0.2 + magicLevel * 7.95) + 51
+	return min, max
+end
+
+combat:setCallback(CALLBACK_PARAM_LEVELMAGICVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+function spell.onCastSpell(creature, variant)
+	return combat:execute(creature, variant)
+end
+spell:name("Wound Cleansing")
+spell:words("exura ico")
+spell:group("healing")
+spell:vocation("knight;true", "elite knight;true")
+spell:castSound(SOUND_EFFECT_TYPE_SPELL_WOUND_CLEANSING)
+spell:id(123)
+spell:cooldown(1 * 1000)
+spell:groupCooldown(1 * 1000)
+spell:level(8)
+spell:mana(40)
+spell:isSelfTarget(true)
+spell:isAggressive(false)
+spell:register()`;
+
 describe('parseCanarySpellLua', () => {
   it('maps Berserk metadata, area, vocations and declarative formula', () => {
     const result = parseCanarySpellLua(fixture);
@@ -178,5 +244,75 @@ describe('parseCanarySpellLua', () => {
 
   it('keeps Lua adapters outside the runtime entrypoint', () => {
     expect(runtimeContent).not.toHaveProperty('parseCanarySpellLua');
+  });
+
+  it('maps Brutal Strike words, costs, vocations and skillAttackProduct formula', () => {
+    const result = parseCanarySpellLua(brutalStrikeFixture);
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        sourceId: '61',
+        displayName: 'Brutal Strike',
+        words: 'exori ico',
+        level: 16,
+        mana: 30,
+        cooldownMs: 6000,
+        groupCooldownMs: 2000,
+        vocationNames: ['knight', 'elite knight'],
+        damageType: 'physical',
+        formula: {
+          kind: 'skillAttackProduct',
+          levelFactor: 0.2,
+          minSkillAttackFactor: 0.02,
+          maxSkillAttackFactor: 0.04,
+          minAddend: 4,
+          maxAddend: 9,
+          finalMultiplier: 1.28,
+        },
+      },
+    });
+  });
+
+  it('maps Wound Cleansing words, costs, vocations and levelMagic formula', () => {
+    const result = parseCanarySpellLua(woundCleansingFixture);
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        sourceId: '123',
+        displayName: 'Wound Cleansing',
+        words: 'exura ico',
+        level: 8,
+        mana: 40,
+        cooldownMs: 1000,
+        groupCooldownMs: 1000,
+        vocationNames: ['knight', 'elite knight'],
+        damageType: 'healing',
+        formula: {
+          kind: 'levelMagic',
+          levelFactor: 0.2,
+          minMagicFactor: 4,
+          maxMagicFactor: 7.95,
+          minAddend: 25,
+          maxAddend: 51,
+        },
+      },
+    });
+  });
+
+  it('diagnoses an unrecognized onGetFormulaValues shape instead of accepting it', () => {
+    const unrecognized = woundCleansingFixture.replace(
+      'local min = (level * 0.2 + magicLevel * 4) + 25',
+      'local min = (level * 0.2 + magicLevel * 4) * 25',
+    );
+    const result = parseCanarySpellLua(unrecognized);
+
+    expect(result.ok).toBe(false);
+    expect(diagnosticsOf(result)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'lua.invalid-formula' }),
+      ]),
+    );
   });
 });
