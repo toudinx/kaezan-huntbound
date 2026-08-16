@@ -2,23 +2,20 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-07 implementada** na branch
-`grok/pb-05-07-content-to-combat`. `buildHuntScenario` compõe combate a partir
-do catálogo. Os quatro artefatos gerados da hunt permaneceram byte-idênticos.
-O kernel opera em `schemaVersion` 4 / `rulesVersion` 3. B5 (hunt-budget) segue
-aberto.
+**Estado geral:** execução em andamento. **PB-05-08 bloqueada** (B6): a sessão
+congelada de 900 ticks sobre o cenário composto da hunt não consegue emitir
+`combat/target-changed` nem `actor/spawned` de respawn de assento. B5
+(hunt-budget) segue aberto e não é este bloqueio.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** `buildHuntScenario(hunt, character, registry, seed)`
-devolve `HuntScenarioBuild` com `scenario`, `itemKeys` e `abilityKeys`. Vida,
-dano, `attackCooldownTicks` e `stepCooldownTicks` saem da estatística pela
-conversão congelada em `PB-05-SELECTION.md`. As três spells viram habilidades
-com `minPower`/`maxPower` inteiros iguais aos congelados. Loot preserva chance
-e contagem com `itemIndex` estável.
+**Atualização vigente:** o compositor em `tools/replay/generatePb05CombatFixture.ts`
+prova que golpe, as três habilidades, recusa de combate, morte e loot saem da
+hunt real. Os dois eventos que faltam exigem mudar decisão congelada — fora de
+escopo desta task.
 
-**Próxima etapa:** PB-05-08 (fixture e gate de combate). B5 permanece aberto e
-não bloqueia a fixture.
+**Próxima etapa:** decidir B6 antes de retomar PB-05-08. PB-05-09 (assets) é
+paralela após PB-05-01 e não depende da fixture.
 
 ## Tasks
 
@@ -31,7 +28,7 @@ não bloqueia a fixture.
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
-| PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
+| PB-05-08 | blocked (B6) | `grok/pb-05-08-combat-fixture` | — | sessão real cobre 10/12 eventos; faltam `target-changed` (aggro 0) e respawn de assento (1800 ticks > 900) |
 | PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
 | PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
@@ -42,6 +39,80 @@ não bloqueia a fixture.
 PB-05-07. Branch `grok/pb-05-07-content-to-combat` a partir de `main`
 (`5762fa4`). Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-07-content`.
 Fast-forward para `main` autorizado pela task card.
+
+## Handoff PB-05-08 — 2026-08-16
+
+**Status:** bloqueada (B6). Sem golden, sem `combat:check`, sem registro no
+contrato de replay. A task card manda parar se a sessão não exercitar os
+eventos exigidos sem alterar regra.
+
+**Base:** `main` em `ecbc25cf2e7fa021f263525391e7ea5da914b85a`.
+
+**Branch/worktree:** `grok/pb-05-08-combat-fixture`; worktree irmã
+`C:\Kaezan\kaezan-huntbound-pb05-08-fixture`.
+
+**Modelo/effort:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+
+**Desvio de branch:** a task card pedia `codex/pb-05-08-combat-fixture`; a
+branch efetiva usa o prefixo `grok/` porque o executor é Grok. Worktree irmã
+no path pedido.
+
+**O que a sessão real já cobre** (compositor em
+`tools/replay/generatePb05CombatFixture.ts`, seed `2c3d4e5f60718293`, 900
+ticks, cenário de `buildHuntScenario` sem alteração):
+
+| Evento | Presente |
+|---|---|
+| `combat/attacked` | sim |
+| `combat/damaged` `cause: attack` | sim |
+| `combat/damaged` `cause: ability` | sim |
+| `combat/healed` (Wound Cleansing) | sim |
+| `ability/cast` das três habilidades | sim |
+| `command/rejected` de combate | sim |
+| `actor/died` | sim (ticks `219` e `619`) |
+| `loot/granted` | sim |
+| `combat/target-changed` | **não** |
+| `actor/spawned` de respawn de assento | **não** |
+
+**Menor reprodutor de `combat/target-changed`:** `hunter.test.ts` já congela
+`never acquires a target when aggroRadius is 0`. O blueprint `rotworm`
+composto por PB-05-07 tem `aggroRadius` `0` (`MAP_REGION_CONTRACT.md`). O
+kernel recusa aquisição quando o raio é `0`
+(`packages/simulation/src/kernel/kernel.ts`, `isAcquirableTarget`). Sem
+aquisição não há `combat/target-changed` e as criaturas não golpeiam o
+jogador (o "dano recebido" da sessão congelada também não ocorre).
+
+**Menor reprodutor de respawn de assento:** todos os 12 slots da hunt têm
+`respawnTicks` `1800`. Mortes em `219` e `619` libertam o assento em
+`2019` e `2419`. A sessão termina no tick `900`. O `actor/spawned` do tick
+`219` é a entidade `13` em `(17,22,9)` — assento diferido que nasceu quando
+o cap `maxLiveActors` `12` (jogador conta) caiu; não é o assento da morte em
+`(14,9,8)`.
+
+**Decisão pendente (escolher, não é desta task):**
+
+1. Importar `targetDistance`/`flags` do snapshot e deixar de forçar
+   `aggroRadius` `0` na composição — muda tradução de conteúdo (PB-05-07).
+2. Subir `tickCount` da fixture para `>= 2419`, ou aceitar que respawn de
+   assento de 90 s não cabe em 900 ticks — muda parâmetro congelado da spec
+   PB-05 / desta task card.
+
+Inventar raio no `scenario.json` da fixture, encurtar `respawnTicks` à mão
+ou alterar o kernel para fazer a cobertura passar é conserto de passagem.
+Não feito.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `node --experimental-transform-types tools/replay/generatePb05CombatFixture.ts` | `0` | cobertura acima; `rotwormAggroRadius` `0`; `respawnTicks` `[1800]` |
+| teste de cobertura em `tools/replay` (não commitado) | `1` | vermelho só em `targetChanged` e `respawnAfterDeath` |
+
+Sem golden escrito. Sem `combat:check`. Goldens de PB-03/PB-04 não foram
+tocados.
+
+**Próxima ação:** devolver B6. PB-05-09 pode seguir em paralelo (depende só
+de PB-05-01). Não retomar PB-05-08 sem a decisão.
 
 ## Handoff PB-05-07 — 2026-08-16
 
@@ -180,7 +251,9 @@ skip, timeout aumentado ou ajuste de golden.
 
 ## Próxima task elegível
 
-PB-05-08. B5 permanece aberto e não bloqueia a fixture de combate.
+PB-05-09 (assets de combate) — paralela após PB-05-01, não depende da
+fixture. PB-05-08 permanece bloqueada em B6. B5 permanece aberto e não é
+este bloqueio.
 
 ## Verificações executadas
 
@@ -476,6 +549,13 @@ remeados aqui.
 
 ## Modelo e effort
 
+- **Executor PB-05-08:** Grok 4.6 no Cursor, effort alto (`xhigh`). Task
+  bloqueada em B6; sem golden e sem gate.
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`,
+  `test-driven-development`, `verification-before-completion`.
+- **Desvio de branch:** a task card pedia `codex/pb-05-08-combat-fixture`; a
+  branch efetiva é `grok/pb-05-08-combat-fixture`.
+
 - **Executor PB-05-07:** Grok 4.6 no Cursor, effort alto (`xhigh`).
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`, `hunt-content-pipeline`,
   `test-driven-development`, `verification-before-completion`.
@@ -542,6 +622,12 @@ PB-05-01 (histórico):
   era impossível (a branch tinha divergido); o merge commit integrou `AGENTS.md`, `CLAUDE.md`,
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
+
+- **B6 (bloqueante de PB-05-08):** a fixture `pb-05-hunt-combat` (900 ticks)
+  sobre o cenário composto da hunt não emite `combat/target-changed` nem
+  respawn de assento. Causa: `aggroRadius` `0` (PB-05-07, catálogo sem
+  `targetDistance`) e `respawnTicks` `1800` em todos os slots. Evidência no
+  handoff PB-05-08. Não consertado aqui.
 
 - **B5 (historicamente aberto; reproduziu em PB-05-05):** `qa:browser` /
   hunt-budget já foi vermelho em PB-05-01 (`overBudget.length` `8`) e PB-05-02
