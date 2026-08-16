@@ -3,17 +3,21 @@
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
 **Estado geral:** execução em andamento. **PB-05-05 concluída na branch
-`grok/pb-05-05-hunter-ai`.** O kernel opera em `schemaVersion` 4 / `rulesVersion`
-3. `S6` decide `hunter` (manutenção, aquisição Chebyshev, passo guloso, golpe)
-e preserva o consumo de `ai` dos cenários sem `hunter`.
+`grok/pb-05-05-hunter-ai`; PB-05-06 implementada localmente, mas bloqueada para
+integração pelo QA browser de baseline.** O kernel opera em `schemaVersion` 4 /
+`rulesVersion` 3. `S6` decide `hunter` (manutenção, aquisição Chebyshev, passo
+guloso, golpe) e preserva o consumo de `ai` dos cenários sem `hunter`.
 
 **Última atualização:** 2026-08-16
 
 **Atualização vigente:** criaturas `hunter` agridem, perseguem e golpeiam em
 `S6`. Aquisição e perseguição não consomem aleatoriedade; sem alvo o hunter cai
-em `wander` com um `nextBelow(8)`. Loot (`loot/granted`) fica para PB-05-06.
+em `wander` com um `nextBelow(8)`. PB-05-06 rola loot em `S5` pelo stream
+`loot` e projeta a bolsa fora do kernel; a integração aguarda a resolução do
+gate browser preexistente.
 
-**Próxima etapa:** PB-05-06. Loot e autoloot.
+**Próxima etapa:** concluir a verificação/integrar PB-05-06; só depois iniciar
+PB-05-07.
 
 ## Tasks
 
@@ -24,7 +28,7 @@ em `wander` com um `nextBelow(8)`. Loot (`loot/granted`) fica para PB-05-06.
 | PB-05-03 | done | `grok/pb-05-03-combat-contracts` | `6cec836` (neste fast-forward) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
 | PB-05-04 | done | `grok/pb-05-04-kernel-combat` | `188a61a` | kernel v4; journals golden byte-idênticos |
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
-| PB-05-06 | pending | `<agente>/pb05-06-loot-autoloot` | — | `loot/granted` determinístico + projeção da bolsa fora do kernel |
+| PB-05-06 | blocked (local) | `codex/pb-05-06-loot-autoloot` | `87ef9c5` (não integrado) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | pending | `<agente>/pb05-07-content-to-combat` | — | `buildHuntScenario` com combate; quatro artefatos da hunt inalterados |
 | PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
 | PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
@@ -38,10 +42,57 @@ PB-05-05. Branch `grok/pb-05-05-hunter-ai` a partir de `main` (`188a61a`).
 Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-05-hunter`. Fast-forward para
 `main` autorizado pela task card.
 
+## Handoff PB-05-06 — 2026-08-16
+
+**Status:** implementação local concluída em `87ef9c5927fdd94cc0d3306f931c6de6067653fb`,
+mas a task não foi integrada nem a worktree removida porque `verify` não fechou.
+
+**Base:** `main` em `6f36641cd0809df83d33884c053afadf6490ff8d`.
+
+**Branch/worktree:** `codex/pb-05-06-loot-autoloot` em
+`C:\Kaezan\kaezan-huntbound-pb05-06-loot`.
+
+**Modelo/effort:** GPT-5 Codex; o effort interno não é exposto pelo runtime.
+
+**Entrega:** `S5` percorre tabelas na ordem declarada pelo stream `loot`, usa
+comparação estritamente menor, não sorteia contagem fixa, emite `loot/granted`
+depois de `actor/died`, e não rola para morte sem matador, sem tabela ou do
+blueprint `player`. `projectRunBag` em `@huntbound/content` agrega por
+`itemKey`, é incremental, ordenada e falha explicitamente para índice inválido.
+Nenhum campo novo entrou no snapshot e nenhum golden foi alterado.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot exec biome check .` | `0` | 392 arquivos |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot --filter @huntbound/simulation test` | `0` | 212 testes |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot --filter @huntbound/content test` | `0` | 68 testes |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot typecheck` | `0` | todos os 7 projetos |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot architecture:check` | `0` | fronteiras verdes |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot content:check` | `0` | sidecars e catálogo verdes |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot assets:check` | `0` | packs/profile verdes |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot simulation:check` | `0` | PB-03 byte-idêntico |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot hunt:check` | `0` | PB-04 e respawn byte-idênticos |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot build` | `0` | build de produção |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot test` | `0` | agregado do workspace verde |
+| `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot verify` | `124` | timeout em 244 s; QA browser não fechou |
+
+**Bloqueio reproduzido:** com build fresco, `asset-pack.spec.ts` passou; `boot-budget.spec.ts`
+falhou com `actionableMs = 5235.6` (`<= 5000`); `hunt-budget.spec.ts` falhou com
+`actionableMs = 4895.2`, mas `longTasksOverBudget = 147` (`< 2`). O problema é
+pré-existente e fora do escopo: PB-05-05 já registrava `hunt-budget` vermelho,
+e esta task não altera `apps/game`, Playwright ou performance. Não aplicar retry,
+skip, timeout aumentado ou ajuste de golden.
+
+**Próxima ação:** resolver o gate browser de baseline, rerodar `verify` na
+worktree, então fazer `merge --ff-only` para `main`, verificar novamente e só
+depois liberar PB-05-07. Não iniciar a próxima task.
+
 ## Próxima task elegível
 
-PB-05-06. Loot e autoloot. Parte de `main` depois deste fast-forward. Não
-implementar aqui.
+PB-05-06 permanece pendente de integração por causa do bloqueio acima. PB-05-07
+só fica elegível após o fast-forward e o `verify` verde.
 
 ## Verificações executadas
 
