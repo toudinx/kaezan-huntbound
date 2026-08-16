@@ -195,10 +195,10 @@ Registradas porque atingiram uma vez por task no PB-03:
 - [ ] Toda criatura da tabela de spawn existe no catálogo PB-01.
 - [ ] `serverId == clientId` está provado para todos os IDs da região.
 - [ ] A tabela de flags é gerada do snapshot, versionada e reprodutível byte a byte.
-- [ ] Reextrair a região do mesmo snapshot produz JSON byte-idêntico. **Desatualizado (W14):** desde
-      PB-04-FIX-01 a geometria jogável é autorada pelo recipe versionado e materializada
-      deterministicamente; o envelope OTBM virou fonte de spawn e de material. `PB-04-FIX-04`
-      reconcilia este critério.
+- [ ] Materializar o recipe versionado duas vezes produz JSON byte-idêntico. A geometria jogável é
+      autorada por `packages/content/src/layouts/hunts/venore-rotworm-cave.json` e compilada
+      deterministicamente; o envelope OTBM é fonte de spawn e de material, não de geometria.
+      ~~Reextrair a região do mesmo snapshot produz JSON byte-idêntico.~~
 - [ ] Nenhuma transição necessária foi derrubada; a contagem bate com a seleção.
 - [ ] O kernel resolve andares, transições e spawn sem conhecer Tibia, asset ou path.
 - [ ] `events.golden.jsonl` do fixture PB-03 permaneceu byte-idêntico após o bump de schema.

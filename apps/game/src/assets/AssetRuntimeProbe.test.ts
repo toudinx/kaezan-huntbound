@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { createAssetKey } from '../../../../packages/assets/src/index.ts';
-
-import type { AssetRuntime, AssetRuntimeSnapshot } from './createAssetRuntime';
 import { installAssetRuntimeProbe } from './AssetRuntimeProbe';
+import type { AssetRuntime, AssetRuntimeSnapshot } from './createAssetRuntime';
 
 function makeSnapshot(
   state: AssetRuntimeSnapshot['state'],

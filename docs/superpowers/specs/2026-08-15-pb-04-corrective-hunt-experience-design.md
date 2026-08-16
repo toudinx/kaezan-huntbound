@@ -179,7 +179,9 @@ uma vez, mesmo que o controle seja liberado antes da abertura do próximo tick. 
 continuam podendo armar uma nova intenção.
 
 A repetição de hold é level-triggered somente depois da borda inicial e usa o limiar congelado
-`HOLD_REPEAT_DELAY_TICKS = 2`, equivalente a `100 ms` com o tick atual. O `InputMap` mede a
+`HOLD_REPEAT_DELAY_TICKS = 2`. O atraso conta **aberturas do `inputGate`** depois da borda, não o
+tempo de parede desde o `keydown`/`pointerdown`: duas leituras no mesmo tick não avançam o
+contador, e o tempo de espera pela próxima abertura não vira repetição. O `InputMap` mede a
 duração real do hold para que saltos do relógio lógico ou frames atrasados não transformem um
 toque curto em repetição: aberturas do `inputGate` antes do limiar não produzem ação. Quando o
 limiar é alcançado, a repetição engata e cada abertura fica limitada a no máximo uma intenção

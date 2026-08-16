@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  AssetProviderError,
-  createAssetKey,
   type AssetKey,
   type AssetProvider,
+  AssetProviderError,
+  createAssetKey,
   type ResolvedAsset,
 } from '../../../../packages/assets/src/index.ts';
 

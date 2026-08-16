@@ -11,6 +11,8 @@ export default defineConfig({
     },
   },
   test: {
+    // Integration tests that read the canary snapshot skip when it is absent;
+    // see resolveCanarySourceRoot in application/ContentCatalogApplication.test.ts.
     include: ['tools/content-catalog/**/*.test.ts'],
     pool: 'forks',
   },

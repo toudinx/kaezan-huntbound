@@ -23,13 +23,13 @@ import {
 import { installAssetRuntimeProbe } from './assets/AssetRuntimeProbe';
 import { createAssetRuntime } from './assets/createAssetRuntime';
 import { createSceneBridge } from './bridge/SceneBridge';
+import { createHuntRuntime } from './hunt/huntRuntime';
 import { createSimulationHost, installKernelProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
 import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
 import type { ShellSnapshot } from './runtime/ShellSnapshot';
 import { createViewportController } from './runtime/ViewportController';
-import { createHuntRuntime } from './hunt/huntRuntime';
 import { mountAppShell } from './ui/AppShell';
 
 interface ShellHmrData {

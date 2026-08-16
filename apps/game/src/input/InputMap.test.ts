@@ -154,6 +154,130 @@ describe('InputMap', () => {
     expect(input.drain()).toEqual([]);
   });
 
+  it('starts the hold delay after the edge is consumed, not at pointerdown', () => {
+    const clock = createTestClock();
+    const input = createInputMap({ now: clock.now });
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDown('s');
+    clock.advance(TICK_DURATION_MS);
+    expect(input.drain()).toEqual([{ kind: 'step', direction: 's' }]);
+
+    clock.advance(TICK_DURATION_MS);
+    expect(input.drain()).toEqual([]);
+
+    target.pointerUp('s');
+    clock.advance(TICK_DURATION_MS * 2);
+    expect(input.drain()).toEqual([]);
+  });
+
+  it('starts the hold delay after the keyboard edge is consumed, not at keydown', () => {
+    const clock = createTestClock();
+    const input = createInputMap({ now: clock.now });
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('KeyS');
+    clock.advance(TICK_DURATION_MS);
+    expect(input.drain()).toEqual([{ kind: 'step', direction: 's' }]);
+
+    clock.advance(TICK_DURATION_MS);
+    expect(input.drain()).toEqual([]);
+
+    target.keyUp('KeyS');
+    clock.advance(TICK_DURATION_MS * 2);
+    expect(input.drain()).toEqual([]);
+  });
+
+  it('repeats a D-pad hold only after two later input-gate ticks', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDown('s');
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+    expect(input.drain(10)).toEqual([]);
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([{ kind: 'step', direction: 's' }]);
+    expect(input.drain(13)).toEqual([{ kind: 'step', direction: 's' }]);
+
+    target.pointerUp('s');
+    expect(input.drain(14)).toEqual([]);
+  });
+
+  it('releases a D-pad hold when pointerup arrives on the owner window', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDown('s');
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+
+    target.inputWindow.dispatchEvent(new Event('pointerup'));
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([]);
+    expect(input.drain(13)).toEqual([]);
+  });
+
+  it('releases a keyboard hold when keyup arrives on the owner window', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('KeyS');
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+
+    target.inputWindow.dispatchEvent(
+      Object.assign(new Event('keyup'), { code: 'KeyS' }),
+    );
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([]);
+    expect(input.drain(13)).toEqual([]);
+  });
+
+  it('ignores a keyboard auto-repeat after the key was released', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('KeyS');
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+    target.keyUp('KeyS');
+
+    target.dispatchEvent(
+      Object.assign(new Event('keydown'), { code: 'KeyS', repeat: true }),
+    );
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([]);
+    expect(input.drain(13)).toEqual([]);
+  });
+
+  it('stops a hold without dropping a pending edge that has not been drained', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('KeyS');
+    input.releaseHeld();
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([]);
+  });
+
+  it('stops a D-pad hold after the edge was consumed', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDown('s');
+    expect(input.drain(10)).toEqual([{ kind: 'step', direction: 's' }]);
+    input.releaseHeld();
+    expect(input.drain(11)).toEqual([]);
+    expect(input.drain(12)).toEqual([]);
+    expect(input.drain(13)).toEqual([]);
+  });
+
   it('clears held input when the owner window blurs', () => {
     const input = createInputMap();
     const target = new TestInputTarget();

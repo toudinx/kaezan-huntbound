@@ -76,7 +76,7 @@ test('loads, unloads, and reloads the five browser asset contract keys', async (
   page.on('requestfailed', (request) => failedRequests.push(request.url()));
   page.on('response', (response) => {
     if (response.status() >= 400) {
-      badResponses.push(response.url() + ' (' + response.status() + ')');
+      badResponses.push(`${response.url()} (${response.status()})`);
     }
   });
   page.on('request', (request) => {

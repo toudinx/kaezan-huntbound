@@ -9,13 +9,13 @@ import type {
   MapRegion,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
-import {
-  groundCompositionStats,
-  resolveGroundSample,
-  type GroundCompositionStats,
-} from './GroundCompositor';
 import type { ActorMotionSegment } from './ActorMotion';
 import { createActorMotion } from './ActorMotion';
+import {
+  type GroundCompositionStats,
+  groundCompositionStats,
+  resolveGroundSample,
+} from './GroundCompositor';
 
 export type HuntDrawLayer =
   | 'ground'

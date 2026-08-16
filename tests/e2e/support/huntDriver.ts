@@ -155,6 +155,56 @@ export async function stepWithKeyboard(
   return endStep(page, before);
 }
 
+/**
+ * Releases the held key or pointer from inside the page clock after `durationMs`.
+ * `page.waitForTimeout` plus the Playwright round-trip can outlive two later
+ * input-gate ticks and turn a short tap into a hold.
+ */
+async function releaseHeldInputAfter(
+  page: Page,
+  durationMs: number,
+  release:
+    | { readonly kind: 'keyboard'; readonly code: StepKey }
+    | { readonly kind: 'pointer'; readonly selector: string },
+): Promise<void> {
+  await page.evaluate(
+    async ({ durationMs: holdMs, release: held }) => {
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, holdMs);
+      });
+      const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+      probe?.releaseHeld?.();
+      if (held.kind === 'keyboard') {
+        const keyup = () =>
+          new KeyboardEvent('keyup', {
+            code: held.code,
+            key: held.code,
+            bubbles: true,
+            cancelable: true,
+          });
+        window.dispatchEvent(keyup());
+        document.body.dispatchEvent(keyup());
+        return;
+      }
+      const pointerup = () =>
+        new PointerEvent('pointerup', {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+        });
+      window.dispatchEvent(pointerup());
+      document.body.dispatchEvent(pointerup());
+    },
+    { durationMs, release },
+  );
+}
+
+async function endHeldInput(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe?.releaseHeld?.();
+  });
+}
+
 /** Holds a direction for less than the player's 2-tick step duration. */
 export async function holdKeyboardFor(
   page: Page,
@@ -168,12 +218,33 @@ export async function holdKeyboardFor(
     throw new Error(probeErrorMessage);
   }
 
-  await page.keyboard.down(key);
-  try {
-    await page.waitForTimeout(durationMs);
-  } finally {
-    await page.keyboard.up(key);
-  }
+  // Press and release in one page turn so a queued CDP keydown cannot arm a
+  // hold after the tap already ended.
+  await page.evaluate(
+    async ({ code, holdMs }) => {
+      const keydown = new KeyboardEvent('keydown', {
+        code,
+        key: code,
+        bubbles: true,
+        cancelable: true,
+      });
+      document.body.dispatchEvent(keydown);
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, holdMs);
+      });
+      (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe?.releaseHeld?.();
+      const keyup = () =>
+        new KeyboardEvent('keyup', {
+          code,
+          key: code,
+          bubbles: true,
+          cancelable: true,
+        });
+      window.dispatchEvent(keyup());
+      document.body.dispatchEvent(keyup());
+    },
+    { code: key, holdMs: durationMs },
+  );
 
   await waitForPlayerAnswer(page, playerEntityId);
   return endStep(page, before);
@@ -242,9 +313,13 @@ export async function tapDpadFor(
   await page.mouse.move(x, y);
   await page.mouse.down();
   try {
-    await page.waitForTimeout(durationMs);
+    await releaseHeldInputAfter(page, durationMs, {
+      kind: 'pointer',
+      selector: `[data-testid="hunt-dpad"] [data-hunt-direction="${direction}"]`,
+    });
   } finally {
     await page.mouse.up();
+    await endHeldInput(page);
   }
 
   await waitForPlayerAnswer(page, playerEntityId);

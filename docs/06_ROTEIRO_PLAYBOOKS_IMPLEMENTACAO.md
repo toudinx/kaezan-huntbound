@@ -218,7 +218,9 @@ tools/{tile-flags,map-extractor}/
 apps/game/src/{hunt,input}/
 ```
 
-O gate deve provar que a região reextraída é byte-idêntica, que a sessão da hunt reproduz o mesmo
+O gate deve provar que materializar o recipe versionado duas vezes produz JSON byte-idêntico
+(a geometria jogável é autorada e compilada deterministicamente; o envelope OTBM é fonte de spawn
+e de material, não de geometria), que a sessão da hunt reproduz o mesmo
 SHA-256 em Node e no browser, que a retomada converge em todas as fronteiras, que o journal golden do
 PB-03 permaneceu byte-idêntico após o bump de schema, e que a hunt é jogável nos quatro viewports
 obrigatórios.

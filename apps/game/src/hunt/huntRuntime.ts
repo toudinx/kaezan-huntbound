@@ -1,11 +1,11 @@
 import {
-  createAssetRuntime,
-  type AssetRuntime,
-} from '../assets/createAssetRuntime';
-import {
-  getHuntAssetCatalogUrl,
   type AppAssetProfile,
+  getHuntAssetCatalogUrl,
 } from '../assets/AssetProfile';
+import {
+  type AssetRuntime,
+  createAssetRuntime,
+} from '../assets/createAssetRuntime';
 
 export function createHuntRuntime(
   profile: AppAssetProfile,

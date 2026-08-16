@@ -9,11 +9,11 @@ export default defineConfig({
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
   ],
-  retries: 1,
+  retries: 0,
   use: {
     baseURL: 'http://127.0.0.1:4173',
     browserName: 'chromium',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
   webServer: {
