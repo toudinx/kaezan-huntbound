@@ -24,7 +24,7 @@ integrar o conjunto em `main`.
 |---|---|---|---|---|
 | PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
 | PB-05-02 | done | `grok/pb-05-02-import-spells-character` | `f1e8dab` (ff `624dac7..f1e8dab`) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
-| PB-05-03 | done (branch preservada) | `grok/pb-05-03-combat-contracts` | — (não integrada; ver handoff) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
+| PB-05-03 | done (branch preservada) | `grok/pb-05-03-combat-contracts` | `6cec836` (não em `main`) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
 | PB-05-04 | pending | `<agente>/pb05-04-kernel-combat` | — | kernel v4; journals golden de PB-03 e PB-04 byte-idênticos; **integra esta branch + a de 04** |
 | PB-05-05 | pending | `<agente>/pb05-05-hunter-ai` | — | comportamento `hunter` com varredura de retomada verde |
 | PB-05-06 | pending | `<agente>/pb05-06-loot-autoloot` | — | `loot/granted` determinístico + projeção da bolsa fora do kernel |
@@ -37,10 +37,11 @@ integrar o conjunto em `main`.
 
 ## Última task concluída
 
-PB-05-03. Branch `grok/pb-05-03-combat-contracts` **preservada**. Worktree irmã
-`C:\Kaezan\kaezan-huntbound-pb05-03-contracts` removida após o commit. **Não**
-houve fast-forward para `main`: o corte 03/04 deixa o gate agregado vermelho
-por composição (contrato v4, kernel v3), não por defeito mascarado.
+PB-05-03. Branch `grok/pb-05-03-combat-contracts` **preservada** em `6cec836`.
+Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-03-contracts` removida após o
+commit. **Não** houve fast-forward para `main`: o corte 03/04 deixa o gate
+agregado vermelho por composição (contrato v4, kernel v3), não por defeito
+mascarado.
 
 ## Próxima task elegível
 
