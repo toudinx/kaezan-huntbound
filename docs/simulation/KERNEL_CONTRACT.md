@@ -146,8 +146,7 @@ monotônica global na execução.
 `cause` é `'attack'` ou `'ability'`. `actor/died` exige `position` — é ela que ancora corpo, sangue e
 o arco de autoloot na apresentação. `killerEntityId` é `null` quando não há matador identificável.
 `ability/cast` e `combat/target-changed` aceitam `targetEntityId` nulo. O kernel emite os eventos de
-combate, cura, conjuração e morte; `loot/granted` e `combat/target-changed` ficam para PB-05-06 e
-PB-05-05.
+combate, cura, conjuração, morte e troca de alvo; `loot/granted` fica para PB-05-06.
 
 As causas de bloqueio são `bounds`, `terrain`, `occupied`, `diagonal-corner`, `cooldown` e
 `transition-blocked`. As razões de `spawn/deferred` são `no-free-cell` e `cap-reached`.
@@ -495,8 +494,8 @@ Justificativa das fases:
 - **S5 death** remove quem chegou a `health <= 0` e emite `actor/died` com a posição. Vir antes de
   `S6` impede a IA de mirar um morto; vir antes de `S7` libera célula e assento de spawn no mesmo
   tick. A rolagem de `loot/granted` fica para PB-05-06.
-- **S6 ai** decide para `currentTick + 1`, como em PB-03. Continua conhecendo só `wander`; `hunter`
-  chega em PB-05-05.
+- **S6 ai** decide para `currentTick + 1`, como em PB-03. Ator `wander` continua idêntico; ator
+  `hunter` mantém alvo, adquire, persegue ou golpeia, e cai em `wander` quando não tem alvo.
 - **S7 spawn** continua por último, pelas duas razões já congeladas em PB-04: o nascimento do tick
   `T` só pode ser observado a partir de `T`, e ele nunca disputa célula com um passo do mesmo tick —
   uma célula liberada por `S2` ou por `S5` já pode receber um nascimento no mesmo tick, e o
@@ -587,13 +586,32 @@ posição e libera o assento de spawn com `readyAtTick = tickDaMorte + respawnTi
 assento e simplesmente sai do mundo — o kernel não o respawna. `EntityId` nunca é reaproveitado.
 `loot/granted` não é emitido nesta versão.
 
-`S6 ai` percorre os atores com `behavior: 'wander'` em ordem crescente de `EntityId` e decide
-somente para quem está fora de cooldown no tick corrente. A decisão consome exatamente um
-`nextBelow(8)` do stream `ai` e indexa a ordem canônica de direções; um bloqueio não gera nova
-tentativa no mesmo tick. A intent resultante é enfileirada para `currentTick + 1` e nunca para o
-tick corrente. Ator `inert` jamais consome o stream `ai`, portanto acrescentar ou remover atores
-inertes não altera as decisões de wander; remover um ator `wander` altera as decisões seguintes de
-forma determinística, porque muda o consumo do stream. `hunter` ainda não decide.
+`S6 ai` percorre os atores em ordem crescente de `EntityId`. Ator `inert` é ignorado e jamais
+consome o stream `ai`. Ator `wander` decide somente fora de cooldown (`currentTick >= readyAtTick`):
+a decisão consome exatamente um `nextBelow(8)` do stream `ai` e indexa a ordem canônica de direções;
+um bloqueio não gera nova tentativa no mesmo tick. A intent resultante é enfileirada para
+`currentTick + 1` e nunca para o tick corrente. Remover um ator `wander` altera as decisões
+seguintes de forma determinística, porque muda o consumo do stream. Acrescentar ou remover atores
+`inert` não altera as decisões de wander. Um cenário sem nenhum ator `hunter` consome o stream `ai`
+exatamente como em PB-03.
+
+Ator `hunter` no mesmo laço:
+
+1. **manutenção de alvo:** descarta o alvo atual se ele morreu, mudou de andar, saiu do raio de
+   agressão Chebyshev ou se `aggroRadius` é `0`. Alvo morto é limpo mesmo com o hunter em cooldown,
+   porque `targetEntityId` no snapshot só pode nomear ator vivo. Qualquer mudança emite
+   `combat/target-changed` (`targetEntityId` nulo quando o alvo cai).
+2. **aquisição:** fora de cooldown e sem alvo, escolhe o ator vivo de facção diferente, no mesmo
+   andar, dentro do raio, com menor distância Chebyshev; empate resolve pelo menor `EntityId`.
+   `aggroRadius = 0` nunca adquire. A aquisição **não** consome aleatoriedade.
+3. **ação:** fora de cooldown, alvo adjacente (Chebyshev `<= 1`, mesmo andar) enfileira intent
+   interna de ataque para `currentTick + 1`; alvo mais distante enfileira um único passo guloso, com
+   a direção dada pelo sinal de `dx` e `dy` na ordem canônica. Perseguição não consome
+   aleatoriedade, não contorna parede e não retenta no mesmo tick: passo bloqueado só emite
+   `actor/move-blocked`. O golpe interno resolve em `S4` no tick seguinte, respeitando
+   `attackReadyAtTick`; alvo ausente na resolução não emite `command/rejected`.
+4. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
+   `nextBelow(8)` do stream `ai`.
 
 Comandos internos gerados por `S6` usam uma fila interna própria, ordenada por `EntityId`. Eles não
 entram no command log e não consomem `sequence` de comando externo.

@@ -2,6 +2,7 @@ export {
   chebyshevDistance,
   DIRECTIONS,
   directionDelta,
+  greedyStepDirection,
   isDiagonal,
   stepCostTicks,
   translate,

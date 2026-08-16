@@ -22,9 +22,11 @@ import {
 } from '../commands/commandBuffer.ts';
 import { createEventJournal } from '../events/journal.ts';
 import {
+  chebyshevDistance,
   createOccupancyIndex,
   createStaticGrid,
   DIRECTIONS,
+  greedyStepDirection,
   resolveStep,
   translate,
 } from '../grid/index.ts';
@@ -195,6 +197,59 @@ export function createSimulationKernel(
   const wanders = (actor: ActorState): boolean =>
     blueprints.get(actor.blueprintId)?.behavior === 'wander';
 
+  const hunts = (actor: ActorState): boolean =>
+    blueprints.get(actor.blueprintId)?.behavior === 'hunter';
+
+  const isAcquirableTarget = (
+    hunter: ActorState,
+    candidate: ActorState,
+    aggroRadius: number,
+    hunterFactionId: number,
+  ): boolean => {
+    if (aggroRadius === 0 || candidate.entityId === hunter.entityId) {
+      return false;
+    }
+    if (candidate.position.z !== hunter.position.z) {
+      return false;
+    }
+    const candidateBlueprint = blueprints.get(candidate.blueprintId);
+    if (
+      candidateBlueprint === undefined ||
+      candidateBlueprint.factionId === hunterFactionId
+    ) {
+      return false;
+    }
+    return (
+      chebyshevDistance(hunter.position, candidate.position) <= aggroRadius
+    );
+  };
+
+  const acquireTarget = (
+    hunter: ActorState,
+    aggroRadius: number,
+    hunterFactionId: number,
+  ): EntityId | null => {
+    let bestId: EntityId | null = null;
+    let bestDistance = 0;
+    for (const candidate of world.actors()) {
+      if (
+        !isAcquirableTarget(hunter, candidate, aggroRadius, hunterFactionId)
+      ) {
+        continue;
+      }
+      const distance = chebyshevDistance(hunter.position, candidate.position);
+      if (
+        bestId === null ||
+        distance < bestDistance ||
+        (distance === bestDistance && candidate.entityId < bestId)
+      ) {
+        bestId = candidate.entityId;
+        bestDistance = distance;
+      }
+    }
+    return bestId;
+  };
+
   const internalIntents = new Map<number, InternalIntent[]>();
   let internalOrder = 0;
 
@@ -230,6 +285,14 @@ export function createSimulationKernel(
     });
     internalOrder += 1;
     internalIntents.set(tick, queued);
+  };
+
+  const queueWander = (entityId: EntityId, tick: number): void => {
+    const direction = DIRECTIONS[streams.ai.nextBelow(DIRECTIONS.length)];
+    if (direction === undefined) {
+      return;
+    }
+    queueInternalIntent(tick, entityId, direction);
   };
 
   for (const intent of restore?.pendingIntents ?? []) {
@@ -510,16 +573,80 @@ export function createSimulationKernel(
     const runAi = (): void => {
       const nextTick = currentTick + 1;
       for (const actor of world.actors()) {
+        if (hunts(actor)) {
+          const blueprint = blueprints.get(actor.blueprintId);
+          if (blueprint === undefined) {
+            continue;
+          }
+          const previousTarget = actor.targetEntityId;
+          let targetId = previousTarget;
+          if (targetId !== null) {
+            const currentTarget = world.actor(targetId);
+            if (
+              currentTarget === undefined ||
+              !isAcquirableTarget(
+                actor,
+                currentTarget,
+                blueprint.aggroRadius,
+                blueprint.factionId,
+              )
+            ) {
+              targetId = null;
+            }
+          }
+
+          const canDecide = currentTick >= actor.readyAtTick;
+          if (targetId === null && canDecide) {
+            targetId = acquireTarget(
+              actor,
+              blueprint.aggroRadius,
+              blueprint.factionId,
+            );
+          }
+
+          if (targetId !== previousTarget) {
+            world.update({ ...actor, targetEntityId: targetId });
+            journal.emit(currentTick, {
+              type: 'combat/target-changed',
+              entityId: actor.entityId,
+              targetEntityId: targetId,
+            });
+          }
+
+          if (!canDecide) {
+            continue;
+          }
+          if (targetId === null) {
+            queueWander(actor.entityId, nextTick);
+            continue;
+          }
+
+          const target = world.actor(targetId);
+          if (target === undefined) {
+            continue;
+          }
+          if (
+            actor.position.z === target.position.z &&
+            chebyshevDistance(actor.position, target.position) <= 1
+          ) {
+            queueInternalAttack(nextTick, actor.entityId, targetId);
+            continue;
+          }
+          const direction = greedyStepDirection(
+            actor.position,
+            target.position,
+          );
+          if (direction !== undefined) {
+            queueInternalIntent(nextTick, actor.entityId, direction);
+          }
+          continue;
+        }
+
         if (!wanders(actor) || currentTick < actor.readyAtTick) {
           continue;
         }
 
-        const direction = DIRECTIONS[streams.ai.nextBelow(DIRECTIONS.length)];
-        if (direction === undefined) {
-          continue;
-        }
-
-        queueInternalIntent(nextTick, actor.entityId, direction);
+        queueWander(actor.entityId, nextTick);
       }
     };
 

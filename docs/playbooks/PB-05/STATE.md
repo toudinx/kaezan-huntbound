@@ -2,20 +2,18 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-03 e PB-05-04 concluídas na
-branch `grok/pb-05-04-kernel-combat` (descende de `grok/pb-05-03-combat-contracts`).**
-O kernel opera em `schemaVersion` 4 / `rulesVersion` 3. A integração em `main`
-é o fast-forward desta branch, que carrega os dois commits de contratos mais o
-de combate.
+**Estado geral:** execução em andamento. **PB-05-05 concluída na branch
+`grok/pb-05-05-hunter-ai`.** O kernel opera em `schemaVersion` 4 / `rulesVersion`
+3. `S6` decide `hunter` (manutenção, aquisição Chebyshev, passo guloso, golpe)
+e preserva o consumo de `ai` dos cenários sem `hunter`.
 
 **Última atualização:** 2026-08-16
 
-**Atualização vigente:** o kernel resolve `S3 upkeep`, `S4 combat` (golpe e
-conjuração) e a morte de `S5`. Streams `combat` e `loot` são observáveis e não
-deslocam `ai`/`movement`/`scenario`/`spawn`. Loot (`loot/granted`) fica para
-PB-05-06; `hunter` para PB-05-05.
+**Atualização vigente:** criaturas `hunter` agridem, perseguem e golpeiam em
+`S6`. Aquisição e perseguição não consomem aleatoriedade; sem alvo o hunter cai
+em `wander` com um `nextBelow(8)`. Loot (`loot/granted`) fica para PB-05-06.
 
-**Próxima etapa:** PB-05-05. Comportamento `hunter`.
+**Próxima etapa:** PB-05-06. Loot e autoloot.
 
 ## Tasks
 
@@ -24,8 +22,8 @@ PB-05-06; `hunter` para PB-05-05.
 | PB-05-01 | done | `grok/pb-05-01-vocation-spell-selection` | `2933012` (ff `2f455d5..2933012`) | `docs/content/PB-05-SELECTION.md` + CLI `check-combat` exit 0; `verify` pós-ff ainda vermelho em hunt-budget (B5) |
 | PB-05-02 | done | `grok/pb-05-02-import-spells-character` | `f1e8dab` (ff `624dac7..f1e8dab`) | bundle com 3 spells + ficha; hash `b0b0a0b7…c77c770`; `content:check` 0×2 |
 | PB-05-03 | done | `grok/pb-05-03-combat-contracts` | `6cec836` (neste fast-forward) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
-| PB-05-04 | done | `grok/pb-05-04-kernel-combat` | este commit | kernel v4; journals golden byte-idênticos; `verify` 0×2 |
-| PB-05-05 | pending | `<agente>/pb05-05-hunter-ai` | — | comportamento `hunter` com varredura de retomada verde |
+| PB-05-04 | done | `grok/pb-05-04-kernel-combat` | `188a61a` | kernel v4; journals golden byte-idênticos |
+| PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
 | PB-05-06 | pending | `<agente>/pb05-06-loot-autoloot` | — | `loot/granted` determinístico + projeção da bolsa fora do kernel |
 | PB-05-07 | pending | `<agente>/pb05-07-content-to-combat` | — | `buildHuntScenario` com combate; quatro artefatos da hunt inalterados |
 | PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
@@ -36,17 +34,48 @@ PB-05-06; `hunter` para PB-05-05.
 
 ## Última task concluída
 
-PB-05-04. Branch `grok/pb-05-04-kernel-combat` a partir de
-`grok/pb-05-03-combat-contracts` (`93b8517`). Worktree irmã
-`C:\Kaezan\kaezan-huntbound-pb05-04-kernel`. Fast-forward para `main` autorizado
-pela task card.
+PB-05-05. Branch `grok/pb-05-05-hunter-ai` a partir de `main` (`188a61a`).
+Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-05-hunter`. Fast-forward para
+`main` autorizado pela task card.
 
 ## Próxima task elegível
 
-PB-05-05. IA `hunter`. Parte de `main` depois deste fast-forward. Não implementar
-aqui.
+PB-05-06. Loot e autoloot. Parte de `main` depois deste fast-forward. Não
+implementar aqui.
 
 ## Verificações executadas
+
+PB-05-05, worktree `C:\Kaezan\kaezan-huntbound-pb05-05-hunter`, 2026-08-16.
+Base da branch = `188a61a` (`main` / PB-05-04).
+
+Journals byte-idênticos (`git diff --stat` vazio nos três `events.golden.jsonl`):
+
+| Fixture | events SHA-256 (inalterado) |
+|---|---|
+| pb03 | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
+| pb04 | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
+| pb04-respawn | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
+
+Dois wanderers, 9 ticks, sem `hunter`: 4 movimentos (nw, se, s, sw) e
+`ai.drawCount` `4`. Hunter sozinho sem alvo: stream `ai` idêntico ao wanderer
+na mesma célula. Varredura de restauração (16 fronteiras) com perseguição, troca
+de alvo e golpe por IA: journal e snapshot final idênticos.
+
+| Comando | Exit |
+|---|---:|
+| `corepack pnpm exec biome check .` | `0` (388 files) |
+| `corepack pnpm --filter @huntbound/simulation test` | `0` (203 testes; 183 pré-existentes + 20 em `hunter.test.ts`) |
+| `corepack pnpm typecheck` | `0` |
+| `corepack pnpm architecture:check` | `0` |
+| `corepack pnpm simulation:check` | `0` |
+| `corepack pnpm hunt:check` | `0` |
+| `corepack pnpm verify` | `1` em `qa:browser` / `hunt-budget.spec.ts` |
+
+`verify` passou `format:check`, `assets:check`, `simulation:check`, `hunt:check`,
+`architecture:check`, `typecheck`, `test`, `build` e `content:check`. Falhou em
+`tests/e2e/hunt-budget.spec.ts`: `actionableMs` `4328.7` (teto `5000` ok),
+`overBudget.length` `2` (teto `< 2`), tarefas `71,55` ms. Os outros 28 specs e2e
+passaram. Sem retry mascarado. Esta task não toca `apps/game`; é B5 reproduzido.
 
 PB-05-04, worktree `C:\Kaezan\kaezan-huntbound-pb05-04-kernel`, 2026-08-16.
 Base da branch = `93b8517` (`grok/pb-05-03-combat-contracts`). Snapshot via
@@ -230,6 +259,15 @@ Pós-integração em `C:\Kaezan\kaezan-huntbound` (`main` = `2933012`), 2026-08-
 Fatos de baseline da autoria (commit `420b6fb`, 2026-08-15) permanecem válidos e não foram
 remeados aqui.
 
+## Decisões fechadas em PB-05-05
+
+| Decisão | Onde está documentada |
+|---|---|
+| `hunter` em S6: manutenção, aquisição Chebyshev no mesmo andar com empate por menor `EntityId`, passo guloso, golpe adjacente, fallback `wander` | `KERNEL_CONTRACT.md`, seção Sistemas / S6 |
+| Aquisição e perseguição não consomem o stream `ai`; sem alvo consome um `nextBelow(8)` | `KERNEL_CONTRACT.md`; `hunter.test.ts` |
+| Alvo morto é limpo mesmo com o hunter em cooldown, porque o snapshot recusa `targetEntityId` de ator morto | `KERNEL_CONTRACT.md`; schema v4 já exigia alvo vivo |
+| `greedyStepDirection` mapeia o sinal de `dx`/`dy` na ordem canônica | `packages/simulation/src/grid/directions.ts` |
+
 ## Decisões fechadas em PB-05-04
 
 | Decisão | Onde está documentada |
@@ -289,6 +327,14 @@ remeados aqui.
 
 ## Modelo e effort
 
+- **Executor PB-05-05:** Grok 4.6 no Cursor, effort alto (`xhigh`).
+- **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`,
+  `test-driven-development`, `verification-before-completion`.
+- **Validador:** ainda não; a auditoria do playbook é PB-05-12.
+- **Desvio de branch:** a task card pedia `codex/pb-05-05-hunter-ai`; a branch
+  efetiva é `grok/pb-05-05-hunter-ai` porque o executor é Grok. Worktree irmã
+  no path pedido.
+
 - **Executor PB-05-04:** Grok 4.6 no Cursor, effort alto (`xhigh`).
 - **Skills:** `playbook-task`, `worktree-cycle`, `run-gates`,
   `test-driven-development`, `verification-before-completion`.
@@ -340,12 +386,12 @@ PB-05-01 (histórico):
   `.cursor/rules`, `.cursor/skills` e o motor de hooks. `docs/08_POLITICA_MODELOS_AGENTES.md` com
   Grok 4.6 está em `main`.
 
-- **B5 (historicamente aberto; não reproduziu em PB-05-04):** `qa:browser` /
+- **B5 (historicamente aberto; reproduziu em PB-05-05):** `qa:browser` /
   hunt-budget já foi vermelho em PB-05-01 (`overBudget.length` `8`) e PB-05-02
-  (`2`). Nas duas execuções de `verify` desta task, hunt-budget passou com
-  `overBudget.length` `1` (teto `< 2`) e os 29 specs e2e passaram. Sem retry
-  mascarado. Não se declara B5 fechado: a instabilidade anterior continua no
-  histórico.
+  (`2`). Em PB-05-04 passou com `1`. Em PB-05-05 falhou com `overBudget.length`
+  `2` (teto `< 2`), tarefas `71,55` ms, `actionableMs` `4328.7`. Sem retry
+  mascarado. Esta task não toca `apps/game` nem o renderer; o kernel `hunter`
+  não entra na hunt jogável até PB-05-07. Não se declara B5 fechado.
 
 ## Regra de atualização
 

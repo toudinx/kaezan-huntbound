@@ -61,3 +61,21 @@ export function chebyshevDistance(
   const dy = left.y < right.y ? right.y - left.y : left.y - right.y;
   return dx < dy ? dy : dx;
 }
+
+export function greedyStepDirection(
+  from: GridPosition,
+  to: GridPosition,
+): Direction | undefined {
+  const dx = from.x < to.x ? 1 : from.x > to.x ? -1 : 0;
+  const dy = from.y < to.y ? 1 : from.y > to.y ? -1 : 0;
+  if (dx === 0 && dy === 0) {
+    return undefined;
+  }
+  for (const direction of DIRECTIONS) {
+    const delta = directionDelta(direction);
+    if (delta.dx === dx && delta.dy === dy) {
+      return direction;
+    }
+  }
+  return undefined;
+}
