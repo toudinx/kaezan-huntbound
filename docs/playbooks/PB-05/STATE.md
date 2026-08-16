@@ -3,8 +3,8 @@
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
 **Estado geral:** execução em andamento. **PB-05-05 concluída na branch
-`grok/pb-05-05-hunter-ai`; PB-05-06 implementada localmente, mas bloqueada para
-integração pelo QA browser de baseline.** O kernel opera em `schemaVersion` 4 /
+`grok/pb-05-05-hunter-ai`; PB-05-06 implementada e integrada em `main`, mas
+bloqueada para aceite pelo QA browser de baseline.** O kernel opera em `schemaVersion` 4 /
 `rulesVersion` 3. `S6` decide `hunter` (manutenção, aquisição Chebyshev, passo
 guloso, golpe) e preserva o consumo de `ai` dos cenários sem `hunter`.
 
@@ -13,11 +13,11 @@ guloso, golpe) e preserva o consumo de `ai` dos cenários sem `hunter`.
 **Atualização vigente:** criaturas `hunter` agridem, perseguem e golpeiam em
 `S6`. Aquisição e perseguição não consomem aleatoriedade; sem alvo o hunter cai
 em `wander` com um `nextBelow(8)`. PB-05-06 rola loot em `S5` pelo stream
-`loot` e projeta a bolsa fora do kernel; a integração aguarda a resolução do
-gate browser preexistente.
+`loot` e projeta a bolsa fora do kernel; o fast-forward foi aplicado, mas o
+`verify` pós-integração continua bloqueado pelo gate browser preexistente.
 
-**Próxima etapa:** concluir a verificação/integrar PB-05-06; só depois iniciar
-PB-05-07.
+**Próxima etapa:** resolver o gate browser de baseline e concluir a verificação
+em `main`; só depois iniciar PB-05-07.
 
 ## Tasks
 
@@ -28,7 +28,7 @@ PB-05-07.
 | PB-05-03 | done | `grok/pb-05-03-combat-contracts` | `6cec836` (neste fast-forward) | `packages/contracts/src/simulation/**` v4 + `KERNEL_CONTRACT.md`; 148 testes de contracts |
 | PB-05-04 | done | `grok/pb-05-04-kernel-combat` | `188a61a` | kernel v4; journals golden byte-idênticos |
 | PB-05-05 | done | `grok/pb-05-05-hunter-ai` | este commit | `hunter` em S6; 20 testes novos; journals PB-03/PB-04 byte-idênticos; `verify` 1 em B5 |
-| PB-05-06 | blocked (local) | `codex/pb-05-06-loot-autoloot` | `87ef9c5` (não integrado) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
+| PB-05-06 | blocked (QA browser) | `codex/pb-05-06-loot-autoloot` | `2f5d07c` (ff `6f36641..2f5d07c`) | `loot/granted` determinístico + projeção da bolsa fora do kernel; gates de código verdes, QA browser B5 vermelho |
 | PB-05-07 | pending | `<agente>/pb05-07-content-to-combat` | — | `buildHuntScenario` com combate; quatro artefatos da hunt inalterados |
 | PB-05-08 | pending | `<agente>/pb05-08-combat-fixture` | — | `packages/test-fixtures/hunt/pb05/**` + `combat:check` + registro no contrato de replay |
 | PB-05-09 | pending | `<agente>/pb05-09-combat-assets` | — | pack com efeitos, corpo e sangue; `assets:check` exit 0 |
@@ -44,13 +44,16 @@ Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-05-hunter`. Fast-forward para
 
 ## Handoff PB-05-06 — 2026-08-16
 
-**Status:** implementação local concluída em `87ef9c5927fdd94cc0d3306f931c6de6067653fb`,
-mas a task não foi integrada nem a worktree removida porque `verify` não fechou.
+**Status:** implementação concluída em `87ef9c5927fdd94cc0d3306f931c6de6067653fb`,
+com handoff documental em `2f5d07c304b2abb977d9f86b499b371cf04e5ae7`; integrada
+em `main` por fast-forward `6f36641..2f5d07c`. O `verify` pós-integração não
+fechou; a worktree foi removida e a branch foi preservada para diagnóstico.
 
 **Base:** `main` em `6f36641cd0809df83d33884c053afadf6490ff8d`.
 
-**Branch/worktree:** `codex/pb-05-06-loot-autoloot` em
-`C:\Kaezan\kaezan-huntbound-pb05-06-loot`.
+**Branch/worktree:** a branch `codex/pb-05-06-loot-autoloot` permanece em
+`2f5d07c`, sem worktree associada; `C:\Kaezan\kaezan-huntbound-pb05-06-loot`
+foi removida após a integração.
 
 **Modelo/effort:** GPT-5 Codex; o effort interno não é exposto pelo runtime.
 
@@ -77,6 +80,9 @@ Nenhum campo novo entrou no snapshot e nenhum golden foi alterado.
 | `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot build` | `0` | build de produção |
 | `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot test` | `0` | agregado do workspace verde |
 | `corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-06-loot verify` | `124` | timeout em 244 s; QA browser não fechou |
+| `git -C C:\Kaezan\kaezan-huntbound merge --ff-only codex/pb-05-06-loot-autoloot` | `0` | `main` em `2f5d07c` |
+| `corepack pnpm verify` pós-integração em `main` | `124` | timeout em 244 s; QA browser não fechou |
+| remoção da worktree + `git worktree prune` | `0` | diretório removido; branch preservada |
 
 **Bloqueio reproduzido:** com build fresco, `asset-pack.spec.ts` passou; `boot-budget.spec.ts`
 falhou com `actionableMs = 5235.6` (`<= 5000`); `hunt-budget.spec.ts` falhou com
@@ -85,14 +91,13 @@ pré-existente e fora do escopo: PB-05-05 já registrava `hunt-budget` vermelho,
 e esta task não altera `apps/game`, Playwright ou performance. Não aplicar retry,
 skip, timeout aumentado ou ajuste de golden.
 
-**Próxima ação:** resolver o gate browser de baseline, rerodar `verify` na
-worktree, então fazer `merge --ff-only` para `main`, verificar novamente e só
-depois liberar PB-05-07. Não iniciar a próxima task.
+**Próxima ação:** resolver o gate browser de baseline e rerodar `verify` em
+`main`; só depois liberar PB-05-07. Não iniciar a próxima task.
 
 ## Próxima task elegível
 
-PB-05-06 permanece pendente de integração por causa do bloqueio acima. PB-05-07
-só fica elegível após o fast-forward e o `verify` verde.
+PB-05-06 está integrada, mas permanece bloqueada pelo gate browser acima.
+PB-05-07 só fica elegível após o `verify` verde.
 
 ## Verificações executadas
 
