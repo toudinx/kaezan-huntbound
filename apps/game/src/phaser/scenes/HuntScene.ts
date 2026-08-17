@@ -7,12 +7,14 @@ import {
   type ResolvedAsset,
 } from '../../../../../packages/assets/src/index.ts';
 import type {
+  AbilityDefinition,
   EntityId,
   HuntDefinition,
   SimulationCommandInput,
   SimulationEvent,
   TickIndex,
 } from '../../../../../packages/contracts/src/index.ts';
+import { TICK_DURATION_MS } from '../../../../../packages/contracts/src/index.ts';
 import type { CommandAcceptance } from '../../../../../packages/simulation/src/index.ts';
 
 import type { SceneBridge } from '../../bridge/SceneBridge';
@@ -27,6 +29,20 @@ import {
   calculateCameraFraming,
 } from '../../hunt/CameraFraming';
 import { type CellAnchor, cellAnchor } from '../../hunt/CellAnchor';
+import {
+  type CombatDecoration,
+  createCombatDecorations,
+} from '../../hunt/CombatDecorations';
+import {
+  type CombatTargetActor,
+  type CombatTargetSelection,
+  createCombatTargetSelection,
+} from '../../hunt/CombatTargeting';
+import { DEFAULT_COMBAT_ABILITIES } from '../../hunt/CombatViewModel';
+import {
+  type CombatInputContext,
+  combatCommandForAction,
+} from '../../hunt/HuntCombatInput';
 import {
   createHuntPresentation,
   type HuntDrawLayer,
@@ -50,6 +66,7 @@ export interface HuntSimulationDriver {
   readonly alpha: number;
   enqueue(input: SimulationCommandInput): CommandAcceptance;
   advanceTo(nowMs: number): readonly SimulationEvent[];
+  restart?(nowMs?: number): void;
 }
 
 export interface HuntSceneOptions {
@@ -58,6 +75,7 @@ export interface HuntSceneOptions {
   readonly assets: readonly ResolvedAsset[];
   readonly input: InputMap;
   readonly driver: HuntSimulationDriver;
+  readonly abilities?: readonly AbilityDefinition[];
   readonly tileSize?: number;
 }
 
@@ -115,13 +133,21 @@ export class HuntScene extends Phaser.Scene {
     EntityId,
     Phaser.GameObjects.Sprite
   >();
+  private readonly decorationObjects = new Map<
+    number,
+    Phaser.GameObjects.Sprite | Phaser.GameObjects.Text
+  >();
   private sprites: Phaser.GameObjects.Sprite[] = [];
+  private readonly combatDecorations = createCombatDecorations();
   private presentation?: HuntPresentation;
   private cameraController?: CameraController;
   private cameraFraming?: CameraFraming;
   private readonly inputGate = createTickInputGate();
   private inputCommands: HuntProbeCommand[] = [];
+  private readonly targetSelection: CombatTargetSelection =
+    createCombatTargetSelection({ playerEntityId: 1 as EntityId });
   private unsubscribeEvents: (() => void) | undefined;
+  private unsubscribeRestart: (() => void) | undefined;
   private uninstallProbe: (() => void) | undefined;
 
   constructor(private readonly options: HuntSceneOptions) {
@@ -159,6 +185,9 @@ export class HuntScene extends Phaser.Scene {
         ]),
       ),
     });
+    this.renderClock = 0;
+    this.inputCommands = [];
+    this.targetSelection.reset();
     this.inputGate.reset();
     this.applyCameraFraming();
     this.cameraController = this.makeCameraController();
@@ -171,8 +200,27 @@ export class HuntScene extends Phaser.Scene {
       const presentation = this.presentation;
       if (!presentation) return;
 
+      const actorPositions = new Map(
+        presentation
+          .actors()
+          .map((actor) => [actor.entityId, { ...actor.position }] as const),
+      );
+      const playerBefore = presentation
+        .actors()
+        .find(
+          (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+        )?.position;
       const floorBefore = presentation.floor();
       presentation.handle(events);
+      this.combatDecorations.handle({
+        events,
+        actorPositions,
+        playerPosition: playerBefore === undefined ? null : { ...playerBefore },
+      });
+      this.targetSelection.handle(events);
+      this.options.bridge.publishTargetSelected(
+        this.targetSelection.targetId(),
+      );
       if (
         floorBefore !== presentation.floor() ||
         events.some(isStructuralEvent)
@@ -180,6 +228,15 @@ export class HuntScene extends Phaser.Scene {
         this.renderFloor();
       }
       this.syncActorSprites(this.options.driver.alpha);
+      this.renderCombatDecorations();
+    });
+
+    this.unsubscribeRestart = this.options.bridge.subscribeRestart(() => {
+      this.options.input.releaseHeld();
+      this.targetSelection.reset();
+      this.options.bridge.publishTargetSelected(null);
+      this.options.driver.restart?.(performance.now());
+      this.scene.restart();
     });
 
     this.uninstallProbe = installHuntProbe(this, (listener) =>
@@ -190,14 +247,19 @@ export class HuntScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubscribeEvents?.();
       this.unsubscribeEvents = undefined;
+      this.unsubscribeRestart?.();
+      this.unsubscribeRestart = undefined;
       this.uninstallProbe?.();
       this.uninstallProbe = undefined;
       this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
       this.inputGate.reset();
       this.destroySprites();
+      this.destroyCombatDecorations();
+      this.combatDecorations.reset();
     });
 
     this.publishReady();
+    this.options.bridge.publishTick(this.options.driver.tick);
   }
 
   update(time: number) {
@@ -212,23 +274,25 @@ export class HuntScene extends Phaser.Scene {
 
     if (this.inputGate.take(this.options.driver.tick) && player) {
       const action = this.options.input.drain(this.options.driver.tick)[0];
-      if (action?.kind === 'step') {
-        const acceptance = this.options.driver.enqueue({
-          tick: this.options.driver.tick,
-          issuer: 'player',
-          command: {
-            type: 'actor/move-step',
-            entityId: player.entityId,
-            direction: action.direction,
-          },
+      if (action?.kind === 'cycle-target') {
+        this.targetSelection.cycle(this.combatTargetActors());
+        this.options.bridge.publishTargetSelected(
+          this.targetSelection.targetId(),
+        );
+      } else if (action?.kind === 'step') {
+        this.enqueuePlayerCommand({
+          type: 'actor/move-step',
+          entityId: player.entityId,
+          direction: action.direction,
         });
-        if (acceptance.ok) {
-          this.inputCommands.push({
-            tick: this.options.driver.tick,
-            sequence: acceptance.sequence,
-            entityId: player.entityId,
-            direction: action.direction,
-          });
+      } else if (action?.kind === 'attack' || action?.kind === 'cast-ability') {
+        const command = combatCommandForAction(action, {
+          playerEntityId: player.entityId,
+          targetEntityId: this.targetSelection.targetId(),
+          abilities: this.options.abilities ?? DEFAULT_COMBAT_ABILITIES,
+        } satisfies CombatInputContext);
+        if (command !== undefined) {
+          this.enqueuePlayerCommand(command);
         }
       }
     }
@@ -237,8 +301,10 @@ export class HuntScene extends Phaser.Scene {
     if (events.length > 0) {
       this.options.bridge.publishEvents(events);
     }
+    this.options.bridge.publishTick(this.options.driver.tick);
 
     this.syncActorSprites(this.options.driver.alpha);
+    this.renderCombatDecorations();
   }
 
   /**
@@ -372,6 +438,13 @@ export class HuntScene extends Phaser.Scene {
     this.actorSprites.clear();
   }
 
+  private destroyCombatDecorations(): void {
+    for (const object of this.decorationObjects.values()) {
+      object.destroy();
+    }
+    this.decorationObjects.clear();
+  }
+
   /** The presentation clock, read once per sync so it never runs backwards. */
   private advanceClock(alpha: number): number {
     this.renderClock = advanceRenderTick(
@@ -423,8 +496,23 @@ export class HuntScene extends Phaser.Scene {
 
       if (command.kind === 'actor') {
         this.actorSprites.set(command.entityId, sprite);
+        sprite.setInteractive({ useHandCursor: true });
+        sprite.on('pointerdown', () => {
+          if (
+            this.targetSelection.select(
+              command.entityId,
+              this.combatTargetActors(),
+            )
+          ) {
+            this.options.bridge.publishTargetSelected(
+              this.targetSelection.targetId(),
+            );
+            this.syncTargetHighlight();
+          }
+        });
       }
     }
+    this.syncTargetHighlight();
   }
 
   private depthFor(
@@ -495,7 +583,210 @@ export class HuntScene extends Phaser.Scene {
       if (!visible.has(entityId)) sprite.setVisible(false);
     }
 
+    this.syncTargetHighlight();
     this.followPlayer(alpha);
+  }
+
+  private renderCombatDecorations(): void {
+    const renderTimeMs = this.renderClock * TICK_DURATION_MS;
+    this.combatDecorations.advance(renderTimeMs);
+    const visible = new Set<number>();
+
+    for (const decoration of this.combatDecorations.current()) {
+      const object =
+        this.decorationObjects.get(decoration.id) ??
+        this.createDecorationObject(decoration);
+      if (object === undefined) continue;
+
+      this.updateDecorationObject(object, decoration, renderTimeMs);
+      object.setData('hunt-decoration', decoration.kind);
+      object.setVisible(true);
+      visible.add(decoration.id);
+    }
+
+    for (const [id, object] of this.decorationObjects) {
+      if (visible.has(id)) continue;
+      object.destroy();
+      this.decorationObjects.delete(id);
+    }
+  }
+
+  private createDecorationObject(
+    decoration: CombatDecoration,
+  ): Phaser.GameObjects.Sprite | Phaser.GameObjects.Text | undefined {
+    if (decoration.kind === 'damage-number') {
+      const text = this.add.text(0, 0, '', {
+        color: '#ffcf66',
+        fontFamily: 'ui-monospace, monospace',
+        fontSize: '18px',
+        fontStyle: 'bold',
+        stroke: '#32140d',
+        strokeThickness: 3,
+      });
+      text.setOrigin(0.5, 1);
+      this.decorationObjects.set(decoration.id, text);
+      return text;
+    }
+
+    if (decoration.key === undefined) return undefined;
+    const asset = this.assetByKey.get(decoration.key);
+    if (asset === undefined) return undefined;
+    const sprite = this.add.sprite(0, 0, decoration.key);
+    sprite
+      .setOrigin(0.5, 0.5)
+      .setDisplaySize(
+        asset.cellWidth * asset.scale,
+        asset.cellHeight * asset.scale,
+      );
+    this.decorationObjects.set(decoration.id, sprite);
+    return sprite;
+  }
+
+  private updateDecorationObject(
+    object: Phaser.GameObjects.Sprite | Phaser.GameObjects.Text,
+    decoration: CombatDecoration,
+    renderTimeMs: number,
+  ): void {
+    if (decoration.kind === 'damage-number') {
+      const text = object as Phaser.GameObjects.Text;
+      const position = decoration.position;
+      if (position === undefined) return;
+      const progress = Math.min(
+        Math.max((renderTimeMs - decoration.createdAtMs) / 300, 0),
+        1,
+      );
+      text
+        .setText(`-${decoration.amount ?? 0}`)
+        .setPosition(
+          (position.x + 0.5) * this.tileSize,
+          (position.y + 0.5 - progress * 0.75) * this.tileSize,
+        )
+        .setDepth(
+          actorDepth({
+            from: position,
+            to: position,
+            regionWidth: this.options.hunt.region.width,
+          }) + 20,
+        )
+        .setAlpha(1 - progress * 0.35);
+      return;
+    }
+
+    const sprite = object as Phaser.GameObjects.Sprite;
+    if (decoration.kind === 'autoloot-arc') {
+      const from = decoration.from;
+      const to = decoration.to;
+      if (from === undefined || to === undefined) return;
+      const duration = Math.max(
+        decoration.expiresAtMs - decoration.createdAtMs,
+        1,
+      );
+      const progress = Math.min(
+        Math.max((renderTimeMs - decoration.createdAtMs) / duration, 0),
+        1,
+      );
+      sprite
+        .setPosition(
+          (from.x + (to.x - from.x) * progress + 0.5) * this.tileSize,
+          (from.y + (to.y - from.y) * progress + 0.5) * this.tileSize,
+        )
+        .setRotation(progress * Math.PI * 2)
+        .setAlpha(1 - progress * 0.25)
+        .setDepth(
+          actorDepth({
+            from,
+            to,
+            regionWidth: this.options.hunt.region.width,
+          }) + 10,
+        );
+      return;
+    }
+
+    const position = decoration.position;
+    if (position === undefined) return;
+    sprite
+      .setPosition(
+        (position.x + 0.5) * this.tileSize,
+        (position.y + 0.5) * this.tileSize,
+      )
+      .setDepth(
+        actorDepth({
+          from: position,
+          to: position,
+          regionWidth: this.options.hunt.region.width,
+        }),
+      );
+  }
+
+  private combatTargetActors(): readonly CombatTargetActor[] {
+    return (this.presentation?.actors() ?? []).map((actor) => ({
+      entityId: actor.entityId,
+      blueprintId: actor.blueprintId,
+      position: { ...actor.position },
+    }));
+  }
+
+  private syncTargetHighlight(): void {
+    const targetEntityId = this.targetSelection.targetId();
+    for (const [entityId, sprite] of this.actorSprites) {
+      if (entityId === targetEntityId) {
+        sprite.setTint(0xffd166);
+      } else {
+        sprite.clearTint();
+      }
+      sprite.setData('hunt-targeted', entityId === targetEntityId);
+    }
+  }
+
+  private enqueuePlayerCommand(
+    command: SimulationCommandInput['command'],
+  ): void {
+    const player = this.presentation
+      ?.actors()
+      .find(
+        (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+      );
+    if (player === undefined) return;
+
+    const tick = this.options.driver.tick;
+    const acceptance = this.options.driver.enqueue({
+      tick,
+      issuer: 'player',
+      command,
+    });
+    if (!acceptance.ok) return;
+
+    switch (command.type) {
+      case 'actor/move-step':
+        this.inputCommands.push({
+          tick,
+          sequence: acceptance.sequence,
+          entityId: player.entityId,
+          direction: command.direction,
+        });
+        break;
+      case 'actor/attack':
+        this.inputCommands.push({
+          tick,
+          sequence: acceptance.sequence,
+          entityId: player.entityId,
+          type: command.type,
+          targetEntityId: command.targetEntityId,
+        });
+        break;
+      case 'actor/cast-ability':
+        this.inputCommands.push({
+          tick,
+          sequence: acceptance.sequence,
+          entityId: player.entityId,
+          type: command.type,
+          abilityIndex: command.abilityIndex,
+          targetEntityId: command.targetEntityId,
+        });
+        break;
+      default:
+        break;
+    }
   }
 
   private followPlayer(alpha: number): void {

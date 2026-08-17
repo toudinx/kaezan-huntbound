@@ -2,9 +2,10 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-08 done.** B6 resolvido
-(`aggroRadius` `1` na composição + `tickCount` `2700`). B5 (hunt-budget)
-segue aberto e não é desta task.
+**Estado geral:** execução em andamento. **PB-05-10 implementada nesta
+worktree, aguardando fast-forward para `main`.** B6 resolvido (`aggroRadius`
+`1` na composição + `tickCount` `2700`). B5 (hunt-budget) segue aberto
+historicamente e não foi mascarado.
 
 **Última atualização:** 2026-08-16
 
@@ -12,8 +13,8 @@ segue aberto e não é desta task.
 `packages/test-fixtures/hunt/pb05/`, `combat:check` em `check`/`verify`,
 registro em `docs/simulation/REPLAY_CONTRACT.md` no mesmo commit.
 
-**Próxima etapa:** PB-05-10 (HUD, input, números de dano, autoloot e overlay
-de morte). PB-05-09 já está done.
+**Próxima etapa:** PB-05-11 (QA browser do combate). PB-05-09 e PB-05-10
+estão implementadas.
 
 ## Tasks
 
@@ -28,15 +29,71 @@ de morte). PB-05-09 já está done.
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
-| PB-05-10 | pending | `<agente>/pb05-10-combat-hud` | — | HUD, input, números de dano, autoloot e overlay de morte |
+| PB-05-10 | done (aguardando ff) | `codex/pb-05-10-combat-hud` | este commit | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
 | PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
 
 ## Última task concluída
 
-PB-05-08. Branch `grok/pb-05-08-combat-fixture` a partir de `main`
-(`3e25fc5`). Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-08-fixture`.
+PB-05-10. Branch `codex/pb-05-10-combat-hud` a partir de `main`.
+Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-10-hud`.
 Fast-forward para `main` autorizado pela task card.
+
+## Handoff PB-05-10 — 2026-08-16
+
+**Status:** implementação concluída nesta branch; integração serial e limpeza
+pendentes. Os gates de código estão verdes. O `verify` terminou exit `1` em QA
+browser: `asset-pack` não atingiu `data-assets-ready` em 5 s, `boot-budget`
+mediu `5271,8 ms`, e cinco screenshots do shell mudaram pela adição deliberada
+do HUD. Screenshots e snapshots permanecem fora do escopo desta task e não
+foram regravados; PB-05-11 é a próxima task elegível.
+
+**Base:** `main` antes do fast-forward. **Branch/worktree:**
+`codex/pb-05-10-combat-hud`; `C:\Kaezan\kaezan-huntbound-pb05-10-hud`.
+
+**Modelo/effort:** GPT-5 Codex; effort interno não é exposto pelo runtime.
+Skills usadas: `superpowers:using-superpowers`,
+`superpowers:brainstorming`, `superpowers:writing-plans`,
+`superpowers:using-git-worktrees`, `superpowers:test-driven-development` e
+`superpowers:verification-before-completion`. Validador independente: não
+aplicável; os gates automatizados são a validação prevista.
+
+**O que mudou:**
+
+- `InputMap` aceita ataque, as três habilidades e ciclo de alvo por teclado e
+  `data-hunt-action` por toque, preservando `TickInputGate` e um comando por
+  toque curto.
+- `CombatTargeting` e `HuntCombatInput` mantêm seleção/destaque, limpeza na
+  morte, recusa fora de alcance e comandos sem regra nova na cena.
+- `CombatViewModel` projeta barras, mana, cooldowns, rejeição, log e bolsa por
+  eventos; a bolsa usa `projectRunBag`. O HUD denso fica no DOM; dano, corpo,
+  sangue e arco ficam ancorados no canvas.
+- TTLs visuais: corpo `900 ms`, sangue `900 ms`, número de dano `700 ms` e arco
+  de autoloot `600 ms`. As decorações têm `blocksMovement: false` e são
+  descartadas na expiração/restart.
+- O restart recria o kernel com o mesmo cenário e a mesma seed por
+  `RestartableHuntDriver`; o teste determinístico retorna ao tick `0` e
+  reproduz os eventos iniciais. O HUD remove o listener de restart no
+  `destroy`; a cena destrói sprites, decorações e subscriptions no shutdown.
+- Desvio necessário: `apps/game/src/main.ts`, fora da lista principal de
+  escopo, foi alterado apenas para conectar o driver reinicializável e tornar o
+  requisito de restart real; nenhum `packages/**` foi tocado.
+
+**Verificações:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `corepack pnpm --filter @huntbound/game test` | `0` | 29 arquivos, 157 testes |
+| `corepack pnpm exec biome check .` | `0` | 407 arquivos |
+| `corepack pnpm format:check` | `0` | 406 arquivos |
+| `corepack pnpm typecheck` | `0` | 7 projetos |
+| `corepack pnpm architecture:check` | `0` | fronteiras verdes |
+| `corepack pnpm build` | `0` | 254 módulos transformados |
+| `corepack pnpm exec playwright test tests/e2e/hunt-mobile.spec.ts -g "keeps the centre and lower middle"` | `0` | centro/lower-middle livres |
+| `corepack pnpm verify` | `1` | 22/29 browser; 2 falhas de boot/asset e 5 snapshots do shell; gates anteriores verdes |
+
+Não houve alteração em dependências, contratos, pacotes, goldens de replay ou
+snapshots de screenshot. **Próxima task elegível:** PB-05-11.
 
 ## Handoff PB-05-08 — 2026-08-16
 

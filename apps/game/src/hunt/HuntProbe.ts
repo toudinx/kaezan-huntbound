@@ -80,7 +80,10 @@ export interface HuntProbeCommand {
   readonly tick: number;
   readonly sequence: number;
   readonly entityId: number;
-  readonly direction: Direction;
+  readonly direction?: Direction;
+  readonly type?: 'actor/attack' | 'actor/cast-ability';
+  readonly targetEntityId?: number | null;
+  readonly abilityIndex?: number;
 }
 
 export interface HuntProbeRecorder {

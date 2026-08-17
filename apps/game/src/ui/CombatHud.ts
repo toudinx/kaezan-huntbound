@@ -1,0 +1,215 @@
+import type {
+  CombatAbilityView,
+  CombatViewState,
+} from '../hunt/CombatViewModel';
+
+export interface CombatHud {
+  render(state: CombatViewState): void;
+  destroy(): void;
+}
+
+export interface CombatHudOptions {
+  readonly onRestart?: () => void;
+}
+
+function createElement(
+  document: Document,
+  tagName: string,
+  testId: string,
+): HTMLElement {
+  const element = document.createElement(tagName);
+  element.setAttribute('data-testid', testId);
+  return element;
+}
+
+function formatItemKey(itemKey: string): string {
+  return itemKey.split(':').at(-1) ?? itemKey;
+}
+
+function updateBar(
+  element: HTMLElement,
+  label: string,
+  value: number,
+  maximum: number,
+): void {
+  element.setAttribute('aria-label', label);
+  element.setAttribute('role', 'progressbar');
+  element.setAttribute('aria-valuemin', '0');
+  element.setAttribute('aria-valuemax', String(maximum));
+  element.setAttribute('aria-valuenow', String(value));
+  element.textContent = `${label}: ${value}/${maximum}`;
+}
+
+function renderAbility(
+  document: Document,
+  ability: CombatAbilityView,
+): HTMLButtonElement {
+  const button = createElement(
+    document,
+    'button',
+    `combat-ability-${ability.index}`,
+  ) as HTMLButtonElement;
+  button.type = 'button';
+  button.setAttribute('data-hunt-action', `ability:${ability.index}`);
+  button.setAttribute(
+    'aria-label',
+    `${ability.label} (${ability.resourceCost} mana)`,
+  );
+  button.setAttribute('aria-disabled', String(!ability.available));
+  button.setAttribute(
+    'data-cooldown-ticks',
+    String(ability.remainingCooldownTicks),
+  );
+  button.disabled = !ability.available;
+  button.textContent =
+    ability.remainingCooldownTicks > 0
+      ? `${ability.index + 1}. ${ability.label} · ${ability.remainingCooldownTicks}`
+      : `${ability.index + 1}. ${ability.label}`;
+  return button;
+}
+
+export function mountCombatHud(
+  root: HTMLElement,
+  options: CombatHudOptions = {},
+): CombatHud {
+  const document = root.ownerDocument;
+  const hud = createElement(document, 'section', 'combat-hud');
+  hud.setAttribute('aria-label', 'Combat HUD');
+
+  const playerPanel = createElement(document, 'section', 'combat-player');
+  playerPanel.setAttribute('aria-label', 'Player status');
+  const playerHealth = createElement(document, 'div', 'combat-player-health');
+  const playerMana = createElement(document, 'div', 'combat-player-mana');
+  playerPanel.append(playerHealth, playerMana);
+
+  const targetPanel = createElement(document, 'section', 'combat-target');
+  targetPanel.setAttribute('aria-label', 'Target status');
+  const targetName = createElement(document, 'p', 'combat-target-name');
+  const targetHealth = createElement(document, 'div', 'combat-target-health');
+  targetPanel.append(targetName, targetHealth);
+  const rejection = createElement(document, 'p', 'combat-rejection');
+  rejection.setAttribute('aria-live', 'polite');
+
+  const actions = createElement(document, 'section', 'combat-actions');
+  actions.setAttribute('aria-label', 'Combat actions');
+  const attack = createElement(
+    document,
+    'button',
+    'combat-attack',
+  ) as HTMLButtonElement;
+  attack.type = 'button';
+  attack.setAttribute('data-hunt-action', 'attack');
+  attack.setAttribute('aria-label', 'Attack selected target');
+  attack.textContent = 'Attack';
+  const abilities = createElement(document, 'div', 'combat-abilities');
+  actions.append(attack, abilities);
+
+  const lootPanel = createElement(document, 'section', 'combat-loot');
+  lootPanel.setAttribute('aria-label', 'Loot');
+  const lootLog = createElement(document, 'div', 'combat-loot-log');
+  const runBag = createElement(document, 'div', 'combat-run-bag');
+  lootPanel.append(lootLog, runBag);
+
+  const deathOverlay = createElement(
+    document,
+    'section',
+    'combat-death-overlay',
+  );
+  deathOverlay.setAttribute('aria-label', 'Death');
+  const deathMessage = createElement(document, 'p', 'combat-death-message');
+  deathMessage.textContent = 'You died.';
+  const restart = createElement(
+    document,
+    'button',
+    'combat-restart',
+  ) as HTMLButtonElement;
+  restart.type = 'button';
+  restart.setAttribute('aria-label', 'Restart hunt');
+  restart.textContent = 'Restart hunt';
+  deathOverlay.append(deathMessage, restart);
+
+  hud.append(
+    playerPanel,
+    targetPanel,
+    rejection,
+    actions,
+    lootPanel,
+    deathOverlay,
+  );
+  root.replaceChildren(hud);
+
+  const onRestart = (): void => {
+    options.onRestart?.();
+  };
+  restart.addEventListener('click', onRestart);
+
+  const render = (state: CombatViewState): void => {
+    if (state.player === null) {
+      updateBar(playerHealth, 'Health', 0, 0);
+      updateBar(playerMana, 'Mana', 0, 0);
+    } else {
+      updateBar(
+        playerHealth,
+        'Health',
+        state.player.health,
+        state.player.maxHealth,
+      );
+      updateBar(
+        playerMana,
+        'Mana',
+        state.player.resource,
+        state.player.maxResource,
+      );
+    }
+
+    targetName.textContent =
+      state.targetEntityId === null
+        ? 'No target'
+        : `Target #${state.targetEntityId}`;
+    if (state.target === null) {
+      updateBar(targetHealth, 'Target health', 0, 0);
+    } else {
+      updateBar(
+        targetHealth,
+        'Target health',
+        state.target.health,
+        state.target.maxHealth,
+      );
+    }
+
+    rejection.textContent =
+      state.lastRejection === null
+        ? ''
+        : `Rejected: ${state.lastRejection.code}`;
+    rejection.setAttribute(
+      'data-visible',
+      String(state.lastRejection !== null),
+    );
+
+    abilities.replaceChildren(
+      ...state.abilities.map((ability) => renderAbility(document, ability)),
+    );
+
+    lootLog.textContent = state.lootLog
+      .map(
+        (entry) =>
+          `${formatItemKey(entry.itemKey)} × ${entry.count} · tick ${entry.tick}`,
+      )
+      .join(' | ');
+    runBag.textContent = state.bag
+      .map((entry) => `${formatItemKey(entry.itemKey)} × ${entry.count}`)
+      .join(' | ');
+    deathOverlay.setAttribute('data-visible', String(state.playerDead));
+  };
+
+  let destroyed = false;
+  return {
+    render,
+    destroy: () => {
+      if (destroyed) return;
+      destroyed = true;
+      restart.removeEventListener('click', onRestart);
+      root.replaceChildren();
+    },
+  };
+}

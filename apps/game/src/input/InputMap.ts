@@ -5,7 +5,10 @@ import {
 
 export type InputAction =
   | { readonly kind: 'step'; readonly direction: Direction }
-  | { readonly kind: 'face'; readonly direction: Direction };
+  | { readonly kind: 'face'; readonly direction: Direction }
+  | { readonly kind: 'attack' }
+  | { readonly kind: 'cast-ability'; readonly abilityIndex: number }
+  | { readonly kind: 'cycle-target' };
 
 export interface InputMap {
   attach(target: HTMLElement): void;
@@ -27,6 +30,11 @@ interface KeyBinding {
   readonly value: AxisValue;
 }
 
+type CombatInputAction = Exclude<
+  InputAction,
+  { readonly kind: 'step' | 'face' }
+>;
+
 const keyBindings: Readonly<Record<string, KeyBinding>> = {
   KeyW: { axis: 'vertical', value: -1 },
   ArrowUp: { axis: 'vertical', value: -1 },
@@ -36,6 +44,18 @@ const keyBindings: Readonly<Record<string, KeyBinding>> = {
   ArrowLeft: { axis: 'horizontal', value: -1 },
   KeyD: { axis: 'horizontal', value: 1 },
   ArrowRight: { axis: 'horizontal', value: 1 },
+};
+
+const combatKeyBindings: Readonly<Record<string, CombatInputAction>> = {
+  Space: { kind: 'attack' },
+  Enter: { kind: 'attack' },
+  Digit1: { kind: 'cast-ability', abilityIndex: 0 },
+  Digit2: { kind: 'cast-ability', abilityIndex: 1 },
+  Digit3: { kind: 'cast-ability', abilityIndex: 2 },
+  Numpad1: { kind: 'cast-ability', abilityIndex: 0 },
+  Numpad2: { kind: 'cast-ability', abilityIndex: 1 },
+  Numpad3: { kind: 'cast-ability', abilityIndex: 2 },
+  Tab: { kind: 'cycle-target' },
 };
 
 const directionValues = new Set<Direction>([
@@ -79,6 +99,38 @@ function directionFromTarget(
   return readDirection(value);
 }
 
+function readCombatAction(value: unknown): CombatInputAction | undefined {
+  if (value === 'attack') return { kind: 'attack' };
+  if (value === 'cycle-target') return { kind: 'cycle-target' };
+  if (typeof value !== 'string' || !value.startsWith('ability:')) {
+    return undefined;
+  }
+
+  const index = Number(value.slice('ability:'.length));
+  return Number.isSafeInteger(index) && index >= 0
+    ? { kind: 'cast-ability', abilityIndex: index }
+    : undefined;
+}
+
+function combatActionFromTarget(
+  target: EventTarget | null,
+): CombatInputAction | undefined {
+  if (target === null || typeof target !== 'object') {
+    return undefined;
+  }
+
+  const candidate = target as EventTarget & {
+    closest?: (selector: string) => {
+      readonly dataset?: { readonly huntAction?: string };
+      getAttribute?: (name: string) => string | null;
+    } | null;
+  };
+  const control = candidate.closest?.('[data-hunt-action]');
+  const value =
+    control?.dataset?.huntAction ?? control?.getAttribute?.('data-hunt-action');
+  return readCombatAction(value);
+}
+
 function directionFromAxes(
   horizontal: AxisValue | 0,
   vertical: AxisValue | 0,
@@ -108,8 +160,10 @@ function axisValue(heldKeys: ReadonlySet<string>, axis: Axis): AxisValue | 0 {
 
 export function createInputMap(options: InputMapOptions = {}): InputMap {
   const heldKeys = new Set<string>();
+  const heldCombatKeys = new Set<string>();
   const heldDpadDirections = new Set<Direction>();
   let pendingDirection: Direction | undefined;
+  let pendingCombatAction: CombatInputAction | undefined;
   let holdStartedAtMs: number | undefined;
   let holdGateTicks = 0;
   let lastHoldTick: number | undefined;
@@ -148,6 +202,17 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
 
   const onKeyDown = (event: Event): void => {
     const keyboardEvent = event as KeyboardEvent;
+    const combatAction = combatKeyBindings[keyboardEvent.code];
+    if (combatAction !== undefined) {
+      keyboardEvent.preventDefault();
+      if (keyboardEvent.repeat || heldCombatKeys.has(keyboardEvent.code)) {
+        return;
+      }
+      heldCombatKeys.add(keyboardEvent.code);
+      pendingCombatAction ??= combatAction;
+      return;
+    }
+
     if (keyBindings[keyboardEvent.code] === undefined) {
       return;
     }
@@ -162,6 +227,11 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
   const onKeyUp = (event: Event): void => {
     const keyboardEvent = event as KeyboardEvent;
     const identity = keyboardEvent.code || keyboardEvent.key;
+    if (combatKeyBindings[identity] !== undefined) {
+      heldCombatKeys.delete(identity);
+      return;
+    }
+
     if (!identity) {
       if (heldKeys.size === 0) {
         return;
@@ -177,6 +247,26 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
   };
 
   const onPointerDown = (event: Event): void => {
+    const combatAction = combatActionFromTarget(event.target);
+    if (combatAction !== undefined) {
+      event.preventDefault();
+      const pointerEvent = event as PointerEvent;
+      const captureTarget = attachedTarget;
+      if (
+        captureTarget !== undefined &&
+        typeof pointerEvent.pointerId === 'number' &&
+        typeof captureTarget.setPointerCapture === 'function'
+      ) {
+        try {
+          captureTarget.setPointerCapture(pointerEvent.pointerId);
+        } catch {
+          // Capture is best-effort: a lost pointerup still reaches the window listener.
+        }
+      }
+      pendingCombatAction ??= combatAction;
+      return;
+    }
+
     const direction = directionFromTarget(event.target);
     if (direction === undefined) {
       return;
@@ -203,6 +293,10 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
   };
 
   const onPointerUp = (event: Event): void => {
+    if (combatActionFromTarget(event.target) !== undefined) {
+      return;
+    }
+
     const direction = directionFromTarget(event.target);
     if (direction === undefined) {
       heldDpadDirections.clear();
@@ -221,6 +315,7 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
 
   const releaseHeld = (): void => {
     heldKeys.clear();
+    heldCombatKeys.clear();
     heldDpadDirections.clear();
     holdStartedAtMs = undefined;
     holdGateTicks = 0;
@@ -230,6 +325,7 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
 
   const clearHeldInput = (): void => {
     pendingDirection = undefined;
+    pendingCombatAction = undefined;
     releaseHeld();
   };
 
@@ -283,6 +379,12 @@ export function createInputMap(options: InputMapOptions = {}): InputMap {
     detach,
     releaseHeld,
     drain: (tick) => {
+      const combatAction = pendingCombatAction;
+      if (combatAction !== undefined) {
+        pendingCombatAction = undefined;
+        return Object.freeze([combatAction]) as readonly InputAction[];
+      }
+
       const edgeDirection = pendingDirection;
       if (edgeDirection !== undefined) {
         pendingDirection = undefined;

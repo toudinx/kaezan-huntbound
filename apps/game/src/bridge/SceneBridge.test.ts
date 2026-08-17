@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { SimulationEvent } from '../../../../packages/contracts/src/index.ts';
+import type {
+  EntityId,
+  SimulationEvent,
+} from '../../../../packages/contracts/src/index.ts';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 import * as SceneBridgeModule from './SceneBridge';
 
@@ -31,6 +34,14 @@ function createBridge(initialSnapshot: ShellSnapshot) {
       publishEvents(events: readonly SimulationEvent[]): void;
       subscribeEvents(
         listener: (events: readonly SimulationEvent[]) => void,
+      ): () => void;
+      publishTick(tick: number): void;
+      subscribeTick(listener: (tick: number) => void): () => void;
+      requestRestart(): void;
+      subscribeRestart(listener: () => void): () => void;
+      publishTargetSelected(entityId: EntityId | null): void;
+      subscribeTargetSelected(
+        listener: (entityId: EntityId | null) => void,
       ): () => void;
     }
   )(initialSnapshot);
@@ -93,5 +104,36 @@ describe('SceneBridge', () => {
     bridge.publishEvents([simulationEvent]);
 
     expect(listener).toHaveBeenCalledWith([simulationEvent]);
+  });
+
+  it('publishes the current simulation tick to presentation subscribers', () => {
+    const bridge = createBridge(bootingSnapshot);
+    const listener = vi.fn();
+
+    bridge.subscribeTick(listener);
+    bridge.publishTick(42);
+
+    expect(listener.mock.calls).toEqual([[0], [42]]);
+  });
+
+  it('publishes a restart request without coupling the bridge to a kernel', () => {
+    const bridge = createBridge(bootingSnapshot);
+    const listener = vi.fn();
+
+    bridge.subscribeRestart(listener);
+    bridge.requestRestart();
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes presentation target selection independently from kernel events', () => {
+    const bridge = createBridge(bootingSnapshot);
+    const listener = vi.fn();
+
+    bridge.subscribeTargetSelected(listener);
+    bridge.publishTargetSelected(7 as EntityId);
+    bridge.publishTargetSelected(null);
+
+    expect(listener.mock.calls).toEqual([[null], [7], [null]]);
   });
 });

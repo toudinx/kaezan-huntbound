@@ -9,13 +9,20 @@ class TestInputTarget extends EventTarget {
     defaultView: this.inputWindow,
   } as unknown as Document;
   private activePointerDirection: string | undefined;
+  private activePointerAction: string | undefined;
 
-  closest(selector: string): { dataset: { huntDirection: string } } | null {
-    if (selector !== '[data-hunt-direction]' || !this.activePointerDirection) {
-      return null;
+  closest(selector: string): {
+    dataset: { huntDirection?: string; huntAction?: string };
+  } | null {
+    if (selector === '[data-hunt-direction]' && this.activePointerDirection) {
+      return { dataset: { huntDirection: this.activePointerDirection } };
     }
 
-    return { dataset: { huntDirection: this.activePointerDirection } };
+    if (selector === '[data-hunt-action]' && this.activePointerAction) {
+      return { dataset: { huntAction: this.activePointerAction } };
+    }
+
+    return null;
   }
 
   keyDown(code: string): void {
@@ -39,6 +46,17 @@ class TestInputTarget extends EventTarget {
     this.activePointerDirection = direction;
     this.dispatchEvent(new Event('pointerup'));
     this.activePointerDirection = undefined;
+  }
+
+  pointerDownAction(action: string): void {
+    this.activePointerAction = action;
+    this.dispatchEvent(new Event('pointerdown'));
+  }
+
+  pointerUpAction(action: string): void {
+    this.activePointerAction = action;
+    this.dispatchEvent(new Event('pointerup'));
+    this.activePointerAction = undefined;
   }
 
   pointerCancel(): void {
@@ -322,5 +340,64 @@ describe('InputMap', () => {
     input.detach();
     target.keyDown('KeyA');
     expect(input.drain()).toEqual([]);
+  });
+
+  it('emits one attack edge and ignores keyboard auto-repeat', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('Space');
+    target.dispatchEvent(
+      Object.assign(new Event('keydown'), {
+        code: 'Space',
+        repeat: true,
+      }),
+    );
+
+    expect(input.drain(20)).toEqual([{ kind: 'attack' }]);
+    expect(input.drain(20)).toEqual([]);
+  });
+
+  it('maps the three ability keys to their stable indices', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.keyDown('Digit1');
+    expect(input.drain(1)).toEqual([{ kind: 'cast-ability', abilityIndex: 0 }]);
+
+    target.keyUp('Digit1');
+    target.keyDown('Digit2');
+    expect(input.drain(2)).toEqual([{ kind: 'cast-ability', abilityIndex: 1 }]);
+
+    target.keyUp('Digit2');
+    target.keyDown('Digit3');
+    expect(input.drain(3)).toEqual([{ kind: 'cast-ability', abilityIndex: 2 }]);
+  });
+
+  it('emits exactly one combat action for a short touch', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDownAction('attack');
+    target.pointerUpAction('attack');
+
+    expect(input.drain(7)).toEqual([{ kind: 'attack' }]);
+    expect(input.drain(7)).toEqual([]);
+  });
+
+  it('maps a touch ability button and target-cycle key', () => {
+    const input = createInputMap();
+    const target = new TestInputTarget();
+    input.attach(target as unknown as HTMLElement);
+
+    target.pointerDownAction('ability:2');
+    target.pointerUpAction('ability:2');
+    expect(input.drain(8)).toEqual([{ kind: 'cast-ability', abilityIndex: 2 }]);
+
+    target.keyDown('Tab');
+    expect(input.drain(9)).toEqual([{ kind: 'cycle-target' }]);
   });
 });

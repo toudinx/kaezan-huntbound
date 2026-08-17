@@ -1,6 +1,11 @@
 import type { SceneBridge } from '../bridge/SceneBridge';
+import {
+  type CombatViewModel,
+  createDefaultCombatViewModel,
+} from '../hunt/CombatViewModel';
 import type { InputMap } from '../input/InputMap';
 import type { ShellPhase, ShellSnapshot } from '../runtime/ShellSnapshot';
+import { type CombatHud, mountCombatHud } from './CombatHud';
 import { mountDpad } from './Dpad';
 
 export interface AppShell {
@@ -9,6 +14,10 @@ export interface AppShell {
 
 export interface AppShellOptions {
   readonly input?: InputMap;
+  readonly combat?: {
+    readonly viewModel: CombatViewModel;
+    readonly onRestart?: () => void;
+  };
 }
 
 const phaseLabels: Record<ShellPhase, string> = {
@@ -36,6 +45,7 @@ export function mountAppShell(
   const status = document.createElement('p');
   const viewport = document.createElement('p');
   const controls = document.createElement('div');
+  const combatRoot = document.createElement('div');
 
   shell.setAttribute('aria-label', 'Huntbound shell');
   shell.setAttribute('data-testid', 'app-shell');
@@ -46,13 +56,45 @@ export function mountAppShell(
   status.setAttribute('data-testid', 'shell-status');
   viewport.setAttribute('data-testid', 'shell-viewport');
   controls.setAttribute('data-testid', 'hunt-controls');
+  combatRoot.setAttribute('data-testid', 'combat-root');
 
   header.append(status);
   viewportPanel.append(viewport);
-  shell.append(header, viewportPanel, controls);
+  shell.append(header, viewportPanel, controls, combatRoot);
   root.replaceChildren(shell);
 
   const dpad = options.input ? mountDpad(controls, options.input) : undefined;
+  const combatViewModel =
+    options.combat?.viewModel ??
+    (options.input === undefined ? undefined : createDefaultCombatViewModel());
+  let combatHud: CombatHud | undefined;
+  let unsubscribeCombatEvents: (() => void) | undefined;
+  let unsubscribeCombatTick: (() => void) | undefined;
+  let unsubscribeTargetSelection: (() => void) | undefined;
+
+  if (combatViewModel !== undefined) {
+    combatHud = mountCombatHud(combatRoot, {
+      onRestart: () => {
+        combatViewModel.reset();
+        combatHud?.render(combatViewModel.snapshot());
+        options.combat?.onRestart?.();
+        bridge.requestRestart();
+      },
+    });
+    combatHud.render(combatViewModel.snapshot());
+    unsubscribeCombatEvents = bridge.subscribeEvents((events) => {
+      combatViewModel.handle(events);
+      combatHud?.render(combatViewModel.snapshot());
+    });
+    unsubscribeCombatTick = bridge.subscribeTick((tick) => {
+      combatViewModel.setTick(tick);
+      combatHud?.render(combatViewModel.snapshot());
+    });
+    unsubscribeTargetSelection = bridge.subscribeTargetSelected((entityId) => {
+      combatViewModel.setTarget(entityId);
+      combatHud?.render(combatViewModel.snapshot());
+    });
+  }
 
   const unsubscribe = bridge.subscribe((snapshot) => {
     shell.setAttribute('data-shell-phase', snapshot.phase);
@@ -72,6 +114,10 @@ export function mountAppShell(
       destroyed = true;
       unsubscribe();
       dpad?.destroy();
+      unsubscribeCombatEvents?.();
+      unsubscribeCombatTick?.();
+      unsubscribeTargetSelection?.();
+      combatHud?.destroy();
       root.replaceChildren();
     },
   };

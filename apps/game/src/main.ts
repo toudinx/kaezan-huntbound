@@ -19,7 +19,6 @@ import {
   createSeed,
   type HuntDefinition,
 } from '../../../packages/contracts/src/index.ts';
-import { createSimulationKernel } from '../../../packages/simulation/src/index.ts';
 import {
   getAssetCatalogUrl,
   parseAppAssetProfile,
@@ -28,7 +27,8 @@ import { installAssetRuntimeProbe } from './assets/AssetRuntimeProbe';
 import { createAssetRuntime } from './assets/createAssetRuntime';
 import { createSceneBridge } from './bridge/SceneBridge';
 import { createHuntRuntime } from './hunt/huntRuntime';
-import { createSimulationHost, installKernelProbe } from './index';
+import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
+import { installKernelProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
 import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
@@ -204,11 +204,12 @@ export async function bootstrapApp(
     return;
   }
 
+  const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
   const scenarioResult = buildHuntScenario(
     hunt,
     character,
     createContentRegistry(runtime),
-    createSeed('1a2b3c4d5e6f7a8b'),
+    huntSeed,
   );
   if (!scenarioResult.ok) {
     inputMap.detach();
@@ -227,26 +228,14 @@ export async function bootstrapApp(
     return;
   }
 
-  const kernel = createSimulationKernel(
-    scenarioResult.value.scenario,
-    createSeed('1a2b3c4d5e6f7a8b'),
-  );
-  const simulationHost = createSimulationHost(kernel, 0);
+  const scenario = scenarioResult.value.scenario;
+  const driver = createRestartableHuntDriver(scenario, huntSeed, 0);
   const gameFactory = overrides.createGame ?? createGame;
   const gameRuntime = gameFactory(gameRoot, bridge, {
     hunt,
     assets: huntAssets,
     input: inputMap,
-    driver: {
-      get tick() {
-        return simulationHost.tick;
-      },
-      get alpha() {
-        return simulationHost.alpha;
-      },
-      enqueue: (input) => kernel.enqueue(input),
-      advanceTo: (nowMs) => simulationHost.advanceTo(nowMs),
-    },
+    driver,
   });
   const viewportFactory =
     overrides.createViewportController ?? createViewportController;

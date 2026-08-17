@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
 import { createSceneBridge, type SceneBridge } from '../bridge/SceneBridge';
+import { createInputMap, type InputMap } from '../input/InputMap';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 import * as AppShellModule from './AppShell';
 
 class TestElement {
   readonly children: TestElement[] = [];
   readonly attributes = new Map<string, string>();
+  readonly listeners = new Map<string, Set<() => void>>();
   textContent = '';
+  disabled = false;
 
   constructor(
     readonly tagName: string,
@@ -25,6 +28,22 @@ class TestElement {
 
   setAttribute(name: string, value: string) {
     this.attributes.set(name, value);
+  }
+
+  addEventListener(type: string, listener: () => void) {
+    const listeners = this.listeners.get(type) ?? new Set<() => void>();
+    listeners.add(listener);
+    this.listeners.set(type, listeners);
+  }
+
+  removeEventListener(type: string, listener: () => void) {
+    this.listeners.get(type)?.delete(listener);
+  }
+
+  dispatch(type: string) {
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener();
+    }
   }
 
   getAttribute(name: string) {
@@ -66,7 +85,11 @@ function createRoot() {
   return document.createElement('div');
 }
 
-function mountShell(root: TestElement, bridge: SceneBridge) {
+function mountShell(
+  root: TestElement,
+  bridge: SceneBridge,
+  options: { readonly input?: InputMap } = {},
+) {
   const mount = (AppShellModule as Record<string, unknown>).mountAppShell;
   expect(mount).toBeTypeOf('function');
 
@@ -74,8 +97,9 @@ function mountShell(root: TestElement, bridge: SceneBridge) {
     mount as (
       root: HTMLElement,
       sceneBridge: SceneBridge,
+      options?: { readonly input?: InputMap },
     ) => { destroy(): void }
-  )(root as unknown as HTMLElement, bridge);
+  )(root as unknown as HTMLElement, bridge, options);
 }
 
 function snapshot(phase: ShellSnapshot['phase']): ShellSnapshot {
@@ -158,5 +182,47 @@ describe('AppShell', () => {
 
     expect(status.textContent).toBe('Booting renderer: booting message');
     expect(root.children).toHaveLength(0);
+  });
+
+  it('mounts and updates the combat HUD from bridge events and ticks', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('booting'));
+    const shell = mountShell(root, bridge, {
+      input: createInputMap(),
+    });
+
+    bridge.publishEvents([
+      {
+        tick: 0,
+        sequence: 1,
+        payload: {
+          type: 'actor/spawned',
+          entityId: 1,
+          blueprintId: 'player',
+          position: { x: 5, y: 5, z: 8 },
+          facing: 's',
+        },
+      },
+      {
+        tick: 2,
+        sequence: 2,
+        payload: {
+          type: 'combat/damaged',
+          entityId: 1,
+          sourceEntityId: 2,
+          amount: 10,
+          remainingHealth: 175,
+          cause: 'attack',
+        },
+      },
+    ] as never);
+    bridge.publishTick(2);
+
+    expect(
+      findByTestId(root, 'combat-player-health').getAttribute('aria-valuenow'),
+    ).toBe('175');
+    expect(findByTestId(root, 'combat-hud')).toBeDefined();
+
+    shell.destroy();
   });
 });

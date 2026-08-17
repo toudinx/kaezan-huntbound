@@ -1,0 +1,50 @@
+import type {
+  AbilityDefinition,
+  EntityId,
+  SimulationCommand,
+} from '../../../../packages/contracts/src/index.ts';
+import type { InputAction } from '../input/InputMap';
+
+export interface CombatInputContext {
+  readonly playerEntityId: EntityId;
+  readonly targetEntityId: EntityId | null;
+  readonly abilities: readonly AbilityDefinition[];
+}
+
+type CombatAction = Extract<
+  InputAction,
+  { readonly kind: 'attack' | 'cast-ability' }
+>;
+
+export function combatCommandForAction(
+  action: CombatAction,
+  context: CombatInputContext,
+): SimulationCommand | undefined {
+  switch (action.kind) {
+    case 'attack':
+      return context.targetEntityId === null
+        ? undefined
+        : {
+            type: 'actor/attack',
+            entityId: context.playerEntityId,
+            targetEntityId: context.targetEntityId,
+          };
+    case 'cast-ability': {
+      const ability = context.abilities[action.abilityIndex];
+      if (ability === undefined) return undefined;
+
+      const targetEntityId =
+        ability.shape === 'target' ? context.targetEntityId : null;
+      if (ability.shape === 'target' && targetEntityId === null) {
+        return undefined;
+      }
+
+      return {
+        type: 'actor/cast-ability',
+        entityId: context.playerEntityId,
+        abilityIndex: action.abilityIndex,
+        targetEntityId,
+      };
+    }
+  }
+}
