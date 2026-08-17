@@ -2,11 +2,10 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução bloqueada. **PB-05-10 done e integrada em
-`acf3b3b`.** **PB-05-11 bloqueada na prova de estabilidade e não integrada
-(`bed19d5`, fora de `main`).** **PB-05-12 não é elegível (B7).** B6 resolvido
-(`aggroRadius` `1` na composição + `tickCount` `2700`). B5 (hunt-budget) segue
-aberto historicamente e não foi mascarado.
+**Estado geral:** PB-05-11 bloqueada na QA browser. **PB-05-10 done e
+integrada em `acf3b3b`.** B6 resolvido (`aggroRadius` `1` na composição +
+`tickCount` `2700`). B5 (hunt-budget) segue aberto historicamente e não foi
+mascarado.
 
 **Última atualização:** 2026-08-17
 
@@ -14,9 +13,8 @@ aberto historicamente e não foi mascarado.
 condição de parada da própria task card: PB-05-11 não está integrada em `main`.
 Nenhum gate de auditoria foi executado e nenhum veredito foi emitido.
 
-**Próxima etapa:** desbloquear a estabilidade da sessão dirigida da PB-05-11
-(`45/50` e `49/50` sem `retries`) e integrá-la em `main`. Só então PB-05-12
-volta a ser elegível.
+**Próxima etapa:** desbloquear a estratégia de sessão/aggro da PB-05-11. A
+PB-05-12 não é elegível enquanto a estabilidade browser não for verde.
 
 ## Tasks
 
@@ -32,8 +30,8 @@ volta a ser elegível.
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | done | `codex/pb-05-10-combat-hud` | `acf3b3b` (ff `b5427f2..acf3b3b`) | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
-| PB-05-11 | blocked (estabilidade browser) | `codex/pb-05-11-combat-browser-qa` | — (`bed19d5`, **não integrada**) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `49/50` e `45/50` |
-| PB-05-12 | blocked (dependência) | `claude/pb-05-12-integrated-gate` | — | devolvida sem auditar por B7; sem veredito |
+| PB-05-11 | blocked (QA browser) | `codex/pb-05-11-combat-browser-qa` | — (não integrada) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `49/50` e `45/50` |
+| PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
 
 ## Última task concluída
 
@@ -116,6 +114,67 @@ PB-05-12 volta a ser elegível quando, cumulativamente:
 - **Modelo:** Claude Opus 5, effort alto.
 - **Skills:** `superpowers:verification-before-completion`, `independent-audit`.
 - **Validador:** — (a task era a validação; não chegou a validar nada).
+
+## Handoff PB-05-11 — 2026-08-17
+
+**Status:** bloqueada. A cobertura de combate, a paridade Node/Chromium e as
+quatro screenshots foram produzidas, mas a mesma sessão interativa falhou em
+duas rodadas obrigatórias sem retry: `49/50` e `45/50`. A task manda parar na
+primeira falha de `--repeat-each=10`; a branch permanece não integrada e a
+worktree é mantida para handoff.
+
+**Base:** `main` em `6acc88d` (PB-05-10 integrada). **Branch/worktree:**
+`codex/pb-05-11-combat-browser-qa`;
+`C:\Kaezan\kaezan-huntbound-pb05-11-qa`.
+
+**Modelo/effort:** GPT-5 Codex; effort interno não é exposto pelo runtime.
+Skills usadas: `superpowers:using-superpowers`,
+`superpowers:brainstorming`, `superpowers:writing-plans`,
+`superpowers:using-git-worktrees`, `superpowers:test-driven-development`,
+`superpowers:systematic-debugging` e
+`superpowers:verification-before-completion`. Validador independente: não
+aplicável; o gate automatizado é a validação prevista.
+
+**O que mudou:**
+
+- Specs `combat-play.spec.ts` e `combat-replay.spec.ts` para os quatro
+  viewports e o replay da fixture `pb-05-hunt-combat`.
+- Helpers `combatDriver.ts` e `combatSession.ts` para input real, observação
+  de barras/loot/morte, captura e comparação do snapshot no Chromium.
+- Quatro screenshots versionadas em
+  `docs/playbooks/PB-05/artifacts/screenshots/`.
+- Cinco snapshots de shell regenerados pelo Playwright depois de comprovar a
+  mudança visual deliberada do HUD de PB-05-10.
+
+Nenhum arquivo em `packages/**` ou `apps/game/src/**` foi alterado.
+
+**Evidências:**
+
+| Comando | Exit | Resultado |
+|---|---:|---|
+| `corepack pnpm build` | `0` | 254 módulos transformados |
+| `corepack pnpm exec biome check .` | `0` | 411 arquivos |
+| `corepack pnpm typecheck` | `0` | 7 projetos |
+| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --retries=0` | `0` | 4 viewports passaram na captura |
+| `corepack pnpm exec playwright test tests/e2e/combat-replay.spec.ts --retries=0` | `0` | hash Node/Chromium igual |
+| `corepack pnpm qa:browser` | `1` | após os snapshots, 32 passaram; falhou em combate `desktop-wide` e B5 `hunt-budget` |
+| `corepack pnpm exec playwright test ... --retries=0 --repeat-each=10` | `1` | rodada final A: `49 passed`; rodada final B: `45 passed` |
+
+Hash do snapshot canônico nos dois runtimes:
+`44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
+Os detalhes, hashes das screenshots e comandos completos estão em
+`docs/playbooks/PB-05/artifacts/browser-qa.md`.
+
+**Bloqueio:** sob carga/tempo variável, o jogador morre durante a aproximação
+ou espera de cooldown antes de matar o primeiro rotworm. Foram observados
+alvos vivos entre `3/65` e `65/65`, `Health: 0/185`, timeout de input e alvo
+desaparecido durante a aproximação. O driver tentou curar antes, reduzir
+seleção extra e respeitar o cooldown de 40 ticks; a prova continua vermelha.
+Não foi usado retry, timeout inflado, skip ou asserção enfraquecida.
+
+**Próxima ação:** decidir/corrigir a estratégia de combate/aggro na task
+apropriada e repetir a prova obrigatória. Não integrar esta branch enquanto a
+sessão não fechar `50/50`.
 
 ## Handoff PB-05-10 — 2026-08-16
 
