@@ -34,6 +34,7 @@
     "hunt:hashes:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb04 && node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb04-respawn",
     "combat:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts verify --scenario packages/test-fixtures/hunt/pb05/scenario.json --log packages/test-fixtures/hunt/pb05/commands.jsonl --snapshot packages/test-fixtures/hunt/pb05/snapshot.golden.json --events packages/test-fixtures/hunt/pb05/events.golden.jsonl && corepack pnpm combat:hashes:check",
     "combat:hashes:check": "node --no-warnings --experimental-transform-types tools/replay/cli.ts check-hashes --dir packages/test-fixtures/hunt/pb05",
+    "build:site": "corepack pnpm --filter @huntbound/game build:personal",
     "build": "corepack pnpm assets:stage:test && corepack pnpm --recursive run build",
     "architecture:check": "node tools/architecture/check-boundaries.ts",
     "content:catalog:rebuild": "node tools/content-catalog/cli.ts rebuild",
