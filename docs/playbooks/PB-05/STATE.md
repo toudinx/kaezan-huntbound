@@ -2,10 +2,9 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-10 implementada nesta
-worktree, aguardando fast-forward para `main`.** B6 resolvido (`aggroRadius`
-`1` na composição + `tickCount` `2700`). B5 (hunt-budget) segue aberto
-historicamente e não foi mascarado.
+**Estado geral:** execução em andamento. **PB-05-10 done e integrada em
+`acf3b3b`.** B6 resolvido (`aggroRadius` `1` na composição + `tickCount`
+`2700`). B5 (hunt-budget) segue aberto historicamente e não foi mascarado.
 
 **Última atualização:** 2026-08-16
 
@@ -29,7 +28,7 @@ estão implementadas.
 | PB-05-07 | done | `grok/pb-05-07-content-to-combat` | `640f18e` (ff `5762fa4..640f18e`) | `buildHuntScenario` com combate; hunt.json `a11941b2…15e8eb6`; 77 testes content |
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
-| PB-05-10 | done (aguardando ff) | `codex/pb-05-10-combat-hud` | este commit | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
+| PB-05-10 | done | `codex/pb-05-10-combat-hud` | `acf3b3b` (ff `b5427f2..acf3b3b`) | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
 | PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
 | PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
 
@@ -41,14 +40,15 @@ Fast-forward para `main` autorizado pela task card.
 
 ## Handoff PB-05-10 — 2026-08-16
 
-**Status:** implementação concluída nesta branch; integração serial e limpeza
-pendentes. Os gates de código estão verdes. O `verify` terminou exit `1` em QA
-browser: `asset-pack` não atingiu `data-assets-ready` em 5 s, `boot-budget`
-mediu `5271,8 ms`, e cinco screenshots do shell mudaram pela adição deliberada
-do HUD. Screenshots e snapshots permanecem fora do escopo desta task e não
-foram regravados; PB-05-11 é a próxima task elegível.
+**Status:** implementação concluída e integrada em `main` no commit `acf3b3b`.
+Os gates de código estão verdes. O `verify` pós-integração terminou exit `1`
+somente nas cinco screenshots do shell que mudaram pela adição deliberada do
+HUD; 24/29 specs browser passaram, incluindo asset pack, boot budget,
+hunt-budget, mobile, replay e lifecycle. Screenshots e snapshots permanecem
+fora do escopo desta task e não foram regravados; PB-05-11 é a próxima task
+elegível.
 
-**Base:** `main` antes do fast-forward. **Branch/worktree:**
+**Base:** `main` em `b5427f2`, fast-forward para `acf3b3b`. **Branch/worktree:**
 `codex/pb-05-10-combat-hud`; `C:\Kaezan\kaezan-huntbound-pb05-10-hud`.
 
 **Modelo/effort:** GPT-5 Codex; effort interno não é exposto pelo runtime.
@@ -90,7 +90,9 @@ aplicável; os gates automatizados são a validação prevista.
 | `corepack pnpm architecture:check` | `0` | fronteiras verdes |
 | `corepack pnpm build` | `0` | 254 módulos transformados |
 | `corepack pnpm exec playwright test tests/e2e/hunt-mobile.spec.ts -g "keeps the centre and lower middle"` | `0` | centro/lower-middle livres |
-| `corepack pnpm verify` | `1` | 22/29 browser; 2 falhas de boot/asset e 5 snapshots do shell; gates anteriores verdes |
+| `corepack pnpm verify` na worktree | `1` | 22/29 browser; 2 falhas de boot/asset e 5 snapshots do shell |
+| `git merge --ff-only codex/pb-05-10-combat-hud` | `0` | `main` `b5427f2..acf3b3b` |
+| `corepack pnpm verify` pós-integração | `1` | 24/29 browser; somente 5 snapshots do shell; todos os demais gates verdes |
 
 Não houve alteração em dependências, contratos, pacotes, goldens de replay ou
 snapshots de screenshot. **Próxima task elegível:** PB-05-11.
