@@ -167,6 +167,41 @@ explícita do supervisor. O restante é serial. Em modo paralelo, os executores 
 limpas, preservam branches e não disputam `STATE.md`; a task dependente integra, atualiza o handoff e
 apaga as branches após os gates integrados.
 
+## Correções pós-aceite — PB-05-FIX
+
+O usuário jogou em 2026-08-18 e apontou: caminhada funcional, mas ataque, magia e spell **sem
+animação nenhuma — só números na tela**. Conforme `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`,
+aceite apontado vira task `PB-05-FIX-MM`. O playbook permanece aberto até elas passarem e o usuário
+aprovar; PB-06 e PB-07 ficam atrás na fila.
+
+Diagnóstico e direção em
+[`docs/superpowers/specs/2026-08-18-pb-05-fix-combat-fx-design.md`](../../superpowers/specs/2026-08-18-pb-05-fix-combat-fx-design.md).
+Metade do sintoma é regressão, não feature ausente: o pack pessoal ficou defasado em seis chaves de
+combate, e asset ausente era descartado em silêncio — então cadáver, sangue e o arco de autoloot,
+entregues em PB-05-10, nunca chegaram à tela.
+
+| ID | Problema coeso | Dependência | Modelo/effort | Status |
+|---|---|---|---|---|
+| [PB-05-FIX-01](tasks/PB-05-FIX-01-restaurar-assets-de-combate.md) | pack pessoal regenerado; asset ausente vira diagnóstico observável em vez de silêncio | PB-05-11 | Luna `xhigh` / Grok 4.6 `high` | pending |
+| [PB-05-FIX-02](tasks/PB-05-FIX-02-animar-efeitos-de-combate.md) | `EffectAnimation` puro no relógio de render; pool de sprites; efeito deixa de congelar no frame 0 | PB-05-FIX-01 | Luna `xhigh` / Grok 4.6 `high` | pending |
+
+Conforme `AGENTS.md`, só as duas próximas nascem como task card. O resto fica em bullets até chegar
+a vez:
+
+- **PB-05-FIX-03** — `CombatFxTable.ts`, a única tabela que liga `abilityId` e `CombatCause` a
+  visual, sem Phaser; `CombatDecorations` passa a tratar `combat/attacked` e a distinguir
+  `combat/damaged` por causa. Todo golpe ganha impacto no alvo.
+- **PB-05-FIX-04** — `ability/cast` e `combat/healed`: área raio 1 com stagger para `berserk`, alvo
+  para `brutal-strike`, self para `wound-cleansing`, e número de cura distinto do de dano.
+- **PB-05-FIX-05** — `CombatImpulses.ts`: flash no atingido, hit-stop, shake de câmera, lunge do
+  atacante e cor de número por causa. É o passe de game feel, o que mais pede iteração no olho.
+- **PB-05-FIX-06** — `HuntProbe` expõe os cues planejados; spec Playwright no projeto `correctness`
+  afirmando planejamento e não pixel; `qa:budgets` registrado; entrega jogável para o aceite.
+
+Invariantes de toda a trilha: nada toca `packages/simulation` ou `packages/contracts`;
+`combat:check` sai byte-idêntico — golden que mexer é bug, não descoberta; sem `Math.random()` no
+planejador, a variação deriva de `entityId` e `tick`.
+
 ## Política de modelos
 
 Grok 4.6 entra como terceiro frontier, intercambiável com GPT-5.6 Sol e Claude Opus 5 por classe de

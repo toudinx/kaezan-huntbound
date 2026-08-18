@@ -2,15 +2,15 @@
 
 **Playbook:** [`README.md`](README.md)
 
-**Estado geral:** implementação completa e integrada em `main`. Todas as onze tasks de
-implementação estão `done`. **Aguardando o aceite do usuário** (jogar e aprovar), que é o
-fechamento normativo desde a revisão de processo de 2026-08-18.
+**Estado geral:** **correções em execução**. As onze tasks de implementação estão `done` e
+integradas, mas o aceite de 2026-08-18 foi **apontado, não aprovado**: ataque, magia e spell sem
+animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 
 **Última atualização:** 2026-08-18
 
-**Próxima etapa:** o usuário joga (`corepack pnpm dev`) e aprova ou aponta correções. PB-06 **não
-depende** desse aceite: o que ele precisa do PB-05 é código integrado e `verify` verde, e isso já
-existe em `d4490e9`.
+**Próxima etapa:** executar PB-05-FIX-01. A trilha tem prioridade sobre PB-06 e PB-07 por decisão do
+usuário em 2026-08-18. PB-06 continua tecnicamente desbloqueado — precisa apenas de código integrado
+e `verify` verde, que existem em `d4490e9` — mas está atrás na fila.
 
 ## Tasks
 
@@ -28,6 +28,9 @@ existe em `d4490e9`.
 | PB-05-10 | done | `acf3b3b` | HUD DOM, input, alvo, dano, corpo/sangue/arco, loot e reinício |
 | PB-05-11 | done | `d4490e9` | `artifacts/browser-qa.md` + 4 screenshots; combate 4/4; estabilidade `50/50` |
 | PB-05-12 | cancelada | — | auditoria deixou de ser gate; ver abaixo |
+| PB-05-FIX-01 | pending | — | pack pessoal com 140 chaves; asset ausente vira diagnóstico |
+| PB-05-FIX-02 | pending | — | `EffectAnimation` puro; efeito anima; `combat:check` byte-idêntico |
+| PB-05-FIX-03..06 | bullets | — | ver README; congelam duas à frente |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que
 passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d07c`.
@@ -44,18 +47,14 @@ Nenhum bloqueio aberto.
 - **B7 — resolvido** em `d4490e9` (PB-05-11 integrada).
 - **B3, B4, B6 — resolvidos.** Detalhes no log de execução.
 
-## PB-05-12 — cancelada
-
-A auditoria integrada bloqueante foi eliminada do processo em 2026-08-18
-(`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, seção "Fechamento de playbook"). A task exigia
-`main` com `git status` limpo, e a sujeira era o PB-06 ainda não versionado; PB-06-01, por sua vez,
-esperava o veredito. Impasse circular sem nenhuma causa técnica.
-
-Auditoria independente do combate continua possível e desejável — como `/code-review` sobre o
-intervalo `9f1c14c..d4490e9`, depois do aceite, gerando tasks de correção em vez de veredito.
-
 ## Decisões congeladas e histórico
 
 Decisões duráveis vivem na spec do playbook e em `docs/architecture/KERNEL_CONTRACT.md`. Handoffs,
 saídas de gate e o histórico completo da execução estão em
-[`artifacts/execution-log.md`](artifacts/execution-log.md).
+[`artifacts/execution-log.md`](artifacts/execution-log.md). Diagnóstico e direção da trilha
+`PB-05-FIX` estão em
+[`2026-08-18-pb-05-fix-combat-fx-design.md`](../../superpowers/specs/2026-08-18-pb-05-fix-combat-fx-design.md).
+
+PB-05-12 foi cancelada em 2026-08-18: auditoria deixou de ser gate bloqueante
+(`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`). Auditoria independente do combate continua
+desejável como `/code-review` sobre `9f1c14c..d4490e9`, depois do aceite, gerando tasks de correção.

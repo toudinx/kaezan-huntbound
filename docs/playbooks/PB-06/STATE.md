@@ -10,7 +10,9 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-01.
+**Próxima etapa:** executar PB-06-01 — **depois** da trilha `PB-05-FIX`. O aceite do PB-05 em
+2026-08-18 foi apontado (combate sem animação) e o usuário priorizou a correção sobre qualquer
+feature nova. PB-06 continua tecnicamente desbloqueado; está apenas atrás na fila.
 
 ## Tasks
 
