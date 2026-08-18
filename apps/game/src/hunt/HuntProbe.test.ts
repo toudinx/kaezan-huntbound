@@ -295,4 +295,24 @@ describe('installHuntProbe', () => {
       keys,
     );
   });
+
+  it('exposes the current frame of each visible decoration', () => {
+    vi.stubEnv('MODE', 'test');
+    const decorations = Object.freeze([
+      { id: 1, kind: 'blood', frame: 3, visible: true },
+      { id: 2, kind: 'corpse', frame: 0, visible: true },
+    ]);
+
+    installHuntProbe(
+      {
+        huntProbeState: emptyState,
+        huntProbeVisibleDecorations: () => decorations,
+      },
+      () => () => {},
+    );
+
+    expect(target.__huntboundHuntProbe?.visibleDecorations?.()).toEqual(
+      decorations,
+    );
+  });
 });

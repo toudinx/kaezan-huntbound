@@ -33,6 +33,7 @@ import { type CellAnchor, cellAnchor } from '../../hunt/CellAnchor';
 import {
   type CombatDecoration,
   createCombatDecorations,
+  createDecorationObjectPool,
 } from '../../hunt/CombatDecorations';
 import {
   type CombatTargetActor,
@@ -40,6 +41,7 @@ import {
   createCombatTargetSelection,
 } from '../../hunt/CombatTargeting';
 import { DEFAULT_COMBAT_ABILITIES } from '../../hunt/CombatViewModel';
+import { effectFrame } from '../../hunt/EffectAnimation';
 import {
   type CombatInputContext,
   combatCommandForAction,
@@ -52,6 +54,7 @@ import {
 import {
   type HuntProbeActor,
   type HuntProbeCommand,
+  type HuntProbeDecoration,
   type HuntProbeLayerCounts,
   type HuntProbeState,
   installHuntProbe,
@@ -139,6 +142,15 @@ export class HuntScene extends Phaser.Scene {
     number,
     Phaser.GameObjects.Sprite | Phaser.GameObjects.Text
   >();
+  private readonly decorationSpritePool =
+    createDecorationObjectPool<Phaser.GameObjects.Sprite>({
+      reset: (sprite) => {
+        sprite.setVisible(false);
+        sprite.setAlpha(1);
+        sprite.setRotation(0);
+        sprite.setScale(1);
+      },
+    });
   private sprites: Phaser.GameObjects.Sprite[] = [];
   private readonly combatDecorations = createCombatDecorations();
   private presentation?: HuntPresentation;
@@ -396,6 +408,24 @@ export class HuntScene extends Phaser.Scene {
     return this.unresolvedAssets.unresolvedCombatKeys();
   }
 
+  huntProbeVisibleDecorations(): readonly HuntProbeDecoration[] {
+    return Object.freeze(
+      [...this.decorationObjects.entries()].map(([id, object]) => {
+        const kind = object.getData('hunt-decoration');
+        const frame =
+          object instanceof Phaser.GameObjects.Sprite
+            ? object.frame.name
+            : null;
+        return {
+          id,
+          kind: typeof kind === 'string' ? kind : 'unknown',
+          frame,
+          visible: object.visible,
+        };
+      }),
+    );
+  }
+
   resetHuntProbe(): void {
     this.inputCommands = [];
   }
@@ -462,6 +492,9 @@ export class HuntScene extends Phaser.Scene {
       object.destroy();
     }
     this.decorationObjects.clear();
+    this.decorationSpritePool.drain((sprite) => {
+      sprite.destroy();
+    });
   }
 
   /** The presentation clock, read once per sync so it never runs backwards. */
@@ -625,8 +658,12 @@ export class HuntScene extends Phaser.Scene {
 
     for (const [id, object] of this.decorationObjects) {
       if (visible.has(id)) continue;
-      object.destroy();
       this.decorationObjects.delete(id);
+      if (object instanceof Phaser.GameObjects.Sprite) {
+        this.decorationSpritePool.release(object);
+      } else {
+        object.destroy();
+      }
     }
   }
 
@@ -648,12 +685,16 @@ export class HuntScene extends Phaser.Scene {
     }
 
     if (decoration.key === undefined) return undefined;
-    const asset = this.assetByKey.get(decoration.key);
+    const key = decoration.key;
+    const asset = this.assetByKey.get(key);
     if (asset === undefined) {
-      this.unresolvedAssets.noteMissing(decoration.key);
+      this.unresolvedAssets.noteMissing(key);
       return undefined;
     }
-    const sprite = this.add.sprite(0, 0, decoration.key);
+    const sprite = this.decorationSpritePool.acquire(() =>
+      this.add.sprite(0, 0, key),
+    );
+    sprite.setTexture(key);
     sprite
       .setOrigin(0.5, 0.5)
       .setDisplaySize(
@@ -721,6 +762,7 @@ export class HuntScene extends Phaser.Scene {
             regionWidth: this.options.hunt.region.width,
           }) + 10,
         );
+      this.applyDecorationFrame(sprite, decoration, renderTimeMs);
       return;
     }
 
@@ -731,6 +773,8 @@ export class HuntScene extends Phaser.Scene {
         (position.x + 0.5) * this.tileSize,
         (position.y + 0.5) * this.tileSize,
       )
+      .setRotation(0)
+      .setAlpha(1)
       .setDepth(
         actorDepth({
           from: position,
@@ -738,6 +782,24 @@ export class HuntScene extends Phaser.Scene {
           regionWidth: this.options.hunt.region.width,
         }),
       );
+    this.applyDecorationFrame(sprite, decoration, renderTimeMs);
+  }
+
+  private applyDecorationFrame(
+    sprite: Phaser.GameObjects.Sprite,
+    decoration: CombatDecoration,
+    renderTimeMs: number,
+  ): void {
+    if (decoration.key === undefined) return;
+    const asset = this.assetByKey.get(decoration.key);
+    const animation = asset?.animations[0];
+    if (asset === undefined || animation === undefined) return;
+    if (asset.atlasFrameCount <= 1) return;
+    sprite.setFrame(
+      effectFrame(animation, renderTimeMs - decoration.createdAtMs),
+      false,
+      false,
+    );
   }
 
   private combatTargetActors(): readonly CombatTargetActor[] {

@@ -8,7 +8,7 @@ animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 
 **Última atualização:** 2026-08-18
 
-**Próxima etapa:** executar PB-05-FIX-02. A trilha FIX tem prioridade sobre PB-06 e PB-07.
+**Próxima etapa:** executar PB-05-FIX-03. A trilha FIX tem prioridade sobre PB-06 e PB-07.
 
 ## Tasks
 
@@ -27,7 +27,7 @@ animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 | PB-05-11 | done | `d4490e9` | `artifacts/browser-qa.md` + 4 screenshots; combate 4/4; estabilidade `50/50` |
 | PB-05-12 | cancelada | — | auditoria deixou de ser gate; ver abaixo |
 | PB-05-FIX-01 | done | (este commit) | 134→139; draw-blood 6/6; hit-area 8/8; magic-blue 22/22; personal:check 0; cadáver+loot na tela |
-| PB-05-FIX-02 | pending | — | `EffectAnimation` puro; efeito anima; `combat:check` byte-idêntico |
+| PB-05-FIX-02 | done | (este commit) | `effectFrame` min; play-once; sprite pool; probe frames; `combat:check` idêntico |
 | PB-05-FIX-03..06 | bullets | — | ver README; congelam duas à frente |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que

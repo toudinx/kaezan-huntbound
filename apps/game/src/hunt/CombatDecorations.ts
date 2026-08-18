@@ -66,6 +66,31 @@ function copyDecoration(decoration: CombatDecoration): CombatDecoration {
   };
 }
 
+export function createDecorationObjectPool<T>(options: {
+  readonly reset: (item: T) => void;
+}): {
+  acquire(create: () => T): T;
+  release(item: T): void;
+  drain(dispose: (item: T) => void): void;
+} {
+  const idle: T[] = [];
+
+  return {
+    acquire: (create) => {
+      const item = idle.pop() ?? create();
+      options.reset(item);
+      return item;
+    },
+    release: (item) => {
+      idle.push(item);
+    },
+    drain: (dispose) => {
+      for (const item of idle) dispose(item);
+      idle.length = 0;
+    },
+  };
+}
+
 export function createCombatDecorations(): CombatDecorations {
   let nextId = 1;
   let entries: CombatDecoration[] = [];
