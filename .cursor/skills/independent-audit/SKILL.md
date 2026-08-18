@@ -1,12 +1,23 @@
 ---
 name: independent-audit
-description: Conduzir a auditoria independente de fechamento de um playbook do Kaezan Huntbound, reproduzindo evidência em checkout limpo e emitindo APPROVED, APPROVED_WITH_WARNINGS ou REJECTED com defeitos numerados. Use em task de auditoria, gate final de playbook ou revisão crítica do trabalho de outro agente.
+description: Conduzir a auditoria independente e opcional de um playbook do Kaezan Huntbound, reproduzindo a evidência sobre um commit identificado por hash e devolvendo defeitos numerados que viram tasks de correção. Use depois do aceite do usuário, ou em revisão crítica do trabalho de outro agente. Não emite veredito bloqueante e não exige árvore de trabalho limpa.
 ---
 
 # Auditoria independente
 
-Você não é o implementador. Seu produto é um veredito reproduzível, não um resumo simpático do que
-foi feito.
+Você não é o implementador. Seu produto é uma lista de defeitos reproduzíveis, não um resumo
+simpático do que foi feito.
+
+## Posição no processo (revisão de 2026-08-18)
+
+Auditoria **não é gate**. Ela roda **depois** do aceite do usuário, é opcional — decidida caso a caso,
+tipicamente quando o playbook mexeu em kernel, contrato, golden ou persistência — e o que ela encontra
+vira task de correção priorizada. Ela **não** impede o playbook seguinte de começar, e nenhuma task
+espera o resultado dela.
+
+Ela audita **um commit identificado por hash**. **Não exige `git status` limpo na `main`**: crie a
+worktree a partir do SHA e audite ali. Exigir árvore vazia transforma qualquer trabalho paralelo não
+relacionado em bloqueio, e foi o que travou PB-05-12 contra PB-06.
 
 ## Regra central
 
@@ -19,10 +30,11 @@ modelo, effort e motivo (`docs/08_POLITICA_MODELOS_AGENTES.md`).
 
 ## Roteiro
 
-1. **Checkout limpo.** Branch e commit exatos que serão auditados; `git status` limpo. Registre o SHA.
+1. **Checkout do commit auditado.** Worktree a partir do SHA exato. Registre o SHA. O estado da
+   árvore de trabalho da `main` é irrelevante para a auditoria.
 2. **Idempotência.** `corepack pnpm verify` duas vezes: exit `0` nas duas e árvore inalterada depois.
    Gate que altera a árvore não é gate.
-3. **Lint.** `biome check .` — `verify` não cobre lint, e essa lacuna já produziu um defeito real.
+3. **Lint.** `biome check .` — já incluído no `verify` desde 2026-08-18; confirme mesmo assim.
 4. **Determinismo.** `simulation:check` e `hunt:check` repetidos; goldens de playbooks anteriores
    precisam sobreviver byte-idênticos.
 5. **Fronteiras.** `architecture:check` limpo; confira que a simulação continua sem DOM, sem `node:*`
@@ -38,15 +50,16 @@ modelo, effort e motivo (`docs/08_POLITICA_MODELOS_AGENTES.md`).
 10. **Aceite de produto.** Registre separadamente do aceite técnico, com o que ele cobre e o que não
     cobre.
 
-## Veredito
+## Resultado
 
-Um de: `APPROVED`, `APPROVED_WITH_WARNINGS`, `REJECTED`.
+Uma lista de defeitos, não um veredito bloqueante. Cada defeito recebe identificador (`D1`, `D2`, …),
+evidência reproduzível, impacto e o que precisa acontecer para fechá-lo.
 
-Cada defeito recebe identificador (`D1`, `D2`, …), evidência reproduzível, impacto e o que precisa
-acontecer para fechá-lo. Warning é priorizado e vira pendência rastreada, não desaparece.
+Grave o relatório em `docs/playbooks/<PB-ID>/artifacts/acceptance-report.md` e abra as tasks
+`PB-NN-FIX-MM` correspondentes. Registre no `STATE.md` apenas o commit auditado e as tasks abertas —
+sem transcrever o relatório.
 
-Grave o relatório em `docs/playbooks/<PB-ID>/artifacts/acceptance-report.md` e atualize o `STATE.md`
-com veredito, commit auditado e próxima etapa.
+Orçamento de tempo (`qa:budgets`) entra como medição registrada, nunca como defeito bloqueante.
 
 ## O que nunca fazer
 

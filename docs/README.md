@@ -59,18 +59,17 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   byte em Node e no Chromium. Warnings priorizados em
   [`acceptance-report.md`](playbooks/PB-03/artifacts/acceptance-report.md).
 
-- [`PB-04 — Primeira hunt ponta a ponta`](playbooks/PB-04/README.md) — **aberto**; auditoria
-  PB-04-10 sobre `307a3f0` `REJECTED`; FIX-02/03/04 integrados; nova rodada de PB-04-10 decide o
-  fechamento. Design em
+- [`PB-04 — Primeira hunt ponta a ponta`](playbooks/PB-04/README.md) — **fechado** em `9f1c14c`.
+  Design em
   [`2026-08-14-pb-04-first-hunt-design.md`](superpowers/specs/2026-08-14-pb-04-first-hunt-design.md).
-- [`PB-05 — Vocação e combate Canary`](playbooks/PB-05/README.md) — **escrito e bloqueado** até o
-  PB-04 fechar. Design em
+- [`PB-05 — Vocação e combate Canary`](playbooks/PB-05/README.md) — **implementado e integrado** em
+  `d4490e9`; aguardando o aceite do usuário jogando. Design em
   [`2026-08-15-pb-05-vocation-combat-design.md`](superpowers/specs/2026-08-15-pb-05-vocation-combat-design.md).
-- [`PB-06 — Save local e inventário`](playbooks/PB-06/README.md) — **escrito e bloqueado** até o
-  PB-05 fechar. Design em
+- [`PB-06 — Save local e inventário`](playbooks/PB-06/README.md) — **elegível**; PB-06-01 pode
+  começar. Design em
   [`2026-08-18-pb-06-local-save-inventory-design.md`](superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md).
 
-**Playbook em execução: PB-04 — primeira hunt ponta a ponta.** A ordem e a Definition of Ready estão
+**Playbook em execução: PB-06 — save local e inventário.** A ordem e a Definition of Ready estão
 em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha

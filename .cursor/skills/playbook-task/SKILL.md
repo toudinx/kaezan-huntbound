@@ -38,14 +38,18 @@ condição de parada, não algo a "ajustar de passagem".
 
 ## 4. Verificar
 
-Rode exatamente as verificações exigidas pela task, mais `biome check .`. Use a skill `run-gates`
-para escolher os focados. Guarde comando e saída: eles vão para o relatório.
+Rode exatamente as verificações exigidas pela task. Use a skill `run-gates` para escolher os
+focados. `corepack pnpm verify` já inclui `biome check .`. Guarde comando e saída: eles vão para o
+relatório. `qa:budgets` é informativo — registre o número, não bloqueie por ele.
 
 ## 5. Persistir o handoff
 
-Atualize `STATE.md`: status da task, commit, artefatos, verificações e resultados, decisões
-descobertas e onde foram documentadas, bloqueios, **modelo e effort realmente usados**. Decisão
-durável vai para ADR ou spec e é só referenciada no `STATE.md`.
+Atualize **só a linha da task** na tabela do `STATE.md`, mais a próxima elegível e os bloqueios
+abertos. O arquivo tem teto de 60 linhas.
+
+Comandos, exit codes, hashes, contagens, tentativas, desvios e o modelo/effort usados vão na
+**mensagem de commit** da task, não no `STATE.md` — o Git já guarda, data e associa ao diff. Decisão
+durável vai para ADR ou spec e é só referenciada.
 
 ## 6. Fechar
 
@@ -58,12 +62,19 @@ está na skill `worktree-cycle`.
 Resumo de mudanças, verificações com comando e resultado, integração, limpeza, desvios e próxima task
 elegível. Depois pare — não inicie a próxima task.
 
+## Ambiguidade não é parada
+
+Comportamento com mais de uma leitura plausível acontece o tempo todo numa implementação. Escolha a
+opção mais simples e mais fácil de reverter, registre a escolha em uma linha no commit e siga. Se
+estiver errada, o jogo mostra, e reverter uma decisão pequena custa menos que uma ida e volta.
+
 ## Condições de parada
 
-Pare, preserve o estado e reporte quando: for necessário mudar decisão congelada, contrato, schema ou
-escopo; aparecer comportamento real com mais de uma interpretação plausível; não for possível provar
-determinismo, segurança, isolamento ou rollback com os gates da task; a mesma causa bloquear dois
-ciclos vermelho/verde seguidos; o `--ff-only` falhar ou a árvore ficar suja.
+Pare, preserve o estado e reporte só quando: for destruir ou migrar dado já salvo sem rollback; for
+necessário mudar contrato público, schema ou golden já integrado; a mesma causa bloquear dois ciclos
+vermelho/verde seguidos; o `--ff-only` falhar ou a árvore ficar suja.
 
-Registre o bloqueio no `STATE.md` com evidência, tentativas, decisão pendente e — se for caso de
-escalonamento — o modelo de destino.
+Não pare por: falta de veredito de auditoria, playbook anterior sem fechamento formal, orçamento de
+tempo vermelho, ou `git status` sujo com arquivos que não são da sua task.
+
+Registre o bloqueio no `STATE.md` em uma linha e o detalhe no relatório do chat.

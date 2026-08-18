@@ -1,5 +1,16 @@
 # PB-06-10 — Auditar o resultado integrado e fechar o playbook
 
+> **Reclassificada em 2026-08-18 — esta task é opcional e não bloqueia nada.**
+>
+> O fechamento do PB-06 é o usuário jogar e aprovar, conforme
+> `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, seção "Fechamento de playbook". Esta auditoria roda
+> **depois** desse aceite, quando for decidido que vale a pena, e o que ela encontrar vira task
+> `PB-06-FIX-NN` no backlog — nunca um veredito que impede o PB-07 de começar.
+>
+> Ela audita **um commit identificado por hash**. Não exige `git status` limpo.
+>
+> Orçamentos de tempo (`corepack pnpm qa:budgets`) são registrados, não exigidos.
+
 **Status inicial:** pending
 
 **Classe da tarefa:** auditoria independente e gate final — pode **reprovar**

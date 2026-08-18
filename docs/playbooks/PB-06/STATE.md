@@ -2,16 +2,15 @@
 
 **Playbook:** `docs/playbooks/PB-06/README.md`
 
-**Estado geral:** escrito e **bloqueado**. Nenhuma task foi executada. A execução depende do aceite
-do PB-05 pela auditoria PB-05-12.
+**Estado geral:** **elegível**. Nenhuma task foi executada ainda. PB-06-01 pode começar.
 
 **Última atualização:** 2026-08-18
 
-**Atualização vigente:** playbook criado — spec aprovada em
-`docs/superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md`, README, este `STATE.md` e
-dez task cards. Nenhum código foi tocado.
+**Atualização vigente:** playbook versionado em `8a77c6d` e desbloqueado em 2026-08-18. B1 caiu
+junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
+integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** desbloquear B1 (fechamento do PB-05) e então executar PB-06-01.
+**Próxima etapa:** executar PB-06-01.
 
 ## Tasks
 
@@ -25,8 +24,8 @@ dez task cards. Nenhum código foi tocado.
 | PB-06-06 | pending | `<agente>/pb06-06-run-persistence` | — | checkpoint, retomada, consolidação idempotente e descarte que preserva a bolsa |
 | PB-06-07 | pending | `<agente>/pb06-07-save-gate` | — | `packages/test-fixtures/save/pb06/**` + `save:check` em `check`/`verify` + `REPLAY_CONTRACT.md` |
 | PB-06-08 | pending | `<agente>/pb06-08-save-ui` | — | autosave, retomada no boot, painel de bolsa e estoque, export/import |
-| PB-06-09 | pending | `<agente>/pb06-09-save-browser-qa` | — | `artifacts/browser-qa.md` + screenshots + specs estáveis sem `retries` |
-| PB-06-10 | pending | `<agente>/pb06-10-integrated-gate` | — | `artifacts/acceptance-report.md` |
+| PB-06-09 | pending | `<agente>/pb06-09-save-browser-qa` | — | specs estáveis sem `retries`; entrega jogável para o aceite do usuário |
+| PB-06-10 | **opcional** | `<agente>/pb06-10-audit` | — | auditoria pós-aceite; gera tasks de correção, não veredito |
 
 ## Última task concluída
 
@@ -56,25 +55,21 @@ continuam sendo os da ADR-05. PB-06-01 registra a nota em
 
 ## Bloqueios
 
-- **B1 (bloqueante, externo ao PB-06):** PB-05 ainda não fechou. PB-05-11 e PB-05-12 estão pendentes
-  em `docs/playbooks/PB-05/STATE.md`. PB-06-01 só é elegível depois do veredito de PB-05-12, porque
-  a fixture do gate `save:check` deriva de `pb-05-hunt-combat` e um golden ainda em disputa não pode
-  virar baseline de outro playbook. **Dado necessário para remover:** veredito, commit auditado e
-  hashes finais registrados no `STATE.md` do PB-05.
+Nenhum bloqueio aberto.
 
-- **B2 (herdado, não bloqueante para escrever, potencialmente bloqueante para fechar):** `qa:browser`
-  / hunt-budget é historicamente instável desde PB-05-01 e reprovou várias vezes. PB-06-09 e PB-06-10
-  precisam distinguir falha por B2 de falha causada pelo save. Não mascarar com retry nem ajustar o
-  teto.
+- ~~**B1:** PB-05 não fechou pela auditoria PB-05-12.~~ **Removido em 2026-08-18.** A auditoria
+  deixou de ser gate bloqueante (`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de
+  playbook"). O que o gate `save:check` precisa é uma baseline estável de `pb-05-hunt-combat`, e
+  `combat:check` sai `0` de forma reproduzível sobre `d4490e9`. Baseline do PB-06: `d4490e9`.
+
+- ~~**B2:** `hunt-budget` instável pode reprovar o fechamento.~~ **Removido em 2026-08-18.** Os
+  specs de orçamento saíram do gate bloqueante para `corepack pnpm qa:budgets`. PB-06-09 não precisa
+  mais distinguir falha de budget de falha de save: o budget não reprova nada. Continua proibido
+  mascarar com retry ou afrouxar teto.
 
 ## Regra de atualização
 
-Ao concluir ou bloquear uma task:
-
-1. atualizar status, branch, commit e evidência na tabela;
-2. registrar comandos, exit codes, contagens e hashes frescos — gerados do artefato real;
-3. registrar decisões duráveis na spec/arquitetura e apenas referenciá-las aqui;
-4. indicar a próxima task realmente elegível;
-5. registrar modelo, effort, skills e validador efetivos;
-6. preservar histórico de falhas, desvios e gatilhos de escalonamento;
-7. em modo paralelo, deixar a task dependente consolidar o handoff compartilhado.
+Este arquivo tem teto de 60 linhas. Ao concluir ou bloquear uma task, atualize **só** a linha dela na
+tabela, a próxima task elegível e os bloqueios abertos. Comandos, exit codes, hashes, tentativas e
+justificativas vão na mensagem de commit da task. Decisões duráveis vão na spec e são apenas
+referenciadas aqui.

@@ -75,17 +75,33 @@ docs/playbooks/<PB-ID>/
 
 ### `STATE.md`
 
-É o handoff persistente entre chats e modelos. Deve registrar somente estado operacional útil:
+É o handoff persistente entre chats e modelos, e tem **teto de 60 linhas**. Registra estado, não
+história:
 
 - status de cada task: `pending`, `in_progress`, `done` ou `blocked`;
-- última task concluída e próxima task elegível;
-- commits e artefatos produzidos;
-- verificações executadas e seus resultados;
-- decisões descobertas durante a execução e onde foram documentadas;
-- bloqueios reais e dados necessários para removê-los.
+- próxima task elegível;
+- commit integrado de cada task;
+- bloqueios abertos e o dado necessário para removê-los;
+- decisões congeladas **por referência** à spec ou ADR que as contém.
+
+O que **não** entra: transcrição de saída de gate, justificativa de vermelho conhecido, relato de
+tentativa, histórico de rodadas de auditoria, evidência detalhada. Tudo isso vai na mensagem de
+commit da task — o Git já guarda, já data e já associa ao diff, sem custo de manutenção. O
+`STATE.md` do PB-05 chegou a 1039 linhas por acumular esse material e passou a ser lido por ninguém.
 
 O `STATE.md` não substitui ADRs, specs nem documentação técnica. Decisões duráveis devem ser
 registradas na fonte apropriada e apenas referenciadas nele.
+
+### Profundidade de escrita antecipada
+
+Um playbook novo nasce com a spec congelada, o `README.md` completo e as **duas primeiras** task
+cards escritas. As demais existem como bullets na tabela do `README.md` e viram task card quando a
+anterior fecha.
+
+O motivo é concreto: dez task cards escritas antes da primeira linha de código descrevem um sistema
+que ainda não existe, envelhecem contra o que a implementação descobre, e a manutenção delas compete
+com a implementação. PB-06 foi escrito inteiro antes de executar e o resultado foi um deadlock
+documental, não um avanço.
 
 ### `tasks/*.md`
 
@@ -240,6 +256,32 @@ a task card como fonte de verdade.
 Cada task card contém sua própria versão preenchida desse prompt. O bloco genérico acima serve apenas
 como referência para autores de playbooks e não deve ser entregue ao executor com placeholders.
 
+## Fechamento de playbook
+
+O playbook fecha quando **o usuário joga e aprova**. É o único aceite normativo.
+
+A última task de implementação termina com `corepack pnpm verify` verde e uma entrega jogável: o
+agente deixa `corepack pnpm dev` funcionando e escreve, em até cinco linhas, o que olhar e como
+reproduzir. O usuário joga, aprova ou aponta o que está errado. Aprovado, o `STATE.md` recebe
+`closed` com a data e o commit; apontado, vira uma task `PB-NN-FIX-MM`.
+
+`corepack pnpm qa:budgets` roda nesse momento e seu resultado é **registrado**, não exigido.
+
+### Auditoria independente
+
+Continua existindo e continua sendo feita por modelo diferente do implementador, mas:
+
+- roda **depois** do aceite do usuário, não antes;
+- é **opcional** — decidida caso a caso, tipicamente quando o playbook mexeu em kernel, contrato,
+  golden ou persistência;
+- não emite veredito bloqueante. O que ela encontra vira task de correção priorizada no backlog;
+- **não é pré-requisito do playbook seguinte.** O que o próximo playbook precisa do anterior é
+  código integrado na `main` e `verify` verde, verificável por `git log` e por gate fresco.
+
+Uma auditoria nunca exige árvore de trabalho vazia. Ela audita **um commit**, identificado por hash.
+Exigir `git status` limpo transforma qualquer trabalho paralelo não relacionado em bloqueio — foi
+exatamente o que travou PB-05-12 contra PB-06 em 2026-08-18.
+
 ## Checklist para criar um novo playbook
 
 - [ ] O playbook referencia este padrão como diretriz transversal.
@@ -253,9 +295,11 @@ como referência para autores de playbooks e não deve ser entregue ao executor 
 - [ ] Toda task declara branch-base, integração, verificação pós-integração e limpeza.
 - [ ] O protocolo remove worktrees concluídas e branches temporárias já integradas.
 - [ ] Tasks paralelas distinguem a remoção imediata da worktree da remoção posterior da branch.
-- [ ] `STATE.md` permite trocar de agente sem reconstruir o histórico.
+- [ ] `STATE.md` permite trocar de agente sem reconstruir o histórico e cabe em 60 linhas.
 - [ ] Nenhuma decisão importante existe apenas dentro dos prompts.
-- [ ] O fechamento do playbook valida o resultado integrado, sem refazer todas as tasks no mesmo chat.
+- [ ] Só a spec, o `README.md` e as duas primeiras task cards foram escritos antes de executar.
+- [ ] O fechamento previsto é o usuário jogando, e a entrega final é jogável por `corepack pnpm dev`.
+- [ ] Nenhuma task depende do veredito de uma auditoria para começar.
 
 ## Antipadrões proibidos
 
@@ -269,3 +313,10 @@ como referência para autores de playbooks e não deve ser entregue ao executor 
 - Encerrar uma task serial pedindo ao usuário que faça um fast-forward rotineiro.
 - Deixar worktree concluída ou branch temporária integrada para limpeza manual posterior.
 - Apagar worktree suja, branch não integrada ou qualquer path que não tenha sido validado.
+- Escrever o playbook inteiro em task cards antes de a primeira delas rodar.
+- Exigir árvore de trabalho vazia para auditar; auditoria endereça um commit por hash.
+- Bloquear uma task no veredito de uma auditoria, ou um playbook no fechamento formal de outro.
+- Usar um orçamento de tempo de parede medido na máquina de desenvolvimento como gate de merge.
+- Transformar o `STATE.md` em diário: saída de gate, tentativa e justificativa vão no commit.
+- Parar a implementação porque um comportamento admite mais de uma leitura razoável. Escolha a mais
+  simples, registre em uma linha e siga.

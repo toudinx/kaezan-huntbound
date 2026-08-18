@@ -43,10 +43,14 @@ O playbook em execução e seu estado estão em `docs/playbooks/<PB-ID>/STATE.md
 
 ## Gates
 
+Existem **duas camadas** e elas não têm o mesmo poder. A primeira responde "isto está correto?" e
+**bloqueia**. A segunda responde "isto está rápido?" e **só informa**.
+
+### Camada bloqueante — `corepack pnpm verify`
+
 | Comando | Cobre | Quando |
 |---|---|---|
-| `corepack pnpm format:check` | formatação Biome | sempre antes de commitar |
-| `biome check .` | formatação **e lint** | sempre antes de commitar — veja o aviso abaixo |
+| `biome check .` | formatação **e** lint | sempre antes de commitar |
 | `corepack pnpm typecheck` | TS de todos os pacotes | mudou tipo, contrato ou API |
 | `corepack pnpm test` | Vitest + testes de fronteira + suítes de tools | mudou código |
 | `corepack pnpm architecture:check` | fronteiras de pacote | mudou import ou manifesto |
@@ -54,15 +58,27 @@ O playbook em execução e seu estado estão em `docs/playbooks/<PB-ID>/STATE.md
 | `corepack pnpm assets:check` | packs, profiles e artefatos de asset | mudou `packages/assets` ou o packer |
 | `corepack pnpm simulation:check` | replay golden do PB-03 | mudou o kernel |
 | `corepack pnpm hunt:check` | replay golden das hunts do PB-04 | mudou kernel, hunt ou cenário |
+| `corepack pnpm combat:check` | replay golden do combate do PB-05 | mudou combate, loot ou IA |
 | `corepack pnpm build` | build de produção | antes de qualquer verificação no browser |
-| `corepack pnpm qa:browser` | build + Playwright | mudou `apps/game` ou comportamento observável |
-| `corepack pnpm verify` | tudo acima exceto lint | fechamento de task |
+| `corepack pnpm qa:browser` | build + Playwright, **projeto `correctness`** | mudou `apps/game` ou comportamento observável |
+| `corepack pnpm verify` | tudo acima | fechamento de task |
 
-**Aviso conhecido:** `verify` roda `format:check`, **não** `biome check`. Lint quebrado passa pelo
-`verify` e é reprovado depois na auditoria — foi o defeito D4 do PB-04-10. Rode `biome check .`
-explicitamente antes de declarar uma task concluída.
+`verify` roda `biome check .` desde 2026-08-18, então lint quebrado reprova aqui e não sobra para
+depois — era o defeito D4 do PB-04-10.
+
+### Camada informativa — `corepack pnpm qa:budgets`
+
+`boot-budget.spec.ts` e `hunt-budget.spec.ts` medem tempo de parede na máquina de desenvolvimento.
+Eles detectam regressão de verdade, mas uma máquina ocupada os reprova sem que nenhuma linha de
+código tenha mudado — B5 do PB-05 estourou o teto de `5000 ms` em `11,7 ms` e manteve o gate global
+vermelho por um playbook inteiro. Isso não pode travar merge.
+
+Rode `qa:budgets` antes de fechar um playbook, registre o número no `STATE.md` e siga. Vermelho aqui
+vira task de performance no backlog, nunca bloqueio. Só se torna bloqueante se você decidir, por
+escrito, que aquele orçamento específico virou requisito de produto.
 
 Gate é evidência, não formalidade: nenhum resultado pode ser afirmado sem a saída fresca do comando.
+Isso vale igualmente para as duas camadas — a informativa é opcional de *bloquear*, não de *rodar*.
 
 ## Hooks de guarda
 
@@ -166,15 +182,44 @@ essencial:
 2. Inspecione o workspace real antes de editar. Preserve decisões congeladas.
 3. Teste antes da implementação quando o comportamento for testável.
 4. Rode as verificações exigidas com evidência fresca.
-5. Atualize `STATE.md` e a ADR/spec quando a task exigir.
+5. Atualize o `STATE.md` — **só a linha da task na tabela** e, se houver, o bloqueio. A narrativa do
+   que foi feito vai na mensagem de commit, que o Git já preserva e ninguém precisa manter.
 6. Commit, integração declarada (padrão `git merge --ff-only`), verificação pós-integração e limpeza
    de worktree/branch — tudo isso já está autorizado pela task, não peça confirmação de novo.
 7. Não inicie a próxima task.
 
-Pare e reporte quando: precisar mudar decisão congelada, contrato, schema ou escopo; encontrar
-comportamento com mais de uma interpretação plausível; não conseguir provar determinismo, segurança
-ou rollback com os gates da task; a mesma causa bloquear dois ciclos vermelho/verde. Registre o
-bloqueio no `STATE.md` em vez de deixá-lo só no relatório do chat.
+### Ambiguidade não é motivo para parar
+
+Comportamento com mais de uma leitura plausível acontece toda hora numa implementação. **Escolha a
+opção mais simples e mais fácil de reverter, registre a escolha em uma linha no commit e siga.** Se a
+escolha estiver errada, o jogo mostra, e trocar uma decisão pequena custa menos que uma rodada de
+ida e volta.
+
+Pare e reporte só quando: for destruir ou migrar dado já salvo sem rollback; precisar mudar um
+contrato público, schema ou golden já integrado; ou a mesma causa bloquear dois ciclos
+vermelho/verde. Nesses três casos, registre o bloqueio no `STATE.md` — não só no relatório do chat.
+
+### O aceite é o usuário jogando
+
+Playbook não fecha por veredito de auditoria. Fecha quando o usuário roda o jogo e aprova. O papel
+do agente é entregar isso jogável: `corepack pnpm verify` verde, `corepack pnpm dev` de pé, e uma
+frase dizendo **o que olhar** e **como reproduzir**.
+
+Auditoria independente continua valendo, mas mudou de posição: roda **depois** do aceite, é
+opcional, e o que ela encontra vira task de correção no backlog — nunca um portão que impede o
+playbook seguinte de começar. Nenhum playbook espera o fechamento formal de outro; o que um playbook
+espera do anterior é **código integrado na `main` e verde**, e isso se confirma com `git log` e
+`verify`, não com um relatório.
+
+### Escreva o playbook duas tasks à frente
+
+Não escreva dez task cards antes de a primeira rodar. Congele a spec e as **duas próximas** tasks; o
+resto do playbook fica como lista de bullets no `README.md` até chegar a vez. Playbook escrito
+inteiro antecipado envelhece contra o código real e vira trabalho de manutenção de documento.
+
+`STATE.md` é uma tabela de estado, não um diário: alvo de **até 60 linhas**. Cabeçalho, tabela de
+tasks, bloqueios abertos, decisões congeladas por referência. Se passar disso, o excesso é histórico
+e pertence ao commit.
 
 Branch temporária segue `<agente>/pb<NN>-<NN>-<slug>` (ex.: `codex/pb04-04-extract-region`).
 

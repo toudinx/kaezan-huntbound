@@ -26,7 +26,18 @@ Cada playbook deve:
 - usar apenas conteúdo presente no snapshot local congelado;
 - incluir fixture mínima, golden hash ou screenshot quando aplicável;
 - não antecipar sistemas de playbooks posteriores;
-- terminar com um gate objetivo de aceite.
+- **terminar jogável**: `corepack pnpm verify` verde e `corepack pnpm dev` de pé, para que o aceite
+  seja o usuário jogando.
+
+**Revisão de processo de 2026-08-18.** Três regras mudaram depois de o fluxo travar entre PB-05 e
+PB-06 por motivo puramente documental:
+
+1. **Escreva duas tasks à frente, não o playbook inteiro.** Spec congelada, `README.md` completo e as
+   duas primeiras task cards. O resto fica como bullets até chegar a vez.
+2. **Nenhum playbook espera o fechamento formal de outro.** A dependência real é código integrado na
+   `main` com `verify` verde, verificável por `git log` e por gate fresco.
+3. **Orçamento de tempo não bloqueia merge.** `boot-budget` e `hunt-budget` rodam em
+   `corepack pnpm qa:budgets`, são registrados e viram dívida priorizada, não portão.
 
 Uma task pode modificar muitos arquivos quando eles compõem uma única mudança coesa. O motivo para
 dividi-la é a existência de problemas, decisões, contextos ou verificações independentes — não a
@@ -42,8 +53,8 @@ contagem de arquivos, linhas ou minutos.
 | [PB-02](playbooks/PB-02/README.md) | Manifesto e asset pack pessoal | subset visual carregável por chaves estáveis — **fechado** |
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
 | [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **fechado** em `9f1c14c` como `APPROVED_WITH_WARNINGS` |
-| [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **próximo a executar** |
-| [PB-06](playbooks/PB-06/README.md) | Save local e inventário | IndexedDB versionado, transações e import/export — **escrito e bloqueado** |
+| [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **integrado** em `d4490e9`, aguardando aceite do usuário |
+| [PB-06](playbooks/PB-06/README.md) | Save local e inventário | IndexedDB versionado, transações e import/export — **elegível**, PB-06-01 é a próxima task |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
 | PB-08 | Gacha cosmético | banner, pulls, garantia, duplicatas e tokens |
 | PB-09 | Helper mínimo | cura, alvo, ações e loot como módulos desligáveis |
@@ -278,8 +289,9 @@ quatro viewports com specs estáveis sem `retries`.
 chat independente. Design aprovado em
 `docs/superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md`.
 
-**Estado:** escrito e **bloqueado**. A execução começa depois do veredito de PB-05-12. A primeira
-task será PB-06-01.
+**Estado:** **elegível**. A primeira task é PB-06-01. A dependência do PB-05 é o commit integrado
+`d4490e9` com `verify` verde, não um veredito de auditoria — a auditoria bloqueante saiu do processo
+em 2026-08-18 (`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de playbook").
 
 - [x] `SaveRepository` já está congelado pela ADR-05 com `load`, `transact`, `export` e `import`;
       IndexedDB é a primeira implementação.

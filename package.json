@@ -53,8 +53,9 @@
     "hunt:extract:sidecar": "node --no-warnings --experimental-transform-types tools/map-extractor/cli.ts sidecar-check --output packages/content/src/generated/hunts/venore-rotworm-cave",
     "diagnostics:boot-stall": "node tools/diagnostics/runBootStallMatrix.ts",
     "check": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check && corepack pnpm content:check",
-    "qa:browser": "corepack pnpm build && playwright test",
-    "verify": "corepack pnpm format:check && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm content:check && corepack pnpm qa:browser"
+    "qa:browser": "corepack pnpm build && playwright test --project=correctness",
+    "qa:budgets": "corepack pnpm build && playwright test --project=budgets",
+    "verify": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm content:check && corepack pnpm qa:browser"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",

@@ -15,9 +15,12 @@ Rode do mais rápido para o mais caro; pare no primeiro vermelho e conserte ante
 4. `corepack pnpm test` — Vitest, testes de fronteira e suítes dos tools.
 5. Gates de domínio conforme a área tocada (tabela abaixo).
 6. `corepack pnpm build`.
-7. `corepack pnpm qa:browser` — builda e roda Playwright.
+7. `corepack pnpm qa:browser` — builda e roda Playwright, projeto `correctness`.
 
-Fechamento de task: `corepack pnpm verify` **mais** `biome check .`.
+Fechamento de task: `corepack pnpm verify` (já inclui `biome check .`).
+
+`corepack pnpm qa:budgets` roda `boot-budget` e `hunt-budget` e é **informativo**: registre o número
+no relatório e siga. Vermelho ali vira dívida de performance no backlog, nunca bloqueio de merge.
 
 ## Qual gate para qual mudança
 
@@ -29,11 +32,14 @@ Fechamento de task: `corepack pnpm verify` **mais** `biome check .`.
 | `apps/game` | `build` e depois `qa:browser` |
 | fixtures, goldens | `simulation:check`, `hunt:check` |
 | só documentação | `format:check` |
+| performance de boot ou de walk | `qa:budgets` (informativo) |
 
-## Armadilha nº 1: verify não roda lint
+## Armadilha nº 1: budget vermelho não é código quebrado
 
-`verify` executa `format:check`, não `biome check`. Lint quebrado passa pelo `verify` e é reprovado
-depois na auditoria. Sempre rode `biome check .` separado.
+`boot-budget` e `hunt-budget` medem tempo de parede nesta máquina. Uma máquina ocupada os reprova sem
+que nada tenha mudado — B5 do PB-05 estourou `5000 ms` em `11,7 ms` e travou o gate global por um
+playbook inteiro. Eles saíram do `qa:browser` para o `qa:budgets` justamente por isso. Não os trate
+como falha de correção, e não afrouxe o teto para "consertar".
 
 ## Armadilha nº 2: Playwright serve bundle velho
 

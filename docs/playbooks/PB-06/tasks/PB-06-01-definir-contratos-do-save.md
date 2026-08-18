@@ -27,8 +27,8 @@ reimporta sem mudar comportamento.
 
 ## Dependências
 
-- PB-05 fechado por PB-05-12, com veredito e commit auditado registrados em
-  `docs/playbooks/PB-05/STATE.md`.
+- PB-05 integrado em `main` no commit `d4490e9`, com `corepack pnpm verify` verde. Não depende de
+  auditoria nem de fechamento formal do PB-05.
 
 ## Leitura mínima
 
@@ -234,8 +234,7 @@ superpowers:verification-before-completion.
 Execute integralmente e somente:
 C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-06\tasks\PB-06-01-definir-contratos-do-save.md
 
-Leia AGENTS.md, o STATE.md do playbook PB-06 e apenas os arquivos indicados pela task. Confirme em
-docs\playbooks\PB-05\STATE.md que PB-05-12 fechou o playbook anterior; se nao fechou, pare e reporte.
+Leia AGENTS.md, o STATE.md do playbook PB-06 e apenas os arquivos indicados pela task.
 
 Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb06-01-contracts com a branch
 codex/pb06-01-save-contracts e rode "corepack pnpm install --prefer-offline" dentro dela.
@@ -263,5 +262,7 @@ Rode biome check ., os testes de contracts e content, typecheck, architecture:ch
 Atualize o handoff, commite, integre por fast-forward na main, reverifique e limpe worktree e branch
 removendo o diretorio antes do prune.
 
-Se surgir decisao nao coberta, pare e registre o bloqueio. Nao inicie a proxima task.
+Se surgir decisao nao coberta, escolha a opcao mais simples e mais facil de reverter, registre a
+escolha em uma linha no commit e siga. Pare apenas se precisar mudar contrato publico ja integrado,
+schema ou golden. Nao inicie a proxima task.
 ```

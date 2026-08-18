@@ -34,11 +34,34 @@ toca muitos arquivos é melhor que três fragmentos que deixam o workspace quebr
 
 # STATE.md
 
-Só estado operacional: status por task, última concluída e próxima elegível, commits e artefatos,
-verificações executadas e resultado, decisões descobertas e onde foram documentadas, bloqueios reais.
-Decisão durável vai para ADR/spec e é apenas referenciada aqui.
+Teto de **60 linhas**. Só estado: status por task, próxima elegível, commit integrado de cada task,
+bloqueios abertos, decisões congeladas **por referência**. Decisão durável vai para ADR/spec.
 
-Registre também o modelo e o effort realmente usados, e qualquer desvio da política.
+Não entra: saída de gate, justificativa de vermelho conhecido, relato de tentativa, histórico de
+auditoria. Isso vai na mensagem de commit da task — o Git já guarda, data e associa ao diff.
+
+# Profundidade de escrita
+
+Playbook novo nasce com spec congelada, `README.md` completo e as **duas primeiras** task cards. O
+resto fica como bullets no `README.md` até chegar a vez.
+
+# Fechamento e auditoria
+
+Playbook fecha quando **o usuário joga e aprova**. A última task de implementação entrega
+`corepack pnpm verify` verde e `corepack pnpm dev` de pé, mais uma nota curta do que olhar.
+
+Auditoria independente roda **depois** do aceite, é opcional, gera task de correção em vez de
+veredito, e nunca é pré-requisito do playbook seguinte. Auditoria endereça **um commit por hash** e
+não exige `git status` limpo.
+
+`corepack pnpm qa:budgets` é informativo: registre o número, não bloqueie merge com ele.
+
+# Ambiguidade
+
+Comportamento com mais de uma leitura razoável não é motivo para parar. Escolha a opção mais simples
+e mais fácil de reverter, registre em uma linha no commit e siga. Pare só para: destruir ou migrar
+dado sem rollback, mudar contrato público/schema/golden já integrado, ou a mesma causa bloquear dois
+ciclos vermelho/verde.
 
 # Ciclo de conclusão
 
@@ -54,4 +77,6 @@ commit, não faça rebase, não force deleção.
 Um chat para o playbook inteiro; fragmentar mudança coesa para cumprir limite artificial; repetir o
 contexto mestre quando referência precisa basta; marcar task concluída sem verificação fresca; deixar
 decisão ou bloqueio só no relatório do chat; absorver problema independente na task corrente; supor
-que o próximo agente terá acesso a esta conversa.
+que o próximo agente terá acesso a esta conversa; escrever o playbook inteiro em task cards antes de
+a primeira rodar; bloquear uma task no veredito de uma auditoria; exigir árvore limpa para auditar;
+usar orçamento de tempo de parede como gate de merge; transformar `STATE.md` em diário.
