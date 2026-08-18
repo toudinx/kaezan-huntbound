@@ -43,7 +43,7 @@ contagem de arquivos, linhas ou minutos.
 | [PB-03](playbooks/PB-03/README.md) | Kernel determinístico | fixed tick, RNG, grid, comandos, eventos e replay — **fechado** |
 | [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta | região, spawn, câmera, colisão, transições e correções da primeira experiência — **fechado** em `9f1c14c` como `APPROVED_WITH_WARNINGS` |
 | [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary | Knight, ataque, spells selecionadas, morte e loot — **próximo a executar** |
-| PB-06 | Save local e inventário | IndexedDB versionado, transações e import/export |
+| [PB-06](playbooks/PB-06/README.md) | Save local e inventário | IndexedDB versionado, transações e import/export — **escrito e bloqueado** |
 | PB-07 | Catálogo e compositor de outfits | famílias, `lookType`, addons, cores e troca visual |
 | PB-08 | Gacha cosmético | banner, pulls, garantia, duplicatas e tokens |
 | PB-09 | Helper mínimo | cura, alvo, ações e loot como módulos desligáveis |
@@ -271,6 +271,57 @@ schema, que a sessão de combate reproduz o mesmo SHA-256 em Node e no browser, 
 converge em todas as fronteiras com vida, mana, alvo e cooldowns serializados, que `combat:check`
 entrou em `check` e `verify` e está registrado em `REPLAY_CONTRACT.md`, e que a caçada é jogável nos
 quatro viewports com specs estáveis sem `retries`.
+
+## PB-06 — Definition of Ready
+
+**Playbook modular:** `docs/playbooks/PB-06/README.md` — dez task cards, cada uma executável em um
+chat independente. Design aprovado em
+`docs/superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md`.
+
+**Estado:** escrito e **bloqueado**. A execução começa depois do veredito de PB-05-12. A primeira
+task será PB-06-01.
+
+- [x] `SaveRepository` já está congelado pela ADR-05 com `load`, `transact`, `export` e `import`;
+      IndexedDB é a primeira implementação.
+- [x] O save é um documento único, versionado, gravado em transação atômica — sem ledger.
+- [x] A bolsa da run é persistida junto do snapshot desde o primeiro loot, e consolidar em estoque é
+      idempotente por construção.
+- [x] A retomada usa o `SimulationSnapshot`, cuja convergência PB-03, PB-04 e PB-05 já provaram; o
+      command log não é persistido.
+- [x] Sessão incompatível com o cenário é descartada **com a bolsa preservada**, nunca retomada à
+      força nem descartada em silêncio.
+- [x] O inventário do V0 é bolsa e estoque. Equipar, usar item, capacidade e peso ficam fora.
+- [x] XP e level continuam fora: a ficha do personagem é conteúdo congelado do PB-05.
+- [x] O schema do save é mínimo; coleção e moeda entram por migração em PB-07 e PB-08.
+- [x] Não há checksum, assinatura nem anti-tamper: a ADR diz que o dono editar o próprio save não é
+      ameaça no V0 pessoal.
+- [x] `packages/simulation` não é alterado. `SIMULATION_SCHEMA_VERSION` continua `4` e
+      `SIMULATION_RULES_VERSION` continua `3`.
+- [x] Nenhuma dependência externa nova entra no workspace — nem wrapper de IndexedDB, nem
+      `fake-indexeddb`.
+
+Parâmetros congelados: `SAVE_SCHEMA_VERSION = 1`, banco `huntbound-save` versão `1`, store `save`
+com chave `'default'`, checkpoint a cada `200` ticks mais fim de run, abandono e `pagehide`, e
+fixture `pb-06-save-session` derivada de `pb-05-hunt-combat` com checkpoint congelado no tick `1400`
+e retomada até `2700`.
+
+Entregáveis mínimos esperados do plano:
+
+```text
+packages/contracts/src/save/
+packages/save/src/{repository,drivers,migrations,serialization,session}/
+packages/test-fixtures/save/pb06/
+tools/save/
+apps/game/src/{save,ui}/
+tests/e2e/save-persistence.spec.ts
+docs/simulation/REPLAY_CONTRACT.md
+```
+
+O gate deve provar que gravar, exportar, importar e retomar a sessão do PB-05 reproduz o snapshot
+final golden do PB-05 byte a byte — persistir não pode alterar a simulação —, que a consolidação da
+bolsa é idempotente, que o documento sem versão migra para v1 e que versão futura é recusada, que
+`save:check` entrou em `check` e `verify` e está registrado em `REPLAY_CONTRACT.md`, e que recarregar
+a página retoma a run no mesmo tick nos quatro viewports, com specs estáveis sem `retries`.
 
 ## Contrato para escolher a primeira hunt
 

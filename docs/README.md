@@ -66,6 +66,9 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
 - [`PB-05 — Vocação e combate Canary`](playbooks/PB-05/README.md) — **escrito e bloqueado** até o
   PB-04 fechar. Design em
   [`2026-08-15-pb-05-vocation-combat-design.md`](superpowers/specs/2026-08-15-pb-05-vocation-combat-design.md).
+- [`PB-06 — Save local e inventário`](playbooks/PB-06/README.md) — **escrito e bloqueado** até o
+  PB-05 fechar. Design em
+  [`2026-08-18-pb-06-local-save-inventory-design.md`](superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md).
 
 **Playbook em execução: PB-04 — primeira hunt ponta a ponta.** A ordem e a Definition of Ready estão
 em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
