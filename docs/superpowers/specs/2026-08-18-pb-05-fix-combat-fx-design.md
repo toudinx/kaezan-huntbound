@@ -24,7 +24,7 @@ apontado. PB-05 permanece aberto até elas passarem e o usuário aprovar.
 
 Cinco achados, todos verificados na árvore em `73bb49c`.
 
-### D1 — O pack pessoal está defasado
+### D1 — Os assets de combate nunca existiram no perfil pessoal
 
 `packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json` declara 140 chaves de hunt.
 `apps/game/public/assets/personal/pb04/packs/pb-04-venore-rotworm-cave/pack.json` tem **134**.
@@ -35,9 +35,40 @@ effect:tibia:draw-blood     effect:tibia:hit-area      effect:tibia:magic-blue
 missile:tibia:weapon-type   item:tibia:small-splash    item:tibia:dead-rotworm
 ```
 
-O pack em disco é de 15/08; a seleção que acrescentou as chaves é de 16/08. `HUNT_PACK_COMBAT_KEYS`
-existe em `packages/assets/src/hunt/HuntPack.ts` e `validateHuntPack` reprovaria esse pack com
-`HUNT_ASSET_KEY_MISSING` — mas nada roda essa validação sobre o perfil `personal`.
+Isso **não** se resolve rodando o packer de novo. A cadeia inteira está furada a montante:
+
+- o export privado em `C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave` — origem do
+  perfil pessoal, confirmada pelos 32397 bytes de `manifest.json` batendo com o source lock — não
+  contém **nenhum** dos seis. Seu `manifest.json` traz `effects: {12}`, `missiles: {36}` e 138
+  objetos, sem `2889` nem `5967`;
+- `packages/test-fixtures/assets/pb04/personal-source-lock.json`, que é versionado, também lista
+  **134** arquivos e nenhum efeito ou míssil.
+
+Ou seja: PB-05-09 acrescentou as chaves à seleção e construiu as fixtures `test` e `product` a
+partir da fonte sintética, onde qualquer id vira um placeholder 1×1 — e nunca reexportou os assets
+privados nem atualizou o source lock. O perfil pessoal jamais teve como resolver essas chaves.
+
+Reexportar é possível: `C:\Kaezan\kaezan-arena-fable\tools\AssetExtractor` produz o export a partir
+de listas de id em `content-config.json`, e `effectIds` já cobre `1`, `10` e `13`. Faltam acrescentar
+os objetos `2889` e `5967`.
+
+`HUNT_PACK_COMBAT_KEYS` existe em `packages/assets/src/hunt/HuntPack.ts` e `validateHuntPack`
+reprovaria o pack pessoal com `HUNT_ASSET_KEY_MISSING` — mas nada roda essa validação sobre o perfil
+`personal`, e por isso a divergência sobreviveu a PB-05-09, PB-05-10 e PB-05-11.
+
+### D1b — `missile:tibia:weapon-type` não é um sprite
+
+`tools/asset-packer/hunt/huntSelection.ts` mapeia essa chave para `missileId: 254`. Em Canary,
+`CONST_ANI_WEAPONTYPE` vale 254 e é **sentinela**, não id de sprite: significa "use o míssil da arma
+equipada". `data/scripts/spells/attack/brutal_strike.lua` o usa exatamente assim, em
+`COMBAT_PARAM_DISTANCEEFFECT`.
+
+Nenhum export de cliente conterá `missiles/254.png`, porque esse sprite não existe. A fixture
+sintética o aceita só porque fabrica placeholder para qualquer id pedido. Enquanto essa chave estiver
+em `HUNT_PACK_COMBAT_KEYS`, o pack pessoal **não pode** ficar íntegro.
+
+Como `HUNT_PACK_COMBAT_KEYS` e a seleção são artefatos integrados com gate `--check`, remover a
+chave é decisão de escopo e não de implementação. Está registrada como bloqueio em `STATE.md`.
 
 ### D2 — Asset ausente falha em silêncio
 

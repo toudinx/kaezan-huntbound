@@ -27,9 +27,14 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
 ## Dependências
 
 - PB-05-10 e PB-05-11 `done` e integradas (`d4490e9`).
-- `HUNTBOUND_PERSONAL_ASSET_SOURCE` apontando para a origem autorizada dos assets pessoais. **A
-  variável não está definida em nenhum escopo desta máquina** — confirme com o usuário antes de
-  começar. O valor nunca entra em arquivo versionado, conforme `docs/assets/ASSET_PROFILES.md`.
+- `HUNTBOUND_PERSONAL_ASSET_SOURCE` apontando para
+  `C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave` — identificado em 2026-08-18 pelo
+  `manifest.json` de 32397 bytes, que bate com `personal-source-lock.json`. A variável **não está
+  definida em nenhum escopo desta máquina**; defina-a no shell da sessão. O valor nunca entra em
+  arquivo versionado, conforme `docs/assets/ASSET_PROFILES.md`.
+- **Decisão do usuário sobre `missile:tibia:weapon-type`** (bloqueio B8 no `STATE.md`). Enquanto ela
+  estiver em `HUNT_PACK_COMBAT_KEYS`, o pack pessoal não pode ficar íntegro: `missileId: 254` é
+  `CONST_ANI_WEAPONTYPE`, sentinela do Canary, e não existe sprite correspondente.
 
 ## Leitura mínima
 
@@ -56,8 +61,12 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
 - `assets:pb04:personal:check` **não** entra em `check` nem em `verify`. Ele depende de arte que não
   está no Git e quebraria o gate em qualquer clone limpo. Ele é documentado como passo do fluxo
   pessoal.
-- Nenhuma alteração no seletor de assets: a seleção já declara as seis chaves. O defeito é o pack
-  gerado estar velho, não a seleção estar errada.
+- **A seleção não muda nesta task.** Ela já declara as seis chaves; o furo está a montante, no
+  export privado e no source lock. A única exceção possível é `missile:tibia:weapon-type`, e ela
+  depende da decisão do usuário registrada em B8 — sem essa decisão, não se toca em
+  `HUNT_PACK_COMBAT_KEYS`.
+- O source lock é **gerado pelo tool**. `packages/test-fixtures/assets/pb04/personal-source-lock.json`
+  é artefato de CLI e não se edita à mão, mesmo sendo versionado.
 
 ## Escopo permitido
 
@@ -65,11 +74,15 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
 apps/game/src/phaser/scenes/HuntScene.ts
 apps/game/src/hunt/HuntProbe.ts
 apps/game/src/hunt/HuntProbe.test.ts
-apps/game/public/assets/personal/**   (gerado; não versionado)
+apps/game/public/assets/personal/**                        (gerado; não versionado)
+packages/test-fixtures/assets/pb04/personal-source-lock.json  (gerado pelo tool)
 docs/assets/ASSET_PROFILES.md
 docs/playbooks/PB-05/STATE.md
 package.json                          (somente se o fluxo pessoal precisar de script novo)
 ```
+
+Fora da árvore, a task também toca `content-config.json` do `AssetExtractor` e o export privado em
+`C:\Kaezan\huntbound-private-assets`. Nenhum dos dois é versionado aqui.
 
 ## Fora de escopo
 
@@ -106,26 +119,42 @@ deliberadamente ausente do mapa de assets, não removendo arquivo do disco.
 
 - [ ] **4. Implementar o diagnóstico e a exposição no probe; obter GREEN.**
 
-- [ ] **5. Regenerar o pack pessoal.**
+- [ ] **5. Reexportar os assets privados.**
+
+O packer não inventa sprite: o export privado precisa **passar a conter** o que a seleção declara.
+Em `C:\Kaezan\kaezan-arena-fable\tools\AssetExtractor`, `content-config.json` já lista `1`, `10` e
+`13` em `effectIds`; acrescente `2889` e `5967` a `objectIds` e rode o extractor sobre a mesma saída,
+`C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave`.
+
+Esse diretório é fonte externa: o repositório **não** o versiona e esta task não o move para dentro.
+Confirme pelo `manifest.json` regenerado que `effects` passou a ter `1`, `10` e `13`, e `objects` a
+ter `2889` e `5967`.
+
+- [ ] **6. Atualizar o source lock e regenerar o pack pessoal.**
 
 ```powershell
-$env:HUNTBOUND_PERSONAL_ASSET_SOURCE = '<origem autorizada, fornecida pelo usuario>'
+$env:HUNTBOUND_PERSONAL_ASSET_SOURCE = 'C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave'
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets assets:pb04:personal:generate
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets assets:pb04:personal:check
 ```
 
-Prove pela saída de `assets:pb04:personal:check` — que roda `checkHuntPack` sobre o pack pessoal —
-que as 140 chaves resolvem e que não há `HUNT_ASSET_KEY_MISSING`. Registre no relatório quantos
-frames cada efeito trouxe (`atlasFrameCount` e `frameCount` de `animations[0]` para `draw-blood`,
-`hit-area` e `magic-blue`): **PB-05-FIX-02 depende desse número** e ele não é conhecido hoje.
+`packages/test-fixtures/assets/pb04/personal-source-lock.json` é versionado e hoje lista 134
+arquivos, sem nenhum efeito. Ele tem que passar a refletir o export novo — pelo tool, nunca à mão.
 
-- [ ] **6. Documentar o fluxo pessoal.**
+Prove pela saída de `assets:pb04:personal:check` — que roda `checkHuntPack` sobre o pack pessoal —
+que as chaves resolvem e que não há `HUNT_ASSET_KEY_MISSING`. Registre no relatório quantos frames
+cada efeito trouxe (`atlasFrameCount` e `frameCount` de `animations[0]` para `draw-blood`,
+`hit-area` e `magic-blue`): **PB-05-FIX-02 depende desse número** e ele não é conhecido hoje. O único
+efeito já presente no export antigo, o `12`, veio com 17 frames de 40 ms e `pattern` 1 em todos os
+eixos — é a expectativa, não a garantia.
+
+- [ ] **7. Documentar o fluxo pessoal.**
 
 Em `docs/assets/ASSET_PROFILES.md`, deixe explícito que `assets:pb04:personal:check` é o passo que
 detecta pack pessoal defasado, e que ele não pertence a `verify` por depender de arte fora do Git.
 Sem caminho absoluto.
 
-- [ ] **7. Executar gates.**
+- [ ] **8. Executar gates.**
 
 ```powershell
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets exec biome check .
@@ -139,13 +168,13 @@ corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets verify
 `EPERM` em `assets:stage:test` é flake de Windows — confirme que não há `vite preview` vivo na 4173 e
 rode de novo.
 
-- [ ] **8. Confirmar o efeito na tela.**
+- [ ] **9. Confirmar o efeito na tela.**
 
 Suba `corepack pnpm dev:personal`, mate um rotworm e confirme com os próprios olhos que cadáver,
 sangue e o arco de autoloot aparecem. Se não aparecerem com o pack íntegro, **pare**: a hipótese
 D1+D2 estava incompleta e isso é um bloqueio para registrar, não para contornar.
 
-- [ ] **9. Atualizar handoff, commitar, integrar e limpar.**
+- [ ] **10. Atualizar handoff, commitar, integrar e limpar.**
 
 ```powershell
 git -C C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets add apps docs package.json
@@ -172,7 +201,10 @@ Testes de `@huntbound/game`, `typecheck`, `build` e `verify` verdes; `biome chec
 - [ ] Chave declarada e não resolvida produz exatamente um diagnóstico, com a chave no texto.
 - [ ] `HuntProbe` expõe as chaves de combate não resolvidas.
 - [ ] Asset ausente não lança nem interrompe o render do resto da cena.
-- [ ] O pack pessoal resolve as 140 chaves; `assets:pb04:personal:check` sai `0`.
+- [ ] O export privado passou a conter os efeitos `1`, `10` e `13` e os objetos `2889` e `5967`.
+- [ ] `personal-source-lock.json` foi regenerado pelo tool e reflete o export novo.
+- [ ] O pack pessoal resolve todas as chaves da seleção vigente após B8;
+      `assets:pb04:personal:check` sai `0`.
 - [ ] Os frames reais de `draw-blood`, `hit-area` e `magic-blue` estão registrados no relatório.
 - [ ] Cadáver, sangue e arco de autoloot foram vistos na tela com `dev:personal`.
 - [ ] Nenhum caminho absoluto de origem pessoal entrou em arquivo versionado.
@@ -220,9 +252,13 @@ Leia AGENTS.md, o STATE.md do PB-05, a spec
 docs/superpowers/specs/2026-08-18-pb-05-fix-combat-fx-design.md e apenas os arquivos indicados pela
 task.
 
-Antes de qualquer coisa, peca ao usuario o valor de HUNTBOUND_PERSONAL_ASSET_SOURCE. Ele nao esta
-definido em nenhum escopo desta maquina e sem ele a task nao roda. O caminho nunca entra em arquivo
-versionado.
+HUNTBOUND_PERSONAL_ASSET_SOURCE nao esta definida nesta maquina. Defina no shell da sessao:
+C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave
+O caminho nunca entra em arquivo versionado.
+
+Confirme com o usuario a decisao do bloqueio B8 no STATE.md antes do passo 6. missile:tibia:weapon-type
+mapeia para missileId 254, que e CONST_ANI_WEAPONTYPE do Canary — sentinela, nao sprite. Enquanto essa
+chave estiver em HUNT_PACK_COMBAT_KEYS o pack pessoal nao pode ficar integro.
 
 Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets com a branch
 codex/pb-05-fix-01-restore-combat-assets e rode "corepack pnpm install --prefer-offline" dentro dela.
@@ -234,10 +270,16 @@ Comece por RED no diagnostico: chave declarada que nao resolve produz UM diagnos
 texto, nao um por frame, sem lancar excecao, e o HuntProbe expoe a lista de chaves de combate nao
 resolvidas. Construa o caso com chave ausente do mapa de assets, nao removendo arquivo do disco.
 
-Depois regenere o pack pessoal com assets:pb04:personal:generate e prove com
-assets:pb04:personal:check que as 140 chaves resolvem. Registre no relatorio o atlasFrameCount e o
-frameCount de animations[0] para draw-blood, hit-area e magic-blue: PB-05-FIX-02 depende desses
-numeros e eles nao sao conhecidos hoje.
+Depois REEXPORTE os assets privados: o packer nao inventa sprite, e o export em
+C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave nao tem nenhum dos seis. Em
+C:\Kaezan\kaezan-arena-fable\tools\AssetExtractor, content-config.json ja lista 1, 10 e 13 em
+effectIds; acrescente 2889 e 5967 a objectIds e rode o extractor sobre a mesma saida.
+
+So entao regenere com assets:pb04:personal:generate, deixe o tool reescrever
+packages/test-fixtures/assets/pb04/personal-source-lock.json — que hoje lista 134 arquivos e nenhum
+efeito, e nunca se edita a mao — e prove com assets:pb04:personal:check que as chaves resolvem.
+Registre no relatorio o atlasFrameCount e o frameCount de animations[0] para draw-blood, hit-area e
+magic-blue: PB-05-FIX-02 depende desses numeros e eles nao sao conhecidos hoje.
 
 Nao acrescente assets:pb04:personal:check a check nem a verify: ele depende de arte fora do Git.
 
