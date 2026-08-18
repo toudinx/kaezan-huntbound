@@ -2,20 +2,20 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** PB-05-11 concluída na QA browser e pronta para integração.
-**PB-05-10 done e integrada em `acf3b3b`.** B6 resolvido (`aggroRadius` `1` na
-composição + `tickCount` `2700`). B5 (hunt-budget) segue aberto
-historicamente e não foi mascarado.
+**Estado geral:** PB-05-11 concluída na QA browser e integrada em `main` no
+fast-forward `d4490e9`. **PB-05-10 done e integrada em `acf3b3b`.** B6
+resolvido (`aggroRadius` `1` na composição + `tickCount` `2700`). B5
+(hunt-budget) segue aberto historicamente e não foi mascarado.
 
 **Última atualização:** 2026-08-18
 
-**Atualização vigente:** PB-05-12 foi aberta e **devolvida sem auditar**, pela
-condição de parada da própria task card: PB-05-11 não está integrada em `main`.
-Nenhum gate de auditoria foi executado e nenhum veredito foi emitido.
+**Atualização vigente:** PB-05-12 foi aberta e **devolvida sem auditar** quando
+PB-05-11 ainda não estava integrada. Depois da correção, rebase e fast-forward,
+PB-05-12 está novamente elegível. Nenhum gate de auditoria foi executado e
+nenhum veredito foi emitido.
 
-**Próxima etapa:** rebasear `codex/pb-05-11-combat-browser-qa` sobre os quatro
-commits de Sites e integrar por fast-forward. A PB-05-12 volta a ser elegível
-depois da integração; nenhuma auditoria foi iniciada.
+**Próxima etapa:** auditar PB-05-12 em uma task própria. PB-06 não foi iniciada;
+PB-05-06 permanece `blocked (QA browser)`.
 
 ## Tasks
 
@@ -31,14 +31,15 @@ depois da integração; nenhuma auditoria foi iniciada.
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | done | `codex/pb-05-10-combat-hud` | `acf3b3b` (ff `b5427f2..acf3b3b`) | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
-| PB-05-11 | done (QA browser; aguardando integração) | `codex/pb-05-11-combat-browser-qa` | — (rebase pendente) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `50/50`, `qa:browser` 34/34 |
+| PB-05-11 | done (QA browser; integrada) | `codex/pb-05-11-combat-browser-qa` | `d4490e9` (ff `54a8acc..d4490e9`) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `50/50`, combate 4/4 pós-ff; B5 global permanece aberto |
 | PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
 
 ## Última task concluída
 
-PB-05-11. Branch `codex/pb-05-11-combat-browser-qa`, com prova browser concluída
-na worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-11-qa`. O rebase sobre os
-commits de Sites e o fast-forward para `main` ainda estão pendentes.
+PB-05-11. Branch `codex/pb-05-11-combat-browser-qa`, com prova browser concluída,
+rebaseada sobre os quatro commits de Sites e integrada em `main` por
+`54a8acc..d4490e9`. A worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-11-qa`
+está pronta para limpeza.
 
 ## Handoff PB-05-12 — 2026-08-17 (devolvida sem auditar)
 
@@ -118,11 +119,13 @@ PB-05-12 volta a ser elegível quando, cumulativamente:
 
 ## Handoff PB-05-11 — 2026-08-18
 
-**Status:** prova browser concluída. A sessão interativa fechou `50/50` em
-`--retries=0 --repeat-each=10`, com replay/paridade Node/Chromium, quatro
-screenshots e `qa:browser` verdes. A branch ainda aguarda rebase e integração.
+**Status:** prova browser concluída e integrada. A sessão interativa fechou
+`50/50` em `--retries=0 --repeat-each=10`, com replay/paridade Node/Chromium e
+quatro screenshots. O fast-forward colocou a branch em `main`.
 
-**Base antes do rebase:** `main` em `6acc88d` (PB-05-10 integrada). **Branch/worktree:**
+**Base e integração:** branch baseada inicialmente em `main` `6acc88d`,
+rebaseada sobre os quatro commits de Sites e integrada em `main` por
+`54a8acc..d4490e9`. **Branch/worktree:**
 `codex/pb-05-11-combat-browser-qa`;
 `C:\Kaezan\kaezan-huntbound-pb05-11-qa`.
 
@@ -155,8 +158,12 @@ Nenhum arquivo em `packages/**` ou `apps/game/src/**` foi alterado.
 | `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --retries=0` | `0` | 4 viewports passaram na captura |
 | `corepack pnpm exec playwright test tests/e2e/combat-replay.spec.ts --retries=0` | `0` | hash Node/Chromium igual |
 | `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts tests/e2e/combat-replay.spec.ts --retries=0 --repeat-each=10` | `0` | 50 testes passaram |
-| `corepack pnpm qa:browser` | `0` | 34 testes passaram |
-| `corepack pnpm verify` | `1` | `sourceLock.test.ts` falhou ao gravar objetos de um Git temporário em `%TEMP%`; limitação ambiental reproduzida isoladamente |
+| `corepack pnpm qa:browser` (branch, antes do fast-forward) | `0` | 34 testes passaram |
+| `corepack pnpm verify` (branch) | `1` | `sourceLock.test.ts` falhou ao gravar objetos de um Git temporário em `%TEMP%`; limitação ambiental reproduzida isoladamente |
+| `corepack pnpm exec biome check .` (pós-ff em `main`) | `0` | 414 arquivos verificados |
+| `corepack pnpm verify` (pós-ff em `main`) | `1` | 33/34 browser; `tablet` expirou em `stepAwayFromActors`; teste isolado posterior passou |
+| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --grep tablet --retries=0 --repeat-each=1` (pós-ff) | `0` | 1/1 passou |
+| `corepack pnpm qa:browser` (pós-ff standalone) | `1` | 33/34; somente B5 `hunt-budget`, `5011,7 ms` para teto de `5000 ms`; combate 4/4 passou |
 
 Hash do snapshot canônico nos dois runtimes:
 `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
@@ -170,9 +177,10 @@ habilidade ficar pronta e quebra o aggro antes de observar o aumento de vida,
 mantendo a asserção estrita. Nenhum arquivo de produção foi alterado; não foi
 usado retry, timeout inflado, skip ou asserção enfraquecida.
 
-**Próxima ação:** rebasear sobre os quatro commits de Sites e integrar por
-`git merge --ff-only`. Depois da integração, PB-05-12 volta a ser elegível para
-auditoria. PB-05-06 permanece `blocked (QA browser)` e PB-06 não foi iniciada.
+**Próxima ação:** PB-05-12 está elegível para auditoria em task própria. O
+`qa:browser` global ainda pode reprovar no B5 histórico; isso não reabre a
+prova específica de combate. PB-05-06 permanece `blocked (QA browser)` e PB-06
+não foi iniciada.
 
 ## Handoff PB-05-10 — 2026-08-16
 

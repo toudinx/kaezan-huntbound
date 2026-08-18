@@ -1,8 +1,9 @@
 # PB-05-11 — QA do combate no browser
 
-**Status:** prova concluída na branch, pronta para rebase e integração. A sessão dirigida fechou
-`50/50` com `--retries=0 --repeat-each=10`; a paridade Node/Chromium, as quatro capturas e o
-`qa:browser` também estão verdes.
+**Status:** prova concluída e integrada em `main`. A sessão dirigida fechou `50/50` com
+`--retries=0 --repeat-each=10`; a paridade Node/Chromium, as quatro capturas e os quatro testes
+específicos de combate continuam verdes após o fast-forward. O `qa:browser` completo permanece
+sujeito ao B5 histórico (`hunt-budget`).
 
 ## Ambiente
 
@@ -81,15 +82,21 @@ estabilidade, com os snapshots iguais entre Node e Chromium.
 | `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts tests/e2e/combat-replay.spec.ts --retries=0 --repeat-each=10` | `0` | `50 passed` em 23,5 min |
 | `corepack pnpm exec biome check .` | `0` | 411 arquivos verificados |
 | `corepack pnpm typecheck` | `0` | 7 projetos |
-| `corepack pnpm qa:browser` | `0` | `34 passed` em 3,2 min |
+| `corepack pnpm qa:browser` (branch, antes do fast-forward) | `0` | `34 passed` em 3,2 min |
 | `corepack pnpm verify` | `1` | gate de testes interrompido por `Permission denied` ao gravar objetos de repositórios Git temporários em `%TEMP%`; 50 passaram, 2 falharam e 2 foram omitidos no config de content-catalog |
+| `corepack pnpm exec biome check .` (pós-ff em `main`) | `0` | 414 arquivos verificados |
+| `corepack pnpm verify` (pós-ff em `main`) | `1` | 33/34 browser; `tablet` expirou aguardando resposta em `stepAwayFromActors`; teste isolado posterior passou |
+| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --grep tablet --retries=0 --repeat-each=1` (pós-ff) | `0` | 1/1 passou |
+| `corepack pnpm qa:browser` (pós-ff standalone) | `1` | 33/34; somente B5 `hunt-budget`, `5011,7 ms` para orçamento `5000 ms`; os quatro testes de combate passaram |
 
 O `verify` passou por format, assets, replay, arquitetura e typecheck antes de chegar ao gate de
 testes. A falha do `sourceLock.test.ts` foi reproduzida isoladamente com
 `corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts --reporter=verbose`:
 o teste de paths inseguros falhou ao criar o commit sintético em `%TEMP%`, com o mesmo
 `Permission denied` em `.git/objects`. Nenhum teste ou configuração foi alterado para contornar o
-problema. A execução final de `qa:browser` permaneceu verde.
+problema. A execução da branch permaneceu verde antes do fast-forward; no
+`main` pós-ff, os quatro testes específicos de combate passaram e o gate global
+parou apenas no B5 `hunt-budget`.
 
 ### Prova de estabilidade
 
@@ -126,10 +133,14 @@ sem retry e fechou a estabilidade exigida.
 
 ## Decisão de fechamento
 
-`biome check .`, `typecheck`, build, replay, capturas, estabilidade `50/50` e `qa:browser` estão
-comprovados. O `verify` não é declarado verde por uma limitação ambiental reproduzida no teste de
-repositório temporário do content-catalog; isso não tem relação com os arquivos da PB-05-11.
+`biome check .`, `typecheck`, build, replay, capturas, estabilidade `50/50` e os quatro testes
+específicos de combate estão comprovados. O `verify` pós-ff não é declarado verde: uma execução
+teve timeout transitório no tablet e a execução global standalone ficou em `33/34` por B5
+(`hunt-budget`). A falha de `sourceLock` na branch também foi reproduzida como limitação ambiental;
+nenhum desses resultados tem relação com arquivos de produção da PB-05-11.
 
-A branch está pronta para rebase sobre os quatro commits de Sites e integração por
-`git merge --ff-only`. Após a integração, PB-05-12 volta a ser elegível para auditoria. Nenhuma
-auditoria foi iniciada nesta task.
+A branch foi rebaseada sobre os quatro commits de Sites e integrada por `git merge --ff-only` em
+`main` (`54a8acc..d4490e9`). Após o fast-forward, o teste específico de combate no tablet passou
+isoladamente e os quatro testes de combate passaram no `qa:browser`; o vermelho global restante é
+o B5 histórico. PB-05-12 volta a ser elegível para auditoria, mas nenhuma auditoria foi iniciada
+nesta task.
