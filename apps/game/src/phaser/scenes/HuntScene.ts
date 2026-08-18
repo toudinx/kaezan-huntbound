@@ -32,6 +32,7 @@ import {
 import { type CellAnchor, cellAnchor } from '../../hunt/CellAnchor';
 import {
   type CombatDecoration,
+  type CombatDecorations,
   createCombatDecorations,
   createDecorationObjectPool,
 } from '../../hunt/CombatDecorations';
@@ -152,7 +153,7 @@ export class HuntScene extends Phaser.Scene {
       },
     });
   private sprites: Phaser.GameObjects.Sprite[] = [];
-  private readonly combatDecorations = createCombatDecorations();
+  private readonly combatDecorations: CombatDecorations;
   private presentation?: HuntPresentation;
   private cameraController?: CameraController;
   private cameraFraming?: CameraFraming;
@@ -167,6 +168,9 @@ export class HuntScene extends Phaser.Scene {
 
   constructor(private readonly options: HuntSceneOptions) {
     super('hunt');
+    this.combatDecorations = createCombatDecorations(
+      options.abilities ?? DEFAULT_COMBAT_ABILITIES,
+    );
     this.assetByKey = new Map(
       options.assets.map((asset) => [asset.key, asset]),
     );
@@ -670,7 +674,10 @@ export class HuntScene extends Phaser.Scene {
   private createDecorationObject(
     decoration: CombatDecoration,
   ): Phaser.GameObjects.Sprite | Phaser.GameObjects.Text | undefined {
-    if (decoration.kind === 'damage-number') {
+    if (
+      decoration.kind === 'damage-number' ||
+      decoration.kind === 'heal-number'
+    ) {
       const text = this.add.text(0, 0, '', {
         color: '#ffcf66',
         fontFamily: 'ui-monospace, monospace',
@@ -710,7 +717,10 @@ export class HuntScene extends Phaser.Scene {
     decoration: CombatDecoration,
     renderTimeMs: number,
   ): void {
-    if (decoration.kind === 'damage-number') {
+    if (
+      decoration.kind === 'damage-number' ||
+      decoration.kind === 'heal-number'
+    ) {
       const text = object as Phaser.GameObjects.Text;
       const position = decoration.position;
       if (position === undefined) return;
@@ -719,7 +729,9 @@ export class HuntScene extends Phaser.Scene {
         1,
       );
       text
-        .setText(`-${decoration.amount ?? 0}`)
+        .setText(
+          `${decoration.kind === 'heal-number' ? '+' : '-'}${decoration.amount ?? 0}`,
+        )
         .setPosition(
           (position.x + 0.5) * this.tileSize,
           (position.y + 0.5 - progress * 0.75) * this.tileSize,
@@ -775,6 +787,7 @@ export class HuntScene extends Phaser.Scene {
       )
       .setRotation(0)
       .setAlpha(1)
+      .setScale(decoration.stronger === true ? 1.35 : 1)
       .setDepth(
         actorDepth({
           from: position,

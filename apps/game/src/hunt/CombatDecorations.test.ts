@@ -3,6 +3,7 @@ import {
   createAssetKey,
   HUNT_PACK_BLOOD_EFFECT_KEY,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
+  HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
 } from '../../../../packages/assets/src/index.ts';
 import type {
   EntityId,
@@ -20,6 +21,7 @@ import {
   IMPACT_TTL_MS,
 } from './CombatDecorations';
 import { combatFxForCause } from './CombatFxTable';
+import { DEFAULT_COMBAT_ABILITIES } from './CombatViewModel';
 
 function position(x: number, y: number): GridPosition {
   return { x, y, z: 8 };
@@ -239,6 +241,170 @@ describe('CombatDecorations', () => {
     });
 
     expect(decorations.current()).toEqual([]);
+  });
+
+  it('plans berserk on every tile in radius one with distance-based stagger', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 0,
+          targetEntityId: null,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, casterPosition]]),
+      playerPosition: casterPosition,
+    });
+
+    const effects = decorations.current();
+    expect(effects).toHaveLength(9);
+    expect(effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+          position: casterPosition,
+          createdAtMs: 10 * 50,
+        }),
+      ]),
+    );
+    expect(
+      effects
+        .map((effect) => effect.position)
+        .filter((value) => value !== undefined),
+    ).toEqual(
+      expect.arrayContaining([
+        position(5, 4),
+        position(6, 4),
+        position(7, 4),
+        position(5, 5),
+        position(6, 5),
+        position(7, 5),
+        position(5, 6),
+        position(6, 6),
+        position(7, 6),
+      ]),
+    );
+    expect(new Set(effects.map((effect) => effect.createdAtMs))).toEqual(
+      new Set([10 * 50, 10 * 50 + 40]),
+    );
+  });
+
+  it('plans a stronger hit-area impact for brutal-strike on the target', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const targetPosition = position(7, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 1,
+          targetEntityId: 2 as EntityId,
+        }),
+        event(10, {
+          type: 'combat/damaged',
+          entityId: 2 as EntityId,
+          sourceEntityId: 1 as EntityId,
+          amount: 14,
+          remainingHealth: 51,
+          cause: 'ability',
+        }),
+      ],
+      actorPositions: new Map([[2 as EntityId, targetPosition]]),
+      playerPosition: position(6, 5),
+    });
+
+    const effects = decorations.current();
+    expect(effects.filter((effect) => effect.kind === 'impact')).toEqual([
+      expect.objectContaining({
+        key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+        position: targetPosition,
+        stronger: true,
+      }),
+    ]);
+    expect(effects.filter((effect) => effect.kind === 'blood')).toEqual([]);
+    expect(effects.filter((effect) => effect.kind === 'damage-number')).toEqual(
+      [expect.objectContaining({ amount: 14, position: targetPosition })],
+    );
+  });
+
+  it('plans wound-cleansing magic-blue on the caster', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 2,
+          targetEntityId: null,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, casterPosition]]),
+      playerPosition: casterPosition,
+    });
+
+    expect(decorations.current()).toEqual([
+      expect.objectContaining({
+        kind: 'impact',
+        key: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+        position: casterPosition,
+      }),
+    ]);
+  });
+
+  it('does not plan an effect for an ability index outside the scenario catalog', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 99,
+          targetEntityId: null,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, position(6, 5)]]),
+      playerPosition: position(6, 5),
+    });
+
+    expect(decorations.current()).toEqual([]);
+  });
+
+  it('plans a positive heal-number distinct from damage-number', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'combat/healed',
+          entityId: 1 as EntityId,
+          sourceEntityId: 1 as EntityId,
+          amount: 12,
+          health: 185,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, casterPosition]]),
+      playerPosition: casterPosition,
+    });
+
+    const effects = decorations.current();
+    expect(effects.filter((effect) => effect.kind === 'heal-number')).toEqual([
+      expect.objectContaining({
+        amount: 12,
+        position: casterPosition,
+      }),
+    ]);
+    expect(effects.filter((effect) => effect.kind === 'damage-number')).toEqual(
+      [],
+    );
   });
 });
 
