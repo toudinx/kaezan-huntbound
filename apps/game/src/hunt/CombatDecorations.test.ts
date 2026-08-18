@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-
+import {
+  createAssetKey,
+  HUNT_PACK_BLOOD_EFFECT_KEY,
+  HUNT_PACK_HIT_AREA_EFFECT_KEY,
+} from '../../../../packages/assets/src/index.ts';
 import type {
   EntityId,
   GridPosition,
@@ -13,7 +17,9 @@ import {
   CORPSE_TTL_MS,
   createCombatDecorations,
   createDecorationObjectPool,
+  IMPACT_TTL_MS,
 } from './CombatDecorations';
+import { combatFxForCause } from './CombatFxTable';
 
 function position(x: number, y: number): GridPosition {
   return { x, y, z: 8 };
@@ -114,6 +120,125 @@ describe('CombatDecorations', () => {
         }),
       ]),
     );
+  });
+
+  it('plans hit-area impact on the target from combat/attacked', () => {
+    const decorations = createCombatDecorations();
+    const targetPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'combat/attacked',
+          entityId: 1 as EntityId,
+          targetEntityId: 2 as EntityId,
+        }),
+      ],
+      actorPositions: new Map([[2 as EntityId, targetPosition]]),
+      playerPosition: position(5, 5),
+    });
+
+    expect(decorations.current()).toEqual([
+      expect.objectContaining({
+        kind: 'impact',
+        key: combatFxForCause('attack').impactKey,
+        position: targetPosition,
+        blocksMovement: false,
+        expiresAtMs: 10 * 50 + IMPACT_TTL_MS,
+      }),
+    ]);
+  });
+
+  it('adds blood and a damage number from attack damage without a second impact', () => {
+    const decorations = createCombatDecorations();
+    const targetPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'combat/attacked',
+          entityId: 1 as EntityId,
+          targetEntityId: 2 as EntityId,
+        }),
+        event(10, {
+          type: 'combat/damaged',
+          entityId: 2 as EntityId,
+          sourceEntityId: 1 as EntityId,
+          amount: 20,
+          remainingHealth: 45,
+          cause: 'attack',
+        }),
+      ],
+      actorPositions: new Map([[2 as EntityId, targetPosition]]),
+      playerPosition: position(5, 5),
+    });
+
+    const current = decorations.current();
+    expect(current.filter((entry) => entry.kind === 'impact')).toEqual([
+      expect.objectContaining({
+        key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+        position: targetPosition,
+      }),
+    ]);
+    expect(current.filter((entry) => entry.kind === 'blood')).toEqual([
+      expect.objectContaining({
+        key: createAssetKey(HUNT_PACK_BLOOD_EFFECT_KEY),
+        position: targetPosition,
+        expiresAtMs: 10 * 50 + BLOOD_TTL_MS,
+      }),
+    ]);
+    expect(current.filter((entry) => entry.kind === 'damage-number')).toEqual([
+      expect.objectContaining({
+        amount: 20,
+        position: targetPosition,
+      }),
+    ]);
+  });
+
+  it('plans only a damage number for ability damage', () => {
+    const decorations = createCombatDecorations();
+    const targetPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'combat/damaged',
+          entityId: 2 as EntityId,
+          sourceEntityId: 1 as EntityId,
+          amount: 14,
+          remainingHealth: 51,
+          cause: 'ability',
+        }),
+      ],
+      actorPositions: new Map([[2 as EntityId, targetPosition]]),
+      playerPosition: position(5, 5),
+    });
+
+    expect(decorations.current()).toEqual([
+      expect.objectContaining({
+        kind: 'damage-number',
+        amount: 14,
+        position: targetPosition,
+      }),
+    ]);
+  });
+
+  it('skips impact when the target has no known position', () => {
+    const decorations = createCombatDecorations();
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'combat/attacked',
+          entityId: 1 as EntityId,
+          targetEntityId: 2 as EntityId,
+        }),
+      ],
+      actorPositions: new Map(),
+      playerPosition: position(5, 5),
+    });
+
+    expect(decorations.current()).toEqual([]);
   });
 });
 

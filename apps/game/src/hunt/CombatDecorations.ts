@@ -12,14 +12,18 @@ import {
   TICK_DURATION_MS,
 } from '../../../../packages/contracts/src/index.ts';
 
+import { combatFxForCause } from './CombatFxTable';
+
 export const CORPSE_TTL_MS = 900;
 export const BLOOD_TTL_MS = 900;
+export const IMPACT_TTL_MS = 900;
 export const DAMAGE_NUMBER_TTL_MS = 700;
 export const AUTOLOOT_ARC_TTL_MS = 600;
 
 export type CombatDecorationKind =
   | 'corpse'
   | 'blood'
+  | 'impact'
   | 'damage-number'
   | 'autoloot-arc';
 
@@ -151,11 +155,28 @@ export function createCombatDecorations(): CombatDecorations {
             }
             break;
           }
+          case 'combat/attacked': {
+            const position = actorPositions.get(event.payload.targetEntityId);
+            const recipe = combatFxForCause('attack');
+            if (position !== undefined && recipe.impactKey !== undefined) {
+              add('impact', createdAtMs, IMPACT_TTL_MS, {
+                key: recipe.impactKey,
+                position: copyPosition(position),
+              });
+            }
+            break;
+          }
           case 'combat/damaged': {
             const position = actorPositions.get(event.payload.entityId);
-            if (position !== undefined) {
-              add('damage-number', createdAtMs, DAMAGE_NUMBER_TTL_MS, {
-                amount: event.payload.amount,
+            if (position === undefined) break;
+            add('damage-number', createdAtMs, DAMAGE_NUMBER_TTL_MS, {
+              amount: event.payload.amount,
+              position: copyPosition(position),
+            });
+            const recipe = combatFxForCause(event.payload.cause);
+            if (recipe.bloodKey !== undefined) {
+              add('blood', createdAtMs, BLOOD_TTL_MS, {
+                key: recipe.bloodKey,
                 position: copyPosition(position),
               });
             }

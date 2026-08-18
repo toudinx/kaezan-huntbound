@@ -182,17 +182,14 @@ entregues em PB-05-10, nunca chegaram à tela.
 
 | ID | Problema coeso | Dependência | Modelo/effort | Status |
 |---|---|---|---|---|
-| [PB-05-FIX-01](tasks/PB-05-FIX-01-restaurar-assets-de-combate.md) | pack pessoal regenerado; asset ausente vira diagnóstico observável em vez de silêncio | PB-05-11 | Luna `xhigh` / Grok 4.6 `high` | pending |
-| [PB-05-FIX-02](tasks/PB-05-FIX-02-animar-efeitos-de-combate.md) | `EffectAnimation` puro no relógio de render; pool de sprites; efeito deixa de congelar no frame 0 | PB-05-FIX-01 | Luna `xhigh` / Grok 4.6 `high` | pending |
+| [PB-05-FIX-01](tasks/PB-05-FIX-01-restaurar-assets-de-combate.md) | pack pessoal regenerado; asset ausente vira diagnóstico observável em vez de silêncio | PB-05-11 | Luna `xhigh` / Grok 4.6 `high` | done |
+| [PB-05-FIX-02](tasks/PB-05-FIX-02-animar-efeitos-de-combate.md) | `EffectAnimation` puro no relógio de render; pool de sprites; efeito deixa de congelar no frame 0 | PB-05-FIX-01 | Luna `xhigh` / Grok 4.6 `high` | done |
+| [PB-05-FIX-03](tasks/PB-05-FIX-03-impacto-de-golpe.md) | `CombatFxTable.ts` + `combat/attacked` e `combat/damaged` por `cause`: todo golpe tem impacto | PB-05-FIX-02 | Luna `xhigh` / Grok 4.6 `high` | done |
+| [PB-05-FIX-04](tasks/PB-05-FIX-04-conjuracao-e-cura.md) | `ability/cast` e `combat/healed`: área, alvo, self e número de cura | PB-05-FIX-03 | Luna `xhigh` / Grok 4.6 `high` | pending |
 
 Conforme `AGENTS.md`, só as duas próximas nascem como task card. O resto fica em bullets até chegar
 a vez:
 
-- **PB-05-FIX-03** — `CombatFxTable.ts`, a única tabela que liga `abilityId` e `CombatCause` a
-  visual, sem Phaser; `CombatDecorations` passa a tratar `combat/attacked` e a distinguir
-  `combat/damaged` por causa. Todo golpe ganha impacto no alvo.
-- **PB-05-FIX-04** — `ability/cast` e `combat/healed`: área raio 1 com stagger para `berserk`, alvo
-  para `brutal-strike`, self para `wound-cleansing`, e número de cura distinto do de dano.
 - **PB-05-FIX-05** — `CombatImpulses.ts`: flash no atingido, hit-stop, shake de câmera, lunge do
   atacante e cor de número por causa. É o passe de game feel, o que mais pede iteração no olho.
 - **PB-05-FIX-06** — `HuntProbe` expõe os cues planejados; spec Playwright no projeto `correctness`
