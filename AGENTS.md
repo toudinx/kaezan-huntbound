@@ -172,6 +172,12 @@ explica. Resumo:
 4. **Servidor vite preso na worktree** faz o `rm -rf` falhar com "Device or resource busy" em
    `apps/game`. Mate o listener (`Get-NetTCPConnection -LocalPort <porta> -State Listen`, depois
    `Stop-Process -Id <pid> -Force`) antes de apagar.
+5. **`EPERM: operation not permitted, rename` no `assets:stage:test`.** O staging escreve
+   `.staging-profile-pb04-<pid>` e renomeia para `apps/game/public/assets/test/pb04`. No Windows o
+   rename falha de forma intermitente porque antivírus ou indexador ainda seguram o diretório recém
+   criado, e derruba `test`, `build` ou `qa:browser` no meio. **Não é código.** Confirme que não há
+   `vite preview` vivo (`Get-NetTCPConnection -LocalPort 4173 -State Listen`) e rode de novo. Já
+   custou dois ciclos completos de `verify` em 2026-08-18.
 
 ## Protocolo de execução
 
