@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import {
   type AssetKey,
   createAssetKey,
+  HUNT_PACK_COMBAT_KEYS,
   HUNT_PACK_OUTFIT_KEY,
   type ResolvedAsset,
 } from '../../../../../packages/assets/src/index.ts';
@@ -56,6 +57,7 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { actorDepth, tileDepth } from '../../hunt/TileDepth';
+import { createUnresolvedHuntAssetTracker } from '../../hunt/UnresolvedHuntAssets';
 import type { InputMap } from '../../input/InputMap';
 import { createTickInputGate } from '../../input/TickInputGate';
 
@@ -149,6 +151,7 @@ export class HuntScene extends Phaser.Scene {
   private unsubscribeEvents: (() => void) | undefined;
   private unsubscribeRestart: (() => void) | undefined;
   private uninstallProbe: (() => void) | undefined;
+  private readonly unresolvedAssets;
 
   constructor(private readonly options: HuntSceneOptions) {
     super('hunt');
@@ -156,6 +159,12 @@ export class HuntScene extends Phaser.Scene {
       options.assets.map((asset) => [asset.key, asset]),
     );
     this.tileSize = options.tileSize ?? HUNT_TILE_SIZE;
+    this.unresolvedAssets = createUnresolvedHuntAssetTracker({
+      resolvedKeys: new Set(options.assets.map((asset) => asset.key)),
+      onDiagnostic: (message) => {
+        console.warn(message);
+      },
+    });
   }
 
   preload() {
@@ -184,7 +193,13 @@ export class HuntScene extends Phaser.Scene {
           blueprint.stepCooldownTicks,
         ]),
       ),
+      onDiagnostic: (message) => {
+        console.warn(message);
+      },
     });
+    for (const key of HUNT_PACK_COMBAT_KEYS) {
+      this.unresolvedAssets.noteMissing(key);
+    }
     this.renderClock = 0;
     this.inputCommands = [];
     this.targetSelection.reset();
@@ -375,6 +390,10 @@ export class HuntScene extends Phaser.Scene {
 
   huntProbeCommands(): readonly HuntProbeCommand[] {
     return Object.freeze(this.inputCommands.map((command) => ({ ...command })));
+  }
+
+  huntProbeUnresolvedCombatAssetKeys(): readonly string[] {
+    return this.unresolvedAssets.unresolvedCombatKeys();
   }
 
   resetHuntProbe(): void {
@@ -630,7 +649,10 @@ export class HuntScene extends Phaser.Scene {
 
     if (decoration.key === undefined) return undefined;
     const asset = this.assetByKey.get(decoration.key);
-    if (asset === undefined) return undefined;
+    if (asset === undefined) {
+      this.unresolvedAssets.noteMissing(decoration.key);
+      return undefined;
+    }
     const sprite = this.add.sprite(0, 0, decoration.key);
     sprite
       .setOrigin(0.5, 0.5)

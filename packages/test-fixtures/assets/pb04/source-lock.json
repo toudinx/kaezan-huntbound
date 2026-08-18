@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "05001aefa4adfa69957f1489e2766ef97ad7ef5be13a24250c2bc88acf23d108",
-    "byteLength": 58218
+    "sha256": "b19bbe60a4666c9d6eaf07ee03a6e74da1f962448a46e1ca5582e5724d771688",
+    "byteLength": 57802
   },
   "files": [
     {
@@ -71,17 +71,6 @@
         "id": 2889
       },
       "path": "objects/2889.png",
-      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
-      "byteLength": 68
-    },
-    {
-      "key": "missile:tibia:weapon-type",
-      "category": "missile",
-      "sourceIdentity": {
-        "kind": "missileId",
-        "id": 254
-      },
-      "path": "missiles/254.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

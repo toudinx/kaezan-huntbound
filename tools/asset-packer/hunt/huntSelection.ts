@@ -11,7 +11,6 @@ import {
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
   HUNT_PACK_OUTFIT_KEY,
   HUNT_PACK_SMALL_SPLASH_KEY,
-  HUNT_PACK_WEAPON_TYPE_MISSILE_KEY,
   type HuntPackSelection,
   hashHuntRegion,
   validateHuntPack,
@@ -92,13 +91,6 @@ function identityForKey(key: string): {
     return {
       category: 'effect',
       sourceIdentity: { kind: 'effectId', id: 13 },
-      pivot: { x: 0.5, y: 0.5 },
-    };
-  }
-  if (key === HUNT_PACK_WEAPON_TYPE_MISSILE_KEY) {
-    return {
-      category: 'missile',
-      sourceIdentity: { kind: 'missileId', id: 254 },
       pivot: { x: 0.5, y: 0.5 },
     };
   }

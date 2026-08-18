@@ -8,9 +8,7 @@ animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 
 **Última atualização:** 2026-08-18
 
-**Próxima etapa:** executar PB-05-FIX-01. A trilha tem prioridade sobre PB-06 e PB-07 por decisão do
-usuário em 2026-08-18. PB-06 continua tecnicamente desbloqueado — precisa apenas de código integrado
-e `verify` verde, que existem em `d4490e9` — mas está atrás na fila.
+**Próxima etapa:** executar PB-05-FIX-02. A trilha FIX tem prioridade sobre PB-06 e PB-07.
 
 ## Tasks
 
@@ -28,7 +26,7 @@ e `verify` verde, que existem em `d4490e9` — mas está atrás na fila.
 | PB-05-10 | done | `acf3b3b` | HUD DOM, input, alvo, dano, corpo/sangue/arco, loot e reinício |
 | PB-05-11 | done | `d4490e9` | `artifacts/browser-qa.md` + 4 screenshots; combate 4/4; estabilidade `50/50` |
 | PB-05-12 | cancelada | — | auditoria deixou de ser gate; ver abaixo |
-| PB-05-FIX-01 | pending | — | pack pessoal com 140 chaves; asset ausente vira diagnóstico |
+| PB-05-FIX-01 | done | (este commit) | 134→139; draw-blood 6/6; hit-area 8/8; magic-blue 22/22; personal:check 0; cadáver+loot na tela |
 | PB-05-FIX-02 | pending | — | `EffectAnimation` puro; efeito anima; `combat:check` byte-idêntico |
 | PB-05-FIX-03..06 | bullets | — | ver README; congelam duas à frente |
 
@@ -39,10 +37,8 @@ passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d0
 
 Nenhum bloqueio aberto.
 
-- **B8 — decidido em 2026-08-18, executa em PB-05-FIX-01.** `missile:tibia:weapon-type` mapeia para
-  `missileId: 254`, que é `CONST_ANI_WEAPONTYPE` do Canary: sentinela para "use o míssil da arma",
-  não id de sprite. Nenhum export de cliente terá `missiles/254.png`. **Decisão do usuário: remover
-  a chave**, levando a seleção de 140 para 139. Não há ataque à distância no jogo.
+- **B8 — executado em PB-05-FIX-01.** `missile:tibia:weapon-type` saiu; seleção 140→139. `missileId: 254`
+  é `CONST_ANI_WEAPONTYPE`, sentinela, não sprite.
 
 - **B5 — reclassificado, não fechado.** `hunt-budget` mediu `5011,7 ms` contra teto de `5000 ms`
   (0,2%) durante PB-05-11. Passou a rodar em `corepack pnpm qa:budgets`, camada informativa, e não

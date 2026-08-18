@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-private-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "92636f6f03c84416b97906384a17b151a5a6675a41ea995a6aef2b4590d9e926",
-    "byteLength": 32397
+    "sha256": "9d8cb67ed018aeb1a2b534770eb5cba34cce46f982417c65e09d52b02b170696",
+    "byteLength": 33703
   },
   "files": [
     {
@@ -18,6 +18,61 @@
       "path": "outfits/26.png",
       "sha256": "50693364cc059e397bad267c8f443f248d387ef38f0417e87351f1f253ed3f4b",
       "byteLength": 23500
+    },
+    {
+      "key": "effect:tibia:draw-blood",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 1
+      },
+      "path": "effects/1.png",
+      "sha256": "e5e03375d379a990613a62c4fc32388823806a269646dd0941ede6d3b7daeedd",
+      "byteLength": 1625
+    },
+    {
+      "key": "effect:tibia:hit-area",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 10
+      },
+      "path": "effects/10.png",
+      "sha256": "62f4c55a8f2f536443a0e9b99860fb5b9c939d52850b2c08ecd5daea51c5497a",
+      "byteLength": 2443
+    },
+    {
+      "key": "effect:tibia:magic-blue",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 13
+      },
+      "path": "effects/13.png",
+      "sha256": "e8417222873053a0c872b2a913cc05cbc0f259fdcd49021bd5466d9401e67386",
+      "byteLength": 1997
+    },
+    {
+      "key": "item:tibia:dead-rotworm",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5967
+      },
+      "path": "objects/5967.png",
+      "sha256": "9f85d21535faf285cc19f82a141afb5e3573a0617de307eedcc217da46492507",
+      "byteLength": 1441
+    },
+    {
+      "key": "item:tibia:small-splash",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2889
+      },
+      "path": "objects/2889.png",
+      "sha256": "cfc360df7a411b94939d62d5b66074648915b13fd7f121549588db4db20fe52e",
+      "byteLength": 5145
     },
     {
       "key": "outfit:tibia:knight",

@@ -35,7 +35,6 @@ const huntCombatKeys = [
   'item:tibia:small-splash',
   'effect:tibia:hit-area',
   'effect:tibia:magic-blue',
-  'missile:tibia:weapon-type',
   'item:tibia:dead-rotworm',
 ];
 

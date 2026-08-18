@@ -96,6 +96,7 @@ export interface HuntProbe {
   state(): HuntProbeState;
   events(): readonly HuntProbeEvent[];
   commands?(): readonly HuntProbeCommand[];
+  unresolvedCombatAssetKeys?(): readonly string[];
   reset(): void;
   releaseHeld?(): void;
 }
@@ -104,6 +105,7 @@ export interface HuntProbe {
 export interface HuntProbeSource {
   huntProbeState(): HuntProbeState;
   huntProbeCommands?(): readonly HuntProbeCommand[];
+  huntProbeUnresolvedCombatAssetKeys?(): readonly string[];
   resetHuntProbe?(): void;
   releaseHeldInput?(): void;
 }
@@ -236,6 +238,8 @@ export function installHuntProbe(
     state: () => source.huntProbeState(),
     events: () => recorder.events(),
     commands: () => source.huntProbeCommands?.() ?? [],
+    unresolvedCombatAssetKeys: () =>
+      source.huntProbeUnresolvedCombatAssetKeys?.() ?? [],
     reset: () => {
       recorder.reset();
       source.resetHuntProbe?.();

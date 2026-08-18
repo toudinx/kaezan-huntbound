@@ -275,4 +275,24 @@ describe('installHuntProbe', () => {
 
     expect(target.__huntboundHuntProbe).toBeUndefined();
   });
+
+  it('exposes unresolved combat asset keys from the live scene', () => {
+    vi.stubEnv('MODE', 'test');
+    const keys = Object.freeze([
+      'effect:tibia:draw-blood',
+      'item:tibia:dead-rotworm',
+    ]);
+
+    installHuntProbe(
+      {
+        huntProbeState: emptyState,
+        huntProbeUnresolvedCombatAssetKeys: () => keys,
+      },
+      () => () => {},
+    );
+
+    expect(target.__huntboundHuntProbe?.unresolvedCombatAssetKeys?.()).toEqual(
+      keys,
+    );
+  });
 });

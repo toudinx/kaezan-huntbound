@@ -43,7 +43,6 @@ const combatKeys = [
   'item:tibia:small-splash',
   'effect:tibia:hit-area',
   'effect:tibia:magic-blue',
-  'missile:tibia:weapon-type',
   'item:tibia:dead-rotworm',
 ];
 
@@ -67,7 +66,7 @@ describe('PB-04 hunt selection generation', () => {
       group,
     });
 
-    expect(manifest.hunt?.keys).toHaveLength(10);
+    expect(manifest.hunt?.keys).toHaveLength(9);
     expect(manifest.entries.map(({ key }) => key)).toEqual([
       HUNT_PACK_CREATURE_KEY,
       'effect:tibia:draw-blood',
@@ -75,7 +74,6 @@ describe('PB-04 hunt selection generation', () => {
       'effect:tibia:magic-blue',
       'item:tibia:dead-rotworm',
       'item:tibia:small-splash',
-      'missile:tibia:weapon-type',
       HUNT_PACK_OUTFIT_KEY,
       'tile:tibia:100',
       'tile:tibia:200',
@@ -122,11 +120,6 @@ describe('PB-04 hunt selection generation', () => {
         key: 'item:tibia:small-splash',
         category: 'object',
         sourceIdentity: { kind: 'clientId', id: 2889 },
-      },
-      {
-        key: 'missile:tibia:weapon-type',
-        category: 'missile',
-        sourceIdentity: { kind: 'missileId', id: 254 },
       },
     ]);
   });
