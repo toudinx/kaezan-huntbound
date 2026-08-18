@@ -37,13 +37,12 @@ passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d0
 
 ## Bloqueios
 
-- **B8 — aberto.** `missile:tibia:weapon-type` mapeia para `missileId: 254`, que é
-  `CONST_ANI_WEAPONTYPE` do Canary: sentinela para "use o míssil da arma", não id de sprite. Nenhum
-  export de cliente terá `missiles/254.png`; a fixture sintética só o aceita porque fabrica
-  placeholder para qualquer id. Enquanto a chave estiver em `HUNT_PACK_COMBAT_KEYS`, o pack pessoal
-  não pode ficar íntegro. Remover exige mexer em constante publicada e na seleção, ambas com gate
-  `--check`. **Decisão do usuário.** Recomendação: remover — não há ataque à distância no jogo e o
-  míssil já está fora do escopo da trilha FIX.
+Nenhum bloqueio aberto.
+
+- **B8 — decidido em 2026-08-18, executa em PB-05-FIX-01.** `missile:tibia:weapon-type` mapeia para
+  `missileId: 254`, que é `CONST_ANI_WEAPONTYPE` do Canary: sentinela para "use o míssil da arma",
+  não id de sprite. Nenhum export de cliente terá `missiles/254.png`. **Decisão do usuário: remover
+  a chave**, levando a seleção de 140 para 139. Não há ataque à distância no jogo.
 
 - **B5 — reclassificado, não fechado.** `hunt-budget` mediu `5011,7 ms` contra teto de `5000 ms`
   (0,2%) durante PB-05-11. Passou a rodar em `corepack pnpm qa:budgets`, camada informativa, e não

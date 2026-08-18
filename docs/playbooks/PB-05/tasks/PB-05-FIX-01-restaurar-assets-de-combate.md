@@ -32,9 +32,8 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
   `manifest.json` de 32397 bytes, que bate com `personal-source-lock.json`. A variável **não está
   definida em nenhum escopo desta máquina**; defina-a no shell da sessão. O valor nunca entra em
   arquivo versionado, conforme `docs/assets/ASSET_PROFILES.md`.
-- **Decisão do usuário sobre `missile:tibia:weapon-type`** (bloqueio B8 no `STATE.md`). Enquanto ela
-  estiver em `HUNT_PACK_COMBAT_KEYS`, o pack pessoal não pode ficar íntegro: `missileId: 254` é
-  `CONST_ANI_WEAPONTYPE`, sentinela do Canary, e não existe sprite correspondente.
+- B8 já está decidido (2026-08-18): `missile:tibia:weapon-type` sai do pack. Nenhuma decisão
+  pendente bloqueia esta task.
 
 ## Leitura mínima
 
@@ -61,10 +60,10 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
 - `assets:pb04:personal:check` **não** entra em `check` nem em `verify`. Ele depende de arte que não
   está no Git e quebraria o gate em qualquer clone limpo. Ele é documentado como passo do fluxo
   pessoal.
-- **A seleção não muda nesta task.** Ela já declara as seis chaves; o furo está a montante, no
-  export privado e no source lock. A única exceção possível é `missile:tibia:weapon-type`, e ela
-  depende da decisão do usuário registrada em B8 — sem essa decisão, não se toca em
-  `HUNT_PACK_COMBAT_KEYS`.
+- **`missile:tibia:weapon-type` sai** (B8, decidido em 2026-08-18). `missileId: 254` é
+  `CONST_ANI_WEAPONTYPE`, sentinela do Canary para "use o míssil da arma equipada", e não existe
+  sprite correspondente em export nenhum. A seleção cai de 140 para 139 chaves. Nenhuma outra chave
+  muda: para as cinco restantes, o furo está a montante, no export privado e no source lock.
 - O source lock é **gerado pelo tool**. `packages/test-fixtures/assets/pb04/personal-source-lock.json`
   é artefato de CLI e não se edita à mão, mesmo sendo versionado.
 
@@ -74,8 +73,12 @@ não resolva passa a ser observável por diagnóstico e pelo `HuntProbe`.
 apps/game/src/phaser/scenes/HuntScene.ts
 apps/game/src/hunt/HuntProbe.ts
 apps/game/src/hunt/HuntProbe.test.ts
-apps/game/public/assets/personal/**                        (gerado; não versionado)
-packages/test-fixtures/assets/pb04/personal-source-lock.json  (gerado pelo tool)
+packages/assets/src/hunt/HuntPack.ts                          (somente a remoção de B8)
+packages/assets/src/hunt/HuntPack.test.ts
+tools/asset-packer/hunt/huntSelection.ts                      (somente a remoção de B8)
+packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json   (gerado pelo tool)
+packages/test-fixtures/assets/pb04/**                         (gerado pelo tool)
+apps/game/public/assets/personal/**                           (gerado; não versionado)
 docs/assets/ASSET_PROFILES.md
 docs/playbooks/PB-05/STATE.md
 package.json                          (somente se o fluxo pessoal precisar de script novo)
@@ -89,7 +92,7 @@ Fora da árvore, a task também toca `content-config.json` do `AssetExtractor` e
 - Animar efeito — PB-05-FIX-02.
 - Tabela de FX, ataque, conjuração, impulsos — PB-05-FIX-03 em diante.
 - `packages/simulation`, `packages/contracts`, `packages/content`.
-- Empacotar chave nova ou mexer na seleção.
+- Acrescentar chave nova ao pack. A única mudança de seleção autorizada é a **remoção** de B8.
 
 ## Execução RED/GREEN
 
@@ -119,7 +122,17 @@ deliberadamente ausente do mapa de assets, não removendo arquivo do disco.
 
 - [ ] **4. Implementar o diagnóstico e a exposição no probe; obter GREEN.**
 
-- [ ] **5. Reexportar os assets privados.**
+- [ ] **5. Remover `missile:tibia:weapon-type` (B8).**
+
+Tire a chave de `HUNT_PACK_COMBAT_KEYS` em `packages/assets/src/hunt/HuntPack.ts` e o `case`
+correspondente em `tools/asset-packer/hunt/huntSelection.ts`. Depois **regenere** a seleção e as
+fixtures pelos tools — os mesmos comandos de `assets:pb04:artifacts:check` e
+`assets:pb04:pack:check`, sem `--check`. Nenhum desses arquivos se edita à mão.
+
+Prove com `corepack pnpm assets:check` que a árvore ficou consistente e que a seleção passou a ter
+139 chaves. `HUNT_PACK_WEAPON_TYPE_MISSILE_KEY` deixa de ser exportada se ninguém mais a referenciar.
+
+- [ ] **6. Reexportar os assets privados.**
 
 O packer não inventa sprite: o export privado precisa **passar a conter** o que a seleção declara.
 Em `C:\Kaezan\kaezan-arena-fable\tools\AssetExtractor`, `content-config.json` já lista `1`, `10` e
@@ -130,7 +143,7 @@ Esse diretório é fonte externa: o repositório **não** o versiona e esta task
 Confirme pelo `manifest.json` regenerado que `effects` passou a ter `1`, `10` e `13`, e `objects` a
 ter `2889` e `5967`.
 
-- [ ] **6. Atualizar o source lock e regenerar o pack pessoal.**
+- [ ] **7. Atualizar o source lock e regenerar o pack pessoal.**
 
 ```powershell
 $env:HUNTBOUND_PERSONAL_ASSET_SOURCE = 'C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave'
@@ -148,13 +161,13 @@ cada efeito trouxe (`atlasFrameCount` e `frameCount` de `animations[0]` para `dr
 efeito já presente no export antigo, o `12`, veio com 17 frames de 40 ms e `pattern` 1 em todos os
 eixos — é a expectativa, não a garantia.
 
-- [ ] **7. Documentar o fluxo pessoal.**
+- [ ] **8. Documentar o fluxo pessoal.**
 
 Em `docs/assets/ASSET_PROFILES.md`, deixe explícito que `assets:pb04:personal:check` é o passo que
 detecta pack pessoal defasado, e que ele não pertence a `verify` por depender de arte fora do Git.
 Sem caminho absoluto.
 
-- [ ] **8. Executar gates.**
+- [ ] **9. Executar gates.**
 
 ```powershell
 corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets exec biome check .
@@ -168,13 +181,13 @@ corepack pnpm --dir C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets verify
 `EPERM` em `assets:stage:test` é flake de Windows — confirme que não há `vite preview` vivo na 4173 e
 rode de novo.
 
-- [ ] **9. Confirmar o efeito na tela.**
+- [ ] **10. Confirmar o efeito na tela.**
 
 Suba `corepack pnpm dev:personal`, mate um rotworm e confirme com os próprios olhos que cadáver,
 sangue e o arco de autoloot aparecem. Se não aparecerem com o pack íntegro, **pare**: a hipótese
 D1+D2 estava incompleta e isso é um bloqueio para registrar, não para contornar.
 
-- [ ] **10. Atualizar handoff, commitar, integrar e limpar.**
+- [ ] **11. Atualizar handoff, commitar, integrar e limpar.**
 
 ```powershell
 git -C C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets add apps docs package.json
@@ -201,6 +214,8 @@ Testes de `@huntbound/game`, `typecheck`, `build` e `verify` verdes; `biome chec
 - [ ] Chave declarada e não resolvida produz exatamente um diagnóstico, com a chave no texto.
 - [ ] `HuntProbe` expõe as chaves de combate não resolvidas.
 - [ ] Asset ausente não lança nem interrompe o render do resto da cena.
+- [ ] `missile:tibia:weapon-type` saiu de `HUNT_PACK_COMBAT_KEYS`, da seleção e das fixtures, todas
+      regeneradas por tool; a seleção tem 139 chaves e `assets:check` sai `0`.
 - [ ] O export privado passou a conter os efeitos `1`, `10` e `13` e os objetos `2889` e `5967`.
 - [ ] `personal-source-lock.json` foi regenerado pelo tool e reflete o export novo.
 - [ ] O pack pessoal resolve todas as chaves da seleção vigente após B8;
@@ -256,9 +271,11 @@ HUNTBOUND_PERSONAL_ASSET_SOURCE nao esta definida nesta maquina. Defina no shell
 C:\Kaezan\huntbound-private-assets\pb04-venore-rotworm-cave
 O caminho nunca entra em arquivo versionado.
 
-Confirme com o usuario a decisao do bloqueio B8 no STATE.md antes do passo 6. missile:tibia:weapon-type
-mapeia para missileId 254, que e CONST_ANI_WEAPONTYPE do Canary — sentinela, nao sprite. Enquanto essa
-chave estiver em HUNT_PACK_COMBAT_KEYS o pack pessoal nao pode ficar integro.
+B8 ja esta decidido: remova missile:tibia:weapon-type de HUNT_PACK_COMBAT_KEYS e o case
+correspondente em tools/asset-packer/hunt/huntSelection.ts. missileId 254 e CONST_ANI_WEAPONTYPE do
+Canary — sentinela, nao sprite, e nenhum export de cliente vai te-lo. Regenere selecao e fixtures
+pelos tools (os comandos de assets:pb04:artifacts:check e assets:pb04:pack:check sem --check); a
+selecao cai de 140 para 139 chaves. Nao edite artefato gerado a mao.
 
 Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb05-fix-01-assets com a branch
 codex/pb-05-fix-01-restore-combat-assets e rode "corepack pnpm install --prefer-offline" dentro dela.
