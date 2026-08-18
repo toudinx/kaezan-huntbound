@@ -2,19 +2,20 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** PB-05-11 bloqueada na QA browser. **PB-05-10 done e
-integrada em `acf3b3b`.** B6 resolvido (`aggroRadius` `1` na composição +
-`tickCount` `2700`). B5 (hunt-budget) segue aberto historicamente e não foi
-mascarado.
+**Estado geral:** PB-05-11 concluída na QA browser e pronta para integração.
+**PB-05-10 done e integrada em `acf3b3b`.** B6 resolvido (`aggroRadius` `1` na
+composição + `tickCount` `2700`). B5 (hunt-budget) segue aberto
+historicamente e não foi mascarado.
 
-**Última atualização:** 2026-08-17
+**Última atualização:** 2026-08-18
 
 **Atualização vigente:** PB-05-12 foi aberta e **devolvida sem auditar**, pela
 condição de parada da própria task card: PB-05-11 não está integrada em `main`.
 Nenhum gate de auditoria foi executado e nenhum veredito foi emitido.
 
-**Próxima etapa:** desbloquear a estratégia de sessão/aggro da PB-05-11. A
-PB-05-12 não é elegível enquanto a estabilidade browser não for verde.
+**Próxima etapa:** rebasear `codex/pb-05-11-combat-browser-qa` sobre os quatro
+commits de Sites e integrar por fast-forward. A PB-05-12 volta a ser elegível
+depois da integração; nenhuma auditoria foi iniciada.
 
 ## Tasks
 
@@ -30,14 +31,14 @@ PB-05-12 não é elegível enquanto a estabilidade browser não for verde.
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | done | `codex/pb-05-10-combat-hud` | `acf3b3b` (ff `b5427f2..acf3b3b`) | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
-| PB-05-11 | blocked (QA browser) | `codex/pb-05-11-combat-browser-qa` | — (não integrada) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `49/50` e `45/50` |
+| PB-05-11 | done (QA browser; aguardando integração) | `codex/pb-05-11-combat-browser-qa` | — (rebase pendente) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `50/50`, `qa:browser` 34/34 |
 | PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
 
 ## Última task concluída
 
-PB-05-10. Branch `codex/pb-05-10-combat-hud` a partir de `main`.
-Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-10-hud`.
-Fast-forward para `main` autorizado pela task card.
+PB-05-11. Branch `codex/pb-05-11-combat-browser-qa`, com prova browser concluída
+na worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-11-qa`. O rebase sobre os
+commits de Sites e o fast-forward para `main` ainda estão pendentes.
 
 ## Handoff PB-05-12 — 2026-08-17 (devolvida sem auditar)
 
@@ -115,15 +116,13 @@ PB-05-12 volta a ser elegível quando, cumulativamente:
 - **Skills:** `superpowers:verification-before-completion`, `independent-audit`.
 - **Validador:** — (a task era a validação; não chegou a validar nada).
 
-## Handoff PB-05-11 — 2026-08-17
+## Handoff PB-05-11 — 2026-08-18
 
-**Status:** bloqueada. A cobertura de combate, a paridade Node/Chromium e as
-quatro screenshots foram produzidas, mas a mesma sessão interativa falhou em
-duas rodadas obrigatórias sem retry: `49/50` e `45/50`. A task manda parar na
-primeira falha de `--repeat-each=10`; a branch permanece não integrada e a
-worktree é mantida para handoff.
+**Status:** prova browser concluída. A sessão interativa fechou `50/50` em
+`--retries=0 --repeat-each=10`, com replay/paridade Node/Chromium, quatro
+screenshots e `qa:browser` verdes. A branch ainda aguarda rebase e integração.
 
-**Base:** `main` em `6acc88d` (PB-05-10 integrada). **Branch/worktree:**
+**Base antes do rebase:** `main` em `6acc88d` (PB-05-10 integrada). **Branch/worktree:**
 `codex/pb-05-11-combat-browser-qa`;
 `C:\Kaezan\kaezan-huntbound-pb05-11-qa`.
 
@@ -143,8 +142,6 @@ aplicável; o gate automatizado é a validação prevista.
   de barras/loot/morte, captura e comparação do snapshot no Chromium.
 - Quatro screenshots versionadas em
   `docs/playbooks/PB-05/artifacts/screenshots/`.
-- Cinco snapshots de shell regenerados pelo Playwright depois de comprovar a
-  mudança visual deliberada do HUD de PB-05-10.
 
 Nenhum arquivo em `packages/**` ou `apps/game/src/**` foi alterado.
 
@@ -157,24 +154,25 @@ Nenhum arquivo em `packages/**` ou `apps/game/src/**` foi alterado.
 | `corepack pnpm typecheck` | `0` | 7 projetos |
 | `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --retries=0` | `0` | 4 viewports passaram na captura |
 | `corepack pnpm exec playwright test tests/e2e/combat-replay.spec.ts --retries=0` | `0` | hash Node/Chromium igual |
-| `corepack pnpm qa:browser` | `1` | após os snapshots, 32 passaram; falhou em combate `desktop-wide` e B5 `hunt-budget` |
-| `corepack pnpm exec playwright test ... --retries=0 --repeat-each=10` | `1` | rodada final A: `49 passed`; rodada final B: `45 passed` |
+| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts tests/e2e/combat-replay.spec.ts --retries=0 --repeat-each=10` | `0` | 50 testes passaram |
+| `corepack pnpm qa:browser` | `0` | 34 testes passaram |
+| `corepack pnpm verify` | `1` | `sourceLock.test.ts` falhou ao gravar objetos de um Git temporário em `%TEMP%`; limitação ambiental reproduzida isoladamente |
 
 Hash do snapshot canônico nos dois runtimes:
 `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
 Os detalhes, hashes das screenshots e comandos completos estão em
 `docs/playbooks/PB-05/artifacts/browser-qa.md`.
 
-**Bloqueio:** sob carga/tempo variável, o jogador morre durante a aproximação
-ou espera de cooldown antes de matar o primeiro rotworm. Foram observados
-alvos vivos entre `3/65` e `65/65`, `Health: 0/185`, timeout de input e alvo
-desaparecido durante a aproximação. O driver tentou curar antes, reduzir
-seleção extra e respeitar o cooldown de 40 ticks; a prova continua vermelha.
-Não foi usado retry, timeout inflado, skip ou asserção enfraquecida.
+**Correção da instabilidade:** o driver deixou de aceitar fallback de rota por
+atores adjacentes, passou a afastar-se de ameaças antes de continuar e trocou a
+injeção manual de `PointerEvent` pelo input público de teclado. A cura espera a
+habilidade ficar pronta e quebra o aggro antes de observar o aumento de vida,
+mantendo a asserção estrita. Nenhum arquivo de produção foi alterado; não foi
+usado retry, timeout inflado, skip ou asserção enfraquecida.
 
-**Próxima ação:** decidir/corrigir a estratégia de combate/aggro na task
-apropriada e repetir a prova obrigatória. Não integrar esta branch enquanto a
-sessão não fechar `50/50`.
+**Próxima ação:** rebasear sobre os quatro commits de Sites e integrar por
+`git merge --ff-only`. Depois da integração, PB-05-12 volta a ser elegível para
+auditoria. PB-05-06 permanece `blocked (QA browser)` e PB-06 não foi iniciada.
 
 ## Handoff PB-05-10 — 2026-08-16
 

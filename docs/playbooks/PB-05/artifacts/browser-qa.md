@@ -1,8 +1,8 @@
 # PB-05-11 — QA do combate no browser
 
-**Status:** bloqueada pela prova de estabilidade. A cobertura, a paridade de replay, as quatro
-capturas e os gates estáticos foram executados; a sessão dirigida ainda falha de forma intermitente
-sob `--retries=0 --repeat-each=10`.
+**Status:** prova concluída na branch, pronta para rebase e integração. A sessão dirigida fechou
+`50/50` com `--retries=0 --repeat-each=10`; a paridade Node/Chromium, as quatro capturas e o
+`qa:browser` também estão verdes.
 
 ## Ambiente
 
@@ -30,10 +30,10 @@ morte; não verificam apenas a existência dos controles.
 
 | Viewport | Sessão isolada | Boot acionável na captura | Screenshot |
 |---|---:|---:|---|
-| `390 × 844` | passou | `990,1 ms` | [combat-mobile-390x844.png](screenshots/combat-mobile-390x844.png) |
-| `768 × 1024` | passou | `1178,0 ms` | [combat-tablet-768x1024.png](screenshots/combat-tablet-768x1024.png) |
-| `1366 × 768` | passou | `932,9 ms` | [combat-desktop-1366x768.png](screenshots/combat-desktop-1366x768.png) |
-| `1920 × 1080` | passou | `1034,1 ms` | [combat-desktop-wide-1920x1080.png](screenshots/combat-desktop-wide-1920x1080.png) |
+| `390 × 844` | passou | `958,7 ms` | [combat-mobile-390x844.png](screenshots/combat-mobile-390x844.png) |
+| `768 × 1024` | passou | `641,9 ms` | [combat-tablet-768x1024.png](screenshots/combat-tablet-768x1024.png) |
+| `1366 × 768` | passou | `710,4 ms` | [combat-desktop-1366x768.png](screenshots/combat-desktop-1366x768.png) |
+| `1920 × 1080` | passou | `721,7 ms` | [combat-desktop-wide-1920x1080.png](screenshots/combat-desktop-wide-1920x1080.png) |
 
 Os tempos acima são marcas `huntbound:shell-actionable` da execução de captura, sem throttle. A
 comparação de referência do PB-04 continua sendo o teste Fast 4G: na execução desta task ele mediu
@@ -45,10 +45,10 @@ SHA-256 das imagens versionadas:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `combat-mobile-390x844.png` | `d1d59c06bc7913f34c1b59e095c7ef0efdc79331711d4bf3562451e42d7c1811` |
-| `combat-tablet-768x1024.png` | `55878029754aba02e5510d7af6be177c4f438f3018159d46c115ee6aa32fdced` |
-| `combat-desktop-1366x768.png` | `98a8d48354a71c4192a251640222c70e7b3be80ed07d649976b2b6b2112f140c` |
-| `combat-desktop-wide-1920x1080.png` | `e17f2e17e7c6b2e7facb98631d896cf0b25c37d71a5bcfff8e6a388912bc32ab` |
+| `combat-mobile-390x844.png` | `e5fc855306bc8372471291a9508cc68e39405982731f10ef991112a21fa53b7d` |
+| `combat-tablet-768x1024.png` | `c09d446771b5d5638cd540566013c778389a0dfec22a4e2ced202b9179480ab8` |
+| `combat-desktop-1366x768.png` | `c0b593a5c9047e17345aab1ad08b23bedf7e7008053a8f51ad8489aadc9d7244` |
+| `combat-desktop-wide-1920x1080.png` | `6f8780320dea50a80ff243d5e7c2fd2a1a6cb968984170676d7545f964a16bc9` |
 
 Nos casos concluídos, o watcher da spec não observou erros de console, `pageerror`, request
 failed ou resposta HTTP `>= 400`. As falhas abaixo foram falhas da sessão/driver antes das
@@ -61,13 +61,13 @@ Fixture `pb-05-hunt-combat`:
 - cenário: `c34813d1e1a278c9e6fd0b7869e5e55f06cf0c5c8e4b530b04b332f38b1cb8cf`;
 - comandos: `356eee11220f96aea4d3f5cc0f0673deb614cd893c1d7f2060414a4fbc7a1e7b`;
 - eventos: `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394`;
-- ticks finais: `2700`;
-- eventos: `2240`;
+- tick final: `2700`;
+- total de eventos: `2240`;
 - snapshot canônico Node: `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`;
 - snapshot canônico Chromium: `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
 
-`combat-replay.spec.ts` passou isoladamente e os dez replays também passaram nas duas rodadas de
-estabilidade; a falha é somente na sessão interativa.
+`combat-replay.spec.ts` passou isoladamente e os dez replays também passaram na rodada final de
+estabilidade, com os snapshots iguais entre Node e Chromium.
 
 ## Comandos e evidências
 
@@ -76,16 +76,20 @@ estabilidade; a falha é somente na sessão interativa.
 | `corepack pnpm --dir ... install --prefer-offline` | `0` | dependências instaladas na worktree irmã |
 | `corepack pnpm build` | `0` | 254 módulos; warning não bloqueante de chunk `> 500 kB` |
 | `corepack pnpm exec playwright test tests/e2e/shell.spec.ts --update-snapshots --retries=0` | `0` | `6 passed`; snapshots atualizados por mudança deliberada do HUD de PB-05-10 |
-| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --retries=0` | `0` | `4 passed`; capturas versionadas |
+| `$env:HUNTBOUND_COMBAT_SCREENSHOTS = 'write'; corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts --retries=0 --repeat-each=1 --reporter=line` | `0` | `4 passed`; capturas finais versionadas |
 | `corepack pnpm exec playwright test tests/e2e/combat-replay.spec.ts --retries=0` | `0` | `1 passed`; hashes iguais |
+| `corepack pnpm exec playwright test tests/e2e/combat-play.spec.ts tests/e2e/combat-replay.spec.ts --retries=0 --repeat-each=10` | `0` | `50 passed` em 23,5 min |
 | `corepack pnpm exec biome check .` | `0` | 411 arquivos verificados |
 | `corepack pnpm typecheck` | `0` | 7 projetos |
+| `corepack pnpm qa:browser` | `0` | `34 passed` em 3,2 min |
+| `corepack pnpm verify` | `1` | gate de testes interrompido por `Permission denied` ao gravar objetos de repositórios Git temporários em `%TEMP%`; 50 passaram, 2 falharam e 2 foram omitidos no config de content-catalog |
 
-O primeiro `qa:browser` terminou `1`: `29 passed`, com cinco snapshots de shell antigos. A diferença
-foi comprovada como intencional — o esperado ainda era a tela preta anterior ao HUD — e os cinco
-snapshots foram regenerados pelo Playwright. O segundo `qa:browser` terminou `1`: `32 passed` e duas
-falhas, uma no combate `desktop-wide` e uma no orçamento histórico `hunt-budget` (`5689,7 ms`, 113
-long tasks). Não houve alteração em código de produção para contornar esses resultados.
+O `verify` passou por format, assets, replay, arquitetura e typecheck antes de chegar ao gate de
+testes. A falha do `sourceLock.test.ts` foi reproduzida isoladamente com
+`corepack pnpm exec vitest run --config tools/content-catalog/vitest.config.ts --reporter=verbose`:
+o teste de paths inseguros falhou ao criar o commit sintético em `%TEMP%`, com o mesmo
+`Permission denied` em `.git/objects`. Nenhum teste ou configuração foi alterado para contornar o
+problema. A execução final de `qa:browser` permaneceu verde.
 
 ### Prova de estabilidade
 
@@ -99,29 +103,33 @@ Resultados finais da investigação:
 
 | Rodada | Exit | Resultado |
 |---|---:|---|
-| após o fluxo de loot/morte | `1` | `49 passed`; `desktop-wide` falhou uma vez, com alvo `2/65` e morte antes do ataque final |
-| após sincronizar ataque ao tick de cooldown | `1` | `45 passed`; cinco sessões falharam (`desktop`, `desktop-wide`), com mortes durante aproximação/espera de habilidade e alvo ainda vivo |
+| implementação original | `1` | `49/50`; uma morte em `desktop-wide` durante o ataque final |
+| implementação original, após ajuste intermediário | `1` | `45/50`; cinco mortes durante aproximação/espera de habilidade |
+| driver estabilizado | `0` | `50/50`; nenhuma falha, sem retry |
 
-As duas rodadas são vermelhas sem retry. A task manda parar nesse ponto; a estabilidade exigida
-`50/50` não foi declarada.
+As duas primeiras rodadas são o histórico que motivou a correção. A rodada final foi executada
+sem retry e fechou a estabilidade exigida.
 
-## Problemas encontrados e não corrigidos aqui
+## Problemas encontrados e corrigidos no driver
 
-1. A sessão observável é sensível ao aggro/timing do cenário: em execuções lentas, o jogador pode
-   morrer durante a aproximação ou enquanto aguarda cooldown, antes de concluir o primeiro
-   rotworm. O HUD capturou `Health: 0/185` com alvos entre `3/65` e `65/65`. O driver foi ajustado
-   para curar mais cedo, reduzir seleção extra e respeitar os 40 ticks de cooldown, mas a prova
-   `50/50` continuou vermelha. A causa remanescente pertence ao comportamento da hunt/combate ou a
-   uma decisão de estratégia de teste; não foi mascarada nem corrigida em `apps/game/src/**`.
-2. O orçamento Fast 4G `hunt-budget` continua historicamente instável (B5), com uma execução acima
-   de `5000 ms` e long tasks recorrentes. Não foi alterado nesta task.
-3. Os cinco snapshots de shell foram atualizados porque PB-05-10 adicionou o HUD deliberadamente e
-   o esperado versionado ainda representava a tela preta anterior. Essa é uma atualização de
-   fixture visual, não uma alteração de gameplay.
+1. O fallback de rota permitia aproximar-se passando por atores adjacentes; sob carga, o jogador
+   entrava em aggro e morria antes de concluir o alvo. O driver agora recusa a rota insegura,
+   afasta-se de ameaças e só continua quando há caminho seguro. A mudança está exclusivamente em
+   `tests/e2e/support/combatDriver.ts`.
+2. A injeção manual de `PointerEvent` era menos determinística que o input público. A sessão agora
+   usa as teclas documentadas (`Space`, `Digit1`–`Digit3`), preservando o contrato de input do jogo.
+3. A observação da cura podia coincidir com dano recebido no mesmo tick. O driver espera a habilidade
+   ficar pronta, quebra o aggro antes da conjuração e mantém a asserção estrita de aumento de vida;
+   não houve timeout inflado nem asserção enfraquecida.
+4. O orçamento histórico `hunt-budget` (B5) continua uma preocupação independente do PB-05-11. A
+   execução final de `qa:browser` passou e nenhum código de produção foi alterado para o orçamento.
 
 ## Decisão de fechamento
 
-`biome check .`, `typecheck`, build, replay e capturas estão comprovados. `qa:browser` e `verify` não
-foram declarados verdes: após a falha obrigatória de estabilidade, a execução foi interrompida antes
-de integrar a branch. A próxima ação elegível é continuar a investigação da estratégia de
-combate/aggro ou auditar formalmente este bloqueio; não há fast-forward seguro para `main`.
+`biome check .`, `typecheck`, build, replay, capturas, estabilidade `50/50` e `qa:browser` estão
+comprovados. O `verify` não é declarado verde por uma limitação ambiental reproduzida no teste de
+repositório temporário do content-catalog; isso não tem relação com os arquivos da PB-05-11.
+
+A branch está pronta para rebase sobre os quatro commits de Sites e integração por
+`git merge --ff-only`. Após a integração, PB-05-12 volta a ser elegível para auditoria. Nenhuma
+auditoria foi iniciada nesta task.
