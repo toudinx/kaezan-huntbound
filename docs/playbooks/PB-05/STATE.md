@@ -2,18 +2,21 @@
 
 **Playbook:** `docs/playbooks/PB-05/README.md`
 
-**Estado geral:** execução em andamento. **PB-05-10 done e integrada em
-`acf3b3b`.** B6 resolvido (`aggroRadius` `1` na composição + `tickCount`
-`2700`). B5 (hunt-budget) segue aberto historicamente e não foi mascarado.
+**Estado geral:** execução bloqueada. **PB-05-10 done e integrada em
+`acf3b3b`.** **PB-05-11 bloqueada na prova de estabilidade e não integrada
+(`bed19d5`, fora de `main`).** **PB-05-12 não é elegível (B7).** B6 resolvido
+(`aggroRadius` `1` na composição + `tickCount` `2700`). B5 (hunt-budget) segue
+aberto historicamente e não foi mascarado.
 
-**Última atualização:** 2026-08-16
+**Última atualização:** 2026-08-17
 
-**Atualização vigente:** fixture `pb-05-hunt-combat` congelada em
-`packages/test-fixtures/hunt/pb05/`, `combat:check` em `check`/`verify`,
-registro em `docs/simulation/REPLAY_CONTRACT.md` no mesmo commit.
+**Atualização vigente:** PB-05-12 foi aberta e **devolvida sem auditar**, pela
+condição de parada da própria task card: PB-05-11 não está integrada em `main`.
+Nenhum gate de auditoria foi executado e nenhum veredito foi emitido.
 
-**Próxima etapa:** PB-05-11 (QA browser do combate). PB-05-09 e PB-05-10
-estão implementadas.
+**Próxima etapa:** desbloquear a estabilidade da sessão dirigida da PB-05-11
+(`45/50` e `49/50` sem `retries`) e integrá-la em `main`. Só então PB-05-12
+volta a ser elegível.
 
 ## Tasks
 
@@ -29,14 +32,90 @@ estão implementadas.
 | PB-05-08 | done | `grok/pb-05-08-combat-fixture` | `2c456b0` (ff `3e25fc5..2c456b0`) | fixture `pb-05-hunt-combat` 2700 ticks; `combat:check` 0×2; retomada `0..2700`; B6 resolvido |
 | PB-05-09 | done | `codex/pb-05-09-combat-assets` | `02b8c4a` | 140 entradas / 9520 bytes; `assets:check` 0 em duas execuções; B5 browser pré-existente mantém `verify` bloqueado |
 | PB-05-10 | done | `codex/pb-05-10-combat-hud` | `acf3b3b` (ff `b5427f2..acf3b3b`) | HUD DOM, input, alvo, números de dano, corpo/sangue/arco, loot e reinício |
-| PB-05-11 | pending | `<agente>/pb05-11-combat-browser-qa` | — | `artifacts/browser-qa.md` + 4 screenshots + specs estáveis sem `retries` |
-| PB-05-12 | pending | `<agente>/pb05-12-integrated-gate` | — | `artifacts/acceptance-report.md` |
+| PB-05-11 | blocked (estabilidade browser) | `codex/pb-05-11-combat-browser-qa` | — (`bed19d5`, **não integrada**) | `artifacts/browser-qa.md` + 4 screenshots; replay/paridade verdes, estabilidade `49/50` e `45/50` |
+| PB-05-12 | blocked (dependência) | `claude/pb-05-12-integrated-gate` | — | devolvida sem auditar por B7; sem veredito |
 
 ## Última task concluída
 
 PB-05-10. Branch `codex/pb-05-10-combat-hud` a partir de `main`.
 Worktree irmã `C:\Kaezan\kaezan-huntbound-pb05-10-hud`.
 Fast-forward para `main` autorizado pela task card.
+
+## Handoff PB-05-12 — 2026-08-17 (devolvida sem auditar)
+
+**Status:** **não executada.** Acionada a condição de parada da própria task
+card: "a única parada legítima é a árvore de `main` estar suja ou alguma task de
+PB-05 não estar realmente integrada — nesse caso, registre e devolva antes de
+auditar". PB-05-11 não está integrada. **Nenhum gate de auditoria foi rodado e
+nenhum veredito (`APPROVED` / `APPROVED_WITH_WARNINGS` / `REJECTED`) foi
+emitido.** Não existe `artifacts/acceptance-report.md`.
+
+### Evidência da devolução
+
+Comandos rodados em `C:\Kaezan\kaezan-huntbound` sobre `main` = `f6d7c64`:
+
+| Comando | Saída |
+|---|---|
+| `git status --porcelain=v1 --untracked-files=all` | vazio — `main` está limpa |
+| `git rev-parse HEAD` | `f6d7c6458e84217d071e4539cff1e6d8099a1703` |
+| `git merge-base --is-ancestor bed19d5 main` | exit `1` — PB-05-11 **não** está em `main` |
+| `git merge-base --is-ancestor main bed19d5` | exit `1` — **não há fast-forward possível**; `main` divergiu |
+| `git log --oneline main..codex/pb-05-11-combat-browser-qa` | `bed19d5 test: prove combat in the browser` |
+| `git log --oneline codex/pb-05-11-combat-browser-qa..main` | `f6d7c64`, `9c19d3a`, `f47058f`, `93a0aed` — quatro commits de hosting Sites, alheios ao PB-05 |
+| `git ls-tree --name-only main tests/e2e/` | sem `combat-play.spec.ts` e sem `combat-replay.spec.ts` |
+| `git ls-tree --name-only main docs/playbooks/PB-05/` | sem `artifacts/` |
+| `git log --all --oneline --diff-filter=A -- 'docs/playbooks/PB-05/artifacts/*'` | só `bed19d5`; nunca entrou em `main` |
+| `git -C C:\Kaezan\kaezan-huntbound-pb05-11-qa status --porcelain=v1 -uall` | vazio — a worktree irmã está limpa e preservada |
+
+### Por que auditar agora produziria um veredito falso
+
+1. **A leitura mínima da task não existe em `main`.** O item 7 exige
+   `docs/playbooks/PB-05/artifacts/browser-qa.md`; o arquivo só existe em
+   `bed19d5`.
+2. **O passo 6 não teria o que medir.** `playwright test --retries=0
+   --repeat-each=10` sobre `main` não executa nenhuma spec de combate, porque
+   `combat-play.spec.ts` e `combat-replay.spec.ts` não estão versionadas em
+   `main`. Um verde ali significaria apenas que o combate não foi testado.
+3. **O critério de aceite já é conhecido como vermelho.** O próprio
+   `browser-qa.md` de PB-05-11 registra `49 passed` de `50` e `45 passed` de
+   `50` sem `retries`. O critério "as specs de browser passam `10/10` com
+   `--retries=0`" está reprovado por evidência do implementador, e a task
+   PB-05-12 declara que qualquer falha ali é blocker.
+4. **PB-05-06 continua `blocked (QA browser)`** na tabela, sem fechamento.
+
+Auditar mesmo assim só poderia gerar um `REJECTED` já conhecido, ou — pior — um
+`APPROVED` obtido por ausência das specs de combate na árvore auditada. A skill
+`independent-audit` proíbe as duas formas: "aprovar por ausência de evidência" e
+"reduzir gate, escopo ou critério de aceite para conseguir aprovar".
+
+### O que **não** foi feito, de propósito
+
+- Nenhuma worktree de auditoria criada; nenhum `verify`, `biome check`,
+  `simulation:check`, `hunt:check`, `combat:check`, `build` ou `playwright`
+  executado — resultado desses gates sobre uma árvore incompleta seria
+  enganoso, não evidência.
+- Nenhum defeito corrigido, nenhuma spec, fixture, golden ou código tocado
+  (a auditoria é read-only e a correção é explicitamente fora de escopo).
+- Nenhuma task `PB-05-FIX-NN` criada: B7 é dependência não satisfeita, não
+  defeito descoberto por auditoria.
+- `docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md` não foi tocado: sem veredito,
+  não há status novo de PB-05 nem decisão sobre PB-06 para registrar.
+
+### Condição de reentrada
+
+PB-05-12 volta a ser elegível quando, cumulativamente:
+
+1. a sessão dirigida de PB-05-11 passar `50/50` com `--retries=0 --repeat-each=10`;
+2. `codex/pb-05-11-combat-browser-qa` estiver integrada em `main` — hoje exige
+   rebase sobre os quatro commits de Sites, porque `--ff-only` já não é possível;
+3. PB-05-06 sair de `blocked (QA browser)`;
+4. `main` estiver limpa no commit a auditar.
+
+### Modelo e effort
+
+- **Modelo:** Claude Opus 5, effort alto.
+- **Skills:** `superpowers:verification-before-completion`, `independent-audit`.
+- **Validador:** — (a task era a validação; não chegou a validar nada).
 
 ## Handoff PB-05-10 — 2026-08-16
 
@@ -839,6 +918,19 @@ PB-05-01 (histórico):
   em `verify`.
 
 ## Bloqueios
+
+- **B7 (bloqueante de PB-05-12; aberto em 2026-08-17):** PB-05-12 exige
+  PB-05-01..PB-05-11 `done` **e integradas em `main`**. PB-05-11 está bloqueada
+  na prova de estabilidade (`49/50` e `45/50` sem `retries`) e seu commit
+  `bed19d5` nunca entrou em `main`. Além disso `main` avançou quatro commits de
+  hosting Sites (`93a0aed`, `f47058f`, `9c19d3a`, `f6d7c64`) depois do último
+  commit de PB-05, de modo que o `git merge --ff-only` previsto no ciclo de
+  conclusão de PB-05-11 **já não é possível** — a integração passou a exigir
+  rebase. Consequência: a árvore de `main` não contém `combat-play.spec.ts`,
+  `combat-replay.spec.ts` nem `artifacts/browser-qa.md`, e o passo 6 da
+  auditoria não teria spec de combate para exercitar. PB-05-12 foi devolvida sem
+  auditar, conforme sua própria condição de parada. Fechar B7 exige estabilizar
+  e integrar PB-05-11.
 
 - ~~**B3 (bloqueante, externo ao PB-05):** PB-04 aberto.~~ **Resolvido em 2026-08-16** pela
   reavaliação PB-04-10: veredito `APPROVED_WITH_WARNINGS` sobre `9f1c14c`, registro `d8253dc`.
