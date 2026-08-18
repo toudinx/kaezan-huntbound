@@ -142,5 +142,6 @@ nenhum desses resultados tem relação com arquivos de produção da PB-05-11.
 A branch foi rebaseada sobre os quatro commits de Sites e integrada por `git merge --ff-only` em
 `main` (`54a8acc..d4490e9`). Após o fast-forward, o teste específico de combate no tablet passou
 isoladamente e os quatro testes de combate passaram no `qa:browser`; o vermelho global restante é
-o B5 histórico. PB-05-12 volta a ser elegível para auditoria, mas nenhuma auditoria foi iniciada
-nesta task.
+o B5 histórico. A dependência técnica de PB-05-12 está resolvida, mas a auditoria ainda exige uma
+árvore `main` limpa; há alterações locais preexistentes fora do PB-05. Nenhuma auditoria foi
+iniciada nesta task.

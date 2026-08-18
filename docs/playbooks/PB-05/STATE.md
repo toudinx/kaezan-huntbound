@@ -11,11 +11,14 @@ resolvido (`aggroRadius` `1` na composição + `tickCount` `2700`). B5
 
 **Atualização vigente:** PB-05-12 foi aberta e **devolvida sem auditar** quando
 PB-05-11 ainda não estava integrada. Depois da correção, rebase e fast-forward,
-PB-05-12 está novamente elegível. Nenhum gate de auditoria foi executado e
-nenhum veredito foi emitido.
+a dependência técnica de PB-05-12 foi resolvida. A auditoria continua pendente:
+`main` tem alterações locais preexistentes fora do PB-05 (docs/06, docs/README e
+arquivos de PB-06), portanto a condição de árvore limpa ainda não foi satisfeita.
+Nenhum gate de auditoria foi executado e nenhum veredito foi emitido.
 
-**Próxima etapa:** auditar PB-05-12 em uma task própria. PB-06 não foi iniciada;
-PB-05-06 permanece `blocked (QA browser)`.
+**Próxima etapa:** depois que as alterações locais fora do PB-05 forem resolvidas
+e `main` voltar a estar limpa, auditar PB-05-12 em uma task própria. PB-06 não
+foi iniciada por esta task; PB-05-06 permanece `blocked (QA browser)`.
 
 ## Tasks
 
