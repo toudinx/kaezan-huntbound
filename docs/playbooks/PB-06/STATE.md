@@ -2,23 +2,21 @@
 
 **Playbook:** `docs/playbooks/PB-06/README.md`
 
-**Estado geral:** **elegível**. Nenhuma task foi executada ainda. PB-06-01 pode começar.
+**Estado geral:** **em execução**. PB-06-01 integrado. PB-06-02 é a próxima elegível.
 
-**Última atualização:** 2026-08-18
+**Última atualização:** 2026-08-19
 
 **Atualização vigente:** playbook versionado em `8a77c6d` e desbloqueado em 2026-08-18. B1 caiu
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-01 — **depois** da trilha `PB-05-FIX`. O aceite do PB-05 em
-2026-08-18 foi apontado (combate sem animação) e o usuário priorizou a correção sobre qualquer
-feature nova. PB-06 continua tecnicamente desbloqueado; está apenas atrás na fila.
+**Próxima etapa:** executar PB-06-02.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-06-01 | pending | `<agente>/pb06-01-save-contracts` | — | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
+| PB-06-01 | done | `codex/pb06-01-save-contracts` | (este commit) | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
 | PB-06-02 | pending | `<agente>/pb06-02-save-repository` | — | `SaveRepository` sobre `MemorySaveDriver`; rollback e serialização provados |
 | PB-06-03 | pending | `<agente>/pb06-03-save-migrations` | — | migração de documento sem versão para v1; recusa de versão futura |
 | PB-06-04 | pending | `<agente>/pb06-04-save-export-import` | — | export canônico estável em duas chamadas; import atômico e validado |
@@ -31,7 +29,7 @@ feature nova. PB-06 continua tecnicamente desbloqueado; está apenas atrás na f
 
 ## Última task concluída
 
-Nenhuma. O playbook nunca entrou em execução.
+PB-06-01. Contrato `GameSave` v1 publicado; próxima elegível: PB-06-02.
 
 ## Decisões já congeladas antes da execução
 
@@ -50,10 +48,8 @@ referências:
 - **sem checksum no export**, por decisão explícita da ADR sobre save pessoal — spec §7;
 - `SAVE_SCHEMA_VERSION = 1` com uma migração real de documento sem versão — spec §8.
 
-**Desvio declarado, pendente de registro na ADR:** `transact` recebe `SaveDraft`, o espelho mutável
-de `GameSave`, em vez de `GameSave`. A forma, os quatro métodos e a semântica do `SaveRepository`
-continuam sendo os da ADR-05. PB-06-01 registra a nota em
-`docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`.
+**Desvio declarado, registrado na ADR:** `transact` recebe `SaveDraft`, o espelho mutável de
+`GameSave`. A forma, os quatro métodos e a semântica do `SaveRepository` continuam os da ADR-05.
 
 ## Bloqueios
 

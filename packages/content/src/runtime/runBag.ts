@@ -1,9 +1,6 @@
-import type { SimulationEvent } from '@huntbound/contracts';
+import type { RunBagEntry, SimulationEvent } from '@huntbound/contracts';
 
-export interface RunBagEntry {
-  readonly itemKey: string;
-  readonly count: number;
-}
+export type { RunBagEntry };
 
 function compareItemKeys(left: string, right: string): number {
   return left === right ? 0 : left < right ? -1 : 1;

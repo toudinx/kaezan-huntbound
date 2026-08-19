@@ -187,6 +187,8 @@ duplicação acidental, não impedir o proprietário do dispositivo de editar se
 - Toda operação de gacha é atômica em uma transação IndexedDB.
 - O estado salvo pertence à simulação; Phaser e DOM não são serializados.
 - Import/export manual serve a backup, replay e depuração.
+- `transact` recebe `SaveDraft`, o espelho mutável de `GameSave`; a forma, os quatro
+  métodos e a semântica do contrato continuam os mesmos.
 
 Se surgir um produto, outra implementação de `SaveRepository` fala com um backend autoritativo. O
 modelo de `run_id`, idempotência e ledger da ADR-001 volta a ser obrigatório nessa fase.
