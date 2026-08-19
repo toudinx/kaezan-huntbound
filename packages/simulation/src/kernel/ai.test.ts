@@ -6,10 +6,12 @@ import { snapshotKernel } from '../state/snapshot.ts';
 import { createSimulationKernel } from './index.ts';
 import {
   at,
+  combatNeutralBlueprint,
   despawnActor,
   kernelScenario,
   moveStep,
   payloadsOfType,
+  singleFloor,
   TEST_SEED,
 } from './testScenarios.ts';
 
@@ -226,5 +228,46 @@ describe('kernel wander ai', () => {
       { tick: 1, facing: 'se' },
       { tick: 7, facing: 'sw' },
     ]);
+  });
+});
+
+describe('hunter cannot damage at range', () => {
+  it('emits no combat/damaged when a hunter is five tiles away behind walls', () => {
+    const scenario = kernelScenario({
+      scenarioId: 'hunter-range-proof',
+      floors: singleFloor([
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [0, 2],
+        [2, 2],
+        [0, 3],
+        [1, 3],
+        [2, 3],
+      ]),
+      blueprints: [
+        combatNeutralBlueprint('hunter', 3, 'hunter', {
+          factionId: 2,
+          aggroRadius: 11,
+          maxHealth: 20,
+          attackCooldownTicks: 3,
+          attackMinDamage: 4,
+          attackMaxDamage: 4,
+        }),
+        combatNeutralBlueprint('prey', 2, 'inert', {
+          factionId: 1,
+          maxHealth: 20,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hunter', position: at(1, 2), facing: 'e' },
+        { blueprintId: 'prey', position: at(6, 2), facing: 'w' },
+      ],
+    });
+
+    const events = runTicks(scenario, 80);
+
+    expect(payloadsOfType(events, 'combat/damaged')).toEqual([]);
+    expect(payloadsOfType(events, 'combat/attacked')).toEqual([]);
   });
 });

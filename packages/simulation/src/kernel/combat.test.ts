@@ -255,6 +255,66 @@ describe('S4 attack', () => {
     );
   });
 
+  it('hits a diagonal neighbour even when both orthogonal cells are blocked', () => {
+    const scenario = {
+      ...fighterScenario(),
+      floors: [{ z: 7, blockedTiles: [[3, 2] as const, [2, 3] as const] }],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 'se' as const },
+        { blueprintId: 'foe', position: at(3, 3), facing: 'nw' as const },
+        { blueprintId: 'ally', position: at(0, 0), facing: 'e' as const },
+      ],
+    };
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/attacked')).toEqual([
+      { type: 'combat/attacked', entityId: 1, targetEntityId: 2 },
+    ]);
+    expect(payloadsOfType(events, 'command/rejected')).toEqual([]);
+  });
+
+  it('uses attackRangeTiles and isSightClear for a Chebyshev-2 strike', () => {
+    const open = kernelScenario({
+      scenarioId: 'ranged-open',
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 10,
+          attackMinDamage: 3,
+          attackMaxDamage: 3,
+          attackRangeTiles: 2,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 10,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(1, 1), facing: 'e' },
+        { blueprintId: 'foe', position: at(3, 1), facing: 'w' },
+      ],
+    });
+    const openKernel = createSimulationKernel(open, TEST_SEED);
+    openKernel.enqueue(attack(1, 2, 0));
+    expect(payloadsOfType(openKernel.advanceOne(), 'combat/attacked')).toEqual([
+      { type: 'combat/attacked', entityId: 1, targetEntityId: 2 },
+    ]);
+
+    const blocked = kernelScenario({
+      scenarioId: 'ranged-blocked',
+      floors: [{ z: 7, blockedTiles: [[2, 1]] }],
+      blueprints: open.blueprints,
+      initialActors: open.initialActors,
+    });
+    const blockedKernel = createSimulationKernel(blocked, TEST_SEED);
+    blockedKernel.enqueue(attack(1, 2, 0));
+    expect(
+      payloadsOfType(blockedKernel.advanceOne(), 'command/rejected')[0]?.code,
+    ).toBe('SIM_ATTACK_OUT_OF_RANGE');
+  });
+
   it('rejects a target on another floor', () => {
     const scenario = kernelScenario({
       floors: [

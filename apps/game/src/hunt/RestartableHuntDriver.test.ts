@@ -35,6 +35,7 @@ const scenario: KernelScenario = {
       attackCooldownTicks: 1,
       attackMinDamage: 1,
       attackMaxDamage: 1,
+      attackRangeTiles: 1,
       aggroRadius: 0,
       lootTableIndex: null,
       abilityIndices: [],

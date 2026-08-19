@@ -59,8 +59,9 @@ v2 → v3. `schemaVersion: 3` num documento que já tem a forma v4 produz `SIM_V
 - `stepCooldownTicks` e `respawnTicks` são inteiros seguros não negativos.
 - Os comportamentos de blueprint são `inert`, `wander` e `hunter`.
 - Todo blueprint declara os campos de combate, todos obrigatórios. Um ator sem combate usa valores
-  neutros: `attackMinDamage 0`, `attackMaxDamage 0`, `aggroRadius 0`, `lootTableIndex null`,
-  `abilityIndices []`, regeneração `0`.
+  neutros: `attackMinDamage 0`, `attackMaxDamage 0`, `attackRangeTiles 1`, `aggroRadius 0`,
+  `lootTableIndex null`, `abilityIndices []`, regeneração `0`. `attackRangeTiles` tem default `1` no
+  schema para fixtures JSON antigas continuarem válidas.
 - `factionId` é inteiro não negativo. `attackMinDamage` não pode exceder `attackMaxDamage`.
 - `lootTableIndex` é `null` ou um índice de `lootTables`. `abilityIndices` é estritamente crescente,
   sem duplicata, e só contém índices declarados em `abilities`.
@@ -576,8 +577,9 @@ amount iguais a zero nunca regeneram. O sistema não emite evento e não consome
 pelo `sourceRank` (externa antes da interna) e depois pela ordem de entrada. Recusas emitem
 `command/rejected` e não mutam estado nem consomem o stream `combat`.
 
-Golpe: alcance Chebyshev `1`, mesmo andar, alvo de facção diferente, `currentTick >=
-attackReadyAtTick`. Emite `combat/attacked` e em seguida `combat/damaged`. O dano é inteiro uniforme
+Golpe: alcance Chebyshev `attackRangeTiles` (default 1), mesmo andar, `isSightClear` (sempre
+verdadeiro a distância `<= 1`), alvo de facção diferente, `currentTick >= attackReadyAtTick`. Emite
+`combat/attacked` e em seguida `combat/damaged`. O dano é inteiro uniforme
 em `[attackMinDamage, attackMaxDamage]` por um `nextBelow(max - min + 1)` do stream `combat`; quando
 `min == max`, nenhum sorteio é consumido. `remainingHealth` no evento é clampado em `0`. O atacante
 passa a `attackReadyAtTick = currentTick + attackCooldownTicks`.
@@ -623,13 +625,17 @@ Ator `hunter` no mesmo laço:
    `combat/target-changed` (`targetEntityId` nulo quando o alvo cai).
 2. **aquisição:** fora de cooldown e sem alvo, escolhe o ator vivo de facção diferente, no mesmo
    andar, dentro do raio, com menor distância Chebyshev; empate resolve pelo menor `EntityId`.
-   `aggroRadius = 0` nunca adquire. A aquisição **não** consome aleatoriedade.
-3. **ação:** fora de cooldown, alvo adjacente (Chebyshev `<= 1`, mesmo andar) enfileira intent
-   interna de ataque para `currentTick + 1`; alvo mais distante enfileira um único passo guloso, com
-   a direção dada pelo sinal de `dx` e `dy` na ordem canônica. Perseguição não consome
-   aleatoriedade, não contorna parede e não retenta no mesmo tick: passo bloqueado só emite
-   `actor/move-blocked`. O golpe interno resolve em `S4` no tick seguinte, respeitando
-   `attackReadyAtTick`; alvo ausente na resolução não emite `command/rejected`.
+   `aggroRadius = 0` nunca adquire. Hunter com `attackRangeTiles > 1` também exige `isSightClear`.
+   A aquisição **não** consome aleatoriedade.
+3. **ação:** fora de cooldown, alvo a Chebyshev `<= attackRangeTiles` (mesmo andar) enfileira intent
+   interna de ataque para `currentTick + 1`, desde que o alcance melee (`<= 1`) ou `isSightClear`
+   permita o golpe. Alvo mais distante enfileira o primeiro passo do caminho BFS 8-vizinhos até
+   qualquer célula a Chebyshev `<= attackRangeTiles` do alvo; empate segue a ordem canônica de
+   `DIRECTIONS`. Sem caminho dentro de `PATH_MAX_SEARCH_DIST` (12), cai no passo guloso. Passo
+   bloqueado só emite `actor/move-blocked`. Enquanto o hunter está a `dx <= 1` e `dy <= 1` do alvo,
+   o custo do passo é dobrado (`WALK_TARGET_NEARBY_EXTRA_COST`). O golpe interno resolve em `S4` no
+   tick seguinte, respeitando `attackReadyAtTick`; alvo ausente na resolução não emite
+   `command/rejected`. `isSightClear` é `true` incondicionalmente a Chebyshev `<= 1` no mesmo andar.
 4. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
    `nextBelow(8)` do stream `ai`.
 

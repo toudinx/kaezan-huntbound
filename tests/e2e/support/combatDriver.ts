@@ -25,6 +25,7 @@ export interface CombatDomState {
   readonly targetName: string;
   readonly lootLog: string;
   readonly runBag: string;
+  readonly deathOverlayVisible: boolean;
 }
 
 export interface CombatHealthProgress {
@@ -81,6 +82,31 @@ function chebyshev(
 ): number {
   if (left.z !== right.z) return Number.POSITIVE_INFINITY;
   return Math.max(Math.abs(left.x - right.x), Math.abs(left.y - right.y));
+}
+
+function rotwormsOnFloor(
+  state: Awaited<ReturnType<typeof readHuntState>>,
+  floor: number,
+) {
+  return state.actors.filter(
+    (actor) => isRotworm(actor.blueprintId) && actor.position.z === floor,
+  );
+}
+
+function nearestRotworm(
+  player: { readonly position: GridPosition },
+  rotworms: readonly {
+    readonly entityId: number;
+    readonly position: GridPosition;
+  }[],
+) {
+  return [...rotworms].sort((left, right) => {
+    const distance =
+      chebyshev(player.position, left.position) -
+      chebyshev(player.position, right.position);
+    if (distance !== 0) return distance;
+    return left.entityId - right.entityId;
+  })[0];
 }
 
 const movementDirections: readonly {
@@ -291,28 +317,60 @@ export async function readCombatState(page: Page): Promise<CombatDomState> {
   );
 }
 
-async function selectNextTarget(
+async function waitForHudTarget(
   page: Page,
   previousTargetId: number | null,
-): Promise<number> {
-  await page.keyboard.press('Tab');
-  await page.waitForFunction(
-    (previousId) => {
-      const name = document
-        .querySelector<HTMLElement>('[data-testid="combat-target-name"]')
-        ?.textContent?.trim();
-      const match = /^Target #(\d+)$/.exec(name ?? '');
-      return match !== null && Number(match[1]) !== previousId;
-    },
-    previousTargetId,
-    { polling: 'raf', timeout: 10_000 },
-  );
-
-  const state = await readCombatState(page);
-  if (state.targetEntityId === null) {
-    throw new Error('Target cycling did not select a living combat target.');
+  timeoutMs: number,
+): Promise<number | null> {
+  try {
+    await page.waitForFunction(
+      (previousId) => {
+        const name = document
+          .querySelector<HTMLElement>('[data-testid="combat-target-name"]')
+          ?.textContent?.trim();
+        const match = /^Target #(\d+)$/.exec(name ?? '');
+        return match !== null && Number(match[1]) !== previousId;
+      },
+      previousTargetId,
+      { polling: 'raf', timeout: timeoutMs },
+    );
+  } catch {
+    return null;
   }
-  return state.targetEntityId;
+  return (await readCombatState(page)).targetEntityId;
+}
+
+/**
+ * Aggro now covers the Canary viewport, so Tab-by-id pulls a far rotworm and
+ * the rest of the floor piles in. Always engage the nearest living creature
+ * on this floor — Space with no target already does that.
+ */
+async function selectNearestTarget(page: Page): Promise<number> {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const huntState = await readHuntState(page);
+    const player = huntState.player;
+    if (player === null) {
+      if ((await readCombatState(page)).deathOverlayVisible) {
+        throw new Error('The player died before the next combat action.');
+      }
+      throw new Error('The player is missing from the hunt probe.');
+    }
+    const rotworms = rotwormsOnFloor(huntState, player.position.z);
+    if (rotworms.length === 0) {
+      await page.waitForTimeout(TICK_DURATION_MS * 4);
+      continue;
+    }
+
+    await clearCombatTarget(page);
+    await tapCombatAction(page, attackSelector);
+    const targetId = await waitForHudTarget(page, null, 2_000);
+    if (targetId !== null) {
+      return targetId;
+    }
+    await page.waitForTimeout(TICK_DURATION_MS * 2);
+  }
+
+  throw new Error('Target cycling did not select a living combat target.');
 }
 
 async function moveToAdjacentTarget(
@@ -338,6 +396,14 @@ async function moveToAdjacentTarget(
         return;
       }
       if (allowMissingTarget && target === undefined) return;
+      const remaining =
+        player === null ? [] : rotwormsOnFloor(state, player.position.z);
+      const next =
+        player === null ? undefined : nearestRotworm(player, remaining);
+      if (next !== undefined) {
+        targetEntityId = next.entityId;
+        continue;
+      }
       throw new Error(
         'The selected combat target disappeared before approach.',
       );
@@ -409,85 +475,6 @@ async function moveToAdjacentTarget(
   throw new Error(`The player never reached target ${targetEntityId}.`);
 }
 
-async function stepAwayFromTarget(
-  page: Page,
-  hunt: HuntDefinition,
-  targetEntityId: number,
-): Promise<boolean> {
-  const state = await readHuntState(page);
-  const player = state.player;
-  const target = state.actors.find(
-    (actor) =>
-      actor.entityId === targetEntityId && isRotworm(actor.blueprintId),
-  );
-  if (player === null || target === undefined) {
-    throw new Error('Cannot move away without both combat actors.');
-  }
-
-  const possibleSteps = movementDirections
-    .map((step) => ({
-      ...step,
-      next: {
-        x: player.position.x + step.dx,
-        y: player.position.y + step.dy,
-        z: player.position.z,
-      } satisfies GridPosition,
-    }))
-    .filter(
-      ({ next }) =>
-        canStep(hunt, player.position, next) &&
-        !state.actors.some(
-          (actor) =>
-            actor.position.x === next.x &&
-            actor.position.y === next.y &&
-            actor.position.z === next.z,
-        ),
-    )
-    .sort(
-      (left, right) =>
-        chebyshev(right.next, target.position) -
-        chebyshev(left.next, target.position),
-    );
-
-  if (possibleSteps.length === 0) {
-    return false;
-  }
-
-  const otherActors = state.actors.filter(
-    (actor) =>
-      actor.entityId !== targetEntityId && actor.entityId !== player.entityId,
-  );
-  const safeSteps = possibleSteps.filter(({ next }) =>
-    otherActors.every((actor) => chebyshev(next, actor.position) > 1),
-  );
-  const orderedSteps = [...safeSteps, ...possibleSteps].filter(
-    (step, index, all) =>
-      all.findIndex((candidate) => candidate.direction === step.direction) ===
-      index,
-  );
-
-  for (const step of orderedSteps) {
-    const outcome =
-      step.direction === 'n' ||
-      step.direction === 'e' ||
-      step.direction === 's' ||
-      step.direction === 'w'
-        ? await stepWithKeyboard(page, stepKeys[step.direction])
-        : await stepWithDpad(page, step.direction);
-    const movedPlayer = outcome.after.player;
-    if (
-      movedPlayer !== null &&
-      (movedPlayer.position.x !== player.position.x ||
-        movedPlayer.position.y !== player.position.y ||
-        movedPlayer.position.z !== player.position.z)
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 async function stepAwayFromActors(
   page: Page,
   hunt: HuntDefinition,
@@ -549,32 +536,6 @@ async function stepAwayFromActors(
         movedPlayer.position.z !== player.position.z)
     ) {
       return true;
-    }
-  }
-
-  return false;
-}
-
-async function moveAwayFromTarget(
-  page: Page,
-  hunt: HuntDefinition,
-  targetEntityId: number,
-  allowMissingTarget = false,
-): Promise<boolean> {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    const state = await readHuntState(page);
-    const player = state.player;
-    const target = state.actors.find(
-      (actor) =>
-        actor.entityId === targetEntityId && isRotworm(actor.blueprintId),
-    );
-    if (player === null || target === undefined) {
-      if (allowMissingTarget && target === undefined) return false;
-      throw new Error('Cannot break aggro without both combat actors.');
-    }
-    if (chebyshev(player.position, target.position) > 2) return true;
-    if (!(await stepAwayFromTarget(page, hunt, targetEntityId))) {
-      return false;
     }
   }
 
@@ -643,7 +604,7 @@ async function attackUntilProgress(
       throw new Error('The player died before any attack landed.');
     }
 
-    await page.keyboard.press('Escape');
+    await clearCombatTarget(page);
     await tapCombatAction(page, attackSelector);
     // The HUD only learns the new target on the next published tick, so
     // reading it straight after the key press sees the cleared one.
@@ -709,11 +670,15 @@ async function waitForAbilityReady(
     `[data-testid="combat-ability-${abilityIndex}"]`,
     { polling: 'raf', timeout: 15_000 },
   );
+  // Personal cooldown and group cooldown update the button one tick apart;
+  // tapping on the first enabled frame is rejected as SIM_ABILITY_ON_COOLDOWN.
+  await page.waitForTimeout(TICK_DURATION_MS * 3);
 }
 
 async function tapCombatAction(page: Page, selector: string): Promise<void> {
   if (selector === attackSelector) {
     await page.keyboard.press('Space');
+    await page.waitForTimeout(TICK_DURATION_MS * 2);
     return;
   }
 
@@ -723,6 +688,15 @@ async function tapCombatAction(page: Page, selector: string): Promise<void> {
   }
 
   await page.keyboard.press(`Digit${Number(match[1]) + 1}`);
+  await page.waitForTimeout(TICK_DURATION_MS * 2);
+}
+
+async function clearCombatTarget(page: Page): Promise<void> {
+  if ((await readCombatState(page)).targetEntityId === null) {
+    return;
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(TICK_DURATION_MS * 2);
 }
 
 /**
@@ -743,7 +717,7 @@ async function ensureEngagedTarget(
     }
   }
 
-  const targetId = await selectNextTarget(page, state.targetEntityId);
+  const targetId = await selectNearestTarget(page);
   await moveToAdjacentTarget(page, hunt, targetId);
   return targetId;
 }
@@ -753,61 +727,92 @@ async function castDamageAbility(
   hunt: HuntDefinition,
   abilityIndex: number,
 ): Promise<CombatHealthProgress> {
-  await waitForAbilityReady(page, abilityIndex);
-  await ensureEngagedTarget(page, hunt);
-  const before = await readCombatState(page);
-  await tapCombatAction(page, `[data-testid="combat-ability-${abilityIndex}"]`);
-  // A creature that dies to the ability reads back as `0`, which is still the
-  // progress this leg is proving.
-  const after = await waitForTargetProgress(page, before.targetHealth);
-  return {
-    targetHealthBefore: before.targetHealth,
-    targetHealthAfter: after.targetHealth,
-  };
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await waitForAbilityReady(page, abilityIndex);
+    await ensureEngagedTarget(page, hunt);
+    const before = await readCombatState(page);
+    if (before.targetEntityId === null || before.targetHealth <= 0) {
+      await page.waitForTimeout(TICK_DURATION_MS * 2);
+      continue;
+    }
+    await tapCombatAction(
+      page,
+      `[data-testid="combat-ability-${abilityIndex}"]`,
+    );
+    try {
+      const after = await waitForTargetProgress(
+        page,
+        before.targetHealth,
+        PLAYER_ATTACK_COOLDOWN_TICKS * TICK_DURATION_MS + 1_000,
+      );
+      return {
+        targetHealthBefore: before.targetHealth,
+        targetHealthAfter: after.targetHealth,
+      };
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(TICK_DURATION_MS * 2);
+    }
+  }
+
+  throw new Error(
+    `Ability ${abilityIndex} did not damage the selected target: ${
+      lastError instanceof Error ? lastError.message : String(lastError)
+    }`,
+  );
 }
 
-async function castHealingAbility(
-  page: Page,
-  hunt: HuntDefinition,
-  targetEntityId: number,
-): Promise<CombatHealingProgress> {
-  await waitForAbilityReady(page, 2);
-  if ((await readCombatState(page)).targetEntityId !== null) {
-    await moveAwayFromTarget(page, hunt, targetEntityId, true);
-    await page.waitForTimeout(TICK_DURATION_MS * 2);
+async function castHealingAbility(page: Page): Promise<CombatHealingProgress> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await waitForAbilityReady(page, 2);
+    const before = await readCombatState(page);
+    await tapCombatAction(page, '[data-testid="combat-ability-2"]');
+    try {
+      const observation = await page.waitForFunction(
+        (previousHealth) => {
+          const health = Number(
+            document
+              .querySelector<HTMLElement>(
+                '[data-testid="combat-player-health"]',
+              )
+              ?.getAttribute('aria-valuenow'),
+          );
+          const mana = Number(
+            document
+              .querySelector<HTMLElement>('[data-testid="combat-player-mana"]')
+              ?.getAttribute('aria-valuenow'),
+          );
+          return Number.isSafeInteger(health) && health > previousHealth
+            ? { health, mana }
+            : false;
+        },
+        before.playerHealth,
+        { polling: 'raf', timeout: 4_000 },
+      );
+      const after = await observation.jsonValue<{
+        readonly health: number;
+        readonly mana: number;
+      }>();
+      await observation.dispose();
+      return {
+        playerHealthBefore: before.playerHealth,
+        playerHealthAfter: after.health,
+        playerManaBefore: before.playerMana,
+        playerManaAfter: after.mana,
+      };
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(TICK_DURATION_MS * 2);
+    }
   }
-  const before = await readCombatState(page);
-  await tapCombatAction(page, '[data-testid="combat-ability-2"]');
-  const observation = await page.waitForFunction(
-    (previousHealth) => {
-      const health = Number(
-        document
-          .querySelector<HTMLElement>('[data-testid="combat-player-health"]')
-          ?.getAttribute('aria-valuenow'),
-      );
-      const mana = Number(
-        document
-          .querySelector<HTMLElement>('[data-testid="combat-player-mana"]')
-          ?.getAttribute('aria-valuenow'),
-      );
-      return Number.isSafeInteger(health) && health > previousHealth
-        ? { health, mana }
-        : false;
-    },
-    before.playerHealth,
-    { polling: 'raf', timeout: 4_000 },
+
+  throw new Error(
+    `Wound Cleansing did not heal the player: ${
+      lastError instanceof Error ? lastError.message : String(lastError)
+    }`,
   );
-  const after = await observation.jsonValue<{
-    readonly health: number;
-    readonly mana: number;
-  }>();
-  await observation.dispose();
-  return {
-    playerHealthBefore: before.playerHealth,
-    playerHealthAfter: after.health,
-    playerManaBefore: before.playerMana,
-    playerManaAfter: after.mana,
-  };
 }
 
 async function waitForLoot(page: Page): Promise<CombatDomState> {
@@ -839,6 +844,42 @@ async function waitForTargetCleared(
     undefined,
     { polling: 'raf', timeout: timeoutMs },
   );
+}
+
+async function waitForAdjacentRotworm(
+  page: Page,
+  hunt: HuntDefinition,
+  timeoutMs = 20_000,
+): Promise<number> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const huntState = await readHuntState(page);
+    const player = huntState.player;
+    if (player !== null) {
+      const adjacent = rotwormsOnFloor(huntState, player.position.z).find(
+        (actor) => chebyshev(player.position, actor.position) <= 1,
+      );
+      if (adjacent !== undefined) {
+        return adjacent.entityId;
+      }
+    }
+    await page.waitForTimeout(TICK_DURATION_MS);
+  }
+
+  const huntState = await readHuntState(page);
+  const player = huntState.player;
+  if (player === null) {
+    throw new Error('The player is missing from the hunt probe.');
+  }
+  const nearest = nearestRotworm(
+    player,
+    rotwormsOnFloor(huntState, player.position.z),
+  );
+  if (nearest === undefined) {
+    throw new Error('No living rotworm remained on the player floor.');
+  }
+  await moveToAdjacentTarget(page, hunt, nearest.entityId);
+  return nearest.entityId;
 }
 
 export async function runCombatSession(
@@ -880,23 +921,23 @@ export async function runCombatSession(
 
   const hunt = readHuntDefinition();
   const initial = await readCombatState(page);
-  const firstTargetId = await selectNextTarget(page, null);
-  await moveToAdjacentTarget(page, hunt, firstTargetId);
+  // Stay put: one step south of playerStart pulls the southern rotworm into
+  // view range, and then Berserk empties the floor before Brutal Strike.
+  await waitForAdjacentRotworm(page, hunt);
   const attack = await attackUntilProgress(page, options.onCombatVisible);
 
-  // The leg the recorded session was missing: one press engaged the creature,
-  // and nothing between here and `waitForTargetCleared` touches a key. The
-  // knight has to finish it on its own attack cooldown.
   const killedTargetId = attack.targetEntityId;
   await waitForTargetCleared(page, 25_000);
 
-  // Floor 8 of the cave only seats four rotworms, so the abilities have to
-  // take whatever is still standing rather than a creature chosen up front.
-  const engagedId = await ensureEngagedTarget(page, hunt);
+  // Floor 8 of the cave only seats four rotworms. Stay near spawn so the
+  // southern one stays out of view. Dump Berserk on the pile while health is
+  // still high; waiting for its cooldown later is what killed the knight on
+  // the phone viewport.
+  await ensureEngagedTarget(page, hunt);
   await waitForPlayerDamage(page, initial.playerHealthMaximum);
   const berserk = await castDamageAbility(page, hunt, 0);
+  const woundCleansing = await castHealingAbility(page);
   const brutalStrike = await castDamageAbility(page, hunt, 1);
-  const woundCleansing = await castHealingAbility(page, hunt, engagedId);
   const withLoot = await waitForLoot(page);
 
   return {

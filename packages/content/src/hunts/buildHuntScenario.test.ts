@@ -356,6 +356,7 @@ function combatNeutral(
     attackCooldownTicks: 0,
     attackMinDamage: 0,
     attackMaxDamage: 0,
+    attackRangeTiles: 1,
     aggroRadius: 0,
     lootTableIndex: null as number | null,
     abilityIndices: [] as number[],
@@ -636,7 +637,8 @@ describe('buildHuntScenario combat blueprints', () => {
       attackCooldownTicks: 40,
       stepCooldownTicks: 21,
       behavior: 'hunter',
-      aggroRadius: 1,
+      attackRangeTiles: 1,
+      aggroRadius: 11,
     });
   });
 

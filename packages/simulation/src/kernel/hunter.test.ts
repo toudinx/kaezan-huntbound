@@ -1,4 +1,8 @@
-import type { KernelScenario, SimulationSnapshot } from '@huntbound/contracts';
+import {
+  createEntityId,
+  type KernelScenario,
+  type SimulationSnapshot,
+} from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { encodeCanonicalJson } from '../state/canonicalJson.ts';
@@ -257,9 +261,49 @@ describe('S6 hunter chase', () => {
     ]);
   });
 
-  it('emits actor/move-blocked and does not retry when the greedy step hits a wall', () => {
+  it('walks around a wall that sits on the greedy path', () => {
     const scenario = hunterScenario({
       floors: singleFloor([[2, 2]]),
+      initialActors: [
+        { blueprintId: 'hunter', position: at(1, 2), facing: 'e' },
+        { blueprintId: 'prey', position: at(4, 2), facing: 'w' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.advanceOne();
+
+    expect(snapshotKernel(kernel).pendingIntents).toEqual([
+      { kind: 'move', tick: 1, entityId: 1, direction: 'n' },
+    ]);
+
+    const secondTick = kernel.advanceOne();
+    expect(payloadsOfType(secondTick, 'actor/moved')).toEqual([
+      {
+        type: 'actor/moved',
+        entityId: 1,
+        from: at(1, 2),
+        to: at(1, 1),
+        facing: 'n',
+      },
+    ]);
+    expect(payloadsOfType(secondTick, 'actor/move-blocked')).toEqual([]);
+
+    kernel.advance(20);
+    expect(hunterOf(kernel)?.position).not.toEqual(at(1, 2));
+  });
+
+  it('falls back to a greedy step when BFS finds no path', () => {
+    const scenario = hunterScenario({
+      floors: singleFloor([
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [0, 2],
+        [2, 2],
+        [0, 3],
+        [1, 3],
+        [2, 3],
+      ]),
       initialActors: [
         { blueprintId: 'hunter', position: at(1, 2), facing: 'e' },
         { blueprintId: 'prey', position: at(4, 2), facing: 'w' },
@@ -278,20 +322,6 @@ describe('S6 hunter chase', () => {
         reason: 'terrain',
       },
     ]);
-  });
-
-  it('does not walk around a wall that sits on the greedy path', () => {
-    const scenario = hunterScenario({
-      floors: singleFloor([[2, 2]]),
-      initialActors: [
-        { blueprintId: 'hunter', position: at(1, 2), facing: 'e' },
-        { blueprintId: 'prey', position: at(4, 2), facing: 'w' },
-      ],
-    });
-    const kernel = createSimulationKernel(scenario, TEST_SEED);
-    kernel.advance(12);
-
-    expect(hunterOf(kernel)?.position).toEqual(at(1, 2));
   });
 
   it('does not consume the ai stream while chasing', () => {
@@ -401,8 +431,36 @@ describe('S6 hunter strike', () => {
     kernel.advanceOne();
 
     expect(snapshotKernel(kernel).pendingIntents).toEqual([
-      { kind: 'move', tick: 3, entityId: 1, direction: 'e' },
+      { kind: 'move', tick: 3, entityId: 1, direction: 'ne' },
     ]);
+  });
+
+  it('doubles the step cost while the hunter is already next to its target', () => {
+    const scenario = hunterScenario({
+      initialActors: [
+        { blueprintId: 'hunter', position: at(2, 2), facing: 'e' },
+        { blueprintId: 'prey', position: at(3, 2), facing: 'w' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.advanceOne();
+    const snapshot = snapshotKernel(kernel);
+    const restored = restoredOrThrow(scenario, {
+      ...snapshot,
+      pendingIntents: [
+        {
+          kind: 'move',
+          tick: snapshot.tick,
+          entityId: createEntityId(1),
+          direction: 'w',
+        },
+      ],
+    });
+
+    restored.advanceOne();
+
+    expect(hunterOf(restored)?.position).toEqual(at(1, 2));
+    expect(hunterOf(restored)?.readyAtTick).toBe(snapshot.tick + 6);
   });
 });
 

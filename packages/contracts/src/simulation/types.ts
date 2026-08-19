@@ -24,6 +24,8 @@ export interface ActorBlueprint {
   readonly attackCooldownTicks: number;
   readonly attackMinDamage: number;
   readonly attackMaxDamage: number;
+  /** Chebyshev tiles the basic attack can reach. Melee is 1; omitted JSON defaults to 1. */
+  readonly attackRangeTiles: number;
   readonly aggroRadius: number;
   readonly lootTableIndex: number | null;
   readonly abilityIndices: readonly number[];

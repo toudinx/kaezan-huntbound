@@ -50,6 +50,7 @@ function combatNeutral(
     attackCooldownTicks: 0,
     attackMinDamage: 0,
     attackMaxDamage: 0,
+    attackRangeTiles: 1,
     aggroRadius: 0,
     lootTableIndex: null as number | null,
     abilityIndices: [] as number[],
@@ -327,6 +328,16 @@ describe('simulation schemas', () => {
         behavior: 'inert',
       }).success,
     ).toBe(false);
+  });
+
+  it('defaults omitted attackRangeTiles to 1', () => {
+    const { attackRangeTiles: _omitted, ...withoutRange } = combatNeutral(
+      'walker',
+      2,
+      'inert',
+    );
+    expect('attackRangeTiles' in withoutRange).toBe(false);
+    expect(ActorBlueprintSchema.parse(withoutRange).attackRangeTiles).toBe(1);
   });
 
   it('validates issuer and command type together', () => {

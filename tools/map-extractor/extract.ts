@@ -47,6 +47,7 @@ function combatNeutralBlueprint(
     attackCooldownTicks: 0,
     attackMinDamage: 0,
     attackMaxDamage: 0,
+    attackRangeTiles: 1,
     aggroRadius: 0,
     lootTableIndex: null,
     abilityIndices: [],

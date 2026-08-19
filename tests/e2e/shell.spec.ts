@@ -26,6 +26,20 @@ async function expectNonZeroViewportBox(
   );
 }
 
+/** Playfield and combat HUD tick; hide them so the shell chrome can settle. */
+async function hideLivePlayfield(page: import('@playwright/test').Page) {
+  await page.locator('#game-root').evaluate((element) => {
+    (element as HTMLElement).style.visibility = 'hidden';
+  });
+  const combatRoot = page.locator('[data-testid="combat-root"]');
+  if ((await combatRoot.count()) === 0) {
+    return;
+  }
+  await combatRoot.evaluate((element) => {
+    (element as HTMLElement).style.visibility = 'hidden';
+  });
+}
+
 for (const viewport of shellViewports) {
   test(`${viewport.name} boots a clear ready shell`, async ({ page }) => {
     const consoleErrors: string[] = [];
@@ -70,9 +84,10 @@ for (const viewport of shellViewports) {
     expect(layout.statusBottom).toBeLessThan(viewport.height * 0.3);
     expect(consoleErrors).toEqual([]);
     expect(pageErrors).toEqual([]);
-    await expect(page).toHaveScreenshot(`shell-${viewport.name}.png`, {
-      fullPage: true,
-    });
+    await hideLivePlayfield(page);
+    await expect(page.locator('[data-testid="app-shell"]')).toHaveScreenshot(
+      `shell-${viewport.name}.png`,
+    );
   });
 }
 
@@ -97,9 +112,10 @@ test('redraws the playfield after in-session viewport changes', async ({
   await page.waitForTimeout(500);
   await expect(page.locator('#game-root canvas')).toHaveCount(1);
   await expect(page.locator('[data-testid="app-shell"]')).toHaveCount(1);
-  await expect(page).toHaveScreenshot('shell-mobile-to-desktop.png', {
-    fullPage: true,
-  });
+  await hideLivePlayfield(page);
+  await expect(page.locator('[data-testid="app-shell"]')).toHaveScreenshot(
+    'shell-mobile-to-desktop.png',
+  );
 });
 
 test('recovers lifecycle changes without duplicating shell elements', async ({

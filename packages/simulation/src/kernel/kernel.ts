@@ -26,7 +26,10 @@ import {
   createOccupancyIndex,
   createStaticGrid,
   DIRECTIONS,
+  firstPathStepDirection,
   greedyStepDirection,
+  isSightClear,
+  nearbyTargetStepCostTicks,
   resolveStep,
   translate,
 } from '../grid/index.ts';
@@ -200,6 +203,46 @@ export function createSimulationKernel(
   const hunts = (actor: ActorState): boolean =>
     blueprints.get(actor.blueprintId)?.behavior === 'hunter';
 
+  const isNearbyTarget = (actor: ActorState, target: ActorState): boolean =>
+    actor.position.z === target.position.z &&
+    chebyshevDistance(actor.position, target.position) <= 1;
+
+  const chaseFallbackDirection = (
+    occupancy: ReturnType<typeof createOccupancyIndex>,
+    actor: ActorState,
+    targetPosition: GridPosition,
+  ): Direction | undefined => {
+    const greedy = greedyStepDirection(actor.position, targetPosition);
+    if (greedy === undefined) {
+      return undefined;
+    }
+    const outcome = resolveStep(
+      grid,
+      occupancy,
+      actor,
+      greedy,
+      baseStepTicks(actor),
+    );
+    if (outcome.ok && outcome.transitionedTo !== undefined) {
+      return undefined;
+    }
+    return greedy;
+  };
+
+  const hasClearRangedSight = (
+    hunter: ActorState,
+    candidate: ActorState,
+  ): boolean => {
+    const hunterBlueprint = blueprints.get(hunter.blueprintId);
+    if (
+      hunterBlueprint === undefined ||
+      hunterBlueprint.attackRangeTiles <= 1
+    ) {
+      return true;
+    }
+    return isSightClear(grid, hunter.position, candidate.position);
+  };
+
   const isAcquirableTarget = (
     hunter: ActorState,
     candidate: ActorState,
@@ -219,9 +262,10 @@ export function createSimulationKernel(
     ) {
       return false;
     }
-    return (
-      chebyshevDistance(hunter.position, candidate.position) <= aggroRadius
-    );
+    if (chebyshevDistance(hunter.position, candidate.position) > aggroRadius) {
+      return false;
+    }
+    return hasClearRangedSight(hunter, candidate);
   };
 
   const acquireTarget = (
@@ -571,11 +615,22 @@ export function createSimulationKernel(
           );
         }
 
+        const chaseTarget =
+          actor.targetEntityId === null
+            ? undefined
+            : world.actor(actor.targetEntityId);
+        const costTicks =
+          hunts(actor) &&
+          chaseTarget !== undefined &&
+          isNearbyTarget(actor, chaseTarget)
+            ? nearbyTargetStepCostTicks(outcome.costTicks)
+            : outcome.costTicks;
+
         world.update({
           ...actor,
           position: outcome.to,
           facing: intent.direction,
-          readyAtTick: currentTick + outcome.costTicks,
+          readyAtTick: currentTick + costTicks,
           transitionGuard: null,
         });
         journal.emit(currentTick, {
@@ -664,17 +719,29 @@ export function createSimulationKernel(
           if (target === undefined) {
             continue;
           }
-          if (
+          const targetDistance = blueprint.attackRangeTiles;
+          const inAttackRange =
             actor.position.z === target.position.z &&
-            chebyshevDistance(actor.position, target.position) <= 1
-          ) {
+            chebyshevDistance(actor.position, target.position) <=
+              targetDistance &&
+            (targetDistance <= 1 ||
+              isSightClear(grid, actor.position, target.position));
+          if (inAttackRange) {
             queueInternalAttack(nextTick, actor.entityId, targetId);
             continue;
           }
-          const direction = greedyStepDirection(
-            actor.position,
-            target.position,
-          );
+          const occupancy = createOccupancyIndex(world.actors());
+          const direction =
+            firstPathStepDirection(
+              grid,
+              occupancy,
+              actor.position,
+              target.position,
+              {
+                walkerId: actor.entityId,
+                targetDistance,
+              },
+            ) ?? chaseFallbackDirection(occupancy, actor, target.position);
           if (direction !== undefined) {
             queueInternalIntent(nextTick, actor.entityId, direction);
           }
@@ -707,9 +774,7 @@ export function createSimulationKernel(
             continue;
           }
 
-          const adjacent =
-            actor.position.z === target.position.z &&
-            chebyshevDistance(actor.position, target.position) <= 1;
+          const adjacent = isNearbyTarget(actor, target);
           if (!adjacent) {
             continue;
           }
@@ -823,6 +888,7 @@ export function createSimulationKernel(
     const killers = new Map<number, EntityId | null>();
     resolveCombat(
       world,
+      grid,
       journal,
       streams,
       blueprints,

@@ -20,6 +20,7 @@ import type { ContentRegistry } from '../runtime/contentRegistry.ts';
 import {
   abilityIdFromSpellKey,
   abilityShapeFromSpell,
+  CANARY_VIEW_RANGE_TILES,
   CREATURE_FACTION_ID,
   compareContentKeys,
   KNIGHT_HEALTH_REGEN_AMOUNT,
@@ -28,6 +29,7 @@ import {
   KNIGHT_RESOURCE_REGEN_MS,
   knightMeleeDamage,
   luaToInt32,
+  MELEE_RANGE_TILES,
   PLAYER_FACTION_ID,
   resolveSpellPower,
   stepCooldownTicksFromSpeed,
@@ -175,10 +177,28 @@ function composePlayer(
     attackCooldownTicks,
     attackMinDamage: melee.minPower,
     attackMaxDamage: melee.maxPower,
+    attackRangeTiles: MELEE_RANGE_TILES,
     aggroRadius: 0,
     lootTableIndex: null,
     abilityIndices,
   };
+}
+
+/**
+ * `flags.targetDistance` is not in the catalog. Melee stand-off is 1; a
+ * ranged-only creature uses the longest imported `rangeTiles`. V0 is all melee.
+ */
+function attackRangeTilesFrom(creature: CreatureDefinition): number {
+  if (creature.attacks.some((attack) => attack.kind === 'melee')) {
+    return MELEE_RANGE_TILES;
+  }
+  let maxRange = 0;
+  for (const attack of creature.attacks) {
+    if (attack.kind === 'ranged' && attack.rangeTiles > maxRange) {
+      maxRange = attack.rangeTiles;
+    }
+  }
+  return maxRange > 0 ? maxRange : MELEE_RANGE_TILES;
 }
 
 function composeCreature(
@@ -234,9 +254,10 @@ function composeCreature(
     attackCooldownTicks,
     attackMinDamage,
     attackMaxDamage,
-    // Canary rotworm.lua `flags.targetDistance = 1`. The catalog does not
-    // import flags; using 0 made hunters never acquire a target (B6).
-    aggroRadius: creature.attacks.length > 0 ? 1 : 0,
+    attackRangeTiles: attackRangeTilesFrom(creature),
+    // Canary `Creature::canSee` is the viewport rectangle (±11, ±11). The old
+    // literal 1 confused `flags.targetDistance` (melee stand-off) with agro.
+    aggroRadius: creature.attacks.length > 0 ? CANARY_VIEW_RANGE_TILES : 0,
     lootTableIndex,
     abilityIndices: [],
   };

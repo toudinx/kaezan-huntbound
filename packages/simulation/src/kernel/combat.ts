@@ -11,6 +11,8 @@ import type {
 } from '@huntbound/contracts';
 import type { EventJournal } from '../events/journal.ts';
 import { chebyshevDistance } from '../grid/directions.ts';
+import { isSightClear } from '../grid/sight.ts';
+import type { StaticGrid } from '../grid/staticGrid.ts';
 import type { RandomSource } from '../random/source.ts';
 import type { MutableWorld } from '../state/worldState.ts';
 import { resolveLoot } from './loot.ts';
@@ -221,6 +223,7 @@ function applyHeal(
 
 function resolveAttack(
   world: MutableWorld,
+  grid: StaticGrid,
   journal: EventJournal,
   streams: { readonly combat: RandomSource },
   blueprints: ReadonlyMap<string, ActorBlueprint>,
@@ -288,7 +291,19 @@ function resolveAttack(
     );
     return;
   }
-  if (!inRange(attacker.position, target.position, 1)) {
+  if (
+    !inRange(attacker.position, target.position, blueprint.attackRangeTiles)
+  ) {
+    reject(
+      journal,
+      tick,
+      'actor/attack',
+      intent.sequence,
+      'SIM_ATTACK_OUT_OF_RANGE',
+    );
+    return;
+  }
+  if (!isSightClear(grid, attacker.position, target.position)) {
     reject(
       journal,
       tick,
@@ -580,6 +595,7 @@ function resolveCast(
 
 export function resolveCombat(
   world: MutableWorld,
+  grid: StaticGrid,
   journal: EventJournal,
   streams: { readonly combat: RandomSource },
   blueprints: ReadonlyMap<string, ActorBlueprint>,
@@ -590,7 +606,16 @@ export function resolveCombat(
 ): void {
   for (const intent of [...intents].sort(compareCombatIntents)) {
     if (intent.kind === 'attack') {
-      resolveAttack(world, journal, streams, blueprints, tick, intent, killers);
+      resolveAttack(
+        world,
+        grid,
+        journal,
+        streams,
+        blueprints,
+        tick,
+        intent,
+        killers,
+      );
     } else {
       resolveCast(
         world,

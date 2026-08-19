@@ -42,6 +42,10 @@ export const CREATURE_FACTION_ID = 1;
 /** Chebyshev melee range frozen in the PB-05 spec. */
 export const MELEE_RANGE_TILES = 1;
 
+/** `MAP_MAX_VIEW_PORT_X = 8 + 3`, `MAP_MAX_VIEW_PORT_Y = 6 + 5`: 11 em ambos os eixos,
+ *  logo Chebyshev 11 é exatamente o retângulo do Canary. */
+export const CANARY_VIEW_RANGE_TILES = 11;
+
 export function luaToInt32(value: number): number {
   return Math.trunc(value);
 }

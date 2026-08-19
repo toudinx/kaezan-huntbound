@@ -3,14 +3,12 @@
 **Playbook:** [`README.md`](README.md)
 
 **Estado geral:** **correções em execução**. As onze tasks de implementação estão `done` e
-integradas. O aceite de 2026-08-19, sobre gravação de gameplay, apontou seis defeitos de jogabilidade
-— sem targeting, botões inertes, exori azul, sem regen, dano baixo demais e travadas. Corrigidos em
-`PB-05-FIX-07`; aguardando novo aceite do usuário.
+integradas. Agro/path Canary entregue como `PB-05-FIX-10` (aceite visual 2026-08-19).
 
 **Última atualização:** 2026-08-19
 
-**Próxima etapa:** usuário jogar `corepack pnpm dev:personal` e aprovar ou apontar. A trilha FIX tem
-prioridade sobre PB-06 e PB-07.
+**Próxima etapa:** usuário jogar `corepack pnpm dev:personal` e apontar o próximo defeito. A trilha
+FIX tem prioridade sobre PB-06 e PB-07.
 
 ## Tasks
 
@@ -35,6 +33,7 @@ prioridade sobre PB-06 e PB-07.
 | PB-05-FIX-05 | done | 9862ef9 | `CombatImpulses`; flash/lunge/hit-stop/shake; cores por causa; probe; `verify` 0; passe visual pessoal |
 | PB-05-FIX-06 | cancelada | — | absorvida por FIX-07; o aceite é o usuário jogando, não mais uma spec de cue |
 | PB-05-FIX-07 | done | (este commit) | targeting persistente `actor/set-target` + auto-ataque; exori `hit-area`; regen do Knight visível; ficha nível 35 / sword 60; HUD e chão sem rebuild por frame; `verify` 0; três goldens byte-idênticos |
+| PB-05-FIX-10 | done | (este commit) | agro view range 11; BFS first-step; LOS melee Chebyshev≤1; passo lento colado; goldens idênticos; `verify` 0 |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que
 passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d07c`.
