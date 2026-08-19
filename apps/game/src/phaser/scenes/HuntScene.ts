@@ -36,6 +36,11 @@ import {
   createCombatDecorations,
   createDecorationObjectPool,
 } from '../../hunt/CombatDecorations';
+import { combatFxForCause, combatFxForHeal } from '../../hunt/CombatFxTable';
+import {
+  type CombatImpulses,
+  createCombatImpulses,
+} from '../../hunt/CombatImpulses';
 import {
   type CombatTargetActor,
   type CombatTargetSelection,
@@ -56,6 +61,7 @@ import {
   type HuntProbeActor,
   type HuntProbeCommand,
   type HuntProbeDecoration,
+  type HuntProbeImpulse,
   type HuntProbeLayerCounts,
   type HuntProbeState,
   installHuntProbe,
@@ -154,6 +160,8 @@ export class HuntScene extends Phaser.Scene {
     });
   private sprites: Phaser.GameObjects.Sprite[] = [];
   private readonly combatDecorations: CombatDecorations;
+  private readonly combatImpulses: CombatImpulses = createCombatImpulses();
+  private readonly combatNumberColors = new Map<number, string>();
   private presentation?: HuntPresentation;
   private cameraController?: CameraController;
   private cameraFraming?: CameraFraming;
@@ -236,11 +244,15 @@ export class HuntScene extends Phaser.Scene {
           .actors()
           .map((actor) => [actor.entityId, { ...actor.position }] as const),
       );
-      const playerBefore = presentation
+      const playerBeforeActor = presentation
         .actors()
         .find(
           (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
-        )?.position;
+        );
+      const playerBefore = playerBeforeActor?.position;
+      const previousDecorationIds = new Set(
+        this.combatDecorations.current().map((decoration) => decoration.id),
+      );
       const floorBefore = presentation.floor();
       presentation.handle(events);
       this.combatDecorations.handle({
@@ -248,6 +260,16 @@ export class HuntScene extends Phaser.Scene {
         actorPositions,
         playerPosition: playerBefore === undefined ? null : { ...playerBefore },
       });
+      this.combatImpulses.handle({
+        events,
+        actorPositions,
+        playerEntityId: playerBeforeActor?.entityId ?? null,
+      });
+      this.assignCombatNumberColors(
+        events,
+        actorPositions,
+        previousDecorationIds,
+      );
       this.targetSelection.handle(events);
       this.options.bridge.publishTargetSelected(
         this.targetSelection.targetId(),
@@ -287,6 +309,8 @@ export class HuntScene extends Phaser.Scene {
       this.destroySprites();
       this.destroyCombatDecorations();
       this.combatDecorations.reset();
+      this.combatImpulses.reset();
+      this.combatNumberColors.clear();
     });
 
     this.publishReady();
@@ -427,6 +451,18 @@ export class HuntScene extends Phaser.Scene {
           visible: object.visible,
         };
       }),
+    );
+  }
+
+  huntProbeActiveImpulses(): readonly HuntProbeImpulse[] {
+    const renderTimeMs = this.renderClock * TICK_DURATION_MS;
+    return Object.freeze(
+      this.combatImpulses.active(renderTimeMs).map((impulse) => ({
+        id: impulse.id,
+        type: impulse.kind,
+        entityId: Number(impulse.entityId),
+        remainingMs: Math.max(0, impulse.expiresAtMs - renderTimeMs),
+      })),
     );
   }
 
@@ -593,6 +629,8 @@ export class HuntScene extends Phaser.Scene {
 
     const visible = new Set<EntityId>();
     const currentRenderTick = this.advanceClock(alpha);
+    const renderTimeMs = currentRenderTick * TICK_DURATION_MS;
+    this.combatImpulses.advance(renderTimeMs);
     for (const actor of presentation.actors()) {
       const sprite = this.actorSprites.get(actor.entityId);
       const asset = this.assetByKey.get(actor.key);
@@ -600,15 +638,23 @@ export class HuntScene extends Phaser.Scene {
         continue;
       }
 
+      const actorRenderTick = this.combatImpulses.renderTickFor(
+        actor.entityId,
+        currentRenderTick,
+      );
       const motion = actor.motion;
       const stepping =
         motion !== undefined &&
-        currentRenderTick < motion.startTick + motion.durationTicks;
+        actorRenderTick < motion.startTick + motion.durationTicks;
       const position = stepping
-        ? sampleActorMotion(motion, currentRenderTick)
+        ? sampleActorMotion(motion, actorRenderTick)
         : actor.position;
       const anchor = this.anchorFor(asset, position);
-      sprite.setPosition(anchor.x, anchor.y);
+      const lungeOffset = this.combatImpulses.lungeOffset(
+        actor.entityId,
+        renderTimeMs,
+      );
+      sprite.setPosition(anchor.x + lungeOffset.x, anchor.y + lungeOffset.y);
       // The floor is only rebuilt when it changes, so an actor that keeps its
       // boot-time depth sorts against the tile it spawned on for the rest of
       // the hunt: it would walk in front of every wall it ever passes.
@@ -625,7 +671,7 @@ export class HuntScene extends Phaser.Scene {
             asset,
             facing: actor.facing,
             motion: actor.motion,
-            renderTick: currentRenderTick,
+            renderTick: actorRenderTick,
           }),
           false,
           false,
@@ -639,12 +685,13 @@ export class HuntScene extends Phaser.Scene {
       if (!visible.has(entityId)) sprite.setVisible(false);
     }
 
-    this.syncTargetHighlight();
+    this.syncTargetHighlight(renderTimeMs);
     this.followPlayer(alpha);
   }
 
   private renderCombatDecorations(): void {
     const renderTimeMs = this.renderClock * TICK_DURATION_MS;
+    this.combatImpulses.advance(renderTimeMs);
     this.combatDecorations.advance(renderTimeMs);
     const visible = new Set<number>();
 
@@ -663,6 +710,7 @@ export class HuntScene extends Phaser.Scene {
     for (const [id, object] of this.decorationObjects) {
       if (visible.has(id)) continue;
       this.decorationObjects.delete(id);
+      this.combatNumberColors.delete(id);
       if (object instanceof Phaser.GameObjects.Sprite) {
         this.decorationSpritePool.release(object);
       } else {
@@ -731,6 +779,10 @@ export class HuntScene extends Phaser.Scene {
       text
         .setText(
           `${decoration.kind === 'heal-number' ? '+' : '-'}${decoration.amount ?? 0}`,
+        )
+        .setColor(
+          this.combatNumberColors.get(decoration.id) ??
+            combatFxForCause('attack').numberColor,
         )
         .setPosition(
           (position.x + 0.5) * this.tileSize,
@@ -823,16 +875,59 @@ export class HuntScene extends Phaser.Scene {
     }));
   }
 
-  private syncTargetHighlight(): void {
+  private syncTargetHighlight(
+    renderTimeMs = this.renderClock * TICK_DURATION_MS,
+  ): void {
     const targetEntityId = this.targetSelection.targetId();
     for (const [entityId, sprite] of this.actorSprites) {
-      if (entityId === targetEntityId) {
+      if (this.combatImpulses.isActive('flash', entityId, renderTimeMs)) {
+        sprite.setTint(0xffffff);
+      } else if (entityId === targetEntityId) {
         sprite.setTint(0xffd166);
       } else {
         sprite.clearTint();
       }
       sprite.setData('hunt-targeted', entityId === targetEntityId);
     }
+  }
+
+  private assignCombatNumberColors(
+    events: readonly SimulationEvent[],
+    actorPositions: ReadonlyMap<
+      EntityId,
+      { readonly x: number; readonly y: number; readonly z: number }
+    >,
+    previousDecorationIds: ReadonlySet<number>,
+  ): void {
+    const colors = events.flatMap((event) => {
+      switch (event.payload.type) {
+        case 'combat/damaged':
+          return actorPositions.has(event.payload.entityId)
+            ? [combatFxForCause(event.payload.cause).numberColor]
+            : [];
+        case 'combat/healed':
+          return actorPositions.has(event.payload.entityId)
+            ? [combatFxForHeal().numberColor]
+            : [];
+        default:
+          return [];
+      }
+    });
+    if (colors.length === 0) return;
+
+    const newNumbers = this.combatDecorations
+      .current()
+      .filter(
+        (decoration) =>
+          !previousDecorationIds.has(decoration.id) &&
+          (decoration.kind === 'damage-number' ||
+            decoration.kind === 'heal-number'),
+      );
+    newNumbers.forEach((decoration, index) => {
+      const color = colors[index];
+      if (color !== undefined)
+        this.combatNumberColors.set(decoration.id, color);
+    });
   }
 
   private enqueuePlayerCommand(
@@ -898,13 +993,19 @@ export class HuntScene extends Phaser.Scene {
           actor.blueprintId === this.options.hunt.playerBlueprintId &&
           actor.position.z === presentation.floor(),
       );
+    const currentRenderTick = this.advanceClock(alpha);
+    const renderTimeMs = currentRenderTick * TICK_DURATION_MS;
+    this.combatImpulses.advance(renderTimeMs);
     const position = player
       ? (() => {
-          const currentRenderTick = this.advanceClock(alpha);
+          const playerRenderTick = this.combatImpulses.renderTickFor(
+            player.entityId,
+            currentRenderTick,
+          );
           const sampled =
             player.motion === undefined
               ? player.position
-              : sampleActorMotion(player.motion, currentRenderTick);
+              : sampleActorMotion(player.motion, playerRenderTick);
           return { x: sampled.x + 0.5, y: sampled.y + 0.5 };
         })()
       : {
@@ -917,5 +1018,10 @@ export class HuntScene extends Phaser.Scene {
       y: position.y * this.tileSize,
     });
     this.cameras.main.setScroll(controller.scrollX, controller.scrollY);
+    const shake = this.combatImpulses.cameraOffset(renderTimeMs);
+    this.cameras.main.setScroll(
+      controller.scrollX + shake.x,
+      controller.scrollY + shake.y,
+    );
   }
 }

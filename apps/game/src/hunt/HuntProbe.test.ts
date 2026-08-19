@@ -315,4 +315,22 @@ describe('installHuntProbe', () => {
       decorations,
     );
   });
+
+  it('exposes active combat impulses with their target and remaining time', () => {
+    vi.stubEnv('MODE', 'test');
+    const impulses = Object.freeze([
+      { id: 1, type: 'flash' as const, entityId: 2, remainingMs: 80 },
+      { id: 2, type: 'shake' as const, entityId: 1, remainingMs: 140 },
+    ]);
+
+    installHuntProbe(
+      {
+        huntProbeState: emptyState,
+        huntProbeActiveImpulses: () => impulses,
+      },
+      () => () => {},
+    );
+
+    expect(target.__huntboundHuntProbe?.activeImpulses?.()).toEqual(impulses);
+  });
 });

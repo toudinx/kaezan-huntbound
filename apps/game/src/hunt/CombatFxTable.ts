@@ -16,6 +16,7 @@ export interface CombatFxRecipe {
   readonly staggerByDistance: boolean;
   readonly stronger: boolean;
   readonly healNumber: boolean;
+  readonly numberColor: string;
 }
 
 const hitAreaKey = createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY);
@@ -30,6 +31,7 @@ const BY_CAUSE: Readonly<Record<CombatCause, CombatFxRecipe>> = {
     staggerByDistance: false,
     stronger: false,
     healNumber: false,
+    numberColor: '#ffcf66',
   },
   ability: {
     impactKey: undefined,
@@ -38,6 +40,7 @@ const BY_CAUSE: Readonly<Record<CombatCause, CombatFxRecipe>> = {
     staggerByDistance: false,
     stronger: false,
     healNumber: false,
+    numberColor: '#ff7b9d',
   },
 };
 
@@ -49,6 +52,7 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     staggerByDistance: false,
     stronger: true,
     healNumber: false,
+    numberColor: '#ff7b9d',
   },
   berserk: {
     impactKey: magicBlueKey,
@@ -57,6 +61,7 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     staggerByDistance: true,
     stronger: false,
     healNumber: false,
+    numberColor: '#ff7b9d',
   },
   'wound-cleansing': {
     impactKey: magicBlueKey,
@@ -65,7 +70,18 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     staggerByDistance: false,
     stronger: false,
     healNumber: true,
+    numberColor: '#73e6a5',
   },
+};
+
+const HEAL_RECIPE: CombatFxRecipe = {
+  impactKey: undefined,
+  bloodKey: undefined,
+  placement: 'self',
+  staggerByDistance: false,
+  stronger: false,
+  healNumber: true,
+  numberColor: '#73e6a5',
 };
 
 export function combatFxForCause(cause: CombatCause): CombatFxRecipe {
@@ -76,4 +92,8 @@ export function combatFxForAbility(
   abilityId: string,
 ): CombatFxRecipe | undefined {
   return BY_ABILITY_ID[abilityId];
+}
+
+export function combatFxForHeal(): CombatFxRecipe {
+  return HEAL_RECIPE;
 }

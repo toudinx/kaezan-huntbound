@@ -8,7 +8,7 @@ animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 
 **Última atualização:** 2026-08-18
 
-**Próxima etapa:** executar PB-05-FIX-05. A trilha FIX tem prioridade sobre PB-06 e PB-07.
+**Próxima etapa:** executar PB-05-FIX-06. A trilha FIX tem prioridade sobre PB-06 e PB-07.
 
 ## Tasks
 
@@ -30,7 +30,8 @@ animação — só números na tela. Abriu a trilha `PB-05-FIX`.
 | PB-05-FIX-02 | done | (este commit) | `effectFrame` min; play-once; sprite pool; probe frames; `combat:check` idêntico |
 | PB-05-FIX-03 | done | (este commit) | CombatFxTable; attacked→impacto; damaged por cause; combat:check idêntico |
 | PB-05-FIX-04 | done | (este commit) | ability/cast + combat/healed; combat:check idêntico; verify 0 |
-| PB-05-FIX-05..06 | bullets | — | ver README |
+| PB-05-FIX-05 | done | 9862ef9 | `CombatImpulses`; flash/lunge/hit-stop/shake; cores por causa; probe; `verify` 0; passe visual pessoal |
+| PB-05-FIX-06 | bullets | — | ver README |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que
 passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d07c`.

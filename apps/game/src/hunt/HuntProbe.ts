@@ -99,12 +99,20 @@ export interface HuntProbeDecoration {
   readonly visible: boolean;
 }
 
+export interface HuntProbeImpulse {
+  readonly id: number;
+  readonly type: string;
+  readonly entityId: number;
+  readonly remainingMs: number;
+}
+
 export interface HuntProbe {
   state(): HuntProbeState;
   events(): readonly HuntProbeEvent[];
   commands?(): readonly HuntProbeCommand[];
   unresolvedCombatAssetKeys?(): readonly string[];
   visibleDecorations?(): readonly HuntProbeDecoration[];
+  activeImpulses?(): readonly HuntProbeImpulse[];
   reset(): void;
   releaseHeld?(): void;
 }
@@ -115,6 +123,7 @@ export interface HuntProbeSource {
   huntProbeCommands?(): readonly HuntProbeCommand[];
   huntProbeUnresolvedCombatAssetKeys?(): readonly string[];
   huntProbeVisibleDecorations?(): readonly HuntProbeDecoration[];
+  huntProbeActiveImpulses?(): readonly HuntProbeImpulse[];
   resetHuntProbe?(): void;
   releaseHeldInput?(): void;
 }
@@ -250,6 +259,7 @@ export function installHuntProbe(
     unresolvedCombatAssetKeys: () =>
       source.huntProbeUnresolvedCombatAssetKeys?.() ?? [],
     visibleDecorations: () => source.huntProbeVisibleDecorations?.() ?? [],
+    activeImpulses: () => source.huntProbeActiveImpulses?.() ?? [],
     reset: () => {
       recorder.reset();
       source.resetHuntProbe?.();

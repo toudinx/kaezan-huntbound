@@ -7,7 +7,11 @@ import {
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
 } from '../../../../packages/assets/src/index.ts';
 
-import { combatFxForAbility, combatFxForCause } from './CombatFxTable';
+import {
+  combatFxForAbility,
+  combatFxForCause,
+  combatFxForHeal,
+} from './CombatFxTable';
 
 describe('combatFxForCause', () => {
   it('maps a basic attack to hit-area impact and blood on the target', () => {
@@ -18,6 +22,7 @@ describe('combatFxForCause', () => {
       staggerByDistance: false,
       stronger: false,
       healNumber: false,
+      numberColor: '#ffcf66',
     });
   });
 
@@ -29,6 +34,7 @@ describe('combatFxForCause', () => {
       staggerByDistance: false,
       stronger: false,
       healNumber: false,
+      numberColor: '#ff7b9d',
     });
   });
 });
@@ -42,6 +48,7 @@ describe('combatFxForAbility', () => {
       staggerByDistance: false,
       stronger: true,
       healNumber: false,
+      numberColor: '#ff7b9d',
     });
   });
 
@@ -53,6 +60,7 @@ describe('combatFxForAbility', () => {
       staggerByDistance: true,
       stronger: false,
       healNumber: false,
+      numberColor: '#ff7b9d',
     });
   });
 
@@ -64,10 +72,21 @@ describe('combatFxForAbility', () => {
       staggerByDistance: false,
       stronger: false,
       healNumber: true,
+      numberColor: '#73e6a5',
     });
   });
 
   it('returns undefined for an unknown abilityId', () => {
     expect(combatFxForAbility('unknown-spell')).toBeUndefined();
+  });
+
+  it('keeps attack, ability, and heal numbers on three distinct table colors', () => {
+    expect(
+      new Set([
+        combatFxForCause('attack').numberColor,
+        combatFxForCause('ability').numberColor,
+        combatFxForHeal().numberColor,
+      ]),
+    ).toHaveLength(3);
   });
 });
