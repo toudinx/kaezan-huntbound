@@ -35,7 +35,7 @@ integradas. FIX-07, FIX-08 (chão na transição) e FIX-10 (agro/path Canary) en
 | PB-05-FIX-07 | done | (este commit) | targeting persistente `actor/set-target` + auto-ataque; exori `hit-area`; regen do Knight visível; ficha nível 35 / sword 60; HUD e chão sem rebuild por frame; `verify` 0; três goldens byte-idênticos |
 | PB-05-FIX-08 | done | `89e3fd6` | transição alheia atualiza roster sem repintar; ator transicionado permanece filtrado por andar; `floorRebuilds`; frame antes/depois com `over50=0` |
 | PB-05-FIX-09 | pending | — | `setText`/`setColor` condicionais; `Text` em pool; `decorationTextWrites` no probe; `fillText/s` antes/depois |
-| PB-05-FIX-10 | done | `db04d9d` | agro view range 11; BFS first-step; LOS melee Chebyshev≤1; passo lento colado; goldens idênticos; `verify` 0 |
+| PB-05-FIX-10 | done | `db04d9d` | agro 11; BFS; LOS melee; e2e sem hole-fall; `huntFloorSync`; `verify` 0 |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que
 passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d07c`.

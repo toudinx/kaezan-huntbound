@@ -66,6 +66,7 @@ import {
   type HuntProbeState,
   installHuntProbe,
 } from '../../hunt/HuntProbe';
+import { huntFloorSync } from '../../hunt/huntFloorSync';
 import { actorDepth, tileDepth } from '../../hunt/TileDepth';
 import { createUnresolvedHuntAssetTracker } from '../../hunt/UnresolvedHuntAssets';
 import type { InputMap } from '../../input/InputMap';
@@ -111,19 +112,6 @@ function actorKeyMap(hunt: HuntDefinition): ReadonlyMap<string, AssetKey> {
   }
 
   return keys;
-}
-
-/** Events that change the actor sprites without changing the active floor. */
-function isRosterEvent(event: SimulationEvent): boolean {
-  switch (event.payload.type) {
-    case 'actor/spawned':
-    case 'actor/despawned':
-    case 'actor/died':
-    case 'actor/transitioned':
-      return true;
-    default:
-      return false;
-  }
 }
 
 export class HuntScene extends Phaser.Scene {
@@ -266,9 +254,14 @@ export class HuntScene extends Phaser.Scene {
       this.options.bridge.publishTargetSelected(
         this.targetSelection.targetId(),
       );
-      if (floorBefore !== presentation.floor()) {
+      const floorSync = huntFloorSync(
+        floorBefore,
+        presentation.floor(),
+        events,
+      );
+      if (floorSync === 'rebuild') {
         this.renderFloor();
-      } else if (events.some(isRosterEvent)) {
+      } else if (floorSync === 'sync-roster') {
         this.syncActorRoster();
       }
       this.syncActorSprites(this.options.driver.alpha);
