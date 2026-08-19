@@ -58,6 +58,7 @@ export interface HuntProbeLayerCounts {
 export interface HuntProbeState {
   readonly tick: number;
   readonly floor: number;
+  readonly floorRebuilds: number;
   readonly player: HuntProbeActor | null;
   readonly actors: readonly HuntProbeActor[];
   readonly camera: {

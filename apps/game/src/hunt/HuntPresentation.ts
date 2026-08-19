@@ -336,15 +336,13 @@ export function createHuntPresentation(
             );
             continue;
           }
-          if (payload.entityId !== playerEntityId) {
-            actorsById.delete(payload.entityId);
-            continue;
-          }
           actor.previous = copyPosition(payload.to);
           actor.target = copyPosition(payload.to);
           actor.position = copyPosition(payload.to);
           delete actor.motion;
-          activeFloor = payload.to.z;
+          if (payload.entityId === playerEntityId) {
+            activeFloor = payload.to.z;
+          }
           break;
         }
         case 'actor/despawned':

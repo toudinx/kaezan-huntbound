@@ -97,6 +97,7 @@ describe('HuntPresentation', () => {
   });
 
   it('replaces the active floor and handles actor lifecycle events', () => {
+    const diagnostics: string[] = [];
     const presentation = createHuntPresentation({
       region: syntheticRegion(),
       playerBlueprintId: 'player',
@@ -104,6 +105,7 @@ describe('HuntPresentation', () => {
         ['player', createAssetKey('outfit:tibia:knight')],
         ['rotworm', createAssetKey('creature:tibia:rotworm')],
       ]),
+      onDiagnostic: (message) => diagnostics.push(message),
     });
 
     presentation.handle([
@@ -136,15 +138,85 @@ describe('HuntPresentation', () => {
     ]);
 
     expect(presentation.floor()).toBe(8);
-    expect(presentation.actors()).toHaveLength(1);
+    expect(presentation.actors()).toHaveLength(2);
     expect(presentation.actors()[0]?.target).toEqual({
       x: 1,
       y: 0,
       z: 8,
     });
+    expect(presentation.actors()[1]).toMatchObject({
+      entityId: 2,
+      position: { x: 0, y: 0, z: 8 },
+      previous: { x: 0, y: 0, z: 8 },
+      target: { x: 0, y: 0, z: 8 },
+    });
+    expect(presentation.actors()[1]?.motion).toBeUndefined();
     expect(
-      presentation.drawCommands().every((command) => command.z === 8),
-    ).toBe(true);
+      presentation
+        .drawCommands()
+        .filter((command) => command.kind === 'actor')
+        .map((command) => command.entityId),
+    ).toEqual([1, 2]);
+
+    presentation.handle([
+      event(5, {
+        type: 'actor/moved',
+        entityId: 2 as EntityId,
+        from: { x: 0, y: 0, z: 8 },
+        to: { x: 1, y: 0, z: 8 },
+        facing: 'e',
+      }),
+    ]);
+
+    expect(presentation.actors()[1]?.target).toEqual({
+      x: 1,
+      y: 0,
+      z: 8,
+    });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('keeps a transitioned actor in the roster without drawing it off-floor', () => {
+    const presentation = createHuntPresentation({
+      region: syntheticRegion(),
+      playerBlueprintId: 'player',
+      actorKeys: new Map([
+        ['player', createAssetKey('outfit:tibia:knight')],
+        ['rotworm', createAssetKey('creature:tibia:rotworm')],
+      ]),
+    });
+
+    presentation.handle([
+      event(1, {
+        type: 'actor/spawned',
+        entityId: 1 as EntityId,
+        blueprintId: 'player',
+        position: { x: 1, y: 0, z: 7 },
+        facing: 's',
+      }),
+      event(2, {
+        type: 'actor/spawned',
+        entityId: 2 as EntityId,
+        blueprintId: 'rotworm',
+        position: { x: 0, y: 0, z: 7 },
+        facing: 's',
+      }),
+      event(3, {
+        type: 'actor/transitioned',
+        entityId: 2 as EntityId,
+        from: { x: 0, y: 0, z: 7 },
+        to: { x: 0, y: 0, z: 8 },
+      }),
+    ]);
+
+    expect(presentation.floor()).toBe(7);
+    expect(presentation.actors()).toHaveLength(2);
+    expect(
+      presentation
+        .drawCommands()
+        .filter((command) => command.kind === 'actor')
+        .map((command) => command.entityId),
+    ).toEqual([1]);
   });
 
   it('moves and faces an actor but leaves it fixed for a blocked step', () => {

@@ -54,6 +54,7 @@ function emptyState(): HuntProbeState {
   return {
     tick: 0,
     floor: 8,
+    floorRebuilds: 0,
     player: null,
     actors: [],
     camera: {
@@ -203,7 +204,7 @@ describe('installHuntProbe', () => {
   it('publishes the live scene state and the recorded events', () => {
     vi.stubEnv('MODE', 'test');
     let publish: ((events: readonly SimulationEvent[]) => void) | undefined;
-    const state = emptyState();
+    const state = { ...emptyState(), floorRebuilds: 3 };
 
     installHuntProbe({ huntProbeState: () => state }, (listener) => {
       publish = listener;

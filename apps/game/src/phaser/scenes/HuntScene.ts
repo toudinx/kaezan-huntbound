@@ -113,22 +113,13 @@ function actorKeyMap(hunt: HuntDefinition): ReadonlyMap<string, AssetKey> {
   return keys;
 }
 
-/**
- * Only a floor change repaints the floor. Rebuilding it costs a destroy and a
- * create for every one of the region's ~1200 sprites, which is a visible hitch
- * -- and a creature dying used to trigger one, so the game stuttered exactly
- * when it was going well.
- */
-function isFloorEvent(event: SimulationEvent): boolean {
-  return event.payload.type === 'actor/transitioned';
-}
-
-/** A birth or a death: the actor roster changed, the floor under it did not. */
+/** Events that change the actor sprites without changing the active floor. */
 function isRosterEvent(event: SimulationEvent): boolean {
   switch (event.payload.type) {
     case 'actor/spawned':
     case 'actor/despawned':
     case 'actor/died':
+    case 'actor/transitioned':
       return true;
     default:
       return false;
@@ -139,6 +130,7 @@ export class HuntScene extends Phaser.Scene {
   private readonly assetByKey: ReadonlyMap<AssetKey, ResolvedAsset>;
   private readonly tileSize: number;
   private renderClock = 0;
+  private floorRebuilds = 0;
   private readonly actorSprites = new Map<
     EntityId,
     Phaser.GameObjects.Sprite
@@ -223,6 +215,7 @@ export class HuntScene extends Phaser.Scene {
       this.unresolvedAssets.noteMissing(key);
     }
     this.renderClock = 0;
+    this.floorRebuilds = 0;
     this.inputCommands = [];
     this.targetSelection.reset();
     this.inputGate.reset();
@@ -269,10 +262,11 @@ export class HuntScene extends Phaser.Scene {
         previousDecorationIds,
       );
       this.targetSelection.handle(events);
+      this.clearTargetIfOffFloor();
       this.options.bridge.publishTargetSelected(
         this.targetSelection.targetId(),
       );
-      if (floorBefore !== presentation.floor() || events.some(isFloorEvent)) {
+      if (floorBefore !== presentation.floor()) {
         this.renderFloor();
       } else if (events.some(isRosterEvent)) {
         this.syncActorRoster();
@@ -410,6 +404,7 @@ export class HuntScene extends Phaser.Scene {
     return {
       tick: this.options.driver.tick,
       floor: presentation?.floor() ?? this.options.hunt.playerStart.z,
+      floorRebuilds: this.floorRebuilds,
       player:
         actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
       actors,
@@ -570,6 +565,7 @@ export class HuntScene extends Phaser.Scene {
     const presentation = this.presentation;
     if (!presentation) return;
 
+    this.floorRebuilds += 1;
     this.destroySprites();
     for (const command of presentation.drawCommands()) {
       const asset = this.assetByKey.get(command.key);
@@ -938,6 +934,32 @@ export class HuntScene extends Phaser.Scene {
     });
     this.options.bridge.publishTargetSelected(entityId);
     this.syncTargetHighlight();
+  }
+
+  private clearTargetIfOffFloor(): void {
+    const targetEntityId = this.targetSelection.targetId();
+    if (
+      targetEntityId === null ||
+      this.combatTargetActors().some(
+        (actor) => actor.entityId === targetEntityId,
+      )
+    ) {
+      return;
+    }
+
+    this.targetSelection.setTarget(null);
+    const player = this.presentation
+      ?.actors()
+      .find(
+        (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+      );
+    if (player === undefined) return;
+
+    this.enqueuePlayerCommand({
+      type: 'actor/set-target',
+      entityId: player.entityId,
+      targetEntityId: null,
+    });
   }
 
   /** The closest creature the player could reach, for the bare attack button. */

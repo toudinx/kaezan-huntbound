@@ -114,6 +114,7 @@ const terrainDelta = directionDelta(terrainDirection);
 
 interface PageWatch {
   readonly consoleErrors: string[];
+  readonly consoleWarnings: string[];
   readonly pageErrors: string[];
   readonly failedRequests: string[];
   readonly badResponses: string[];
@@ -122,6 +123,7 @@ interface PageWatch {
 function watchPage(page: Page): PageWatch {
   const watch: PageWatch = {
     consoleErrors: [],
+    consoleWarnings: [],
     pageErrors: [],
     failedRequests: [],
     badResponses: [],
@@ -129,6 +131,12 @@ function watchPage(page: Page): PageWatch {
 
   page.on('console', (message) => {
     if (message.type() === 'error') watch.consoleErrors.push(message.text());
+    if (
+      message.type() === 'warning' &&
+      message.text().includes('Move event references unknown actor')
+    ) {
+      watch.consoleWarnings.push(message.text());
+    }
   });
   page.on('pageerror', (error) => watch.pageErrors.push(error.message));
   page.on('requestfailed', (request) =>
@@ -146,6 +154,7 @@ function watchPage(page: Page): PageWatch {
 function expectQuiet(watch: PageWatch): void {
   expect(watch.pageErrors).toEqual([]);
   expect(watch.consoleErrors).toEqual([]);
+  expect(watch.consoleWarnings).toEqual([]);
   expect(watch.failedRequests).toEqual([]);
   expect(watch.badResponses).toEqual([]);
 }
@@ -195,6 +204,83 @@ test.describe('the first hunt is playable by synthetic input', () => {
     const state = await waitForHunt(page);
 
     expect(livingRotworms(state).length).toBeGreaterThanOrEqual(1);
+    expectQuiet(watch);
+  });
+
+  test('does not repaint the floor for another actor transition', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    const before = await waitForHunt(page);
+    const playerEntityId = requirePlayer(before).entityId;
+
+    expect(before.floorRebuilds).toBe(1);
+
+    await page.waitForFunction(
+      (entityId) => {
+        const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+        return (
+          probe
+            ?.events()
+            .some(
+              (event) =>
+                event.type === 'actor/transitioned' &&
+                event.entityId !== entityId,
+            ) ?? false
+        );
+      },
+      playerEntityId,
+      { polling: 'raf', timeout: 20_000 },
+    );
+
+    const after = await readHuntState(page);
+    expect(after.floor).toBe(before.floor);
+    expect(after.floorRebuilds).toBe(before.floorRebuilds);
+    expectQuiet(watch);
+  });
+
+  test('keeps another actor in the roster while filtering its floor sprite', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    const before = await waitForHunt(page);
+    const playerEntityId = requirePlayer(before).entityId;
+
+    await page.waitForFunction(
+      (entityId) => {
+        const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+        return (
+          probe
+            ?.events()
+            .some(
+              (event) =>
+                event.type === 'actor/transitioned' &&
+                event.entityId !== entityId,
+            ) ?? false
+        );
+      },
+      playerEntityId,
+      { polling: 'raf', timeout: 20_000 },
+    );
+
+    const [after, transition] = await page.evaluate((entityId) => {
+      const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+      if (probe === undefined) throw new Error('Hunt probe is not installed.');
+      const event = probe
+        .events()
+        .find(
+          (item) =>
+            item.type === 'actor/transitioned' && item.entityId !== entityId,
+        );
+      return [probe.state(), event] as const;
+    }, playerEntityId);
+
+    expect(transition).toBeDefined();
+    const actor = after.actors.find(
+      (candidate) => candidate.entityId === transition?.entityId,
+    );
+    expect(actor).toBeDefined();
+    expect(actor?.visible).toBe(actor?.position.z === after.floor);
     expectQuiet(watch);
   });
 
