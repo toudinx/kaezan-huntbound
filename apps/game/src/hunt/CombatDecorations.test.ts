@@ -415,6 +415,15 @@ interface PooledSprite {
   scale: number;
 }
 
+interface PooledText {
+  text: string;
+  color: string;
+  visible: boolean;
+  alpha: number;
+  rotation: number;
+  scale: number;
+}
+
 describe('createDecorationObjectPool', () => {
   it('does not create more objects when expired decorations are replaced', () => {
     let created = 0;
@@ -484,6 +493,52 @@ describe('createDecorationObjectPool', () => {
 
     expect(reused).toBe(sprite);
     expect(reused.frame).toBe(0);
+    expect(reused.alpha).toBe(1);
+    expect(reused.rotation).toBe(0);
+    expect(reused.scale).toBe(1);
+  });
+
+  it('clears text and color before a text object is reused', () => {
+    const pool = createDecorationObjectPool<PooledText>({
+      reset: (text) => {
+        text.text = '';
+        text.color = '#ffcf66';
+        text.visible = false;
+        text.alpha = 1;
+        text.rotation = 0;
+        text.scale = 1;
+      },
+    });
+
+    const first = pool.acquire(() => ({
+      text: '',
+      color: '#ffcf66',
+      visible: false,
+      alpha: 1,
+      rotation: 0,
+      scale: 1,
+    }));
+    first.text = '-20';
+    first.color = '#ff7b9d';
+    first.visible = true;
+    first.alpha = 0.5;
+    first.rotation = 1;
+    first.scale = 2;
+    pool.release(first);
+
+    const reused = pool.acquire(() => ({
+      text: 'stale',
+      color: '#73e6a5',
+      visible: true,
+      alpha: 0,
+      rotation: 2,
+      scale: 3,
+    }));
+
+    expect(reused).toBe(first);
+    expect(reused.text).toBe('');
+    expect(reused.color).toBe('#ffcf66');
+    expect(reused.visible).toBe(false);
     expect(reused.alpha).toBe(1);
     expect(reused.rotation).toBe(0);
     expect(reused.scale).toBe(1);

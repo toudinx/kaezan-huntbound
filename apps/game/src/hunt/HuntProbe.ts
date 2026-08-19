@@ -59,6 +59,7 @@ export interface HuntProbeState {
   readonly tick: number;
   readonly floor: number;
   readonly floorRebuilds: number;
+  readonly decorationTextWrites: number;
   readonly player: HuntProbeActor | null;
   readonly actors: readonly HuntProbeActor[];
   readonly camera: {
@@ -98,6 +99,9 @@ export interface HuntProbeDecoration {
   readonly kind: string;
   readonly frame: number | string | null;
   readonly visible: boolean;
+  readonly x: number;
+  readonly y: number;
+  readonly alpha: number;
 }
 
 export interface HuntProbeImpulse {

@@ -136,6 +136,22 @@ export class HuntScene extends Phaser.Scene {
         sprite.setScale(1);
       },
     });
+  private readonly decorationTextPool =
+    createDecorationObjectPool<Phaser.GameObjects.Text>({
+      reset: (text) => {
+        text.setVisible(false);
+        text.setAlpha(1);
+        text.setRotation(0);
+        text.setScale(1);
+        text.setText('');
+        text.setColor('#ffcf66');
+      },
+    });
+  private readonly decorationTextValues = new Map<
+    number,
+    { text: string; color: string }
+  >();
+  private decorationTextWrites = 0;
   private sprites: Phaser.GameObjects.Sprite[] = [];
   private readonly combatDecorations: CombatDecorations;
   private readonly combatImpulses: CombatImpulses = createCombatImpulses();
@@ -204,6 +220,8 @@ export class HuntScene extends Phaser.Scene {
     }
     this.renderClock = 0;
     this.floorRebuilds = 0;
+    this.decorationTextWrites = 0;
+    this.decorationTextValues.clear();
     this.inputCommands = [];
     this.targetSelection.reset();
     this.inputGate.reset();
@@ -398,6 +416,7 @@ export class HuntScene extends Phaser.Scene {
       tick: this.options.driver.tick,
       floor: presentation?.floor() ?? this.options.hunt.playerStart.z,
       floorRebuilds: this.floorRebuilds,
+      decorationTextWrites: this.decorationTextWrites,
       player:
         actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
       actors,
@@ -442,6 +461,9 @@ export class HuntScene extends Phaser.Scene {
           kind: typeof kind === 'string' ? kind : 'unknown',
           frame,
           visible: object.visible,
+          x: object.x,
+          y: object.y,
+          alpha: object.alpha,
         };
       }),
     );
@@ -528,6 +550,10 @@ export class HuntScene extends Phaser.Scene {
     this.decorationSpritePool.drain((sprite) => {
       sprite.destroy();
     });
+    this.decorationTextPool.drain((text) => {
+      text.destroy();
+    });
+    this.decorationTextValues.clear();
   }
 
   /** The presentation clock, read once per sync so it never runs backwards. */
@@ -743,10 +769,12 @@ export class HuntScene extends Phaser.Scene {
       if (visible.has(id)) continue;
       this.decorationObjects.delete(id);
       this.combatNumberColors.delete(id);
+      this.decorationTextValues.delete(id);
+      object.setVisible(false);
       if (object instanceof Phaser.GameObjects.Sprite) {
         this.decorationSpritePool.release(object);
       } else {
-        object.destroy();
+        this.decorationTextPool.release(object);
       }
     }
   }
@@ -758,16 +786,19 @@ export class HuntScene extends Phaser.Scene {
       decoration.kind === 'damage-number' ||
       decoration.kind === 'heal-number'
     ) {
-      const text = this.add.text(0, 0, '', {
-        color: '#ffcf66',
-        fontFamily: 'ui-monospace, monospace',
-        fontSize: '18px',
-        fontStyle: 'bold',
-        stroke: '#32140d',
-        strokeThickness: 3,
-      });
+      const text = this.decorationTextPool.acquire(() =>
+        this.add.text(0, 0, '', {
+          color: '#ffcf66',
+          fontFamily: 'ui-monospace, monospace',
+          fontSize: '18px',
+          fontStyle: 'bold',
+          stroke: '#32140d',
+          strokeThickness: 3,
+        }),
+      );
       text.setOrigin(0.5, 1);
       this.decorationObjects.set(decoration.id, text);
+      this.decorationTextValues.set(decoration.id, { text: '', color: '' });
       return text;
     }
 
@@ -808,14 +839,26 @@ export class HuntScene extends Phaser.Scene {
         Math.max((renderTimeMs - decoration.createdAtMs) / 300, 0),
         1,
       );
+      const nextText = `${decoration.kind === 'heal-number' ? '+' : '-'}${decoration.amount ?? 0}`;
+      const nextColor =
+        this.combatNumberColors.get(decoration.id) ??
+        combatFxForCause('attack').numberColor;
+      const applied = this.decorationTextValues.get(decoration.id) ?? {
+        text: '',
+        color: '',
+      };
+      if (applied.text !== nextText) {
+        text.setText(nextText);
+        applied.text = nextText;
+        this.decorationTextWrites += 1;
+      }
+      if (applied.color !== nextColor) {
+        text.setColor(nextColor);
+        applied.color = nextColor;
+        this.decorationTextWrites += 1;
+      }
+      this.decorationTextValues.set(decoration.id, applied);
       text
-        .setText(
-          `${decoration.kind === 'heal-number' ? '+' : '-'}${decoration.amount ?? 0}`,
-        )
-        .setColor(
-          this.combatNumberColors.get(decoration.id) ??
-            combatFxForCause('attack').numberColor,
-        )
         .setPosition(
           (position.x + 0.5) * this.tileSize,
           (position.y + 0.5 - progress * 0.75) * this.tileSize,

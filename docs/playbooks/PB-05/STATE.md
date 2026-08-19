@@ -4,11 +4,11 @@
 
 **Estado geral:** **correções em execução**. As onze tasks de implementação estão `done` e
 integradas. FIX-07, FIX-08 (chão na transição) e FIX-10 (agro/path Canary) entregues. Próximo:
-`PB-05-FIX-09` (números de dano).
+desbloquear B9 e concluir `PB-05-FIX-09` (números de dano).
 
 **Última atualização:** 2026-08-19
 
-**Próxima etapa:** executar `PB-05-FIX-09`. A trilha FIX tem prioridade sobre PB-06 e PB-07.
+**Próxima etapa:** resolver B9 e repetir `verify`. A trilha FIX tem prioridade sobre PB-06 e PB-07.
 
 ## Tasks
 
@@ -34,7 +34,7 @@ integradas. FIX-07, FIX-08 (chão na transição) e FIX-10 (agro/path Canary) en
 | PB-05-FIX-06 | cancelada | — | absorvida por FIX-07; o aceite é o usuário jogando, não mais uma spec de cue |
 | PB-05-FIX-07 | done | (este commit) | targeting persistente `actor/set-target` + auto-ataque; exori `hit-area`; regen do Knight visível; ficha nível 35 / sword 60; HUD e chão sem rebuild por frame; `verify` 0; três goldens byte-idênticos |
 | PB-05-FIX-08 | done | `89e3fd6` | transição alheia atualiza roster sem repintar; ator transicionado permanece filtrado por andar; `floorRebuilds`; frame antes/depois com `over50=0` |
-| PB-05-FIX-09 | pending | — | `setText`/`setColor` condicionais; `Text` em pool; `decorationTextWrites` no probe; `fillText/s` antes/depois |
+| PB-05-FIX-09 | pending | (este commit) | implementação + gates específicos verdes; `fillText/s` ~87→2,6; `verify`/QA browser bloqueados por B9 |
 | PB-05-FIX-10 | done | `db04d9d` | agro 11; BFS; LOS melee; e2e sem hole-fall; `huntFloorSync`; `verify` 0 |
 
 PB-05-06 saiu de `blocked (QA browser)` para `done` em 2026-08-18: o único vermelho era B5, que
@@ -42,7 +42,11 @@ passou a ser gate informativo. Seus gates de código estavam verdes desde `2f5d0
 
 ## Bloqueios
 
-Nenhum bloqueio aberto.
+Bloqueios abertos: B9.
+
+- **B9 — aberto em PB-05-FIX-09.** `qa:browser`/`verify` falharam sob suíte longa no driver existente
+  (`Target cycling`, alvo desaparecido e cooldown), enquanto a spec nova passou 4/4 e desktop-wide
+  passou 10/10 isolado. Repetir em máquina/rodada de QA estável antes de marcar a task como `done`.
 
 - **B8 — executado em PB-05-FIX-01.** `missile:tibia:weapon-type` saiu; seleção 140→139. `missileId: 254`
   é `CONST_ANI_WEAPONTYPE`, sentinela, não sprite.

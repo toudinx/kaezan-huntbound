@@ -55,6 +55,7 @@ function emptyState(): HuntProbeState {
     tick: 0,
     floor: 8,
     floorRebuilds: 0,
+    decorationTextWrites: 0,
     player: null,
     actors: [],
     camera: {
@@ -204,7 +205,11 @@ describe('installHuntProbe', () => {
   it('publishes the live scene state and the recorded events', () => {
     vi.stubEnv('MODE', 'test');
     let publish: ((events: readonly SimulationEvent[]) => void) | undefined;
-    const state = { ...emptyState(), floorRebuilds: 3 };
+    const state = {
+      ...emptyState(),
+      floorRebuilds: 3,
+      decorationTextWrites: 7,
+    };
 
     installHuntProbe({ huntProbeState: () => state }, (listener) => {
       publish = listener;
@@ -300,8 +305,16 @@ describe('installHuntProbe', () => {
   it('exposes the current frame of each visible decoration', () => {
     vi.stubEnv('MODE', 'test');
     const decorations = Object.freeze([
-      { id: 1, kind: 'blood', frame: 3, visible: true },
-      { id: 2, kind: 'corpse', frame: 0, visible: true },
+      { id: 1, kind: 'blood', frame: 3, visible: true, x: 10, y: 20, alpha: 1 },
+      {
+        id: 2,
+        kind: 'corpse',
+        frame: 0,
+        visible: true,
+        x: 30,
+        y: 40,
+        alpha: 0.8,
+      },
     ]);
 
     installHuntProbe(
