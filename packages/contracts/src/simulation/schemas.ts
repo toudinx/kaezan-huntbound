@@ -40,6 +40,7 @@ const commandTypeValues = [
   'actor/wait',
   'actor/attack',
   'actor/cast-ability',
+  'actor/set-target',
   'scenario/spawn-actor',
   'scenario/despawn-actor',
 ] as const;
@@ -672,6 +673,18 @@ const ActorCastAbilityCommandSchema = z
   })
   .strict();
 
+/**
+ * The persistent Tibia target. While it is set the actor swings on its own
+ * attack cooldown, so a click is a decision and not a single blow.
+ */
+const ActorSetTargetCommandSchema = z
+  .object({
+    type: z.literal('actor/set-target'),
+    entityId: EntityIdSchema,
+    targetEntityId: EntityIdSchema.nullable(),
+  })
+  .strict();
+
 const ScenarioSpawnActorCommandSchema = z
   .object({
     type: z.literal('scenario/spawn-actor'),
@@ -694,6 +707,7 @@ export const SimulationCommandSchema = z.discriminatedUnion('type', [
   ActorWaitCommandSchema,
   ActorAttackCommandSchema,
   ActorCastAbilityCommandSchema,
+  ActorSetTargetCommandSchema,
   ScenarioSpawnActorCommandSchema,
   ScenarioDespawnActorCommandSchema,
 ]);
@@ -823,6 +837,20 @@ export const CombatHealedEventPayloadSchema = z
   })
   .strict();
 
+/**
+ * Upkeep restoring health or resource. It carries absolute values because
+ * regeneration is a state change nobody commanded: a presentation that only
+ * watches damage and heals would otherwise drift away from the actor.
+ */
+export const CombatRegeneratedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/regenerated'),
+    entityId: EntityIdSchema,
+    health: nonNegativeInteger,
+    resource: nonNegativeInteger,
+  })
+  .strict();
+
 export const AbilityCastEventPayloadSchema = z
   .object({
     type: z.literal('ability/cast'),
@@ -895,6 +923,7 @@ export const SimulationEventPayloadSchema = z.discriminatedUnion('type', [
   CombatAttackedEventPayloadSchema,
   CombatDamagedEventPayloadSchema,
   CombatHealedEventPayloadSchema,
+  CombatRegeneratedEventPayloadSchema,
   AbilityCastEventPayloadSchema,
   CombatTargetChangedEventPayloadSchema,
   ActorDiedEventPayloadSchema,
@@ -1276,7 +1305,10 @@ export function commandPriority(type: SimulationCommandType): number {
     case 'scenario/spawn-actor':
     case 'scenario/despawn-actor':
       return 0;
+    // Neither turns nor targeting consume the tick, so they land first: a
+    // click and a spell issued together resolve against the new target.
     case 'actor/face':
+    case 'actor/set-target':
       return 1;
     case 'actor/move-step':
       return 2;
@@ -1303,6 +1335,7 @@ export function isConcurrentActorAction(
     case 'actor/wait':
       return true;
     case 'actor/face':
+    case 'actor/set-target':
     case 'scenario/spawn-actor':
     case 'scenario/despawn-actor':
       return false;

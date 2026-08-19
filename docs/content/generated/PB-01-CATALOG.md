@@ -398,8 +398,8 @@
 ### character:huntbound:knight-venore-rotworm-cave
 
 - Vocation: vocation:tibia:knight
-- Level: 8
-- Skills: magic 0, sword 10
+- Level: 35
+- Skills: magic 0, sword 60
 - Weapon: item:tibia:sword attack 14
-- Vitals: health 185, mana 185
+- Vitals: health 590, mana 185
 - Spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing

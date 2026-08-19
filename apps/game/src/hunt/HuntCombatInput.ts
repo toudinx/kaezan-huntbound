@@ -11,24 +11,13 @@ export interface CombatInputContext {
   readonly abilities: readonly AbilityDefinition[];
 }
 
-type CombatAction = Extract<
-  InputAction,
-  { readonly kind: 'attack' | 'cast-ability' }
->;
+type CombatAction = Extract<InputAction, { readonly kind: 'cast-ability' }>;
 
 export function combatCommandForAction(
   action: CombatAction,
   context: CombatInputContext,
 ): SimulationCommand | undefined {
   switch (action.kind) {
-    case 'attack':
-      return context.targetEntityId === null
-        ? undefined
-        : {
-            type: 'actor/attack',
-            entityId: context.playerEntityId,
-            targetEntityId: context.targetEntityId,
-          };
     case 'cast-ability': {
       const ability = context.abilities[action.abilityIndex];
       if (ability === undefined) return undefined;

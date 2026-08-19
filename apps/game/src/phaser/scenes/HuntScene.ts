@@ -113,27 +113,25 @@ function actorKeyMap(hunt: HuntDefinition): ReadonlyMap<string, AssetKey> {
   return keys;
 }
 
-function isStructuralEvent(event: SimulationEvent): boolean {
+/**
+ * Only a floor change repaints the floor. Rebuilding it costs a destroy and a
+ * create for every one of the region's ~1200 sprites, which is a visible hitch
+ * -- and a creature dying used to trigger one, so the game stuttered exactly
+ * when it was going well.
+ */
+function isFloorEvent(event: SimulationEvent): boolean {
+  return event.payload.type === 'actor/transitioned';
+}
+
+/** A birth or a death: the actor roster changed, the floor under it did not. */
+function isRosterEvent(event: SimulationEvent): boolean {
   switch (event.payload.type) {
     case 'actor/spawned':
     case 'actor/despawned':
-    case 'actor/transitioned':
-      return true;
-    case 'actor/moved':
-    case 'actor/move-blocked':
-    case 'actor/faced':
-    case 'spawn/deferred':
-    case 'spawn/capped':
-    case 'command/rejected':
-    case 'combat/attacked':
-    case 'combat/damaged':
-    case 'combat/healed':
-    case 'ability/cast':
-    case 'combat/target-changed':
-    case 'loot/granted':
-      return false;
     case 'actor/died':
       return true;
+    default:
+      return false;
   }
 }
 
@@ -274,11 +272,10 @@ export class HuntScene extends Phaser.Scene {
       this.options.bridge.publishTargetSelected(
         this.targetSelection.targetId(),
       );
-      if (
-        floorBefore !== presentation.floor() ||
-        events.some(isStructuralEvent)
-      ) {
+      if (floorBefore !== presentation.floor() || events.some(isFloorEvent)) {
         this.renderFloor();
+      } else if (events.some(isRosterEvent)) {
+        this.syncActorRoster();
       }
       this.syncActorSprites(this.options.driver.alpha);
       this.renderCombatDecorations();
@@ -331,16 +328,24 @@ export class HuntScene extends Phaser.Scene {
       const action = this.options.input.drain(this.options.driver.tick)[0];
       if (action?.kind === 'cycle-target') {
         this.targetSelection.cycle(this.combatTargetActors());
-        this.options.bridge.publishTargetSelected(
-          this.targetSelection.targetId(),
-        );
+        this.commandTarget(this.targetSelection.targetId());
+      } else if (action?.kind === 'clear-target') {
+        this.commandTarget(null);
       } else if (action?.kind === 'step') {
         this.enqueuePlayerCommand({
           type: 'actor/move-step',
           entityId: player.entityId,
           direction: action.direction,
         });
-      } else if (action?.kind === 'attack' || action?.kind === 'cast-ability') {
+      } else if (action?.kind === 'attack') {
+        // Attack engages rather than swings: it keeps the current target and
+        // picks the nearest creature when there is none, so the button always
+        // does something even before the player has clicked anything.
+        this.commandTarget(
+          this.targetSelection.targetId() ??
+            this.nearestHostileEntityId(player.entityId),
+        );
+      } else if (action?.kind === 'cast-ability') {
         const command = combatCommandForAction(action, {
           playerEntityId: player.entityId,
           targetEntityId: this.targetSelection.targetId(),
@@ -587,23 +592,61 @@ export class HuntScene extends Phaser.Scene {
       this.sprites.push(sprite);
 
       if (command.kind === 'actor') {
-        this.actorSprites.set(command.entityId, sprite);
-        sprite.setInteractive({ useHandCursor: true });
-        sprite.on('pointerdown', () => {
-          if (
-            this.targetSelection.select(
-              command.entityId,
-              this.combatTargetActors(),
-            )
-          ) {
-            this.options.bridge.publishTargetSelected(
-              this.targetSelection.targetId(),
-            );
-            this.syncTargetHighlight();
-          }
-        });
+        this.bindActorSprite(sprite, command.entityId);
       }
     }
+    this.syncTargetHighlight();
+  }
+
+  /** Every creature on screen is a click target: that is how Tibia aims. */
+  private bindActorSprite(
+    sprite: Phaser.GameObjects.Sprite,
+    entityId: EntityId,
+  ): void {
+    this.actorSprites.set(entityId, sprite);
+    sprite.setInteractive({ useHandCursor: true });
+    sprite.on('pointerdown', () => {
+      this.commandTarget(entityId);
+    });
+  }
+
+  /**
+   * Adds the sprites for actors that just spawned and drops the ones that just
+   * died, leaving the floor untouched.
+   */
+  private syncActorRoster(): void {
+    const presentation = this.presentation;
+    if (!presentation) return;
+
+    const live = new Set<EntityId>();
+    for (const command of presentation.drawCommands()) {
+      if (command.kind !== 'actor') continue;
+      live.add(command.entityId);
+      if (this.actorSprites.has(command.entityId)) continue;
+
+      const asset = this.assetByKey.get(command.key);
+      if (!asset) continue;
+
+      const sprite = this.add.sprite(0, 0, command.key);
+      const anchor = this.anchorFor(asset, command);
+      sprite
+        .setOrigin(anchor.originX, anchor.originY)
+        .setPosition(anchor.x, anchor.y)
+        .setDisplaySize(anchor.width, anchor.height)
+        .setDepth(this.depthFor(command.layer, command, 0));
+      sprite.setData('hunt-layer', command.layer);
+      this.sprites.push(sprite);
+      this.bindActorSprite(sprite, command.entityId);
+    }
+
+    for (const [entityId, sprite] of [...this.actorSprites]) {
+      if (live.has(entityId)) continue;
+      this.actorSprites.delete(entityId);
+      const index = this.sprites.indexOf(sprite);
+      if (index >= 0) this.sprites.splice(index, 1);
+      sprite.destroy();
+    }
+
     this.syncTargetHighlight();
   }
 
@@ -867,12 +910,88 @@ export class HuntScene extends Phaser.Scene {
     );
   }
 
+  /**
+   * Points the player at `entityId` -- or at nothing, when it is `null`. The
+   * local selection drives the highlight this frame; the kernel command is what
+   * actually makes the player swing, every attack cooldown, until it changes.
+   */
+  private commandTarget(entityId: EntityId | null): void {
+    const player = this.presentation
+      ?.actors()
+      .find(
+        (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+      );
+    if (!player || entityId === player.entityId) return;
+
+    if (entityId === null) {
+      this.targetSelection.setTarget(null);
+    } else if (
+      !this.targetSelection.select(entityId, this.combatTargetActors())
+    ) {
+      return;
+    }
+
+    this.enqueuePlayerCommand({
+      type: 'actor/set-target',
+      entityId: player.entityId,
+      targetEntityId: entityId,
+    });
+    this.options.bridge.publishTargetSelected(entityId);
+    this.syncTargetHighlight();
+  }
+
+  /** The closest creature the player could reach, for the bare attack button. */
+  private nearestHostileEntityId(playerEntityId: EntityId): EntityId | null {
+    const player = this.presentation
+      ?.actors()
+      .find((actor) => actor.entityId === playerEntityId);
+    if (!player) return null;
+
+    let bestId: EntityId | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (const actor of this.presentation?.actors() ?? []) {
+      if (
+        actor.entityId === playerEntityId ||
+        actor.blueprintId === this.options.hunt.playerBlueprintId ||
+        actor.position.z !== player.position.z
+      ) {
+        continue;
+      }
+      const distance = Math.max(
+        Math.abs(actor.position.x - player.position.x),
+        Math.abs(actor.position.y - player.position.y),
+      );
+      // Ties go to the lower id so the same board always picks the same
+      // creature, however the actor list happens to be ordered.
+      if (
+        distance < bestDistance ||
+        (distance === bestDistance &&
+          bestId !== null &&
+          actor.entityId < bestId)
+      ) {
+        bestDistance = distance;
+        bestId = actor.entityId;
+      }
+    }
+    return bestId;
+  }
+
   private combatTargetActors(): readonly CombatTargetActor[] {
-    return (this.presentation?.actors() ?? []).map((actor) => ({
-      entityId: actor.entityId,
-      blueprintId: actor.blueprintId,
-      position: { ...actor.position },
-    }));
+    const presentation = this.presentation;
+    if (!presentation) return [];
+
+    // Melee and every spell in the kit require the same floor, so a creature
+    // one level down is not a target -- cycling onto it just left the player
+    // swinging at nothing.
+    const floor = presentation.floor();
+    return presentation
+      .actors()
+      .filter((actor) => actor.position.z === floor)
+      .map((actor) => ({
+        entityId: actor.entityId,
+        blueprintId: actor.blueprintId,
+        position: { ...actor.position },
+      }));
   }
 
   private syncTargetHighlight(

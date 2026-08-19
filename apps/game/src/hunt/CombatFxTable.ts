@@ -54,9 +54,11 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     healNumber: false,
     numberColor: '#ff7b9d',
   },
+  // `data/scripts/spells/attack/berserk.lua`: COMBAT_PHYSICALDAMAGE with
+  // CONST_ME_HITAREA over AREA_SQUARE1X1. Exori is a swing, not a blue spell.
   berserk: {
-    impactKey: magicBlueKey,
-    bloodKey: undefined,
+    impactKey: hitAreaKey,
+    bloodKey,
     placement: 'radius-1',
     staggerByDistance: true,
     stronger: false,

@@ -26,6 +26,7 @@ import {
 import { installAssetRuntimeProbe } from './assets/AssetRuntimeProbe';
 import { createAssetRuntime } from './assets/createAssetRuntime';
 import { createSceneBridge } from './bridge/SceneBridge';
+import { createHuntCombatViewModel } from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
 import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
 import { installKernelProbe } from './index';
@@ -146,7 +147,15 @@ export async function bootstrapApp(
   const inputTarget =
     (browserDocument.body as HTMLElement | null | undefined) ?? uiRoot;
   inputMap.attach(inputTarget);
-  const appShell = appShellMount(uiRoot, bridge, { input: inputMap });
+  // The catalog is a compile-time import, so the HUD can know the real health
+  // and mana ceilings before a single asset has loaded.
+  const runtime = projectRuntimeBundle(
+    JSON.parse(catalogBundleJson) as CatalogContentBundle,
+  );
+  const appShell = appShellMount(uiRoot, bridge, {
+    input: inputMap,
+    combat: { viewModel: createHuntCombatViewModel(runtime) },
+  });
   let huntAssets: readonly ResolvedAsset[] = [];
 
   try {
@@ -186,9 +195,6 @@ export async function bootstrapApp(
     return;
   }
 
-  const runtime = projectRuntimeBundle(
-    JSON.parse(catalogBundleJson) as CatalogContentBundle,
-  );
   const character = runtime.characters[0];
   if (character === undefined) {
     inputMap.detach();

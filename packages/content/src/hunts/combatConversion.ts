@@ -23,6 +23,19 @@ const MELEE_ATTACK_FACTOR = 1.0;
 const MELEE_DAMAGE_MULTIPLIER = 1.0;
 const MELEE_MAX_COEFFICIENT = 0.085;
 
+/**
+ * `data/XML/vocations.xml`, vocation `4` (Knight): `gainhpticks="6000"`,
+ * `gainhpamount="1"`, `gainmanaticks="6000"`, `gainmanaamount="2"`.
+ *
+ * They live here as constants and not on `VocationDefinition` because V0 ships
+ * one vocation. The day a second one arrives these four numbers move into the
+ * vocation slice of the catalog and this block goes away.
+ */
+export const KNIGHT_HEALTH_REGEN_MS = 6000;
+export const KNIGHT_HEALTH_REGEN_AMOUNT = 1;
+export const KNIGHT_RESOURCE_REGEN_MS = 6000;
+export const KNIGHT_RESOURCE_REGEN_AMOUNT = 2;
+
 export const PLAYER_FACTION_ID = 0;
 export const CREATURE_FACTION_ID = 1;
 

@@ -66,15 +66,21 @@ const expectedSourceFiles = [
   'data-otservbr-global/monster/reptiles/snake.lua',
 ] as const;
 
+/**
+ * Unfrozen on 2026-08-19. The level 8 / sword 10 sheet capped melee at 13
+ * damage against a 65 HP rotworm and could not legally cast Berserk, which
+ * `berserk.lua` gates at level 35: the hunt was unwinnable by arithmetic.
+ * Level 35 with sword 60 is the ordinary knight the cave is written for.
+ */
 const expectedCharacter: FrozenCharacter = {
   stableKey: 'character:huntbound:knight-venore-rotworm-cave',
   vocationKey: 'vocation:tibia:knight',
-  level: 8,
-  skills: { sword: 10, magic: 0 },
+  level: 35,
+  skills: { sword: 60, magic: 0 },
   weaponItemKey: 'item:tibia:sword',
   weaponSourceId: '3264',
   weaponAttack: 14,
-  maxHealth: 185,
+  maxHealth: 590,
   maxMana: 185,
   spellKeys: [
     'spell:tibia:berserk',

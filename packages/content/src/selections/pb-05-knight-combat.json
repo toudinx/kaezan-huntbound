@@ -34,20 +34,20 @@
   },
   "character": {
     "vocationKey": "vocation:tibia:knight",
-    "level": 8,
+    "level": 35,
     "skills": {
-      "sword": 10,
+      "sword": 60,
       "magic": 0
     },
     "weaponKey": "item:tibia:sword",
     "fightMode": "offensive",
     "attackFactor": 1,
-    "maxHealth": 185,
+    "maxHealth": 590,
     "maxMana": 185,
-    "levelSource": "recommended hunt level from the PB-04 selection / TibiaRoute",
-    "skillSource": "schema.sql defaults skill_sword=10 and maglevel=0",
-    "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5",
-    "manaSource": "Huntbound loadout pool: 115+40+30, the three selected spell costs. Canary at level 8 is 35 and cannot pay Berserk; V0 has no leveling.",
+    "levelSource": "Berserk requires level 35 in data/scripts/spells/attack/berserk.lua; a level 8 knight could not cast the kit it was given",
+    "skillSource": "sword 60 is the ordinary skill of a level 35 knight; at the schema.sql default of 10 the melee formula caps at 13 damage against a 65 HP rotworm",
+    "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5; levels 9-35 gain Knight gainhp 15",
+    "manaSource": "Canary mana at level 35 is 170, one cast short of the 185 the loadout costs (115+40+30). Huntbound sizes the pool to the kit so all three spells are reachable in one hunt; V0 has no potions.",
     "spellAccess": "unrestricted",
     "trivializesHunt": false
   },
@@ -66,8 +66,8 @@
       "effect": "CONST_ME_HITAREA",
       "formulaKind": "skillAttack",
       "huntboundAccess": "unrestricted",
-      "minPower": 14,
-      "maxPower": 41
+      "minPower": 48,
+      "maxPower": 129
     },
     {
       "stableKey": "spell:tibia:brutal-strike",
@@ -85,8 +85,8 @@
       "formulaKind": "skillAttackProduct",
       "schemaDecision": "deferred-to-PB-05-02",
       "huntboundAccess": "unrestricted",
-      "minPower": 10,
-      "maxPower": 20
+      "minPower": 35,
+      "maxPower": 63
     },
     {
       "stableKey": "spell:tibia:wound-cleansing",
@@ -103,8 +103,8 @@
       "formulaKind": "levelMagic",
       "schemaDecision": "deferred-to-PB-05-02",
       "huntboundAccess": "unrestricted",
-      "minPower": 26,
-      "maxPower": 52
+      "minPower": 32,
+      "maxPower": 58
     }
   ],
   "conversions": {
@@ -137,10 +137,10 @@
     }
   },
   "resolvedPower": {
-    "berserk": { "minPower": 14, "maxPower": 41 },
-    "brutalStrike": { "minPower": 10, "maxPower": 20 },
-    "woundCleansing": { "minPower": 26, "maxPower": 52 },
-    "melee": { "minPower": 1, "maxPower": 13 },
+    "berserk": { "minPower": 48, "maxPower": 129 },
+    "brutalStrike": { "minPower": 35, "maxPower": 63 },
+    "woundCleansing": { "minPower": 32, "maxPower": 58 },
+    "melee": { "minPower": 7, "maxPower": 78 },
     "rotwormMelee": { "minPower": 0, "maxPower": 40 },
     "integerConversion": "C++ static_cast<int32_t>(lua_tonumber), truncates toward zero; damage formulas return negatives and minPower/maxPower store the absolute values"
   },

@@ -8,7 +8,8 @@ export type InputAction =
   | { readonly kind: 'face'; readonly direction: Direction }
   | { readonly kind: 'attack' }
   | { readonly kind: 'cast-ability'; readonly abilityIndex: number }
-  | { readonly kind: 'cycle-target' };
+  | { readonly kind: 'cycle-target' }
+  | { readonly kind: 'clear-target' };
 
 export interface InputMap {
   attach(target: HTMLElement): void;
@@ -56,6 +57,9 @@ const combatKeyBindings: Readonly<Record<string, CombatInputAction>> = {
   Numpad2: { kind: 'cast-ability', abilityIndex: 1 },
   Numpad3: { kind: 'cast-ability', abilityIndex: 2 },
   Tab: { kind: 'cycle-target' },
+  // Tibia stops the fight with Escape. Without it a persistent target could
+  // only be swapped, never dropped.
+  Escape: { kind: 'clear-target' },
 };
 
 const directionValues = new Set<Direction>([
@@ -102,6 +106,7 @@ function directionFromTarget(
 function readCombatAction(value: unknown): CombatInputAction | undefined {
   if (value === 'attack') return { kind: 'attack' };
   if (value === 'cycle-target') return { kind: 'cycle-target' };
+  if (value === 'clear-target') return { kind: 'clear-target' };
   if (typeof value !== 'string' || !value.startsWith('ability:')) {
     return undefined;
   }

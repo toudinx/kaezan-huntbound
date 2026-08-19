@@ -213,8 +213,8 @@ describe('validateCombatSelection', () => {
 
     expect(frozen.spellAccess).toBe('unrestricted');
     expect(frozen.character).toMatchObject({
-      level: 8,
-      maxHealth: 185,
+      level: 35,
+      maxHealth: 590,
       maxMana: 185,
       spellAccess: 'unrestricted',
       trivializesHunt: false,
@@ -223,10 +223,10 @@ describe('validateCombatSelection', () => {
       frozen.spells.every((spell) => spell.huntboundAccess === 'unrestricted'),
     ).toBe(true);
     expect(frozen.resolvedPower.berserk).toEqual({
-      minPower: 14,
-      maxPower: 41,
+      minPower: 48,
+      maxPower: 129,
     });
-    expect(frozen.resolvedPower.melee).toEqual({ minPower: 1, maxPower: 13 });
+    expect(frozen.resolvedPower.melee).toEqual({ minPower: 7, maxPower: 78 });
   });
 
   it('accepts a selection whose every declared ID exists in the snapshot files', () => {

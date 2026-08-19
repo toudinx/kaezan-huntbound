@@ -5,6 +5,7 @@ import {
 import type {
   AbilityDefinition,
   EntityId,
+  RuntimeContentBundle,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
 
@@ -191,6 +192,16 @@ export function createCombatViewModel(
           actor.health = clamp(event.payload.health, 0, actor.maxHealth);
           break;
         }
+        case 'combat/regenerated': {
+          const actor = actorFromEvent(
+            event.payload.entityId,
+            undefined,
+            event.payload.health,
+          );
+          actor.health = clamp(event.payload.health, 0, actor.maxHealth);
+          actor.resource = clamp(event.payload.resource, 0, actor.maxResource);
+          break;
+        }
         case 'ability/cast': {
           const ability = abilityFor(event.payload.abilityIndex);
           if (event.payload.entityId === options.playerEntityId && ability) {
@@ -341,8 +352,8 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       resourceCost: 115,
       cooldownTicks: 80,
       groupCooldownTicks: 40,
-      minPower: 14,
-      maxPower: 41,
+      minPower: 48,
+      maxPower: 129,
     },
     {
       abilityId: 'brutal-strike',
@@ -353,8 +364,8 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       resourceCost: 30,
       cooldownTicks: 120,
       groupCooldownTicks: 40,
-      minPower: 10,
-      maxPower: 20,
+      minPower: 35,
+      maxPower: 63,
     },
     {
       abilityId: 'wound-cleansing',
@@ -365,10 +376,47 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       resourceCost: 40,
       cooldownTicks: 20,
       groupCooldownTicks: 20,
-      minPower: 26,
-      maxPower: 52,
+      minPower: 32,
+      maxPower: 58,
     },
   ]);
+
+/**
+ * The HUD needs the caps the kernel was built with. Events only carry current
+ * health, so a hard-coded ceiling here shows the wrong bar the moment the
+ * character sheet changes -- which is exactly what happened when the knight
+ * went from 185 HP to 590.
+ */
+export function createHuntCombatViewModel(
+  runtime: RuntimeContentBundle,
+  playerEntityId: EntityId = 1 as EntityId,
+  playerBlueprintId = 'player',
+): CombatViewModel {
+  const character = runtime.characters[0];
+  const maxHealthByBlueprint = new Map<string, number>();
+  const maxResourceByBlueprint = new Map<string, number>();
+
+  if (character !== undefined) {
+    maxHealthByBlueprint.set(playerBlueprintId, character.maxHealth);
+    maxResourceByBlueprint.set(playerBlueprintId, character.maxMana);
+  }
+  for (const creature of runtime.creatures) {
+    // `buildHuntScenario` names a blueprint after the tail of its content key.
+    const blueprintId = creature.stableKey.split(':').at(-1);
+    if (blueprintId === undefined) continue;
+    maxHealthByBlueprint.set(blueprintId, creature.stats.health);
+    maxResourceByBlueprint.set(blueprintId, 0);
+  }
+
+  return createCombatViewModel({
+    playerEntityId,
+    playerBlueprintId,
+    abilities: DEFAULT_COMBAT_ABILITIES,
+    itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
+    maxHealthByBlueprint,
+    maxResourceByBlueprint,
+  });
+}
 
 export function createDefaultCombatViewModel(
   playerEntityId: EntityId = 1 as EntityId,

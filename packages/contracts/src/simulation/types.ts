@@ -130,6 +130,11 @@ export type SimulationCommand =
       readonly targetEntityId: EntityId | null;
     }
   | {
+      readonly type: 'actor/set-target';
+      readonly entityId: EntityId;
+      readonly targetEntityId: EntityId | null;
+    }
+  | {
       readonly type: 'scenario/spawn-actor';
       readonly blueprintId: string;
       readonly position: GridPosition;
@@ -224,6 +229,12 @@ export type SimulationEventPayload =
       readonly sourceEntityId: EntityId;
       readonly amount: number;
       readonly health: number;
+    }
+  | {
+      readonly type: 'combat/regenerated';
+      readonly entityId: EntityId;
+      readonly health: number;
+      readonly resource: number;
     }
   | {
       readonly type: 'ability/cast';

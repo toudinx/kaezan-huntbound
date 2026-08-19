@@ -74,6 +74,7 @@ export function applyUpkeep(
   world: MutableWorld,
   blueprints: ReadonlyMap<string, ActorBlueprint>,
   currentTick: number,
+  journal: EventJournal,
 ): void {
   for (const actor of world.actors()) {
     const blueprint = blueprints.get(actor.blueprintId);
@@ -118,6 +119,14 @@ export function applyUpkeep(
         nextHealthRegenTick,
         nextResourceRegenTick,
       });
+      if (health !== actor.health || resource !== actor.resource) {
+        journal.emit(currentTick as TickIndex, {
+          type: 'combat/regenerated',
+          entityId: actor.entityId,
+          health,
+          resource,
+        });
+      }
     }
   }
 }

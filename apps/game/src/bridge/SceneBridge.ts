@@ -65,6 +65,12 @@ export function createSceneBridge(initialSnapshot: ShellSnapshot): SceneBridge {
       };
     },
     publishTick: (nextTick) => {
+      // The scene publishes once per rendered frame but the simulation only
+      // advances on its own clock, so most frames repeat the last tick. Passing
+      // those on made the HUD re-render ~60 times a second for nothing.
+      if (nextTick === tick) {
+        return;
+      }
       tick = nextTick;
       for (const listener of tickListeners) {
         listener(tick);

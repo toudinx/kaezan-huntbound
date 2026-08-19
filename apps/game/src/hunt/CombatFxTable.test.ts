@@ -52,10 +52,10 @@ describe('combatFxForAbility', () => {
     });
   });
 
-  it('maps berserk to staggered magic-blue on a radius-1 area', () => {
+  it('maps berserk to the staggered hit area Canary gives exori', () => {
     expect(combatFxForAbility('berserk')).toEqual({
-      impactKey: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
-      bloodKey: undefined,
+      impactKey: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+      bloodKey: createAssetKey(HUNT_PACK_BLOOD_EFFECT_KEY),
       placement: 'radius-1',
       staggerByDistance: true,
       stronger: false,

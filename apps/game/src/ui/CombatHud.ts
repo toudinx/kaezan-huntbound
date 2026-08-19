@@ -40,7 +40,7 @@ function updateBar(
   element.textContent = `${label}: ${value}/${maximum}`;
 }
 
-function renderAbility(
+function createAbilityButton(
   document: Document,
   ability: CombatAbilityView,
 ): HTMLButtonElement {
@@ -51,6 +51,13 @@ function renderAbility(
   ) as HTMLButtonElement;
   button.type = 'button';
   button.setAttribute('data-hunt-action', `ability:${ability.index}`);
+  return button;
+}
+
+function updateAbilityButton(
+  button: HTMLButtonElement,
+  ability: CombatAbilityView,
+): void {
   button.setAttribute(
     'aria-label',
     `${ability.label} (${ability.resourceCost} mana)`,
@@ -61,11 +68,11 @@ function renderAbility(
     String(ability.remainingCooldownTicks),
   );
   button.disabled = !ability.available;
-  button.textContent =
+  const text =
     ability.remainingCooldownTicks > 0
       ? `${ability.index + 1}. ${ability.label} · ${ability.remainingCooldownTicks}`
       : `${ability.index + 1}. ${ability.label}`;
-  return button;
+  if (button.textContent !== text) button.textContent = text;
 }
 
 export function mountCombatHud(
@@ -143,6 +150,8 @@ export function mountCombatHud(
   };
   restart.addEventListener('click', onRestart);
 
+  let abilityButtons: HTMLButtonElement[] = [];
+
   const render = (state: CombatViewState): void => {
     if (state.player === null) {
       updateBar(playerHealth, 'Health', 0, 0);
@@ -186,19 +195,31 @@ export function mountCombatHud(
       String(state.lastRejection !== null),
     );
 
-    abilities.replaceChildren(
-      ...state.abilities.map((ability) => renderAbility(document, ability)),
-    );
+    // The scene publishes a tick every frame, so this runs ~60 times a second.
+    // Rebuilding the buttons here dropped frames and destroyed the very node
+    // the player was pressing; they are created once and updated in place.
+    if (abilityButtons.length !== state.abilities.length) {
+      abilityButtons = state.abilities.map((ability) =>
+        createAbilityButton(document, ability),
+      );
+      abilities.replaceChildren(...abilityButtons);
+    }
+    state.abilities.forEach((ability, index) => {
+      const button = abilityButtons[index];
+      if (button !== undefined) updateAbilityButton(button, ability);
+    });
 
-    lootLog.textContent = state.lootLog
+    const lootText = state.lootLog
       .map(
         (entry) =>
           `${formatItemKey(entry.itemKey)} × ${entry.count} · tick ${entry.tick}`,
       )
       .join(' | ');
-    runBag.textContent = state.bag
+    if (lootLog.textContent !== lootText) lootLog.textContent = lootText;
+    const bagText = state.bag
       .map((entry) => `${formatItemKey(entry.itemKey)} × ${entry.count}`)
       .join(' | ');
+    if (runBag.textContent !== bagText) runBag.textContent = bagText;
     deathOverlay.setAttribute('data-visible', String(state.playerDead));
   };
 

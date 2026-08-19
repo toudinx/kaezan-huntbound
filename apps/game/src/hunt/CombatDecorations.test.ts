@@ -265,7 +265,7 @@ describe('CombatDecorations', () => {
     expect(effects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          key: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+          key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
           position: casterPosition,
           createdAtMs: 10 * 50,
         }),

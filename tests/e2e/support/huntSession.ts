@@ -95,6 +95,10 @@ export function buildHuntSessionScenario(): KernelScenario {
   return result.value;
 }
 
+export function readHuntCharacter() {
+  return readHuntCombatContext().character;
+}
+
 function readHuntCombatContext() {
   const runtime = projectRuntimeBundle(
     JSON.parse(readFileSync(catalogBundleUrl, 'utf8')) as CatalogContentBundle,

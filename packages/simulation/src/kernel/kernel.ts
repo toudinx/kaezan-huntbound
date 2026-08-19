@@ -419,6 +419,45 @@ export function createSimulationKernel(
         return;
       }
 
+      if (command.type === 'actor/set-target') {
+        const targetId = command.targetEntityId;
+        if (targetId !== null) {
+          const target = addressable(targetId);
+          const targetBlueprint =
+            target === undefined
+              ? undefined
+              : blueprints.get(target.blueprintId);
+          const blueprint = blueprints.get(actor.blueprintId);
+          if (target === undefined || targetBlueprint === undefined) {
+            reject(currentTick, command.type, sequence, 'SIM_TARGET_UNKNOWN');
+            return;
+          }
+          if (
+            target.entityId === actor.entityId ||
+            blueprint === undefined ||
+            targetBlueprint.factionId === blueprint.factionId
+          ) {
+            reject(
+              currentTick,
+              command.type,
+              sequence,
+              'SIM_TARGET_SAME_FACTION',
+            );
+            return;
+          }
+        }
+        if (actor.targetEntityId === targetId) {
+          return;
+        }
+        world.update({ ...actor, targetEntityId: targetId });
+        journal.emit(currentTick, {
+          type: 'combat/target-changed',
+          entityId: command.entityId,
+          targetEntityId: targetId,
+        });
+        return;
+      }
+
       if (command.type === 'actor/attack') {
         combatIntents.push({
           kind: 'attack',
@@ -642,6 +681,54 @@ export function createSimulationKernel(
           continue;
         }
 
+        if (actor.targetEntityId !== null) {
+          // A target set by command, the Tibia way: it survives the swing, so
+          // the actor keeps attacking on its own cooldown until the target
+          // dies, changes, or is cleared. It never moves the actor -- walking
+          // stays entirely on the player's d-pad.
+          const blueprint = blueprints.get(actor.blueprintId);
+          const target = world.actor(actor.targetEntityId);
+          const targetBlueprint =
+            target === undefined
+              ? undefined
+              : blueprints.get(target.blueprintId);
+          if (
+            blueprint === undefined ||
+            target === undefined ||
+            targetBlueprint === undefined ||
+            targetBlueprint.factionId === blueprint.factionId
+          ) {
+            world.update({ ...actor, targetEntityId: null });
+            journal.emit(currentTick, {
+              type: 'combat/target-changed',
+              entityId: actor.entityId,
+              targetEntityId: null,
+            });
+            continue;
+          }
+
+          const adjacent =
+            actor.position.z === target.position.z &&
+            chebyshevDistance(actor.position, target.position) <= 1;
+          if (!adjacent) {
+            continue;
+          }
+
+          const facing = greedyStepDirection(actor.position, target.position);
+          if (facing !== undefined && facing !== actor.facing) {
+            world.update({ ...actor, facing });
+            journal.emit(currentTick, {
+              type: 'actor/faced',
+              entityId: actor.entityId,
+              facing,
+            });
+          }
+          if (nextTick >= actor.attackReadyAtTick) {
+            queueInternalAttack(nextTick, actor.entityId, target.entityId);
+          }
+          continue;
+        }
+
         if (!wanders(actor) || currentTick < actor.readyAtTick) {
           continue;
         }
@@ -732,7 +819,7 @@ export function createSimulationKernel(
 
     runLifecycle();
     runMovement();
-    applyUpkeep(world, blueprints, currentTick);
+    applyUpkeep(world, blueprints, currentTick, journal);
     const killers = new Map<number, EntityId | null>();
     resolveCombat(
       world,

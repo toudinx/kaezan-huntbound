@@ -13,7 +13,7 @@ import {
   stepWithKeyboard,
   waitForHunt,
 } from './huntDriver';
-import { readHuntDefinition } from './huntSession';
+import { readHuntCharacter, readHuntDefinition } from './huntSession';
 
 export interface CombatDomState {
   readonly playerHealth: number;
@@ -25,12 +25,15 @@ export interface CombatDomState {
   readonly targetName: string;
   readonly lootLog: string;
   readonly runBag: string;
-  readonly deathOverlayVisible: boolean;
 }
 
 export interface CombatHealthProgress {
   readonly targetHealthBefore: number;
   readonly targetHealthAfter: number;
+}
+
+export interface CombatEngagement extends CombatHealthProgress {
+  readonly targetEntityId: number;
 }
 
 export interface CombatHealingProgress {
@@ -46,6 +49,7 @@ export interface CombatPlayEvidence {
   readonly berserk: CombatHealthProgress;
   readonly brutalStrike: CombatHealthProgress;
   readonly woundCleansing: CombatHealingProgress;
+  /** Engaged with one press, then killed by the auto-attack loop alone. */
   readonly killedTargetId: number;
   readonly lootLog: string;
   readonly runBag: string;
@@ -620,65 +624,63 @@ async function waitForTargetProgress(
   return readCombatState(page);
 }
 
-async function waitForAttackCooldown(page: Page): Promise<void> {
-  const lastAttackTick = await page.evaluate(() => {
-    const probe = (
-      globalThis as typeof globalThis & {
-        __huntboundHuntProbe?: {
-          commands?: () => readonly {
-            readonly tick: number;
-            readonly type?: string;
-          }[];
-        };
-      }
-    ).__huntboundHuntProbe;
-    const commands = probe?.commands?.() ?? [];
-    return (
-      commands.filter((command) => command.type === 'actor/attack').at(-1)
-        ?.tick ?? null
-    );
-  });
-
-  if (lastAttackTick === null) return;
-
-  const readyTick = lastAttackTick + PLAYER_ATTACK_COOLDOWN_TICKS;
-  await page.waitForFunction(
-    (minimumTick) => {
-      const probe = (
-        globalThis as typeof globalThis & {
-          __huntboundHuntProbe?: {
-            state: () => { readonly tick: number };
-          };
-        }
-      ).__huntboundHuntProbe;
-      return probe !== undefined && probe.state().tick >= minimumTick;
-    },
-    readyTick,
-    { polling: 'raf', timeout: 5_000 },
-  );
-}
-
+/**
+ * Presses attack and waits for the engaged creature to lose health.
+ *
+ * The button no longer swings once, it engages: pressing it with nothing
+ * targeted picks the nearest creature, which is the one already biting the
+ * player. That is why this clears the target first instead of insisting on a
+ * creature the driver chose several steps ago and may no longer be next to.
+ */
 async function attackUntilProgress(
   page: Page,
   onCombatVisible?: () => Promise<void>,
-): Promise<CombatHealthProgress> {
+): Promise<CombatEngagement> {
   let lastError: unknown;
 
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    const before = await readCombatState(page);
-    if (before.targetEntityId === null) {
-      throw new Error('Cannot attack without a selected target.');
-    }
-    if (before.deathOverlayVisible) {
-      throw new Error('The player died before the selected target was killed.');
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if ((await readCombatState(page)).deathOverlayVisible) {
+      throw new Error('The player died before any attack landed.');
     }
 
-    await waitForAttackCooldown(page);
+    await page.keyboard.press('Escape');
     await tapCombatAction(page, attackSelector);
+    // The HUD only learns the new target on the next published tick, so
+    // reading it straight after the key press sees the cleared one.
     try {
-      const after = await waitForTargetProgress(page, before.targetHealth);
+      await page.waitForFunction(
+        (selector) => {
+          const name = document
+            .querySelector<HTMLElement>(selector)
+            ?.textContent?.trim();
+          return /^Target #\d+$/.test(name ?? '');
+        },
+        targetNameSelector,
+        { polling: 'raf', timeout: 2_000 },
+      );
+    } catch {
+      await page.waitForTimeout(TICK_DURATION_MS * 4);
+      continue;
+    }
+
+    const before = await readCombatState(page);
+    if (before.targetEntityId === null || before.targetHealth <= 0) {
+      await page.waitForTimeout(TICK_DURATION_MS * 4);
+      continue;
+    }
+
+    try {
+      // One full attack cooldown, not an arbitrary wait: the knight swings
+      // every `PLAYER_ATTACK_COOLDOWN_TICKS`, so a shorter window can expire
+      // between two legitimate swings.
+      const after = await waitForTargetProgress(
+        page,
+        before.targetHealth,
+        PLAYER_ATTACK_COOLDOWN_TICKS * TICK_DURATION_MS + 1_000,
+      );
       await onCombatVisible?.();
       return {
+        targetEntityId: before.targetEntityId,
         targetHealthBefore: before.targetHealth,
         targetHealthAfter: after.targetHealth,
       };
@@ -723,13 +725,40 @@ async function tapCombatAction(page: Page, selector: string): Promise<void> {
   await page.keyboard.press(`Digit${Number(match[1]) + 1}`);
 }
 
+/**
+ * Leaves the player standing next to a living creature, targeting it. The
+ * knight now swings on its own, so a creature the driver picked two steps ago
+ * may already be a corpse by the time an ability comes off cooldown.
+ */
+async function ensureEngagedTarget(
+  page: Page,
+  hunt: HuntDefinition,
+): Promise<number> {
+  const state = await readCombatState(page);
+  if (state.targetEntityId !== null && state.targetHealth > 0) {
+    await moveToAdjacentTarget(page, hunt, state.targetEntityId, false, true);
+    const stillThere = await readCombatState(page);
+    if (stillThere.targetEntityId !== null && stillThere.targetHealth > 0) {
+      return stillThere.targetEntityId;
+    }
+  }
+
+  const targetId = await selectNextTarget(page, state.targetEntityId);
+  await moveToAdjacentTarget(page, hunt, targetId);
+  return targetId;
+}
+
 async function castDamageAbility(
   page: Page,
+  hunt: HuntDefinition,
   abilityIndex: number,
 ): Promise<CombatHealthProgress> {
   await waitForAbilityReady(page, abilityIndex);
+  await ensureEngagedTarget(page, hunt);
   const before = await readCombatState(page);
   await tapCombatAction(page, `[data-testid="combat-ability-${abilityIndex}"]`);
+  // A creature that dies to the ability reads back as `0`, which is still the
+  // progress this leg is proving.
   const after = await waitForTargetProgress(page, before.targetHealth);
   return {
     targetHealthBefore: before.targetHealth,
@@ -798,26 +827,17 @@ async function waitForLoot(page: Page): Promise<CombatDomState> {
   return readCombatState(page);
 }
 
-async function waitForDeath(page: Page): Promise<CombatDomState> {
-  await page.waitForFunction(
-    () =>
-      document
-        .querySelector<HTMLElement>('[data-testid="combat-death-overlay"]')
-        ?.getAttribute('data-visible') === 'true',
-    undefined,
-    { polling: 'raf', timeout: 45_000 },
-  );
-  return readCombatState(page);
-}
-
-async function waitForTargetCleared(page: Page): Promise<void> {
+async function waitForTargetCleared(
+  page: Page,
+  timeoutMs = 10_000,
+): Promise<void> {
   await page.waitForFunction(
     (selector) =>
       document.querySelector<HTMLElement>(selector)?.textContent?.trim() ===
       'No target',
     targetNameSelector,
     undefined,
-    { polling: 'raf', timeout: 10_000 },
+    { polling: 'raf', timeout: timeoutMs },
   );
 }
 
@@ -840,17 +860,21 @@ export async function runCombatSession(
     return mark.startTime;
   });
   await expect(page.locator(combatHudSelector)).toHaveCount(1);
+  // Read from the catalog rather than freezing a number here: the HUD ceiling
+  // is the character sheet's, and hard-coding it made a balance change look
+  // like a renderer bug.
+  const expectedMaxHealth = readHuntCharacter().maxHealth;
   await page.waitForFunction(
-    () => {
+    (maximum) => {
       const health = document.querySelector<HTMLElement>(
         '[data-testid="combat-player-health"]',
       );
       return (
-        Number(health?.getAttribute('aria-valuemax')) === 185 &&
+        Number(health?.getAttribute('aria-valuemax')) === maximum &&
         Number(health?.getAttribute('aria-valuenow')) > 0
       );
     },
-    undefined,
+    expectedMaxHealth,
     { polling: 'raf', timeout: 15_000 },
   );
 
@@ -859,34 +883,21 @@ export async function runCombatSession(
   const firstTargetId = await selectNextTarget(page, null);
   await moveToAdjacentTarget(page, hunt, firstTargetId);
   const attack = await attackUntilProgress(page, options.onCombatVisible);
+
+  // The leg the recorded session was missing: one press engaged the creature,
+  // and nothing between here and `waitForTargetCleared` touches a key. The
+  // knight has to finish it on its own attack cooldown.
+  const killedTargetId = attack.targetEntityId;
+  await waitForTargetCleared(page, 25_000);
+
+  // Floor 8 of the cave only seats four rotworms, so the abilities have to
+  // take whatever is still standing rather than a creature chosen up front.
+  const engagedId = await ensureEngagedTarget(page, hunt);
   await waitForPlayerDamage(page, initial.playerHealthMaximum);
-  const berserk = await castDamageAbility(page, 0);
-  const killedTargetId = firstTargetId;
-  const brutalStrike = await castDamageAbility(page, 1);
-  const woundCleansing = await castHealingAbility(page, hunt, killedTargetId);
-  let afterCombat = await readCombatState(page);
-
-  if (afterCombat.targetEntityId !== null) {
-    await moveToAdjacentTarget(page, hunt, killedTargetId, false, true);
-    for (let attempt = 0; attempt < 12; attempt += 1) {
-      const progress = await attackUntilProgress(page);
-      afterCombat = await readCombatState(page);
-      if (afterCombat.targetEntityId === null) break;
-      if (progress.targetHealthAfter >= progress.targetHealthBefore) {
-        throw new Error('Attack progress did not reduce target health.');
-      }
-      if (afterCombat.targetHealth <= 20) continue;
-      await moveAwayFromTarget(page, hunt, killedTargetId);
-      await waitForAttackCooldown(page);
-      await moveToAdjacentTarget(page, hunt, killedTargetId);
-    }
-  }
-
-  await waitForTargetCleared(page);
+  const berserk = await castDamageAbility(page, hunt, 0);
+  const brutalStrike = await castDamageAbility(page, hunt, 1);
+  const woundCleansing = await castHealingAbility(page, hunt, engagedId);
   const withLoot = await waitForLoot(page);
-  const nextTargetId = await selectNextTarget(page, killedTargetId);
-  await moveToAdjacentTarget(page, hunt, nextTargetId, true);
-  const death = await waitForDeath(page);
 
   return {
     bootDurationMs,
@@ -897,6 +908,5 @@ export async function runCombatSession(
     killedTargetId,
     lootLog: withLoot.lootLog,
     runBag: withLoot.runBag,
-    deathOverlayVisible: death.deathOverlayVisible,
   };
 }

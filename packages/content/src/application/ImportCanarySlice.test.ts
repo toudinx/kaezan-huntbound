@@ -210,12 +210,12 @@ function selection(): ContentSliceDefinition {
     character: {
       stableKey: 'character:huntbound:knight-venore-rotworm-cave',
       vocationKey: 'vocation:tibia:knight',
-      level: 8,
-      skills: { sword: 10, magic: 0 },
+      level: 35,
+      skills: { sword: 60, magic: 0 },
       weaponItemKey: 'item:tibia:sword',
       weaponSourceId: '3264',
       weaponAttack: 14,
-      maxHealth: 185,
+      maxHealth: 590,
       maxMana: 185,
       spellKeys: [
         'spell:tibia:berserk',
@@ -350,11 +350,11 @@ describe('importCanarySlice', () => {
       {
         stableKey: 'character:huntbound:knight-venore-rotworm-cave',
         vocationKey: 'vocation:tibia:knight',
-        level: 8,
-        skills: { sword: 10, magic: 0 },
+        level: 35,
+        skills: { sword: 60, magic: 0 },
         weaponItemKey: 'item:tibia:sword',
         weaponAttack: 14,
-        maxHealth: 185,
+        maxHealth: 590,
         maxMana: 185,
         spellKeys: [
           'spell:tibia:berserk',

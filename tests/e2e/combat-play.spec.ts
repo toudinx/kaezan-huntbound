@@ -66,10 +66,9 @@ function expectEvidence(evidence: CombatPlayEvidence): void {
   expect(evidence.woundCleansing.playerManaAfter).toBeLessThan(
     evidence.woundCleansing.playerManaBefore,
   );
-  expect(evidence.killedTargetId).toBeGreaterThan(1);
   expect(evidence.lootLog).not.toBe('');
   expect(evidence.runBag).not.toBe('');
-  expect(evidence.deathOverlayVisible).toBe(true);
+  expect(evidence.killedTargetId).toBeGreaterThan(1);
 }
 
 for (const viewport of viewports) {

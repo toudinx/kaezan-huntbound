@@ -57,21 +57,16 @@ const context: CombatInputContext = {
 };
 
 describe('HuntCombatInput', () => {
-  it('does not create an attack command without a selected target', () => {
+  it('does not create a target-spell command without a selected target', () => {
     expect(
       combatCommandForAction(
-        { kind: 'attack' },
+        { kind: 'cast-ability', abilityIndex: 1 },
         { ...context, targetEntityId: null },
       ),
     ).toBeUndefined();
   });
 
-  it('creates attack and target-spell commands for the current target', () => {
-    expect(combatCommandForAction({ kind: 'attack' }, context)).toEqual({
-      type: 'actor/attack',
-      entityId: 1 as EntityId,
-      targetEntityId: 2 as EntityId,
-    } satisfies SimulationCommand);
+  it('creates a target-spell command for the current target', () => {
     expect(
       combatCommandForAction(
         { kind: 'cast-ability', abilityIndex: 1 },

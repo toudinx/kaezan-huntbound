@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "huntbound-personal",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": ["pnpm", "dev:personal"],
+      "port": 5173
+    }
+  ]
+}

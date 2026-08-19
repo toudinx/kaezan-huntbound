@@ -1,12 +1,12 @@
 {
   "characters": [
     {
-      "level": 8,
-      "maxHealth": 185,
+      "level": 35,
+      "maxHealth": 590,
       "maxMana": 185,
       "skills": {
         "magic": 0,
-        "sword": 10
+        "sword": 60
       },
       "spellKeys": [
         "spell:tibia:berserk",
