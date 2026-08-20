@@ -1,8 +1,13 @@
-import { createEmptyGameSave, type SaveDraft } from '@huntbound/contracts';
+import {
+  createEmptyGameSave,
+  type GameSave,
+  type SaveDraft,
+} from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import {
   createMemorySaveDriver,
   createSaveRepository,
+  encodeSaveDocument,
   migrateSaveDocument,
   SaveError,
 } from '../index.ts';
@@ -230,15 +235,79 @@ describe('SaveRepository', () => {
     });
   });
 
-  it('fails explicitly for export and import until their task is implemented', async () => {
-    const repository = createSaveRepository(createMemorySaveDriver());
-    const importSave = repository.import;
+  it('exports the current document canonically', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({ ...createEmptyGameSave(), completedRuns: 4 }),
+    );
 
-    await expect(repository.export()).rejects.toThrow(
-      'Save export is not implemented by PB-06-02',
+    await expect(repository.export()).resolves.toBe(
+      '{"completedRuns":4,"schemaVersion":1,"session":null,"stash":[]}\n',
     );
-    await expect(importSave('{}')).rejects.toThrow(
-      'Save import is not implemented by PB-06-02',
+  });
+
+  it('imports an unversioned document and persists the migrated v1 document', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const serialized = '{"stash":[],"completedRuns":0,"session":null}';
+
+    await repository.import(serialized);
+
+    await expect(repository.load()).resolves.toEqual(createEmptyGameSave());
+  });
+
+  it.each([
+    ['malformed JSON', '{', 'SAVE_DOCUMENT_INVALID'],
+    [
+      'a future schema version',
+      JSON.stringify({ ...createEmptyGameSave(), schemaVersion: 2 }),
+      'SAVE_VERSION_UNSUPPORTED',
+    ],
+    [
+      'a schema-invalid document',
+      JSON.stringify({ ...createEmptyGameSave(), completedRuns: -1 }),
+      'SAVE_DOCUMENT_INVALID',
+    ],
+  ])(
+    'does not change the existing document when import fails for %s',
+    async (_label, serialized, code) => {
+      const initial: GameSave = {
+        ...createEmptyGameSave(),
+        stash: [{ itemKey: 'item:tibia:gold-coin', count: 7 }],
+        completedRuns: 3,
+      };
+      const repository = createSaveRepository(createMemorySaveDriver(initial));
+
+      await expect(repository.import(serialized)).rejects.toMatchObject({
+        code,
+      });
+      await expect(repository.load()).resolves.toEqual(initial);
+    },
+  );
+
+  it('round-trips repository export and import byte-for-byte', async () => {
+    const source = createSaveRepository(
+      createMemorySaveDriver({ ...createEmptyGameSave(), completedRuns: 4 }),
     );
+    const target = createSaveRepository(createMemorySaveDriver());
+    const serialized = await source.export();
+
+    await target.import(serialized);
+
+    await expect(target.export()).resolves.toBe(serialized);
+  });
+
+  it('replaces the existing document instead of merging stashes', async () => {
+    const initial = {
+      ...createEmptyGameSave(),
+      stash: [{ itemKey: 'item:tibia:gold-coin', count: 7 }],
+    };
+    const imported = {
+      ...createEmptyGameSave(),
+      stash: [{ itemKey: 'item:tibia:sword', count: 1 }],
+    };
+    const repository = createSaveRepository(createMemorySaveDriver(initial));
+
+    await repository.import(encodeSaveDocument(imported));
+
+    await expect(repository.load()).resolves.toEqual(imported);
   });
 });

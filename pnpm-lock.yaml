@@ -93,6 +93,9 @@ importers:
       '@huntbound/contracts':
         specifier: 0.0.0
         version: link:../contracts
+      '@huntbound/simulation':
+        specifier: 0.0.0
+        version: link:../simulation
     devDependencies:
       vitest:
         specifier: 4.1.10

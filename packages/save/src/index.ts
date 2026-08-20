@@ -9,3 +9,7 @@ export type {
   SaveRepository,
   TransactionOutcome,
 } from './repository/types.ts';
+export {
+  decodeSaveDocument,
+  encodeSaveDocument,
+} from './serialization/saveDocument.ts';

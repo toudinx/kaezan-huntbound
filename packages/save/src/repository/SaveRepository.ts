@@ -7,6 +7,10 @@ import {
 
 import { SaveError } from '../errors/SaveError.ts';
 import { migrateSaveDocument } from '../migrations/migrateSaveDocument.ts';
+import {
+  decodeSaveDocument,
+  encodeSaveDocument,
+} from '../serialization/saveDocument.ts';
 import type { SaveDriver, SaveRepository } from './types.ts';
 
 class OperationFailure {
@@ -122,15 +126,22 @@ export function createSaveRepository(driver: SaveDriver): SaveRepository {
     },
 
     export() {
-      return Promise.reject(
-        new Error('Save export is not implemented by PB-06-02'),
-      );
+      return enqueue(async () => encodeSaveDocument(await loadInternal()));
     },
 
-    import(_serialized: string) {
-      return Promise.reject(
-        new Error('Save import is not implemented by PB-06-02'),
-      );
+    import(serialized: string) {
+      return enqueue(async () => {
+        const document = decodeSaveDocument(serialized);
+
+        try {
+          await driver.runTransaction(() => ({
+            document: clone(document),
+            result: undefined,
+          }));
+        } catch (error) {
+          throw transactionFailure(error);
+        }
+      });
     },
   };
 }
