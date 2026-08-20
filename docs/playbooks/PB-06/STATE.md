@@ -10,14 +10,14 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-02.
+**Próxima etapa:** resolver B3 e concluir PB-06-02.
 
 ## Tasks
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-06-01 | done | `codex/pb06-01-save-contracts` | (este commit) | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
-| PB-06-02 | pending | `<agente>/pb06-02-save-repository` | — | `SaveRepository` sobre `MemorySaveDriver`; rollback e serialização provados |
+| PB-06-02 | blocked | `codex/pb06-02-save-repository` | — | implementação + gates de código verdes; `verify` bloqueado por B3 no QA browser |
 | PB-06-03 | pending | `<agente>/pb06-03-save-migrations` | — | migração de documento sem versão para v1; recusa de versão futura |
 | PB-06-04 | pending | `<agente>/pb06-04-save-export-import` | — | export canônico estável em duas chamadas; import atômico e validado |
 | PB-06-05 | pending | `<agente>/pb06-05-indexeddb-driver` | — | `IndexedDbSaveDriver` provado no browser; códigos de erro mapeados |
@@ -53,7 +53,11 @@ referências:
 
 ## Bloqueios
 
-Nenhum bloqueio aberto.
+Bloqueios abertos: B3.
+
+- **B3 — aberto em PB-06-02.** `qa:browser` falhou no teste preexistente de d-pad (`hunt-play.spec.ts:366`):
+  33/34 passaram na rodada completa e a repetição isolada passou 9/10, sem alteração em `apps/game`.
+  Não corrigir dentro desta task; repetir após tratar a flakiness fora de escopo.
 
 - ~~**B1:** PB-05 não fechou pela auditoria PB-05-12.~~ **Removido em 2026-08-18.** A auditoria
   deixou de ser gate bloqueante (`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de
