@@ -19,6 +19,8 @@ vi.mock('./bridge/SceneBridge', () => ({
   createSceneBridge: (initial: { phase: string; message: string }) => {
     let snapshot = initial;
     const listeners = new Set<(next: typeof snapshot) => void>();
+    const eventListeners = new Set<(events: readonly unknown[]) => void>();
+    const tickListeners = new Set<(tick: number) => void>();
     const bridge = {
       getSnapshot: () => snapshot,
       publish: (next: typeof snapshot) => {
@@ -31,6 +33,21 @@ vi.mock('./bridge/SceneBridge', () => ({
         listener(snapshot);
         listeners.add(listener);
         return () => listeners.delete(listener);
+      },
+      publishEvents: (events: readonly unknown[]) => {
+        for (const listener of eventListeners) listener(events);
+      },
+      subscribeEvents: (listener: (events: readonly unknown[]) => void) => {
+        eventListeners.add(listener);
+        return () => eventListeners.delete(listener);
+      },
+      publishTick: (tick: number) => {
+        for (const listener of tickListeners) listener(tick);
+      },
+      subscribeTick: (listener: (tick: number) => void) => {
+        tickListeners.add(listener);
+        listener(0);
+        return () => tickListeners.delete(listener);
       },
     };
     return bridge;
@@ -96,7 +113,11 @@ function createRoots() {
       return roots[selector] ?? null;
     },
   };
-  const browserWindow = {};
+  const browserWindow = {
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    confirm: () => false,
+  };
 
   return {
     shellRoot,

@@ -62,6 +62,7 @@ export interface CombatViewState {
 
 export interface CombatViewModel {
   handle(events: readonly SimulationEvent[]): void;
+  restoreBag(bag: readonly RunBagEntry[]): void;
   setTick(tick: number): void;
   setTarget(entityId: EntityId | null): void;
   selectTarget(
@@ -308,6 +309,9 @@ export function createCombatViewModel(
 
   return {
     handle,
+    restoreBag: (entries) => {
+      bag = entries.map((entry) => ({ ...entry }));
+    },
     setTick: (tick) => {
       currentTick = tick;
     },

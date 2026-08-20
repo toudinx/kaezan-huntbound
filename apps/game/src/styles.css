@@ -104,6 +104,97 @@ body {
   pointer-events: none;
 }
 
+[data-testid="save-inventory-root"] {
+  position: absolute;
+  top: max(5.25rem, calc(env(safe-area-inset-top) + 4rem));
+  left: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-left));
+  width: min(18rem, calc(100% - 2rem));
+  pointer-events: none;
+}
+
+[data-testid="save-inventory-panel"] {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgb(123 161 216 / 42%);
+  background: rgb(6 11 22 / 82%);
+  box-shadow: 0 0 18px rgb(44 111 186 / 14%);
+  pointer-events: auto;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+[data-testid="save-status"] {
+  margin: 0;
+  color: #9ec4ff;
+}
+
+[data-testid="save-status"][data-status="error"] {
+  color: #ffb5a8;
+}
+
+[data-testid="save-run-bag"],
+[data-testid="save-stash"] {
+  min-height: 1.35rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: rgb(20 30 47 / 86%);
+}
+
+[data-testid="save-run-bag"] {
+  color: #f1d78b;
+}
+
+[data-testid="save-stash"] {
+  color: #b9d9b0;
+}
+
+[data-testid="save-run-bag-empty"],
+[data-testid="save-stash-empty"] {
+  margin: -1.55rem 0 0;
+  padding: 0.25rem 0.4rem;
+  color: #8190a8;
+  pointer-events: none;
+}
+
+[data-testid="save-run-bag-empty"][data-visible="false"],
+[data-testid="save-stash-empty"][data-visible="false"] {
+  visibility: hidden;
+}
+
+[data-testid="save-completed-runs"] {
+  margin: 0;
+  color: #c9d8f1;
+}
+
+[data-testid="save-export"],
+[data-testid="save-import"] {
+  min-height: 1.9rem;
+  border: 1px solid rgb(123 161 216 / 58%);
+  border-radius: 0.35rem;
+  color: #dce6f8;
+  background: rgb(12 23 42 / 92%);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-testid="save-export"]:hover,
+[data-testid="save-import"]:hover,
+[data-testid="save-export"]:focus-visible,
+[data-testid="save-import"]:focus-visible {
+  border-color: #9ec4ff;
+  background: rgb(45 102 170 / 78%);
+  outline: none;
+}
+
+[data-testid="save-inventory-panel"] > [data-testid="save-export"],
+[data-testid="save-inventory-panel"] > [data-testid="save-import"] {
+  display: inline-block;
+  width: calc(50% - 0.2rem);
+}
+
 [data-testid="combat-hud"] {
   position: absolute;
   top: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-top));

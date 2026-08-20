@@ -10,7 +10,7 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-08.
+**Próxima etapa:** executar PB-06-09.
 
 ## Tasks
 
@@ -23,13 +23,13 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 | PB-06-05 | done | `codex/pb06-05-indexeddb-driver` | `247b775` | `IndexedDbSaveDriver` atômico; probe `test`; 60/60 browser sem retries; códigos de erro mapeados |
 | PB-06-06 | done | `codex/pb06-06-run-persistence` | (este commit) | checkpoint/retomada/consolidação; 66 testes de save; goldens PB-03/04/05 intactos |
 | PB-06-07 | done | `codex/pb06-07-save-gate` | (este commit) | `pb-06-save-session` + `save:check` em `check`/`verify` + `REPLAY_CONTRACT.md` |
-| PB-06-08 | pending | `<agente>/pb06-08-save-ui` | — | autosave, retomada no boot, painel de bolsa e estoque, export/import |
+| PB-06-08 | done | `codex/pb06-08-save-ui` | (este commit) | save/session + inventory; game 36/215; biome/typecheck/architecture/save/build = 0; verify = 1 somente por 5 screenshots do shell alterados pelo painel |
 | PB-06-09 | pending | `<agente>/pb06-09-save-browser-qa` | — | specs estáveis sem `retries`; entrega jogável para o aceite do usuário |
 | PB-06-10 | **opcional** | `<agente>/pb06-10-audit` | — | auditoria pós-aceite; gera tasks de correção, não veredito |
 
 ## Última task concluída
 
-PB-06-07. Fixture e gate `save:check`; próxima task elegível: PB-06-08.
+PB-06-08. Save/session, retomada no boot, checkpoints e painel de inventário; próxima task elegível: PB-06-09.
 
 ## Decisões já congeladas antes da execução
 

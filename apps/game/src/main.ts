@@ -20,6 +20,11 @@ import {
   type HuntDefinition,
 } from '../../../packages/contracts/src/index.ts';
 import {
+  createIndexedDbSaveDriver,
+  createSaveRepository,
+  type SaveRepository,
+} from '../../../packages/save/src/index.ts';
+import {
   getAssetCatalogUrl,
   parseAppAssetProfile,
 } from './assets/AssetProfile';
@@ -35,6 +40,10 @@ import { createGame } from './phaser/createGame';
 import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
 import type { ShellSnapshot } from './runtime/ShellSnapshot';
 import { createViewportController } from './runtime/ViewportController';
+import {
+  createSaveSession,
+  type SaveSessionController,
+} from './save/SaveSession';
 import { mountAppShell } from './ui/AppShell';
 
 interface ShellHmrData {
@@ -50,6 +59,7 @@ export interface MainBootstrapOverrides {
   readonly createGame?: typeof createGame;
   readonly createViewportController?: typeof createViewportController;
   readonly createRuntimeLifecycle?: typeof createRuntimeLifecycle;
+  readonly createSaveSession?: typeof createSaveSession;
 }
 
 const hmrData = import.meta.hot?.data as ShellHmrData | undefined;
@@ -108,6 +118,66 @@ function readHuntDefinition(): HuntDefinition {
   );
 }
 
+function createBrowserSaveSession(): SaveSessionController {
+  const repository: SaveRepository = createSaveRepository(
+    createIndexedDbSaveDriver(),
+  );
+  return createSaveSession(repository);
+}
+
+function downloadSave(document: Document, serialized: string): void {
+  const blob = new Blob([serialized], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'huntbound-save.json';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function importSaveFromFile(
+  document: Document,
+  root: HTMLElement,
+  saveSession: SaveSessionController,
+  onError: (error: unknown) => void,
+): void {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.setAttribute('hidden', 'true');
+
+  const onChange = (): void => {
+    input.removeEventListener('change', onChange);
+    input.remove();
+    const file = input.files?.[0];
+    if (file === undefined) return;
+
+    void file
+      .text()
+      .then((serialized) => saveSession.import(serialized))
+      .catch(onError);
+  };
+
+  input.addEventListener('change', onChange);
+  root.append(input);
+  input.click();
+}
+
+function publishSaveError(
+  bridge: ReturnType<typeof createSceneBridge>,
+  error: unknown,
+): void {
+  bridge.publish({
+    ...bridge.getSnapshot(),
+    phase: 'error',
+    renderer: 'unavailable',
+    message:
+      error instanceof Error
+        ? `Save replacement failed: ${error.message}`
+        : 'Save replacement failed.',
+  });
+}
+
 export async function bootstrapApp(
   overrides: MainBootstrapOverrides = {},
 ): Promise<void> {
@@ -143,6 +213,11 @@ export async function bootstrapApp(
   });
   const huntAssetRuntime = createHuntRuntime(profile, assetRuntimeFactory);
   const bridge = createSceneBridge(initialShellSnapshot());
+  const saveSession = overrides.createSaveSession
+    ? overrides.createSaveSession(
+        createSaveRepository(createIndexedDbSaveDriver()),
+      )
+    : createBrowserSaveSession();
   const appShellMount = overrides.mountAppShell ?? mountAppShell;
   const inputMap = createInputMap();
   const inputTarget =
@@ -153,10 +228,81 @@ export async function bootstrapApp(
   const runtime = projectRuntimeBundle(
     JSON.parse(catalogBundleJson) as CatalogContentBundle,
   );
+  const combatViewModel = createHuntCombatViewModel(runtime);
+  let driver: ReturnType<typeof createRestartableHuntDriver> | undefined;
+  let runIdentity:
+    | {
+        readonly huntId: string;
+        readonly scenarioId: string;
+        readonly scenarioRevision: number;
+        readonly seed: ReturnType<typeof createSeed>;
+      }
+    | undefined;
+  let unsubscribeSaveEvents: (() => void) | undefined;
+  let unsubscribeSaveTick: (() => void) | undefined;
+  let unsubscribeSaveState: (() => void) | undefined;
+  const onSaveError = (error: unknown): void => {
+    publishSaveError(bridge, error);
+  };
   const appShell = appShellMount(uiRoot, bridge, {
     input: inputMap,
-    combat: { viewModel: createHuntCombatViewModel(runtime) },
+    combat: {
+      viewModel: combatViewModel,
+      onRestart: () => {
+        const activeDriver = driver;
+        const activeIdentity = runIdentity;
+        if (activeDriver === undefined || activeIdentity === undefined) {
+          return;
+        }
+        void saveSession.finish('abandoned').then(() => {
+          saveSession.attachRun({
+            identity: activeIdentity,
+            driver: activeDriver,
+            getBag: () => combatViewModel.snapshot().bag,
+          });
+        });
+      },
+    },
+    save: {
+      source: saveSession,
+      onExport: async () => {
+        const serialized = await saveSession.export();
+        downloadSave(browserDocument, serialized);
+      },
+      confirmImport: () =>
+        browserWindow.confirm(
+          'Replacing the current save will overwrite it. Continue?',
+        ),
+      onImport: () =>
+        importSaveFromFile(browserDocument, uiRoot, saveSession, onSaveError),
+    },
   });
+  unsubscribeSaveState = saveSession.subscribe((state) => {
+    if (state.status !== 'error') return;
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: state.message,
+    });
+  });
+  unsubscribeSaveEvents = bridge.subscribeEvents(() => {
+    saveSession.updateBag(combatViewModel.snapshot().bag);
+  });
+  unsubscribeSaveTick = bridge.subscribeTick((tick) => {
+    saveSession.onTick(tick);
+  });
+  const onPageHide = (): void => {
+    void saveSession.pagehide();
+  };
+  browserWindow.addEventListener('pagehide', onPageHide);
+  const disposeSave = (): void => {
+    browserWindow.removeEventListener('pagehide', onPageHide);
+    unsubscribeSaveState?.();
+    unsubscribeSaveEvents?.();
+    unsubscribeSaveTick?.();
+    saveSession.destroy();
+  };
   let huntAssets: readonly ResolvedAsset[] = [];
 
   try {
@@ -171,6 +317,7 @@ export async function bootstrapApp(
     }
   } catch (error) {
     inputMap.detach();
+    disposeSave();
     setAssetReadiness(shellRoot, false, 0);
     bridge.publish({
       ...bridge.getSnapshot(),
@@ -186,6 +333,7 @@ export async function bootstrapApp(
     hunt = readHuntDefinition();
   } catch (error) {
     inputMap.detach();
+    disposeSave();
     setAssetReadiness(shellRoot, false, 0);
     bridge.publish({
       ...bridge.getSnapshot(),
@@ -199,6 +347,7 @@ export async function bootstrapApp(
   const character = runtime.characters[0];
   if (character === undefined) {
     inputMap.detach();
+    disposeSave();
     setAssetReadiness(shellRoot, false, 0);
     bridge.publish({
       ...bridge.getSnapshot(),
@@ -220,6 +369,7 @@ export async function bootstrapApp(
   );
   if (!scenarioResult.ok) {
     inputMap.detach();
+    disposeSave();
     setAssetReadiness(shellRoot, false, 0);
     bridge.publish({
       ...bridge.getSnapshot(),
@@ -236,13 +386,32 @@ export async function bootstrapApp(
   }
 
   const scenario = scenarioResult.value.scenario;
-  const driver = createRestartableHuntDriver(scenario, huntSeed, 0);
+  const identity = {
+    huntId: hunt.huntId,
+    scenarioId: scenario.scenarioId,
+    scenarioRevision: scenario.scenarioRevision,
+    seed: huntSeed,
+  } as const;
+  const saveBoot = await saveSession.boot({
+    identity,
+    createDriver: (snapshot) =>
+      createRestartableHuntDriver(scenario, huntSeed, 0, snapshot),
+  });
+  const activeDriver = saveBoot.driver;
+  driver = activeDriver;
+  runIdentity = identity;
+  combatViewModel.restoreBag(saveBoot.bag);
+  saveSession.attachRun({
+    identity,
+    driver: activeDriver,
+    getBag: () => combatViewModel.snapshot().bag,
+  });
   const gameFactory = overrides.createGame ?? createGame;
   const gameRuntime = gameFactory(gameRoot, bridge, {
     hunt,
     assets: huntAssets,
     input: inputMap,
-    driver,
+    driver: activeDriver,
   });
   const viewportFactory =
     overrides.createViewportController ?? createViewportController;
@@ -293,6 +462,7 @@ export async function bootstrapApp(
 
   function disposeShell(data: ShellHmrData) {
     unsubscribePerformanceMark();
+    disposeSave();
     inputMap.detach();
     disposeLifecycle();
     disposeViewport();

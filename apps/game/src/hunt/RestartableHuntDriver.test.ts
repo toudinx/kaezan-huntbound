@@ -4,12 +4,13 @@ import {
   createSeed,
   type EntityId,
   type KernelScenario,
+  SIMULATION_SCHEMA_VERSION,
 } from '../../../../packages/contracts/src/index.ts';
 
 import { createRestartableHuntDriver } from './RestartableHuntDriver';
 
 const scenario: KernelScenario = {
-  schemaVersion: 1,
+  schemaVersion: SIMULATION_SCHEMA_VERSION,
   scenarioId: 'restart-test',
   scenarioRevision: 1,
   width: 4,
@@ -75,5 +76,29 @@ describe('createRestartableHuntDriver', () => {
     expect(driver.tick).toBe(0);
     expect(driver.alpha).toBe(0);
     expect(driver.advanceTo(150)).toEqual(initialEvents);
+  });
+
+  it('restores the persisted tick and exposes the current roster to the scene', () => {
+    const seed = createSeed('1122334455667788');
+    const original = createRestartableHuntDriver(scenario, seed, 0);
+    original.advanceTo(150);
+    const snapshot = original.snapshot();
+
+    const resumed = createRestartableHuntDriver(scenario, seed, 0, snapshot);
+
+    expect(resumed.tick).toBe(snapshot.tick);
+    expect(resumed.advanceTo(0)).toEqual([
+      {
+        tick: snapshot.tick,
+        sequence: 0,
+        payload: {
+          type: 'actor/spawned',
+          entityId: 1,
+          blueprintId: 'player',
+          position: { x: 1, y: 1, z: 8 },
+          facing: 's',
+        },
+      },
+    ]);
   });
 });

@@ -71,6 +71,20 @@ function event(
 }
 
 describe('CombatViewModel', () => {
+  it('restores a persisted run bag without replaying loot events', () => {
+    const viewModel = createCombatViewModel(options);
+
+    viewModel.restoreBag([
+      { itemKey: 'item:tibia:gold-coin', count: 6 },
+      { itemKey: 'item:tibia:meat', count: 2 },
+    ]);
+
+    expect(viewModel.snapshot().bag).toEqual([
+      { itemKey: 'item:tibia:gold-coin', count: 6 },
+      { itemKey: 'item:tibia:meat', count: 2 },
+    ]);
+  });
+
   it('projects health, target health, mana, cooldowns, loot and death from events', () => {
     const viewModel = createCombatViewModel(options);
     viewModel.selectTarget(2 as EntityId, [

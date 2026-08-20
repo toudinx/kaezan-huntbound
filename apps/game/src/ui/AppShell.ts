@@ -5,8 +5,14 @@ import {
 } from '../hunt/CombatViewModel';
 import type { InputMap } from '../input/InputMap';
 import type { ShellPhase, ShellSnapshot } from '../runtime/ShellSnapshot';
+import type { SaveStateSource } from '../save/SaveState';
 import { type CombatHud, mountCombatHud } from './CombatHud';
 import { mountDpad } from './Dpad';
+import {
+  type InventoryPanel,
+  type InventoryPanelOptions,
+  mountInventoryPanel,
+} from './InventoryPanel';
 
 export interface AppShell {
   destroy(): void;
@@ -17,6 +23,12 @@ export interface AppShellOptions {
   readonly combat?: {
     readonly viewModel: CombatViewModel;
     readonly onRestart?: () => void;
+  };
+  readonly save?: {
+    readonly source: SaveStateSource;
+    readonly onExport?: InventoryPanelOptions['onExport'];
+    readonly confirmImport?: InventoryPanelOptions['confirmImport'];
+    readonly onImport?: InventoryPanelOptions['onImport'];
   };
 }
 
@@ -46,6 +58,7 @@ export function mountAppShell(
   const viewport = document.createElement('p');
   const controls = document.createElement('div');
   const combatRoot = document.createElement('div');
+  const inventoryRoot = document.createElement('div');
 
   shell.setAttribute('aria-label', 'Huntbound shell');
   shell.setAttribute('data-testid', 'app-shell');
@@ -57,10 +70,11 @@ export function mountAppShell(
   viewport.setAttribute('data-testid', 'shell-viewport');
   controls.setAttribute('data-testid', 'hunt-controls');
   combatRoot.setAttribute('data-testid', 'combat-root');
+  inventoryRoot.setAttribute('data-testid', 'save-inventory-root');
 
   header.append(status);
   viewportPanel.append(viewport);
-  shell.append(header, viewportPanel, controls, combatRoot);
+  shell.append(header, viewportPanel, controls, combatRoot, inventoryRoot);
   root.replaceChildren(shell);
 
   const dpad = options.input ? mountDpad(controls, options.input) : undefined;
@@ -71,13 +85,30 @@ export function mountAppShell(
   let unsubscribeCombatEvents: (() => void) | undefined;
   let unsubscribeCombatTick: (() => void) | undefined;
   let unsubscribeTargetSelection: (() => void) | undefined;
+  let inventoryPanel: InventoryPanel | undefined;
+
+  if (options.save !== undefined) {
+    const inventoryOptions = {
+      source: options.save.source,
+      ...(options.save.onExport === undefined
+        ? {}
+        : { onExport: options.save.onExport }),
+      ...(options.save.confirmImport === undefined
+        ? {}
+        : { confirmImport: options.save.confirmImport }),
+      ...(options.save.onImport === undefined
+        ? {}
+        : { onImport: options.save.onImport }),
+    } satisfies InventoryPanelOptions;
+    inventoryPanel = mountInventoryPanel(inventoryRoot, inventoryOptions);
+  }
 
   if (combatViewModel !== undefined) {
     combatHud = mountCombatHud(combatRoot, {
       onRestart: () => {
+        options.combat?.onRestart?.();
         combatViewModel.reset();
         combatHud?.render(combatViewModel.snapshot());
-        options.combat?.onRestart?.();
         bridge.requestRestart();
       },
     });
@@ -118,6 +149,7 @@ export function mountAppShell(
       unsubscribeCombatTick?.();
       unsubscribeTargetSelection?.();
       combatHud?.destroy();
+      inventoryPanel?.destroy();
       root.replaceChildren();
     },
   };

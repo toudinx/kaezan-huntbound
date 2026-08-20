@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createSceneBridge, type SceneBridge } from '../bridge/SceneBridge';
+import { createDefaultCombatViewModel } from '../hunt/CombatViewModel';
 import { createInputMap, type InputMap } from '../input/InputMap';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 import * as AppShellModule from './AppShell';
@@ -85,10 +86,33 @@ function createRoot() {
   return document.createElement('div');
 }
 
+interface TestSaveState {
+  readonly status: 'ready';
+  readonly message: string;
+  readonly bag: readonly { readonly itemKey: string; readonly count: number }[];
+  readonly stash: readonly {
+    readonly itemKey: string;
+    readonly count: number;
+  }[];
+  readonly completedRuns: number;
+}
+
+interface TestSaveSource {
+  getState(): TestSaveState;
+  subscribe(listener: (state: TestSaveState) => void): () => void;
+}
+
 function mountShell(
   root: TestElement,
   bridge: SceneBridge,
-  options: { readonly input?: InputMap } = {},
+  options: {
+    readonly input?: InputMap;
+    readonly save?: { readonly source: TestSaveSource };
+    readonly combat?: {
+      readonly viewModel: ReturnType<typeof createDefaultCombatViewModel>;
+      readonly onRestart?: () => void;
+    };
+  } = {},
 ) {
   const mount = (AppShellModule as Record<string, unknown>).mountAppShell;
   expect(mount).toBeTypeOf('function');
@@ -97,7 +121,14 @@ function mountShell(
     mount as (
       root: HTMLElement,
       sceneBridge: SceneBridge,
-      options?: { readonly input?: InputMap },
+      options?: {
+        readonly input?: InputMap;
+        readonly save?: { readonly source: TestSaveSource };
+        readonly combat?: {
+          readonly viewModel: ReturnType<typeof createDefaultCombatViewModel>;
+          readonly onRestart?: () => void;
+        };
+      },
     ) => { destroy(): void }
   )(root as unknown as HTMLElement, bridge, options);
 }
@@ -223,6 +254,57 @@ describe('AppShell', () => {
     ).toBe('175');
     expect(findByTestId(root, 'combat-hud')).toBeDefined();
 
+    shell.destroy();
+  });
+
+  it('mounts the run bag and persistent stash from the save state source', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('booting'));
+    const saveSource: TestSaveSource = {
+      getState: () => ({
+        status: 'ready',
+        message: 'Save ready',
+        bag: [{ itemKey: 'item:tibia:meat', count: 2 }],
+        stash: [{ itemKey: 'item:tibia:arrow', count: 8 }],
+        completedRuns: 3,
+      }),
+      subscribe: (listener) => {
+        listener(saveSource.getState());
+        return () => undefined;
+      },
+    };
+
+    const shell = mountShell(root, bridge, { save: { source: saveSource } });
+
+    expect(findByTestId(root, 'save-run-bag').textContent).toBe('meat × 2');
+    expect(findByTestId(root, 'save-stash').textContent).toBe('arrow × 8');
+    expect(findByTestId(root, 'save-completed-runs').textContent).toBe(
+      'Completed runs: 3',
+    );
+
+    shell.destroy();
+  });
+
+  it('lets the save callback capture the bag before restart clears the view model', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('booting'));
+    const viewModel = createDefaultCombatViewModel();
+    viewModel.restoreBag([{ itemKey: 'item:tibia:meat', count: 3 }]);
+    let capturedBag: readonly { itemKey: string; count: number }[] = [];
+    const shell = mountShell(root, bridge, {
+      input: createInputMap(),
+      combat: {
+        viewModel,
+        onRestart: () => {
+          capturedBag = viewModel.snapshot().bag;
+        },
+      },
+    });
+
+    findByTestId(root, 'combat-restart').dispatch('click');
+
+    expect(capturedBag).toEqual([{ itemKey: 'item:tibia:meat', count: 3 }]);
+    expect(viewModel.snapshot().bag).toEqual([]);
     shell.destroy();
   });
 });
