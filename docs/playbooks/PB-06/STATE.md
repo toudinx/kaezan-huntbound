@@ -2,7 +2,7 @@
 
 **Playbook:** `docs/playbooks/PB-06/README.md`
 
-**Estado geral:** **em execução**. PB-06-01 integrado. PB-06-02 é a próxima elegível.
+**Estado geral:** **em execução**. PB-06-01, PB-06-02 e PB-06-03 integrados. PB-06-04 e PB-06-05 são elegíveis.
 
 **Última atualização:** 2026-08-19
 
@@ -10,7 +10,7 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** resolver B4 de QA browser e concluir PB-06-02.
+**Próxima etapa:** executar PB-06-04 ou PB-06-05.
 
 ## Tasks
 
@@ -18,7 +18,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 |---|---|---|---|---|
 | PB-06-01 | done | `codex/pb06-01-save-contracts` | (este commit) | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
 | PB-06-02 | blocked | `codex/pb06-02-save-repository` | `bcaba65` | implementação integrada por fast-forward; gates de código verdes; `verify` bloqueado por B4 no QA browser |
-| PB-06-03 | pending | `<agente>/pb06-03-save-migrations` | — | migração de documento sem versão para v1; recusa de versão futura |
+| PB-06-03 | done | `codex/pb06-03-save-migrations` | — | cadeia `null → v1`, recusa de versão futura e integração no repositório; 32 testes de save |
 | PB-06-04 | pending | `<agente>/pb06-04-save-export-import` | — | export canônico estável em duas chamadas; import atômico e validado |
 | PB-06-05 | pending | `<agente>/pb06-05-indexeddb-driver` | — | `IndexedDbSaveDriver` provado no browser; códigos de erro mapeados |
 | PB-06-06 | pending | `<agente>/pb06-06-run-persistence` | — | checkpoint, retomada, consolidação idempotente e descarte que preserva a bolsa |
@@ -29,7 +29,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
 ## Última task concluída
 
-PB-06-01. Contrato `GameSave` v1 publicado; próxima elegível: PB-06-02.
+PB-06-03. Migrações do save integradas; próximas elegíveis: PB-06-04 e PB-06-05.
 
 ## Decisões já congeladas antes da execução
 

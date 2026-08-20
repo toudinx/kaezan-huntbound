@@ -6,6 +6,7 @@ import {
 } from '@huntbound/contracts';
 
 import { SaveError } from '../errors/SaveError.ts';
+import { migrateSaveDocument } from '../migrations/migrateSaveDocument.ts';
 import type { SaveDriver, SaveRepository } from './types.ts';
 
 class OperationFailure {
@@ -63,7 +64,8 @@ export function createSaveRepository(driver: SaveDriver): SaveRepository {
       return createEmptyGameSave();
     }
 
-    const parsed = parseGameSave(document);
+    const migrated = migrateSaveDocument(document);
+    const parsed = parseGameSave(migrated);
     if (!parsed.ok) {
       throw invalidDocument(parsed.diagnostics);
     }
@@ -75,7 +77,10 @@ export function createSaveRepository(driver: SaveDriver): SaveRepository {
   ): Promise<T> {
     try {
       return await driver.runTransaction((current) => {
-        const source = current === null ? createEmptyGameSave() : current;
+        const source =
+          current === null
+            ? createEmptyGameSave()
+            : migrateSaveDocument(current);
         const parsedCurrent = parseGameSave(source);
         if (!parsedCurrent.ok) {
           throw invalidDocument(parsedCurrent.diagnostics);
