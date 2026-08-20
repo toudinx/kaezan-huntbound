@@ -71,6 +71,7 @@ import { actorDepth, tileDepth } from '../../hunt/TileDepth';
 import { createUnresolvedHuntAssetTracker } from '../../hunt/UnresolvedHuntAssets';
 import type { InputMap } from '../../input/InputMap';
 import { createTickInputGate } from '../../input/TickInputGate';
+import { canvasViewportBox } from '../ViewportBox';
 
 export const HUNT_TILE_SIZE = 32;
 
@@ -505,11 +506,11 @@ export class HuntScene extends Phaser.Scene {
     });
   }
 
-  private readonly handleResize = (gameSize: Phaser.Structs.Size): void => {
+  private readonly handleResize = (): void => {
     this.applyCameraFraming();
     this.cameraController = this.makeCameraController();
     this.followPlayer(this.options.driver.alpha);
-    this.publishReady(gameSize.width, gameSize.height);
+    this.publishReady();
   };
 
   private applyCameraFraming(): void {
@@ -521,7 +522,18 @@ export class HuntScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#24120e');
   }
 
-  private publishReady(width = this.scale.width, height = this.scale.height) {
+  /**
+   * `viewport` is the CSS box the page occupies, not the backing store the
+   * renderer allocates for it. Those were the same number until the render
+   * resolution gained a cap; reporting `scale.width` here would make the HUD
+   * readout disagree with `ViewportController`, which writes the same field.
+   */
+  private publishReady() {
+    const { width, height } = canvasViewportBox(this.game.canvas, {
+      width: this.scale.width,
+      height: this.scale.height,
+    });
+
     this.options.bridge.publish({
       phase: 'ready',
       renderer: rendererKind(this.game.renderer.type),
