@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@huntbound/contracts": ["../../packages/contracts/src/index.ts"],
+      "@huntbound/simulation": ["../../packages/simulation/src/index.ts"],
+      "@huntbound/content": ["../../packages/content/src/index.ts"],
+      "@huntbound/save": ["../../packages/save/src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts"]
+}

@@ -1,8 +1,8 @@
 # Contrato de replay determinístico
 
-**Escopo:** formato canônico, snapshot em disco, command log, CLI `tools/replay`, exit codes, hashes
-congelados das fixtures `pb-03-kernel-coverage`, `pb04`, `pb04-respawn` e `pb-05-hunt-combat`, e
-política de regeneração de golden.
+**Escopo:** formato canônico, snapshot em disco, command log, CLI `tools/replay`, CLI `tools/save`,
+exit codes, hashes congelados das fixtures `pb-03-kernel-coverage`, `pb04`, `pb04-respawn`,
+`pb-05-hunt-combat` e `pb-06-save-session`, e política de regeneração de golden.
 
 **Fonte normativa:** `docs/superpowers/specs/2026-08-13-pb-03-deterministic-kernel-design.md` e
 `docs/simulation/KERNEL_CONTRACT.md`.
@@ -112,13 +112,15 @@ pagina e rede sem erros.
 corepack pnpm simulation:check
 corepack pnpm hunt:check
 corepack pnpm combat:check
+corepack pnpm save:check
 ```
 
 `simulation:check` verifica a fixture `pb-03-kernel-coverage`. `hunt:check` verifica `pb04` e
 `pb04-respawn` por `verify` e, em seguida, por `hunt:hashes:check` (`check-hashes` em cada
 diretório). `combat:check` verifica `pb-05-hunt-combat` da mesma forma, com
-`combat:hashes:check`. Os três entram em `check` e em `verify`. São idempotentes: duas
-execuções seguidas devolvem `0`.
+`combat:hashes:check`. `save:check` verifica `pb-06-save-session`: persistir a run do PB-05 no
+tick `1400` e retomá-la até `2700` reproduz o snapshot golden do PB-05. Os quatro entram em
+`check` e em `verify`. São idempotentes: duas execuções seguidas devolvem `0`.
 
 ## Hashes congelados
 
@@ -254,6 +256,25 @@ sem isso o hunter nunca emite `combat/target-changed`.
 
 A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.md`.
 `combat:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.
+
+## Hashes congelados — PB-06
+
+Fixture `pb-06-save-session`, derivada de `pb-05-hunt-combat` (mesmo cenário, mesmo log, mesma
+seed `2c3d4e5f60718293`). Checkpoint no tick `1400`, retomada até o tick `2700`. O documento
+gravado, o export e a migração de `legacy.json` (documento sem `schemaVersion`) são o mesmo
+`GameSave` canônico; o SHA-256 do snapshot retomado é o do sidecar do PB-05,
+`44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
+
+| Arquivo | SHA-256 |
+|---|---|
+| `checkpoint.golden.json` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
+| `export.golden.txt` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
+| `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
+| `migrated.golden.json` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
+
+A fonte operacional desses digests é `packages/test-fixtures/save/pb06/hashes.md`.
+`save:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.
+`save:check` entra em `check` e em `verify`.
 
 ## Política de regeneração de golden
 
