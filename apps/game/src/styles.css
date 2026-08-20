@@ -80,7 +80,8 @@ body {
 }
 
 [data-testid="shell-status"],
-[data-testid="shell-viewport"] {
+[data-testid="shell-viewport"],
+[data-testid="shell-frame-rate"] {
   margin: 0;
   padding: 0.55rem 0.7rem;
 }
@@ -397,7 +398,8 @@ body {
   }
 
   [data-testid="shell-status"],
-  [data-testid="shell-viewport"] {
+  [data-testid="shell-viewport"],
+  [data-testid="shell-frame-rate"] {
     padding: 0.4rem 0.5rem;
   }
 }
