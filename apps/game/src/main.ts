@@ -29,7 +29,7 @@ import { createSceneBridge } from './bridge/SceneBridge';
 import { createHuntCombatViewModel } from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
 import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
-import { installKernelProbe } from './index';
+import { installKernelProbe, installSaveProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
 import { createRuntimeLifecycle } from './runtime/RuntimeLifecycle';
@@ -123,6 +123,7 @@ export async function bootstrapApp(
   const profile = parseAppAssetProfile(import.meta.env.MODE);
   if (profile === 'test') {
     installKernelProbe();
+    installSaveProbe(profile, browserWindow);
   }
   const catalogUrl = getAssetCatalogUrl(profile);
   const shellRoot = browserDocument.querySelector<HTMLElement>('#shell-root');

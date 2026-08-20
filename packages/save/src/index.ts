@@ -1,4 +1,8 @@
-export { createMemorySaveDriver } from './drivers/memory.ts';
+export {
+  createIndexedDbSaveDriver,
+  createMemorySaveDriver,
+  type IndexedDbSaveDriverOptions,
+} from './drivers/index.ts';
 export type { SaveErrorCode } from './errors/SaveError.ts';
 export { SaveError } from './errors/SaveError.ts';
 export type { SaveMigration } from './migrations/migrateSaveDocument.ts';

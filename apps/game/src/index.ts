@@ -1,4 +1,8 @@
 export {
+  installSaveProbe,
+  type SaveProbe,
+} from './save/SaveProbe';
+export {
   installKernelProbe,
   type KernelProbe,
   KernelProbeError,
