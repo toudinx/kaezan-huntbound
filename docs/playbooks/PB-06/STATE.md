@@ -2,7 +2,7 @@
 
 **Playbook:** `docs/playbooks/PB-06/README.md`
 
-**Estado geral:** **em execução**. PB-06-01, PB-06-02, PB-06-03, PB-06-04 e PB-06-05 integrados. PB-06-06 é a próxima task elegível.
+**Estado geral:** **em execução**. PB-06-01 a PB-06-06 integrados. PB-06-07 é a próxima task elegível.
 
 **Última atualização:** 2026-08-20
 
@@ -10,7 +10,7 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-06.
+**Próxima etapa:** executar PB-06-07.
 
 ## Tasks
 
@@ -21,7 +21,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 | PB-06-03 | done | `codex/pb06-03-save-migrations` | `baf65ff` | cadeia `null → v1`, recusa de versão futura e integração no repositório; 32 testes de save |
 | PB-06-04 | done | `codex/pb06-04-save-export-import` | `e0535dd` | `encodeSaveDocument`/`decodeSaveDocument`; export estável, import atômico e substitutivo; verify verde |
 | PB-06-05 | done | `codex/pb06-05-indexeddb-driver` | `247b775` | `IndexedDbSaveDriver` atômico; probe `test`; 60/60 browser sem retries; códigos de erro mapeados |
-| PB-06-06 | pending | `<agente>/pb06-06-run-persistence` | — | checkpoint, retomada, consolidação idempotente e descarte que preserva a bolsa |
+| PB-06-06 | done | `codex/pb06-06-run-persistence` | (este commit) | checkpoint/retomada/consolidação; 66 testes de save; goldens PB-03/04/05 intactos |
 | PB-06-07 | pending | `<agente>/pb06-07-save-gate` | — | `packages/test-fixtures/save/pb06/**` + `save:check` em `check`/`verify` + `REPLAY_CONTRACT.md` |
 | PB-06-08 | pending | `<agente>/pb06-08-save-ui` | — | autosave, retomada no boot, painel de bolsa e estoque, export/import |
 | PB-06-09 | pending | `<agente>/pb06-09-save-browser-qa` | — | specs estáveis sem `retries`; entrega jogável para o aceite do usuário |
@@ -29,7 +29,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
 ## Última task concluída
 
-PB-06-05. Driver IndexedDB atômico integrado; próxima task elegível: PB-06-06.
+PB-06-06. Checkpoint, retomada e consolidação da run; próxima task elegível: PB-06-07.
 
 ## Decisões já congeladas antes da execução
 

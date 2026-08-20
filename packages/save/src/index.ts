@@ -17,3 +17,12 @@ export {
   decodeSaveDocument,
   encodeSaveDocument,
 } from './serialization/saveDocument.ts';
+export {
+  type CheckpointScheduler,
+  consolidateRun,
+  createCheckpointScheduler,
+  decideResume,
+  type ResumeDecision,
+  type ResumeRejection,
+  type RunIdentity,
+} from './session/index.ts';
