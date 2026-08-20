@@ -17,7 +17,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-06-01 | done | `codex/pb06-01-save-contracts` | (este commit) | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
-| PB-06-02 | blocked | `codex/pb06-02-save-repository` | — | implementação + gates de código verdes; `verify` bloqueado por B4 no QA browser |
+| PB-06-02 | blocked | `codex/pb06-02-save-repository` | `bcaba65` | implementação integrada por fast-forward; gates de código verdes; `verify` bloqueado por B4 no QA browser |
 | PB-06-03 | pending | `<agente>/pb06-03-save-migrations` | — | migração de documento sem versão para v1; recusa de versão futura |
 | PB-06-04 | pending | `<agente>/pb06-04-save-export-import` | — | export canônico estável em duas chamadas; import atômico e validado |
 | PB-06-05 | pending | `<agente>/pb06-05-indexeddb-driver` | — | `IndexedDbSaveDriver` provado no browser; códigos de erro mapeados |
