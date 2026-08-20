@@ -19,7 +19,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 | PB-06-01 | done | `codex/pb06-01-save-contracts` | (este commit) | `packages/contracts/src/save/**` + schema Zod verde; `RunBagEntry` reimportada por `content` |
 | PB-06-02 | blocked | `codex/pb06-02-save-repository` | `bcaba65` | implementação integrada por fast-forward; gates de código verdes; `verify` bloqueado por B4 no QA browser |
 | PB-06-03 | done | `codex/pb06-03-save-migrations` | `baf65ff` | cadeia `null → v1`, recusa de versão futura e integração no repositório; 32 testes de save |
-| PB-06-04 | done | `codex/pb06-04-save-export-import` | (este commit) | `encodeSaveDocument`/`decodeSaveDocument`; export estável, import atômico e substitutivo; verify verde |
+| PB-06-04 | done | `codex/pb06-04-save-export-import` | `e0535dd` | `encodeSaveDocument`/`decodeSaveDocument`; export estável, import atômico e substitutivo; verify verde |
 | PB-06-05 | pending | `<agente>/pb06-05-indexeddb-driver` | — | `IndexedDbSaveDriver` provado no browser; códigos de erro mapeados |
 | PB-06-06 | pending | `<agente>/pb06-06-run-persistence` | — | checkpoint, retomada, consolidação idempotente e descarte que preserva a bolsa |
 | PB-06-07 | pending | `<agente>/pb06-07-save-gate` | — | `packages/test-fixtures/save/pb06/**` + `save:check` em `check`/`verify` + `REPLAY_CONTRACT.md` |
