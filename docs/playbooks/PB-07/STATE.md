@@ -15,7 +15,7 @@ Próxima elegível: **PB-07-04**. PB-07-12 e PB-07-13 são independentes.
 |---|---|---|---|---|
 | PB-07-01 | done | `codex/pb07-01-rotations-reference` | `95f5a42` | `docs/content/PB-07-ROTATIONS.md` — seis slots confirmados |
 | PB-07-02 | done | `codex/pb07-02-target-and-impact` | `ead4405` | anel de alvo + shake por magnitude; ff na `main` |
-| PB-07-03 | done | `codex/pb07-03-combat-contract-v5` | — | schema 5 / rules 4; events byte-idênticos |
+| PB-07-03 | done | `codex/pb07-03-combat-contract-v5` | `b490e2e` | schema 5 / rules 4; events byte-idênticos |
 | PB-07-04 | pending | `<agente>/pb07-04-sustain` | — | — |
 | PB-07-05 | pending | `<agente>/pb07-05-conditions` | — | — |
 | PB-07-06 | pending | `<agente>/pb07-06-generic-skills` | — | `exori vis` é `range(3)`, não cinco tiles |
