@@ -21,6 +21,7 @@ const scenario: KernelScenario = {
   maxLiveActors: 4,
   abilities: [],
   lootTables: [],
+  conditions: [],
   blueprints: [
     {
       blueprintId: 'player',
@@ -40,6 +41,16 @@ const scenario: KernelScenario = {
       aggroRadius: 0,
       lootTableIndex: null,
       abilityIndices: [],
+      outOfCombatHealthRegenTicks: 0,
+      outOfCombatHealthRegenAmount: 0,
+      outOfCombatResourceRegenTicks: 0,
+      outOfCombatResourceRegenAmount: 0,
+      combatWindowTicks: 0,
+      lifeLeechPermille: 0,
+      manaLeechPermille: 0,
+      attackElement: 'physical',
+      resistances: [],
+      immunities: [],
     },
   ],
   initialActors: [

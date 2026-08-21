@@ -381,6 +381,15 @@ function castCommand(
  * three kit abilities, refuse a resource-starved cast, then finish the kill
  * and wait on the death cell for a seat respawn.
  */
+function primaryGroupReadyAt(actor: ActorState): number {
+  for (const entry of actor.groupCooldowns) {
+    if (entry.groupIndex === 0) {
+      return entry.readyAtTick;
+    }
+  }
+  return 0;
+}
+
 function nextCommand(
   tick: number,
   player: ActorState,
@@ -405,10 +414,10 @@ function nextCommand(
     if (!seen.castBerserk) {
       return castCommand(tick, ABILITY_BERSERK, null);
     }
-    if (!seen.castBrutalStrike && tick >= player.groupReadyAtTick) {
+    if (!seen.castBrutalStrike && tick >= primaryGroupReadyAt(player)) {
       return castCommand(tick, ABILITY_BRUTAL_STRIKE, foe.entityId);
     }
-    if (!seen.castWoundCleansing && tick >= player.groupReadyAtTick) {
+    if (!seen.castWoundCleansing && tick >= primaryGroupReadyAt(player)) {
       return castCommand(tick, ABILITY_WOUND_CLEANSING, null);
     }
     if (!seen.combatRejected) {
@@ -420,7 +429,7 @@ function nextCommand(
     return undefined;
   }
 
-  if (!seen.castWoundCleansing && tick >= player.groupReadyAtTick) {
+  if (!seen.castWoundCleansing && tick >= primaryGroupReadyAt(player)) {
     return castCommand(tick, ABILITY_WOUND_CLEANSING, null);
   }
 

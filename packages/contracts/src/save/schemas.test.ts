@@ -9,8 +9,8 @@ import type { GameSave } from './types.ts';
 
 function createSnapshot() {
   return {
-    schemaVersion: 4,
-    rulesVersion: 3,
+    schemaVersion: 5,
+    rulesVersion: 4,
     scenarioId: 'pb-06-save-contract',
     scenarioRevision: 1,
     seed: '0f1e2d3c4b5a6978',

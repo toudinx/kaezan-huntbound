@@ -387,12 +387,12 @@ describe('replay cli check-hashes', () => {
       names.map((name) => copyFile(join(huntPb04, name), join(root, name))),
     );
     const original = await readFile(join(root, 'hashes.md'), 'utf8');
+    const match = /`([0-9a-f]{64})`/.exec(original);
+    expect(match?.[1]).toBeDefined();
+    const digest = match?.[1] ?? '';
     await writeFile(
       join(root, 'hashes.md'),
-      original.replace(
-        '2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758',
-        '2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b759',
-      ),
+      original.replace(digest, `${digest.slice(0, -1)}0`),
       'utf8',
     );
 

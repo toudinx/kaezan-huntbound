@@ -360,6 +360,16 @@ function combatNeutral(
     aggroRadius: 0,
     lootTableIndex: null as number | null,
     abilityIndices: [] as number[],
+    outOfCombatHealthRegenTicks: 0,
+    outOfCombatHealthRegenAmount: 0,
+    outOfCombatResourceRegenTicks: 0,
+    outOfCombatResourceRegenAmount: 0,
+    combatWindowTicks: 0,
+    lifeLeechPermille: 0,
+    manaLeechPermille: 0,
+    attackElement: 'physical' as const,
+    resistances: [] as const,
+    immunities: [] as const,
   };
 }
 

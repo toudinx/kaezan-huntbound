@@ -10,5 +10,6 @@ export {
   validateSimulationSnapshot,
 } from './simulation/diagnostics.ts';
 export * from './simulation/identity.ts';
+export { migrateSimulationSnapshot } from './simulation/migrateSnapshot.ts';
 export * from './simulation/schemas.ts';
 export * from './simulation/types.ts';

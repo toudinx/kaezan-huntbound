@@ -38,7 +38,7 @@ uma intent decidida, e varrem todas as fronteiras de `0` a `24`.
 JSONL. Primeira linha é o cabeçalho:
 
 ```text
-{"kind":"header","rulesVersion":3,"scenarioId":"...","scenarioRevision":1,"schemaVersion":4,"seed":"...","tickCount":200}
+{"kind":"header","rulesVersion":4,"scenarioId":"...","scenarioRevision":1,"schemaVersion":5,"seed":"...","tickCount":200}
 ```
 
 As demais linhas são comandos achatados:
@@ -125,13 +125,13 @@ tick `1400` e retomá-la até `2700` reproduz o snapshot golden do PB-05. Os qua
 ## Hashes congelados
 
 Fixture `pb-03-kernel-coverage`, revisão `1`, seed `0f1e2d3c4b5a6978`, `200` ticks, retomada em `117`,
-`SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`:
+`SIMULATION_SCHEMA_VERSION = 5`, `SIMULATION_RULES_VERSION = 4`:
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `36a2aa01ceeed45368de6279fa89dc71b8e27a641b9325f9a2780026422943b5` |
-| `commands.jsonl` | `4edbda41497dc4e21e117061bc7e67819973037df2f50447589aa2105bf29a12` |
-| `snapshot.golden.json` | `9621f9e02bc5df1d156d9cddced3dfe4d1a78669f1ddf1cbf3794e7359196be0` |
+| `scenario.json` | `d547781de8d1577e3201edf72c2a398c28cbac57228fc170e925d6444d05668c` |
+| `commands.jsonl` | `d97af7503dc78bc84030f58dd824b9015670224699d16cc798657f8fa6c4ad36` |
+| `snapshot.golden.json` | `1617f3ccfafe8530fcb5d8a7892bf5b8f0a0afc29def802ef69650405536cd03` |
 | `events.golden.jsonl` | `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4` |
 
 ### Migração de `SIMULATION_SCHEMA_VERSION` `1` para `2`
@@ -194,6 +194,38 @@ de parar.
 Um snapshot ou cenário escrito na versão `3` é recusado pelo schema estrito, e um snapshot com quatro
 streams de RNG é recusado por contagem na restauração.
 
+### Migração de `SIMULATION_SCHEMA_VERSION` `4` para `5`
+
+Data: 2026-08-21. Motivo: PB-07-03 abre o envelope para sustentação, condições, elementos e cargas
+**sem mudar regra de combate**. `SIMULATION_RULES_VERSION` sobe para `4` junto com o envelope; a
+semântica vigente de `applyUpkeep`, `applyDamage` e `resolveCast` continua a da v4. Defaults neutros
+reproduzem o comportamento anterior.
+
+O único campo que muda de forma é `ActorState.groupReadyAtTick` (escalar) → `groupCooldowns`
+`{ groupIndex, readyAtTick }[]`. `migrateSimulationSnapshot` mapeia `N` para o grupo primário
+`PRIMARY_COOLDOWN_GROUP = 0`. Os demais campos v5 nascem por default Zod: regen fora de combate `0`,
+leech `0` por milhar, `combatWindowTicks` `0`, `attackElement`/`element` `'physical'`, listas vazias,
+`maxCharges` `null` / `rechargeKind` `'none'`, `toggle` `false`, `lastDamageReceivedTick` `0`.
+
+Os três documentos que declaram versão — `scenario.json`, o header de `commands.jsonl` e
+`snapshot.golden.json` — mudaram de hash. O snapshot também muda de forma (`groupCooldowns` e os
+vizinhos novos). `events.golden.jsonl` das quatro fixtures permanece **byte-idêntico** à baseline
+copiada antes da edição:
+
+- PB-03 `31f86d62195354fc0ec324d49f24a6b65385b91e6f395d62b0a1d211555888d4`
+- PB-04 `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1`
+- PB-04-respawn `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30`
+- PB-05 `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394`
+
+Prova: `tools/replay/cli.ts run` sobre cada cenário v5, SHA-256 dos `events.golden.jsonl`
+produzidos contra a cópia da baseline feita antes de qualquer edição. Se algum journal tivesse
+mudado, algum default não seria neutro e a migração teria de parar.
+
+Um snapshot com `schemaVersion: 4` é recusado na validação do kernel (`SIM_VERSION_MISMATCH`). O
+schema Zod do ator ainda aceita o escalar `groupReadyAtTick` por preprocess, para um save v4
+parsear; `decideResume` descarta a sessão por `schemaVersion` e `consolidateRun` preserva a bolsa.
+Não há migração de sessão: o PB-06 já projetou esse descarte.
+
 ## Cobertura da fixture
 
 Grid 16×16 com um único andar `z = 7`, declarado em `floors`. Parede horizontal em `y = 8`, corredor
@@ -211,14 +243,14 @@ eventos e exercita os seis tipos de evento e as cinco causas de bloqueio.
 ## Hashes congelados — PB-04
 
 Fixture `pb04`, revisão `2`, seed `1a2b3c4d5e6f7a8b`, `600` ticks, `1663` eventos, tick final `600`,
-`SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`. Retomada fiel em todas as fronteiras
+`SIMULATION_SCHEMA_VERSION = 5`, `SIMULATION_RULES_VERSION = 4`. Retomada fiel em todas as fronteiras
 `0..600`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
-| `commands.jsonl` | `d18c520a5d90614f30ceb4c8989de67578c736e3a2d59516f0b04dc92d9e3636` |
-| `snapshot.golden.json` | `56f68258d004c869c47a4f46e84c8a9f7289da9d0dffb7f133cae9c6fac42bca` |
+| `scenario.json` | `9e7a9dc9468a1a5344547bd65bce3c5a7441f9d9e86504ac4ebb8d584eb68876` |
+| `commands.jsonl` | `b7ceec01b745015695dd239113c667bcd6a4055161fcdde10cf6a50690ff76f0` |
+| `snapshot.golden.json` | `32738acc4ed9d89adbe8f3abff64aed3ff8dd60d6d21fb6925bf5fd2beaf041c` |
 | `events.golden.jsonl` | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
 
 Fixture `pb04-respawn`, mesmo cenário e seed, `1805` ticks, `1185` eventos, tick final `1805`. Prova
@@ -227,9 +259,9 @@ Retomada nas fronteiras `0`, `1`, `2`, `1800`, `1801` e `1805`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
-| `commands.jsonl` | `14df54ca5ee4d2731fba85368e1d8df055e2f5ea0b47b1dfcc69fa7c5f00abf5` |
-| `snapshot.golden.json` | `93cbf723d7e8e7b795d6b25a60e678a804f707861f58efcf97e7e19fabea28bf` |
+| `scenario.json` | `9e7a9dc9468a1a5344547bd65bce3c5a7441f9d9e86504ac4ebb8d584eb68876` |
+| `commands.jsonl` | `89a6c698de54912b2b11172d7bd5867460eb2a84864d906a8c5f104f7477f2d4` |
+| `snapshot.golden.json` | `286fc9c3930e96f2d9f9fcd6af52c0edd8056384c46f4a99377d72d46c1d0233` |
 | `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
 
 A fonte operacional desses digests é o `hashes.md` de cada fixture
@@ -240,7 +272,7 @@ publicada com o arquivo e com o sidecar `.sha256`. Task cards não republicam es
 ## Hashes congelados — PB-05
 
 Fixture `pb-05-hunt-combat`, revisão `2`, seed `2c3d4e5f60718293`, `2700` ticks, `2240` eventos,
-tick final `2700`, `SIMULATION_SCHEMA_VERSION = 4`, `SIMULATION_RULES_VERSION = 3`. Retomada fiel
+tick final `2700`, `SIMULATION_SCHEMA_VERSION = 5`, `SIMULATION_RULES_VERSION = 4`. Retomada fiel
 em todas as fronteiras `0..2700`.
 
 O `tickCount` `2700` é a resolução de B6: todo assento da hunt tem `respawnTicks` `1800`, então
@@ -249,9 +281,9 @@ sem isso o hunter nunca emite `combat/target-changed`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `c34813d1e1a278c9e6fd0b7869e5e55f06cf0c5c8e4b530b04b332f38b1cb8cf` |
-| `commands.jsonl` | `356eee11220f96aea4d3f5cc0f0673deb614cd893c1d7f2060414a4fbc7a1e7b` |
-| `snapshot.golden.json` | `44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a` |
+| `scenario.json` | `a084d7c2129cec7801ca4182a057c5ae5a7048c943bf33396c1d622aeff28cc7` |
+| `commands.jsonl` | `f8ec4cf67d01124eb25714c3d107f7c41be33be50fbe844ae6e5fc4ce47fa3bd` |
+| `snapshot.golden.json` | `3f7d44a40a39aaba2f3b0b46ef3d2eec1bb8eb367bf59726b33179c0f9cd8989` |
 | `events.golden.jsonl` | `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394` |
 
 A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.md`.
@@ -262,15 +294,19 @@ A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.m
 Fixture `pb-06-save-session`, derivada de `pb-05-hunt-combat` (mesmo cenário, mesmo log, mesma
 seed `2c3d4e5f60718293`). Checkpoint no tick `1400`, retomada até o tick `2700`. O documento
 gravado, o export e a migração de `legacy.json` (documento sem `schemaVersion`) são o mesmo
-`GameSave` canônico; o SHA-256 do snapshot retomado é o do sidecar do PB-05,
-`44c1812203282bbad6797ede4961c971ff868d7d23905287edcaaf241eb7416a`.
+`GameSave` canônico no checkpoint e no export. `legacy.json` permanece o documento sem
+`schemaVersion` de save, com snapshot ainda na forma v4 (`groupReadyAtTick` escalar). A migração
+de save só acrescenta `SAVE_SCHEMA_VERSION`; o parse do ator converte o escalar em
+`groupCooldowns` e preenche defaults v5, mas **não** sobe `snapshot.schemaVersion`. Por isso
+`migrated.golden.json` deixa de ser byte-idêntico ao checkpoint. O SHA-256 do snapshot retomado é o
+do sidecar do PB-05, `3f7d44a40a39aaba2f3b0b46ef3d2eec1bb8eb367bf59726b33179c0f9cd8989`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `checkpoint.golden.json` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
-| `export.golden.txt` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
+| `checkpoint.golden.json` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
+| `export.golden.txt` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
 | `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
-| `migrated.golden.json` | `ae3fc532c2481fd9e5aa907bccfcd9cfc518bd25f758fcc494533ac367908e01` |
+| `migrated.golden.json` | `4adf164efa1c9795330d79af53daae10ce6fefd95f66a3e803aabbeb7ef07bc7` |
 
 A fonte operacional desses digests é `packages/test-fixtures/save/pb06/hashes.md`.
 `save:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.

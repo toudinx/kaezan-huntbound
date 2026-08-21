@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  PRIMARY_COOLDOWN_GROUP,
   SeedSchema,
   StreamLabelSchema,
   TickIndexSchema,
@@ -77,6 +78,21 @@ export const DirectionSchema = z.enum(directionValues);
 export const ActorBehaviorSchema = z.enum(['inert', 'wander', 'hunter']);
 export const AbilityEffectSchema = z.enum(['damage', 'heal']);
 export const AbilityShapeSchema = z.enum(['self', 'target', 'area']);
+export const CombatElementSchema = z.enum([
+  'death',
+  'earth',
+  'energy',
+  'fire',
+  'holy',
+  'ice',
+  'physical',
+  'poison',
+]);
+export const AbilityRechargeKindSchema = z.enum([
+  'none',
+  'out-of-combat',
+  'between-runs',
+]);
 export const CommandIssuerSchema = z.enum(['player', 'ai', 'scenario']);
 const moveBlockedReasonValues = [
   'bounds',
@@ -125,6 +141,26 @@ export const ActorBlueprintSchema = z
     aggroRadius: nonNegativeInteger,
     lootTableIndex: nonNegativeInteger.nullable(),
     abilityIndices: z.array(nonNegativeInteger).readonly(),
+    outOfCombatHealthRegenTicks: nonNegativeInteger.default(0),
+    outOfCombatHealthRegenAmount: nonNegativeInteger.default(0),
+    outOfCombatResourceRegenTicks: nonNegativeInteger.default(0),
+    outOfCombatResourceRegenAmount: nonNegativeInteger.default(0),
+    combatWindowTicks: nonNegativeInteger.default(0),
+    lifeLeechPermille: nonNegativeInteger.default(0),
+    manaLeechPermille: nonNegativeInteger.default(0),
+    attackElement: CombatElementSchema.default('physical'),
+    resistances: z
+      .array(
+        z
+          .object({
+            element: CombatElementSchema,
+            permille: safeInteger,
+          })
+          .strict(),
+      )
+      .readonly()
+      .default([]),
+    immunities: z.array(CombatElementSchema).readonly().default([]),
   })
   .strict()
   .superRefine((blueprint, context) => {
@@ -159,6 +195,52 @@ export const ActorBlueprintSchema = z
         );
       }
     }
+
+    for (let index = 1; index < blueprint.resistances.length; index += 1) {
+      const previous = blueprint.resistances[index - 1];
+      const current = blueprint.resistances[index];
+      if (previous === undefined || current === undefined) {
+        continue;
+      }
+      if (previous.element === current.element) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['resistances', index],
+          'resistances must not repeat an element',
+        );
+      } else if (previous.element > current.element) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['resistances', index],
+          'resistances must be strictly ordered by element',
+        );
+      }
+    }
+
+    for (let index = 1; index < blueprint.immunities.length; index += 1) {
+      const previous = blueprint.immunities[index - 1];
+      const current = blueprint.immunities[index];
+      if (previous === undefined || current === undefined) {
+        continue;
+      }
+      if (previous === current) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['immunities', index],
+          'immunities must not contain duplicates',
+        );
+      } else if (previous > current) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['immunities', index],
+          'immunities must be strictly ordered by element',
+        );
+      }
+    }
   });
 
 export const AbilityDefinitionSchema = z
@@ -173,6 +255,14 @@ export const AbilityDefinitionSchema = z
     groupCooldownTicks: nonNegativeInteger,
     minPower: nonNegativeInteger,
     maxPower: nonNegativeInteger,
+    element: CombatElementSchema.default('physical'),
+    primaryCooldownGroup: nonNegativeInteger.default(PRIMARY_COOLDOWN_GROUP),
+    secondaryCooldownGroup: nonNegativeInteger.nullable().default(null),
+    secondaryGroupCooldownTicks: nonNegativeInteger.default(0),
+    appliedConditionIndex: nonNegativeInteger.nullable().default(null),
+    maxCharges: nonNegativeInteger.nullable().default(null),
+    rechargeKind: AbilityRechargeKindSchema.default('none'),
+    toggle: z.boolean().default(false),
   })
   .strict()
   .superRefine((ability, context) => {
@@ -201,6 +291,25 @@ export const AbilityDefinitionSchema = z
       );
     }
   });
+
+export const ScenarioConditionDefinitionSchema = z
+  .object({
+    conditionId: abilityId,
+    exclusivityGroup: nonNegativeInteger.nullable().default(null),
+    durationTicks: nonNegativeInteger.default(0),
+    skillIndex: nonNegativeInteger.nullable().default(null),
+    skillModifierPermille: safeInteger.default(0),
+    damageDealtPermille: safeInteger.default(0),
+    damageReceivedPermille: safeInteger.default(0),
+    speedPermille: safeInteger.default(0),
+    manaShield: z.boolean().default(false),
+    tickDamageAmount: nonNegativeInteger.default(0),
+    tickDamageIntervalTicks: nonNegativeInteger.default(0),
+    elementBonusPermille: safeInteger.default(0),
+    convertNextAbilityElement: z.boolean().default(false),
+    bonusElement: CombatElementSchema.nullable().default(null),
+  })
+  .strict();
 
 const LootEntryDefinitionSchema = z
   .object({
@@ -317,6 +426,10 @@ export const KernelScenarioSchema = z
     maxLiveActors: positiveInteger,
     abilities: z.array(AbilityDefinitionSchema).readonly(),
     lootTables: z.array(LootTableDefinitionSchema).readonly(),
+    conditions: z
+      .array(ScenarioConditionDefinitionSchema)
+      .readonly()
+      .default([]),
     blueprints: z.array(ActorBlueprintSchema).readonly(),
     initialActors: z.array(InitialActorSchema).readonly(),
   })
@@ -504,6 +617,31 @@ export const KernelScenarioSchema = z
         );
       }
       abilityIds.add(ability.abilityId);
+
+      if (
+        ability.appliedConditionIndex !== null &&
+        ability.appliedConditionIndex >= scenario.conditions.length
+      ) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['abilities', index, 'appliedConditionIndex'],
+          `appliedConditionIndex ${ability.appliedConditionIndex} is outside conditions`,
+        );
+      }
+    });
+
+    const conditionIds = new Set<string>();
+    scenario.conditions.forEach((condition, index) => {
+      if (conditionIds.has(condition.conditionId)) {
+        addSimulationIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          ['conditions', index, 'conditionId'],
+          'conditionId must be unique',
+        );
+      }
+      conditionIds.add(condition.conditionId);
     });
 
     // The canonical spawn order is derived from `(z, y, x)` of the centre and
@@ -951,7 +1089,79 @@ export const RandomStreamStateSchema = z
   })
   .strict();
 
-export const ActorStateSchema = z
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The only v4 → v5 shape break: a scalar group channel becomes the primary
+ * group entry. Additive fields are filled by schema defaults, not here.
+ */
+export function migrateActorStateInput(value: unknown): unknown {
+  if (!isObjectRecord(value)) {
+    return value;
+  }
+  if (Object.hasOwn(value, 'groupCooldowns')) {
+    return value;
+  }
+  if (!Object.hasOwn(value, 'groupReadyAtTick')) {
+    return value;
+  }
+
+  const { groupReadyAtTick, ...rest } = value;
+  if (
+    typeof groupReadyAtTick !== 'number' ||
+    !Number.isSafeInteger(groupReadyAtTick) ||
+    groupReadyAtTick < 0
+  ) {
+    return {
+      ...rest,
+      groupCooldowns: groupReadyAtTick,
+    };
+  }
+
+  return {
+    ...rest,
+    groupCooldowns: [
+      {
+        groupIndex: PRIMARY_COOLDOWN_GROUP,
+        readyAtTick: groupReadyAtTick,
+      },
+    ],
+  };
+}
+
+function refineOrderedUniqueByNumber<Key extends string>(
+  entries: readonly Record<Key, number>[],
+  key: Key,
+  context: z.RefinementCtx,
+  collection: string,
+) {
+  for (let index = 1; index < entries.length; index += 1) {
+    const previous = entries[index - 1];
+    const current = entries[index];
+    if (previous === undefined || current === undefined) {
+      continue;
+    }
+    if (previous[key] === current[key]) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        [collection, index],
+        `${collection} must not repeat a ${key}`,
+      );
+    } else if (previous[key] > current[key]) {
+      addSimulationIssue(
+        context,
+        'SIM_SCHEMA_INVALID',
+        [collection, index],
+        `${collection} must be strictly ordered by ${key}`,
+      );
+    }
+  }
+}
+
+const ActorStateObjectSchema = z
   .object({
     entityId: EntityIdSchema,
     blueprintId,
@@ -963,7 +1173,17 @@ export const ActorStateSchema = z
     resource: nonNegativeInteger,
     targetEntityId: EntityIdSchema.nullable(),
     attackReadyAtTick: nonNegativeInteger,
-    groupReadyAtTick: nonNegativeInteger,
+    groupCooldowns: z
+      .array(
+        z
+          .object({
+            groupIndex: nonNegativeInteger,
+            readyAtTick: nonNegativeInteger,
+          })
+          .strict(),
+      )
+      .readonly()
+      .default([]),
     abilityCooldowns: z
       .array(
         z
@@ -976,8 +1196,57 @@ export const ActorStateSchema = z
       .readonly(),
     nextHealthRegenTick: nonNegativeInteger,
     nextResourceRegenTick: nonNegativeInteger,
+    lastDamageReceivedTick: nonNegativeInteger.default(0),
+    activeConditions: z
+      .array(
+        z
+          .object({
+            conditionIndex: nonNegativeInteger,
+            expiresAtTick: nonNegativeInteger,
+            exclusivityGroup: nonNegativeInteger.nullable(),
+          })
+          .strict(),
+      )
+      .readonly()
+      .default([]),
+    abilityCharges: z
+      .array(
+        z
+          .object({
+            abilityIndex: nonNegativeInteger,
+            remaining: nonNegativeInteger,
+          })
+          .strict(),
+      )
+      .readonly()
+      .default([]),
   })
-  .strict();
+  .strict()
+  .superRefine((actor, context) => {
+    refineOrderedUniqueByNumber(
+      actor.groupCooldowns,
+      'groupIndex',
+      context,
+      'groupCooldowns',
+    );
+    refineOrderedUniqueByNumber(
+      actor.activeConditions,
+      'conditionIndex',
+      context,
+      'activeConditions',
+    );
+    refineOrderedUniqueByNumber(
+      actor.abilityCharges,
+      'abilityIndex',
+      context,
+      'abilityCharges',
+    );
+  });
+
+export const ActorStateSchema = z.preprocess(
+  migrateActorStateInput,
+  ActorStateObjectSchema,
+);
 
 export const SpawnSlotStateSchema = z
   .object({

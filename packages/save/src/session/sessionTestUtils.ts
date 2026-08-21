@@ -39,6 +39,7 @@ export function testScenario(
     maxLiveActors: 8,
     abilities: [],
     lootTables: [],
+    conditions: [],
     blueprints: [
       {
         blueprintId: 'walker',
@@ -58,6 +59,16 @@ export function testScenario(
         aggroRadius: 0,
         lootTableIndex: null,
         abilityIndices: [],
+        outOfCombatHealthRegenTicks: 0,
+        outOfCombatHealthRegenAmount: 0,
+        outOfCombatResourceRegenTicks: 0,
+        outOfCombatResourceRegenAmount: 0,
+        combatWindowTicks: 0,
+        lifeLeechPermille: 0,
+        manaLeechPermille: 0,
+        attackElement: 'physical',
+        resistances: [],
+        immunities: [],
       },
     ],
     initialActors: [

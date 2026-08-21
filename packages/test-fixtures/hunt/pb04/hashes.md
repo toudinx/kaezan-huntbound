@@ -6,9 +6,9 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `2d56f2848eec061821d48e19bd23bf6bfdec3b00aa0a10007eb1fd04aa88b758` |
-| `commands.jsonl` | `d18c520a5d90614f30ceb4c8989de67578c736e3a2d59516f0b04dc92d9e3636` |
-| `snapshot.golden.json` | `56f68258d004c869c47a4f46e84c8a9f7289da9d0dffb7f133cae9c6fac42bca` |
+| `scenario.json` | `9e7a9dc9468a1a5344547bd65bce3c5a7441f9d9e86504ac4ebb8d584eb68876` |
+| `commands.jsonl` | `b7ceec01b745015695dd239113c667bcd6a4055161fcdde10cf6a50690ff76f0` |
+| `snapshot.golden.json` | `32738acc4ed9d89adbe8f3abff64aed3ff8dd60d6d21fb6925bf5fd2beaf041c` |
 | `events.golden.jsonl` | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
 
 The frozen session runs for `600` ticks and emits `1663` events. Its player-only

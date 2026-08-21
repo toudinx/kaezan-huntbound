@@ -33,10 +33,13 @@ function occupancyOf(
       resource: 0,
       targetEntityId: null,
       attackReadyAtTick: 0,
-      groupReadyAtTick: 0,
+      groupCooldowns: [],
       abilityCooldowns: [],
       nextHealthRegenTick: 0,
       nextResourceRegenTick: 0,
+      lastDamageReceivedTick: 0,
+      activeConditions: [],
+      abilityCharges: [],
     }),
   );
   return createOccupancyIndex(actors);
@@ -48,7 +51,7 @@ function gridOf(
   height = 6,
 ) {
   const scenario: KernelScenario = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     scenarioId: 'path-step-test',
     scenarioRevision: 1,
     width,
@@ -59,6 +62,7 @@ function gridOf(
     maxLiveActors: 8,
     abilities: [],
     lootTables: [],
+    conditions: [],
     blueprints: [
       {
         blueprintId: 'walker',
@@ -78,6 +82,16 @@ function gridOf(
         aggroRadius: 0,
         lootTableIndex: null,
         abilityIndices: [],
+        outOfCombatHealthRegenTicks: 0,
+        outOfCombatHealthRegenAmount: 0,
+        outOfCombatResourceRegenTicks: 0,
+        outOfCombatResourceRegenAmount: 0,
+        combatWindowTicks: 0,
+        lifeLeechPermille: 0,
+        manaLeechPermille: 0,
+        attackElement: 'physical',
+        resistances: [],
+        immunities: [],
       },
     ],
     initialActors: [],

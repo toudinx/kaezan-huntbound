@@ -61,7 +61,10 @@ function diagnostic(
 
 function scenarioGeometry(
   hunt: HuntDefinition,
-): Omit<KernelScenario, 'abilities' | 'lootTables' | 'blueprints'> {
+): Omit<
+  KernelScenario,
+  'abilities' | 'lootTables' | 'conditions' | 'blueprints'
+> {
   return {
     schemaVersion: SIMULATION_SCHEMA_VERSION,
     scenarioId: `scenario:${hunt.huntId}`,
@@ -181,6 +184,16 @@ function composePlayer(
     aggroRadius: 0,
     lootTableIndex: null,
     abilityIndices,
+    outOfCombatHealthRegenTicks: 0,
+    outOfCombatHealthRegenAmount: 0,
+    outOfCombatResourceRegenTicks: 0,
+    outOfCombatResourceRegenAmount: 0,
+    combatWindowTicks: 0,
+    lifeLeechPermille: 0,
+    manaLeechPermille: 0,
+    attackElement: 'physical',
+    resistances: [],
+    immunities: [],
   };
 }
 
@@ -260,6 +273,16 @@ function composeCreature(
     aggroRadius: creature.attacks.length > 0 ? CANARY_VIEW_RANGE_TILES : 0,
     lootTableIndex,
     abilityIndices: [],
+    outOfCombatHealthRegenTicks: 0,
+    outOfCombatHealthRegenAmount: 0,
+    outOfCombatResourceRegenTicks: 0,
+    outOfCombatResourceRegenAmount: 0,
+    combatWindowTicks: 0,
+    lifeLeechPermille: 0,
+    manaLeechPermille: 0,
+    attackElement: 'physical',
+    resistances: [],
+    immunities: [],
   };
 }
 
@@ -324,6 +347,14 @@ function composeAbilities(
       groupCooldownTicks,
       minPower: power.minPower,
       maxPower: power.maxPower,
+      element: 'physical',
+      primaryCooldownGroup: 0,
+      secondaryCooldownGroup: null,
+      secondaryGroupCooldownTicks: 0,
+      appliedConditionIndex: null,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: false,
     });
     abilityKeys.push(spellKey);
   });
@@ -482,6 +513,7 @@ export function buildHuntScenario(
     ...scenarioGeometry(validatedHunt.value),
     abilities,
     lootTables,
+    conditions: [],
     blueprints,
   };
 

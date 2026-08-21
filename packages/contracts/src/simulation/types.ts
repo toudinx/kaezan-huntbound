@@ -29,10 +29,74 @@ export interface ActorBlueprint {
   readonly aggroRadius: number;
   readonly lootTableIndex: number | null;
   readonly abilityIndices: readonly number[];
+  /** Omitted JSON defaults to 0, which keeps the current in-combat regen. */
+  readonly outOfCombatHealthRegenTicks: number;
+  readonly outOfCombatHealthRegenAmount: number;
+  readonly outOfCombatResourceRegenTicks: number;
+  readonly outOfCombatResourceRegenAmount: number;
+  /** Ticks after the last received hit that still count as "in combat". */
+  readonly combatWindowTicks: number;
+  /** Thousandths of applied damage returned as health. 0 is no leech. */
+  readonly lifeLeechPermille: number;
+  readonly manaLeechPermille: number;
+  readonly attackElement: CombatElement;
+  readonly resistances: readonly ElementResistance[];
+  readonly immunities: readonly CombatElement[];
 }
 
 export type AbilityEffect = 'damage' | 'heal';
 export type AbilityShape = 'self' | 'target' | 'area';
+export type AbilityRechargeKind = 'none' | 'out-of-combat' | 'between-runs';
+
+export const COMBAT_ELEMENTS = [
+  'death',
+  'earth',
+  'energy',
+  'fire',
+  'holy',
+  'ice',
+  'physical',
+  'poison',
+] as const;
+export type CombatElement = (typeof COMBAT_ELEMENTS)[number];
+
+export interface ElementResistance {
+  readonly element: CombatElement;
+  readonly permille: number;
+}
+
+export interface ScenarioConditionDefinition {
+  readonly conditionId: string;
+  readonly exclusivityGroup: number | null;
+  readonly durationTicks: number;
+  readonly skillIndex: number | null;
+  readonly skillModifierPermille: number;
+  readonly damageDealtPermille: number;
+  readonly damageReceivedPermille: number;
+  readonly speedPermille: number;
+  readonly manaShield: boolean;
+  readonly tickDamageAmount: number;
+  readonly tickDamageIntervalTicks: number;
+  readonly elementBonusPermille: number;
+  readonly convertNextAbilityElement: boolean;
+  readonly bonusElement: CombatElement | null;
+}
+
+export interface ActiveConditionState {
+  readonly conditionIndex: number;
+  readonly expiresAtTick: number;
+  readonly exclusivityGroup: number | null;
+}
+
+export interface GroupCooldownState {
+  readonly groupIndex: number;
+  readonly readyAtTick: number;
+}
+
+export interface AbilityChargeState {
+  readonly abilityIndex: number;
+  readonly remaining: number;
+}
 
 export interface AbilityDefinition {
   readonly abilityId: string;
@@ -45,6 +109,15 @@ export interface AbilityDefinition {
   readonly groupCooldownTicks: number;
   readonly minPower: number;
   readonly maxPower: number;
+  readonly element: CombatElement;
+  readonly primaryCooldownGroup: number;
+  readonly secondaryCooldownGroup: number | null;
+  readonly secondaryGroupCooldownTicks: number;
+  readonly appliedConditionIndex: number | null;
+  /** `null` means unlimited charges, the v4 behaviour. */
+  readonly maxCharges: number | null;
+  readonly rechargeKind: AbilityRechargeKind;
+  readonly toggle: boolean;
 }
 
 export interface LootTableDefinition {
@@ -102,6 +175,7 @@ export interface KernelScenario {
   readonly maxLiveActors: number;
   readonly abilities: readonly AbilityDefinition[];
   readonly lootTables: readonly LootTableDefinition[];
+  readonly conditions: readonly ScenarioConditionDefinition[];
   readonly blueprints: readonly ActorBlueprint[];
   readonly initialActors: readonly InitialActor[];
 }
@@ -300,13 +374,16 @@ export interface ActorState {
   readonly resource: number;
   readonly targetEntityId: EntityId | null;
   readonly attackReadyAtTick: number;
-  readonly groupReadyAtTick: number;
+  readonly groupCooldowns: readonly GroupCooldownState[];
   readonly abilityCooldowns: readonly {
     readonly abilityIndex: number;
     readonly readyAtTick: number;
   }[];
   readonly nextHealthRegenTick: number;
   readonly nextResourceRegenTick: number;
+  readonly lastDamageReceivedTick: number;
+  readonly activeConditions: readonly ActiveConditionState[];
+  readonly abilityCharges: readonly AbilityChargeState[];
 }
 
 /**

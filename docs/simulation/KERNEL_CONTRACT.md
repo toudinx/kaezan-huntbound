@@ -3,16 +3,18 @@
 Este documento congela a linguagem pública compartilhada por `@huntbound/contracts` e pelo kernel
 headless. PB-03 entregou tick, RNG, grid de um andar, comandos, eventos, snapshot e replay; PB-04-05
 acrescentou andares, transição automática e o sistema de spawn. PB-05-04 implementa no kernel o
-vocabulário de combate publicado no contrato (`schemaVersion` 4, `rulesVersion` 3): as sete fases do
-tick, `S3 upkeep`, `S4 combat`, a morte de `S5` e a rolagem determinística de `loot/granted`. O
-comportamento `hunter` foi entregue por PB-05-05.
+vocabulário de combate (`schemaVersion` 4, `rulesVersion` 3): as sete fases do tick, `S3 upkeep`,
+`S4 combat`, a morte de `S5` e a rolagem determinística de `loot/granted`. O comportamento `hunter`
+foi entregue por PB-05-05. PB-07-03 abre o envelope `schemaVersion` 5 / `rulesVersion` 4 com
+campos aditivos de sustentação, condição, elemento e carga; as regras de `applyUpkeep`,
+`applyDamage` e `resolveCast` continuam as da v4 até as tasks seguintes.
 
 ## Versões e tempo
 
 | Constante | Valor |
 | --- | ---: |
-| `SIMULATION_SCHEMA_VERSION` | `4` |
-| `SIMULATION_RULES_VERSION` | `3` |
+| `SIMULATION_SCHEMA_VERSION` | `5` |
+| `SIMULATION_RULES_VERSION` | `4` |
 | `TICK_DURATION_MS` | `50` |
 | `MAX_FRAME_DELTA_MS` | `250` |
 
@@ -36,11 +38,13 @@ Todo número nos schemas do kernel é inteiro seguro. Não existe campo float. C
 
 ## Cenário
 
-`KernelScenario` v4 contém `schemaVersion`, `scenarioId`, `scenarioRevision`, `width`, `height`,
-`floors`, `transitions`, `spawnGroups`, `maxLiveActors`, `abilities`, `lootTables`, `blueprints` e
-`initialActors`. **Não há compatibilidade com a v3:** um documento sem `abilities`/`lootTables`, ou
-com blueprint sem os campos de combate, é reprovado pelo schema estrito — mesma política do salto
-v2 → v3. `schemaVersion: 3` num documento que já tem a forma v4 produz `SIM_VERSION_MISMATCH`.
+`KernelScenario` v5 contém `schemaVersion`, `scenarioId`, `scenarioRevision`, `width`, `height`,
+`floors`, `transitions`, `spawnGroups`, `maxLiveActors`, `abilities`, `lootTables`, `conditions`,
+`blueprints` e `initialActors`. Os campos novos do envelope v5 têm default Zod neutro, então um
+documento v4 sem listá-los parseia na forma. **Não há compatibilidade com a v3:** um documento sem
+`abilities`/`lootTables`, ou com blueprint sem os campos de combate, é reprovado pelo schema
+estrito — mesma política do salto v2 → v3. `schemaVersion: 4` num documento que já tem a forma v5
+produz `SIM_VERSION_MISMATCH` na validação do kernel.
 
 - `width` e `height` são positivos e valem para todos os andares.
 - `floors` é não vazio e estritamente ordenado por `z` ascendente, o que também proíbe `z` repetido.
@@ -61,7 +65,11 @@ v2 → v3. `schemaVersion: 3` num documento que já tem a forma v4 produz `SIM_V
 - Todo blueprint declara os campos de combate, todos obrigatórios. Um ator sem combate usa valores
   neutros: `attackMinDamage 0`, `attackMaxDamage 0`, `attackRangeTiles 1`, `aggroRadius 0`,
   `lootTableIndex null`, `abilityIndices []`, regeneração `0`. `attackRangeTiles` tem default `1` no
-  schema para fixtures JSON antigas continuarem válidas.
+  schema para fixtures JSON antigas continuarem válidas. Os campos v5 do blueprint também nascem
+  neutros quando omitidos: regen fora de combate `0` (cai no regen atual), `combatWindowTicks 0`,
+  leech `0` por milhar, `attackElement` `'physical'`, `resistances` e `immunities` vazios. Percentual
+  é inteiro por milhar. `resistances` e `immunities` são estritamente ordenados pelo elemento
+  (code unit UTF-16); ordem errada é recusa localizada, não reordenação.
 - `factionId` é inteiro não negativo. `attackMinDamage` não pode exceder `attackMaxDamage`.
 - `lootTableIndex` é `null` ou um índice de `lootTables`. `abilityIndices` é estritamente crescente,
   sem duplicata, e só contém índices declarados em `abilities`.
@@ -73,7 +81,19 @@ v2 → v3. `schemaVersion: 3` num documento que já tem a forma v4 produz `SIM_V
 
 `abilities` é a lista de `AbilityDefinition`. `abilityId` é kebab-case e único. `effect` é `damage`
 ou `heal`. `shape` é `self`, `target` ou `area`. `radius` é `0` fora de `area`; `rangeTiles` é `0`
-fora de `target`. `minPower` não pode exceder `maxPower`. Todo número é inteiro seguro.
+fora de `target`. `minPower` não pode exceder `maxPower`. Todo número é inteiro seguro. Campos v5
+com default: `element` `'physical'`, `primaryCooldownGroup` `0` (`PRIMARY_COOLDOWN_GROUP`),
+`secondaryCooldownGroup` `null`, `secondaryGroupCooldownTicks` `0`, `appliedConditionIndex` `null`,
+`maxCharges` `null` com `rechargeKind` `'none'` (cargas ilimitadas, o comportamento v4), `toggle`
+`false`.
+
+### Condições do cenário
+
+`conditions` é a lista de `ScenarioConditionDefinition`, endereçada por índice — o mesmo padrão de
+`abilities` e `lootTables`. Default é `[]`. `conditionId` é kebab-case e único. Não há string livre
+de condição no estado do ator: `ActorState.activeConditions` guarda `conditionIndex`. A definição
+carrega grupo de exclusividade, duração, modificadores por milhar, `manaShield`, dano periódico e
+conversão elemental. O kernel ainda não aplica essas regras; o campo existe para as tasks seguintes.
 
 ### Tabelas de loot
 
@@ -174,15 +194,21 @@ As coleções têm ordem canônica parte do contrato:
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing`, `readyAtTick`,
 `transitionGuard`, e os campos de combate: `health`, `resource`, `targetEntityId`,
-`attackReadyAtTick`, `groupReadyAtTick`, `abilityCooldowns`, `nextHealthRegenTick` e
-`nextResourceRegenTick`. `abilityCooldowns` é ordenada estritamente por `abilityIndex`, sem
-duplicata. `health` e `resource` são inteiros não negativos. `targetEntityId` é `null` ou o
-`EntityId` de um ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a
-restrição de `abilityCooldowns` aos índices declarados no blueprint dependem do cenário e seguem o
-mesmo padrão de `transitionGuard`: a checagem mora em `restoreSimulationKernel`, não no
-schema isolado do snapshot. `SpawnSlotState` guarda `groupIndex`, `slotIndex`, `readyAtTick` e `entityId`,
-que é `null` quando o assento está vago. Um `entityId` de slot que não corresponda a nenhum ator do
-snapshot é reprovado.
+`attackReadyAtTick`, `groupCooldowns`, `abilityCooldowns`, `nextHealthRegenTick`,
+`nextResourceRegenTick`, `lastDamageReceivedTick`, `activeConditions` e `abilityCharges`.
+`groupCooldowns` substitui o escalar `groupReadyAtTick` da v4: é `{ groupIndex, readyAtTick }[]`,
+ordenado estritamente por `groupIndex`, sem duplicata. A migração v4→v5 mapeia o escalar `N` para
+`[{ groupIndex: 0, readyAtTick: N }]`. `abilityCooldowns` é ordenada estritamente por
+`abilityIndex`; `activeConditions` por `conditionIndex`; `abilityCharges` por `abilityIndex`.
+Ordem errada é recusa com caminho localizado, não reordenação. `lastDamageReceivedTick` default `0`.
+`health` e `resource` são inteiros não negativos. `targetEntityId` é `null` ou o `EntityId` de um
+ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a restrição de
+`abilityCooldowns` aos índices declarados no blueprint dependem do cenário e seguem o mesmo padrão
+de `transitionGuard`: a checagem mora em `restoreSimulationKernel`, não no schema isolado do
+snapshot. O kernel de combate ainda lê e escreve somente o grupo primário (`PRIMARY_COOLDOWN_GROUP`
+`0`); grupos secundários entram em PB-07-05. `SpawnSlotState` guarda `groupIndex`, `slotIndex`,
+`readyAtTick` e `entityId`, que é `null` quando o assento está vago. Um `entityId` de slot que não
+corresponda a nenhum ator do snapshot é reprovado.
 
 Dois atores só não podem compartilhar célula no **mesmo** andar; `(x, y)` iguais em `z` diferentes
 são estado válido.

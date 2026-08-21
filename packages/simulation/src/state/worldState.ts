@@ -45,13 +45,26 @@ export function cloneActor(actor: ActorState): ActorState {
     resource: actor.resource,
     targetEntityId: actor.targetEntityId,
     attackReadyAtTick: actor.attackReadyAtTick,
-    groupReadyAtTick: actor.groupReadyAtTick,
+    groupCooldowns: actor.groupCooldowns.map((entry) => ({
+      groupIndex: entry.groupIndex,
+      readyAtTick: entry.readyAtTick,
+    })),
     abilityCooldowns: actor.abilityCooldowns.map((entry) => ({
       abilityIndex: entry.abilityIndex,
       readyAtTick: entry.readyAtTick,
     })),
     nextHealthRegenTick: actor.nextHealthRegenTick,
     nextResourceRegenTick: actor.nextResourceRegenTick,
+    lastDamageReceivedTick: actor.lastDamageReceivedTick,
+    activeConditions: actor.activeConditions.map((entry) => ({
+      conditionIndex: entry.conditionIndex,
+      expiresAtTick: entry.expiresAtTick,
+      exclusivityGroup: entry.exclusivityGroup,
+    })),
+    abilityCharges: actor.abilityCharges.map((entry) => ({
+      abilityIndex: entry.abilityIndex,
+      remaining: entry.remaining,
+    })),
   };
 }
 
@@ -74,7 +87,7 @@ export function createActorState(
     resource: blueprint.maxResource,
     targetEntityId: null,
     attackReadyAtTick: 0,
-    groupReadyAtTick: 0,
+    groupCooldowns: [],
     abilityCooldowns: [],
     nextHealthRegenTick:
       blueprint.healthRegenTicks === 0
@@ -84,6 +97,9 @@ export function createActorState(
       blueprint.resourceRegenTicks === 0
         ? 0
         : bornAtTick + blueprint.resourceRegenTicks,
+    lastDamageReceivedTick: 0,
+    activeConditions: [],
+    abilityCharges: [],
   };
 }
 

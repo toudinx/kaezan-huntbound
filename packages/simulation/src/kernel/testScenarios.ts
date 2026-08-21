@@ -73,6 +73,16 @@ export function combatNeutralBlueprint(
     aggroRadius: 0,
     lootTableIndex: null,
     abilityIndices: [],
+    outOfCombatHealthRegenTicks: 0,
+    outOfCombatHealthRegenAmount: 0,
+    outOfCombatResourceRegenTicks: 0,
+    outOfCombatResourceRegenAmount: 0,
+    combatWindowTicks: 0,
+    lifeLeechPermille: 0,
+    manaLeechPermille: 0,
+    attackElement: 'physical',
+    resistances: [],
+    immunities: [],
     ...overrides,
   };
 }
@@ -92,6 +102,7 @@ export function kernelScenario(
     maxLiveActors: 64,
     abilities: [],
     lootTables: [],
+    conditions: [],
     blueprints: [
       combatNeutralBlueprint('walker', 2, 'inert'),
       combatNeutralBlueprint('wanderer', 3, 'wander'),
@@ -237,6 +248,29 @@ export function payloadsOfType<Type extends SimulationEventPayload['type']>(
   return matching;
 }
 
+function abilityV5Defaults(): Pick<
+  AbilityDefinition,
+  | 'element'
+  | 'primaryCooldownGroup'
+  | 'secondaryCooldownGroup'
+  | 'secondaryGroupCooldownTicks'
+  | 'appliedConditionIndex'
+  | 'maxCharges'
+  | 'rechargeKind'
+  | 'toggle'
+> {
+  return {
+    element: 'physical',
+    primaryCooldownGroup: 0,
+    secondaryCooldownGroup: null,
+    secondaryGroupCooldownTicks: 0,
+    appliedConditionIndex: null,
+    maxCharges: null,
+    rechargeKind: 'none',
+    toggle: false,
+  };
+}
+
 export function healSelfAbility(
   overrides: Partial<AbilityDefinition> = {},
 ): AbilityDefinition {
@@ -251,6 +285,7 @@ export function healSelfAbility(
     groupCooldownTicks: 2,
     minPower: 3,
     maxPower: 3,
+    ...abilityV5Defaults(),
     ...overrides,
   };
 }
@@ -269,6 +304,7 @@ export function damageTargetAbility(
     groupCooldownTicks: 2,
     minPower: 4,
     maxPower: 4,
+    ...abilityV5Defaults(),
     ...overrides,
   };
 }
@@ -287,6 +323,7 @@ export function damageAreaAbility(
     groupCooldownTicks: 4,
     minPower: 2,
     maxPower: 5,
+    ...abilityV5Defaults(),
     ...overrides,
   };
 }
@@ -300,17 +337,20 @@ export function actorCombatFields(
   | 'resource'
   | 'targetEntityId'
   | 'attackReadyAtTick'
-  | 'groupReadyAtTick'
+  | 'groupCooldowns'
   | 'abilityCooldowns'
   | 'nextHealthRegenTick'
   | 'nextResourceRegenTick'
+  | 'lastDamageReceivedTick'
+  | 'activeConditions'
+  | 'abilityCharges'
 > {
   return {
     health: blueprint.maxHealth,
     resource: blueprint.maxResource,
     targetEntityId: null,
     attackReadyAtTick: 0,
-    groupReadyAtTick: 0,
+    groupCooldowns: [],
     abilityCooldowns: [],
     nextHealthRegenTick:
       blueprint.healthRegenTicks === 0
@@ -320,5 +360,8 @@ export function actorCombatFields(
       blueprint.resourceRegenTicks === 0
         ? 0
         : bornAtTick + blueprint.resourceRegenTicks,
+    lastDamageReceivedTick: 0,
+    activeConditions: [],
+    abilityCharges: [],
   };
 }

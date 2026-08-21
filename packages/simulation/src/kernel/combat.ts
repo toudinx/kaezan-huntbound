@@ -9,6 +9,7 @@ import type {
   SimulationDiagnosticCode,
   TickIndex,
 } from '@huntbound/contracts';
+import { PRIMARY_COOLDOWN_GROUP } from '@huntbound/contracts';
 import type { EventJournal } from '../events/journal.ts';
 import { chebyshevDistance } from '../grid/directions.ts';
 import { isSightClear } from '../grid/sight.ts';
@@ -356,12 +357,34 @@ function abilityOf(
   return scenarioAbilities[abilityIndex];
 }
 
+function groupReadyAt(actor: ActorState, groupIndex: number): number {
+  for (const entry of actor.groupCooldowns) {
+    if (entry.groupIndex === groupIndex) {
+      return entry.readyAtTick;
+    }
+  }
+  return 0;
+}
+
+function setGroupCooldown(
+  actor: ActorState,
+  groupIndex: number,
+  readyAtTick: number,
+): ActorState['groupCooldowns'] {
+  const next = actor.groupCooldowns.filter(
+    (entry) => entry.groupIndex !== groupIndex,
+  );
+  next.push({ groupIndex, readyAtTick });
+  next.sort((left, right) => left.groupIndex - right.groupIndex);
+  return next;
+}
+
 function abilityOnCooldown(
   actor: ActorState,
   abilityIndex: number,
   tick: number,
 ): boolean {
-  if (tick < actor.groupReadyAtTick) {
+  if (tick < groupReadyAt(actor, PRIMARY_COOLDOWN_GROUP)) {
     return true;
   }
   return actor.abilityCooldowns.some(
@@ -540,7 +563,11 @@ function resolveCast(
   world.update({
     ...spent,
     resource: spent.resource - ability.resourceCost,
-    groupReadyAtTick: tick + ability.groupCooldownTicks,
+    groupCooldowns: setGroupCooldown(
+      spent,
+      PRIMARY_COOLDOWN_GROUP,
+      tick + ability.groupCooldownTicks,
+    ),
     abilityCooldowns: setAbilityCooldown(
       spent,
       intent.abilityIndex,

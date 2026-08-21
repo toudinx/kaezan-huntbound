@@ -569,8 +569,8 @@ describe('combat commands, events, and diagnostics', () => {
 });
 
 describe('frozen versions', () => {
-  it('pins the schema version at 4 and the rules version at 3', () => {
-    expect(SIMULATION_SCHEMA_VERSION).toBe(4);
-    expect(SIMULATION_RULES_VERSION).toBe(3);
+  it('pins the schema version at 5 and the rules version at 4', () => {
+    expect(SIMULATION_SCHEMA_VERSION).toBe(5);
+    expect(SIMULATION_RULES_VERSION).toBe(4);
   });
 });

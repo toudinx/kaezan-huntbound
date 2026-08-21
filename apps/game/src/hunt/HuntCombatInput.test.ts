@@ -11,6 +11,17 @@ import {
   combatCommandForAction,
 } from './HuntCombatInput';
 
+const abilityV5Defaults = {
+  element: 'physical' as const,
+  primaryCooldownGroup: 0,
+  secondaryCooldownGroup: null,
+  secondaryGroupCooldownTicks: 0,
+  appliedConditionIndex: null,
+  maxCharges: null,
+  rechargeKind: 'none' as const,
+  toggle: false,
+};
+
 const abilities: readonly AbilityDefinition[] = [
   {
     abilityId: 'berserk',
@@ -23,6 +34,7 @@ const abilities: readonly AbilityDefinition[] = [
     groupCooldownTicks: 40,
     minPower: 14,
     maxPower: 41,
+    ...abilityV5Defaults,
   },
   {
     abilityId: 'brutal-strike',
@@ -35,6 +47,7 @@ const abilities: readonly AbilityDefinition[] = [
     groupCooldownTicks: 40,
     minPower: 10,
     maxPower: 20,
+    ...abilityV5Defaults,
   },
   {
     abilityId: 'wound-cleansing',
@@ -47,6 +60,7 @@ const abilities: readonly AbilityDefinition[] = [
     groupCooldownTicks: 20,
     minPower: 26,
     maxPower: 52,
+    ...abilityV5Defaults,
   },
 ];
 

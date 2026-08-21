@@ -63,7 +63,7 @@ function combatState() {
     resource: 0,
     targetEntityId: null as number | null,
     attackReadyAtTick: 0,
-    groupReadyAtTick: 0,
+    groupCooldowns: [],
     abilityCooldowns: [] as { abilityIndex: number; readyAtTick: number }[],
     nextHealthRegenTick: 0,
     nextResourceRegenTick: 0,
@@ -451,9 +451,9 @@ describe('simulation schemas', () => {
     expectSchemaInvalid(validateSimulationSnapshot(decimalTick));
   });
 
-  it('pins the schema version at 4 and the rules version at 3', () => {
-    expect(SIMULATION_SCHEMA_VERSION).toBe(4);
-    expect(SIMULATION_RULES_VERSION).toBe(3);
+  it('pins the schema version at 5 and the rules version at 4', () => {
+    expect(SIMULATION_SCHEMA_VERSION).toBe(5);
+    expect(SIMULATION_RULES_VERSION).toBe(4);
   });
 
   it('rejects non-increasing command sequences and decreasing ticks in logs', () => {

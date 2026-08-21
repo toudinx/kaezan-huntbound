@@ -11,7 +11,7 @@ function at(x: number, y: number) {
 
 function gridOf(blockedTiles: readonly (readonly [number, number])[] = []) {
   const scenario: KernelScenario = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     scenarioId: 'sight-test',
     scenarioRevision: 1,
     width: 8,
@@ -22,6 +22,7 @@ function gridOf(blockedTiles: readonly (readonly [number, number])[] = []) {
     maxLiveActors: 8,
     abilities: [],
     lootTables: [],
+    conditions: [],
     blueprints: [
       {
         blueprintId: 'walker',
@@ -41,6 +42,16 @@ function gridOf(blockedTiles: readonly (readonly [number, number])[] = []) {
         aggroRadius: 0,
         lootTableIndex: null,
         abilityIndices: [],
+        outOfCombatHealthRegenTicks: 0,
+        outOfCombatHealthRegenAmount: 0,
+        outOfCombatResourceRegenTicks: 0,
+        outOfCombatResourceRegenAmount: 0,
+        combatWindowTicks: 0,
+        lifeLeechPermille: 0,
+        manaLeechPermille: 0,
+        attackElement: 'physical',
+        resistances: [],
+        immunities: [],
       },
     ],
     initialActors: [],

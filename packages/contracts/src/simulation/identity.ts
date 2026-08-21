@@ -5,8 +5,10 @@ export type EntityId = number & { readonly __brand: 'EntityId' };
 export type Seed = string & { readonly __brand: 'Seed' };
 export type StreamLabel = string & { readonly __brand: 'StreamLabel' };
 
-export const SIMULATION_SCHEMA_VERSION = 4;
-export const SIMULATION_RULES_VERSION = 3;
+export const SIMULATION_SCHEMA_VERSION = 5;
+export const SIMULATION_RULES_VERSION = 4;
+/** Shared v4 cooldown channel. Later groups are addressed by index from here. */
+export const PRIMARY_COOLDOWN_GROUP = 0;
 export const TICK_DURATION_MS = 50;
 export const MAX_FRAME_DELTA_MS = 250;
 

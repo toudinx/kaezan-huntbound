@@ -35,10 +35,13 @@ function walkerStub(entityId: EntityId, position: GridPosition): ActorState {
     resource: 0,
     targetEntityId: null,
     attackReadyAtTick: 0,
-    groupReadyAtTick: 0,
+    groupCooldowns: [],
     abilityCooldowns: [],
     nextHealthRegenTick: 0,
     nextResourceRegenTick: 0,
+    lastDamageReceivedTick: 0,
+    activeConditions: [],
+    abilityCharges: [],
   };
 }
 
