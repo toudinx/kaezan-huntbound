@@ -10,7 +10,7 @@
 junto com a auditoria bloqueante; a base do PB-05 exigida pelo gate `save:check` é o commit
 integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 
-**Próxima etapa:** executar PB-06-09.
+**Próxima etapa:** PB-06-09 bloqueada; corrigir os defeitos registrados antes do aceite.
 
 ## Tasks
 
@@ -24,7 +24,7 @@ integrado `d4490e9`, com `verify` verde e goldens de combate estáveis.
 | PB-06-06 | done | `codex/pb06-06-run-persistence` | (este commit) | checkpoint/retomada/consolidação; 66 testes de save; goldens PB-03/04/05 intactos |
 | PB-06-07 | done | `codex/pb06-07-save-gate` | (este commit) | `pb-06-save-session` + `save:check` em `check`/`verify` + `REPLAY_CONTRACT.md` |
 | PB-06-08 | done | `codex/pb06-08-save-ui` | (este commit) | save/session + inventory; game 36/215; biome/typecheck/architecture/save/build = 0; verify = 1 somente por 5 screenshots do shell alterados pelo painel |
-| PB-06-09 | pending | `<agente>/pb06-09-save-browser-qa` | — | specs estáveis sem `retries`; entrega jogável para o aceite do usuário |
+| PB-06-09 | blocked | `codex/pb06-09-save-browser-qa` | — | browser QA bloqueado: código de versão futura ausente na UI e instabilidade do helper de combate; relatório em `artifacts/browser-qa.md` |
 | PB-06-10 | **opcional** | `<agente>/pb06-10-audit` | — | auditoria pós-aceite; gera tasks de correção, não veredito |
 
 ## Última task concluída
@@ -53,7 +53,7 @@ referências:
 
 ## Bloqueios
 
-Bloqueios abertos: B4.
+Bloqueios abertos: B4, B5 e B6.
 
 - ~~**B3 — aberto em PB-06-02.**~~ **Recuperado nesta sessão:** `qa:browser` passou 34/34,
   incluindo `hunt-play.spec.ts:366`; nenhuma alteração foi feita em `apps/game`.
@@ -62,6 +62,12 @@ Bloqueios abertos: B4.
   (`hunt-play.spec.ts:427`) expirou na espera por um passo porque o jogador morreu (`Health: 0/590`,
   overlay `You died.`) após 33/34 testes passarem. A reprodução isolada passou 1/1. Resolver exige
   uma decisão fora do escopo do repositório de saves sobre o teste de movimentação e o combate PB-05.
+
+- **B5 — aberto em PB-06-09.** Importar `schemaVersion: 2` preserva o save, mas a UI omite
+  `SAVE_VERSION_UNSUPPORTED`; reproduzido em 4/4 viewports, exit 1.
+
+- **B6 — aberto em PB-06-09.** Reload em `1920x1080` passou 9/10 sem retry; uma execução falhou em
+  `tests/e2e/support/combatDriver.ts:373` com `Target cycling did not select a living combat target`.
 
 - ~~**B1:** PB-05 não fechou pela auditoria PB-05-12.~~ **Removido em 2026-08-18.** A auditoria
   deixou de ser gate bloqueante (`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de
