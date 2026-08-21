@@ -190,8 +190,9 @@ essencial:
 4. Rode as verificações exigidas com evidência fresca.
 5. Atualize o `STATE.md` — **só a linha da task na tabela** e, se houver, o bloqueio. A narrativa do
    que foi feito vai na mensagem de commit, que o Git já preserva e ninguém precisa manter.
-6. Commit, integração declarada (padrão `git merge --ff-only`), verificação pós-integração e limpeza
-   de worktree/branch — tudo isso já está autorizado pela task, não peça confirmação de novo.
+6. Commit, `git merge --ff-only` na `main`, verificação pós-integração e limpeza de worktree/branch.
+   Serial ou paralela: o executor integra; não deixe a branch para um integrador. Já autorizado pela
+   task, não peça confirmação.
 7. Não inicie a próxima task.
 
 ### Ambiguidade não é motivo para parar

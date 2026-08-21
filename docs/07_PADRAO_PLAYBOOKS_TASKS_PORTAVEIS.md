@@ -169,7 +169,7 @@ Executar uma task autoriza seu ciclo normal de conclusão. O agente não pede um
 para integrar localmente um commit aprovado, avançar o branch-base por fast-forward ou remover os
 recursos temporários que ele próprio criou.
 
-Para uma task serial, o fluxo padrão é:
+O fluxo padrão, serial ou paralelo, é:
 
 ```text
 git status --porcelain=v1 --untracked-files=all
@@ -220,14 +220,14 @@ diferente do implementador. Ausência do modelo recomendado deve ser registrada,
 
 Tasks só podem executar em paralelo quando o `README.md` do playbook declarar paths e dependências
 independentes. Cada chat usa worktree e branch isolados. Verificações que disputem porta, banco,
-fixture mutável ou output compartilhado são serializadas. Atualizações concorrentes em `STATE.md` e
-`README.md` são integradas por um único responsável depois dos commits funcionais.
+fixture mutável ou output compartilhado são serializadas. `STATE.md` e `README.md` entram no commit
+da task; duas paralelas que os toquem serializam o fast-forward.
 
-Ao concluir a implementação paralela, cada executor verifica a árvore, cria o commit e remove sua
-worktree para não acumular pastas temporárias, mas preserva a branch. Remover a worktree não remove a
-branch nem o commit. O integrador incorpora as branches serialmente, resolve somente conflitos
-autorizados, verifica o conjunto e apaga cada branch temporária com `git branch -d` apenas depois de
-comprovar sua integração. Tasks paralelas não disputam fast-forward concorrente de `main`.
+Ao concluir a implementação paralela, cada executor commita, faz `git merge --ff-only` na `main`,
+repete a verificação no resultado integrado e só então remove worktree e branch. Se duas paralelas
+terminarem juntas, a segunda espera o fast-forward da primeira. `--ff-only` que falha é parada, não
+motivo para deixar a branch “para o integrador”. `STATE.md` e `README.md` entram no mesmo commit da
+task; conflito aí também é `--ff-only` que falha.
 
 ## Prompt mínimo para executar uma task
 
@@ -243,8 +243,8 @@ tasks posteriores.
 
 Implemente o escopo, execute todas as verificações, atualize o handoff persistente e produza o commit
 solicitado quando Git estiver disponível. Conclua também a integração e a limpeza declaradas na task
-sem pedir confirmação adicional para o fast-forward rotineiro. Se a task for paralela, remova a
-worktree limpa após o commit e preserve a branch para o integrador designado.
+sem pedir confirmação adicional para o fast-forward rotineiro. Serial ou paralela: `git merge
+--ff-only` na `main`, verificar o resultado integrado, apagar worktree e branch.
 
 Se uma decisão não coberta, inconsistência ou risco impedir a conclusão segura, pare, registre o
 bloqueio e informe exatamente o que precisa ser decidido. Não amplie o escopo silenciosamente.

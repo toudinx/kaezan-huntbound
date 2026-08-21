@@ -26,7 +26,10 @@ contorne removendo arquivo de configuração.
 O `install` não é opcional: worktree nova não tem `node_modules` e todo gate falha sem ele. Com o
 store local, resolve em segundos e não toca `pnpm-lock.yaml`.
 
-## Integrar (task serial)
+## Integrar
+
+Toda task conclui com fast-forward na `main`. Serial ou paralela: o executor integra, não deixa a
+branch para um integrador futuro.
 
 ```bash
 git status --porcelain=v1 --untracked-files=all
@@ -63,9 +66,9 @@ Get-NetTCPConnection -LocalPort 4173 -State Listen | ForEach-Object { Stop-Proce
 
 ## Task paralela
 
-O executor remove a worktree limpa depois do commit e **preserva a branch** para o integrador.
-Remover worktree não remove branch nem commit. Só o integrador apaga a branch, depois de incorporar e
-verificar o conjunto. Tasks paralelas não disputam fast-forward concorrente de `main`.
+Mesmo ciclo: `--ff-only` na `main`, verificação pós-integração, apagar worktree e branch. Se duas
+paralelas terminarem juntas, a segunda espera o fast-forward da primeira; se o `--ff-only` falhar,
+para e reporta. Não preserve branch "para o integrador".
 
 ## Nunca
 

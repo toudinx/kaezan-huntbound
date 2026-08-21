@@ -65,8 +65,9 @@ ciclos vermelho/verde.
 
 # Ciclo de conclusão
 
-Executar a task já autoriza integrar e limpar. Não peça confirmação para fast-forward local nem para
-remover a worktree que você criou. Detalhe operacional na skill `worktree-cycle`.
+Executar a task já autoriza integrar e limpar. Sempre `git merge --ff-only` na `main`, inclusive em
+task paralela — não preserve a branch para um integrador. Não peça confirmação para fast-forward
+local nem para remover a worktree que você criou. Detalhe operacional na skill `worktree-cycle`.
 
 Se `--ff-only` falhar, houver conflito, teste vermelho, árvore suja ou dúvida sobre path: a task não
 terminou. Preserve worktree e branch, registre o estado, reporte o impedimento. Não crie merge

@@ -53,9 +53,9 @@ durável vai para ADR ou spec e é só referenciada.
 
 ## 6. Fechar
 
-Commit, integração pelo modo declarado (padrão `git merge --ff-only`), verificação pós-integração e
-limpeza de worktree/branch. Isso já está autorizado pela task; não peça confirmação. O procedimento
-está na skill `worktree-cycle`.
+Commit, `git merge --ff-only` na `main`, verificação pós-integração e limpeza de worktree/branch.
+Serial ou paralela: o executor integra. Não deixe a branch para um integrador. Isso já está
+autorizado pela task; não peça confirmação. O procedimento está na skill `worktree-cycle`.
 
 ## 7. Relatar
 
