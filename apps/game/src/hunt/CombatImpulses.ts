@@ -103,7 +103,6 @@ export function createCombatImpulses(): CombatImpulses {
   let nextId = 1;
   let entries: CombatImpulse[] = [];
   let lastAdvanceMs = 0;
-  let motionPauseMs = new Map<EntityId, number>();
 
   const add = (input: {
     readonly kind: CombatImpulseKind;
@@ -191,17 +190,6 @@ export function createCombatImpulses(): CombatImpulses {
         ? Math.max(lastAdvanceMs, nowMs)
         : lastAdvanceMs;
 
-      for (const entry of entries) {
-        if (entry.kind !== 'hit-stop') continue;
-        const fromMs = Math.max(lastAdvanceMs, entry.createdAtMs);
-        const toMs = Math.min(safeNowMs, entry.expiresAtMs);
-        if (toMs <= fromMs) continue;
-        motionPauseMs.set(
-          entry.entityId,
-          (motionPauseMs.get(entry.entityId) ?? 0) + (toMs - fromMs),
-        );
-      }
-
       entries = entries.filter((entry) => entry.expiresAtMs > safeNowMs);
       lastAdvanceMs = safeNowMs;
     },
@@ -268,11 +256,45 @@ export function createCombatImpulses(): CombatImpulses {
       }
       return { x, y };
     },
-    renderTickFor: (entityId, renderTick) =>
-      renderTick - (motionPauseMs.get(entityId) ?? 0) / TICK_DURATION_MS,
+    /**
+     * Holds the actor's clock still while a hit is landing, and hands it back
+     * intact afterwards.
+     *
+     * Hit-stop used to be a running total of paused milliseconds subtracted
+     * from the world clock. A total only grows, and every `combat/damaged`
+     * stops both the target and the attacker, so a fight walked the player's
+     * clock permanently backwards -- forty exchanges put him forty ticks, four
+     * whole tiles, behind. His position and walk frame read from that stale
+     * clock while the lunge offset and the camera read from the live one, so
+     * the world slid past a sprite pinned to a tile it had already left. That
+     * is what moonwalking looked like.
+     *
+     * Freezing instead of subtracting keeps the impact and cannot drift: the
+     * actor resumes on the world clock the moment the last hit-stop expires,
+     * having skipped at most HIT_STOP_MAX_MS of its own animation.
+     */
+    renderTickFor: (entityId, renderTick) => {
+      const nowMs = renderTick * TICK_DURATION_MS;
+      let frozenAtMs: number | undefined;
+      for (const entry of entries) {
+        if (
+          entry.kind !== 'hit-stop' ||
+          entry.entityId !== entityId ||
+          nowMs < entry.createdAtMs ||
+          nowMs >= entry.expiresAtMs
+        ) {
+          continue;
+        }
+        if (frozenAtMs === undefined || entry.createdAtMs > frozenAtMs) {
+          frozenAtMs = entry.createdAtMs;
+        }
+      }
+      return frozenAtMs === undefined
+        ? renderTick
+        : frozenAtMs / TICK_DURATION_MS;
+    },
     reset: () => {
       entries = [];
-      motionPauseMs = new Map();
       lastAdvanceMs = 0;
       nextId = 1;
     },

@@ -79,6 +79,7 @@ export interface HuntSimulationDriver {
   readonly alpha: number;
   enqueue(input: SimulationCommandInput): CommandAcceptance;
   advanceTo(nowMs: number): readonly SimulationEvent[];
+  resyncClock?(): void;
   restart?(nowMs?: number): void;
 }
 
@@ -227,7 +228,14 @@ export class HuntScene extends Phaser.Scene {
     this.inputGate.reset();
     this.applyCameraFraming();
     this.cameraController = this.makeCameraController();
-    this.cameras.main.roundPixels = true;
+    // Rounding is per Game Object, not per camera: Phaser snaps each textured
+    // object to a whole screen pixel on its own. The zoom is
+    // `viewportHeight / (11 * 32)` and almost never lands on an integer, so
+    // neighbouring tiles rounded away from each other, opening and closing
+    // one-pixel seams as the camera scrolled, and the actor jittered against
+    // the floor he was standing on. Sub-pixel positions cost a little softness
+    // on a texture that is already filtered; they buy back continuous motion.
+    this.cameras.main.roundPixels = false;
 
     this.renderFloor();
     this.followPlayer(this.options.driver.alpha);
@@ -428,6 +436,7 @@ export class HuntScene extends Phaser.Scene {
         zoom: this.cameras.main.zoom,
         visibleRows:
           this.scale.height / (this.tileSize * this.cameras.main.zoom),
+        roundPixels: this.cameras.main.roundPixels,
       },
       drawn: {
         total: this.sprites.length,

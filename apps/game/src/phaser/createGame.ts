@@ -50,6 +50,11 @@ export function createGame(
         });
       },
       resume: () => {
+        // The loop slept while the window was away, but wall time did not, and
+        // Phaser rebases its own clock on focus. Without this the first frame
+        // back hands the simulation the whole away-duration at once and the
+        // hunt fast-forwards through it in a single visible jump.
+        huntSceneOptions?.driver.resyncClock?.();
         game.loop.wake();
         const snapshot = bridge.getSnapshot();
         const resumeSnapshot = phaseBeforePause;
