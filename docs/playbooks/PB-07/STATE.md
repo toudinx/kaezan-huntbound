@@ -35,6 +35,10 @@ Próxima elegível: **PB-07-04**. PB-07-12 e PB-07-13 são independentes.
 **B2 — aberto.** `verify` ainda vermelho por save-persistence/`SAVE_VERSION_UNSUPPORTED` e
 snapshots de `shell`, fora do escopo da 02. Não bloqueia a trilha de combate; não bloqueia merge.
 
+**B3 — aberto.** `--ff-only` na `main` abortou: WIP local em `identity.ts`. Worktree
+`C:\Kaezan\kaezan-huntbound-pb07-03-contract` e branch `codex/pb07-03-combat-contract-v5`
+preservadas.
+
 ## Decisões congeladas
 
 Vivem no `README.md`. Task serial ou paralela sempre faz `git merge --ff-only` na `main`.
