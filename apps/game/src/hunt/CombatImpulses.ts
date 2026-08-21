@@ -11,6 +11,10 @@ export const LUNGE_DISTANCE_PX = 6;
 export const HIT_STOP_MAX_MS = 50;
 export const SHAKE_TTL_MS = 180;
 export const SHAKE_AMPLITUDE_PX = 3;
+// Ten percent of max health makes a real spike visible without shaking for a
+// normal creature bite; the fraction scales with the character rather than a
+// level-specific absolute damage value.
+export const SHAKE_DAMAGE_FRACTION_THRESHOLD = 0.1;
 
 const SHAKE_STEP_MS = 24;
 
@@ -32,6 +36,7 @@ export interface CombatImpulseInput {
   readonly events: readonly SimulationEvent[];
   readonly actorPositions: ReadonlyMap<EntityId, GridPosition>;
   readonly playerEntityId: EntityId | null;
+  readonly playerMaximumHealth: number | null;
 }
 
 export interface CombatImpulses {
@@ -99,6 +104,19 @@ function copyImpulse(impulse: CombatImpulse): CombatImpulse {
   return Object.freeze({ ...impulse });
 }
 
+function isHeavyPlayerDamage(
+  amount: number,
+  playerMaximumHealth: number | null,
+): boolean {
+  return (
+    Number.isFinite(amount) &&
+    playerMaximumHealth !== null &&
+    Number.isFinite(playerMaximumHealth) &&
+    playerMaximumHealth > 0 &&
+    amount / playerMaximumHealth >= SHAKE_DAMAGE_FRACTION_THRESHOLD
+  );
+}
+
 export function createCombatImpulses(): CombatImpulses {
   let nextId = 1;
   let entries: CombatImpulse[] = [];
@@ -138,7 +156,12 @@ export function createCombatImpulses(): CombatImpulses {
   };
 
   return {
-    handle: ({ events, actorPositions, playerEntityId }) => {
+    handle: ({
+      events,
+      actorPositions,
+      playerEntityId,
+      playerMaximumHealth,
+    }) => {
       for (const event of events) {
         if (event.payload.type !== 'combat/damaged') continue;
 
@@ -175,7 +198,10 @@ export function createCombatImpulses(): CombatImpulses {
           tick: event.tick,
           ttlMs: HIT_STOP_MAX_MS,
         });
-        if (entityId === playerEntityId) {
+        if (
+          entityId === playerEntityId &&
+          isHeavyPlayerDamage(event.payload.amount, playerMaximumHealth)
+        ) {
           add({
             kind: 'shake',
             entityId,

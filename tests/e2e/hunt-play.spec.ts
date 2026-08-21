@@ -210,6 +210,141 @@ test.describe('the first hunt is playable by synthetic input', () => {
     expectQuiet(watch);
   });
 
+  test('marks the selected target on its tile and clears or moves the ring', async ({
+    page,
+  }) => {
+    const watch = watchPage(page);
+    const initial = await waitForHunt(page);
+
+    await page.waitForFunction(
+      () => {
+        const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+        const state = probe?.state();
+        if (state === undefined) return false;
+        return (
+          state.actors.filter(
+            (actor) =>
+              actor.entityId !== state.player?.entityId &&
+              actor.position.z === state.floor &&
+              actor.visible,
+          ).length >= 2
+        );
+      },
+      undefined,
+      { polling: 'raf', timeout: 15_000 },
+    );
+
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(
+      () =>
+        (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe?.state()
+          .targetRing.visible === true,
+      undefined,
+      { polling: 'raf', timeout: 5_000 },
+    );
+
+    const selected = await readHuntState(page);
+    expect(selected.targetRing.targetEntityId).not.toBeNull();
+    expect(selected.targetRing.position).toEqual(
+      selected.actors.find(
+        (actor) =>
+          actor.entityId === selected.targetRing.targetEntityId &&
+          actor.visible,
+      )?.position,
+    );
+
+    const firstTargetId = selected.targetRing.targetEntityId;
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(
+      (previousTargetId) => {
+        const ring = (
+          globalThis as HuntboundHuntGlobal
+        ).__huntboundHuntProbe?.state().targetRing;
+        return (
+          ring?.visible === true &&
+          ring.targetEntityId !== null &&
+          ring.targetEntityId !== previousTargetId
+        );
+      },
+      firstTargetId,
+      { polling: 'raf', timeout: 5_000 },
+    );
+
+    const changed = await readHuntState(page);
+    expect(changed.targetRing.targetEntityId).not.toBe(firstTargetId);
+    expect(changed.targetRing.position).toEqual(
+      changed.actors.find(
+        (actor) =>
+          actor.entityId === changed.targetRing.targetEntityId && actor.visible,
+      )?.position,
+    );
+
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(
+      () => {
+        const ring = (
+          globalThis as HuntboundHuntGlobal
+        ).__huntboundHuntProbe?.state().targetRing;
+        return (
+          ring?.visible === false &&
+          ring.targetEntityId === null &&
+          ring.position === null
+        );
+      },
+      undefined,
+      { polling: 'raf', timeout: 5_000 },
+    );
+
+    expect((await readHuntState(page)).targetRing).toEqual({
+      targetEntityId: null,
+      position: null,
+      visible: false,
+    });
+    expect(initial.targetRing).toEqual({
+      targetEntityId: null,
+      position: null,
+      visible: false,
+    });
+    expectQuiet(watch);
+  });
+
+  test('does not shake the camera for a light player hit', async ({ page }) => {
+    const watch = watchPage(page);
+    const initial = await waitForHunt(page);
+    const playerEntityId = requirePlayer(initial).entityId;
+
+    await page.keyboard.press('Space');
+    await page.waitForFunction(
+      (entityId) => {
+        const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+        return (
+          probe
+            ?.activeImpulses?.()
+            .some(
+              (impulse) =>
+                impulse.type === 'flash' && impulse.entityId === entityId,
+            ) ?? false
+        );
+      },
+      playerEntityId,
+      { polling: 'raf', timeout: 20_000 },
+    );
+
+    const impulses = await page.evaluate(
+      () =>
+        (
+          globalThis as HuntboundHuntGlobal
+        ).__huntboundHuntProbe?.activeImpulses?.() ?? [],
+    );
+    expect(
+      impulses.filter(
+        (impulse) =>
+          impulse.type === 'shake' && impulse.entityId === playerEntityId,
+      ),
+    ).toEqual([]);
+    expectQuiet(watch);
+  });
+
   test('does not repaint the floor when another actor moves on the same floor', async ({
     page,
   }) => {

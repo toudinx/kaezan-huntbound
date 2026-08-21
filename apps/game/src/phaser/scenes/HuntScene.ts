@@ -67,6 +67,7 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { huntFloorSync } from '../../hunt/huntFloorSync';
+import { resolveTargetRing, type TargetRingState } from '../../hunt/TargetRing';
 import { actorDepth, tileDepth } from '../../hunt/TileDepth';
 import { createUnresolvedHuntAssetTracker } from '../../hunt/UnresolvedHuntAssets';
 import type { InputMap } from '../../input/InputMap';
@@ -124,6 +125,7 @@ export class HuntScene extends Phaser.Scene {
     EntityId,
     Phaser.GameObjects.Sprite
   >();
+  private targetRing: Phaser.GameObjects.Graphics | undefined;
   private readonly decorationObjects = new Map<
     number,
     Phaser.GameObjects.Sprite | Phaser.GameObjects.Text
@@ -269,6 +271,11 @@ export class HuntScene extends Phaser.Scene {
         events,
         actorPositions,
         playerEntityId: playerBeforeActor?.entityId ?? null,
+        playerMaximumHealth:
+          this.options.hunt.blueprints.find(
+            (blueprint) =>
+              blueprint.blueprintId === this.options.hunt.playerBlueprintId,
+          )?.maxHealth ?? null,
       });
       this.assignCombatNumberColors(
         events,
@@ -318,6 +325,8 @@ export class HuntScene extends Phaser.Scene {
       this.inputGate.reset();
       this.destroySprites();
       this.destroyCombatDecorations();
+      this.targetRing?.destroy();
+      this.targetRing = undefined;
       this.combatDecorations.reset();
       this.combatImpulses.reset();
       this.combatNumberColors.clear();
@@ -428,6 +437,7 @@ export class HuntScene extends Phaser.Scene {
       player:
         actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
       actors,
+      targetRing: this.targetRingState(),
       camera: {
         scrollX: this.cameras.main.scrollX,
         scrollY: this.cameras.main.scrollY,
@@ -549,6 +559,67 @@ export class HuntScene extends Phaser.Scene {
     }
     this.sprites = [];
     this.actorSprites.clear();
+  }
+
+  private targetRingState(): TargetRingState {
+    const presentation = this.presentation;
+    const actors = presentation?.actors() ?? [];
+    return resolveTargetRing(
+      this.targetSelection.targetId(),
+      actors.map((actor) => ({
+        entityId: actor.entityId,
+        position: actor.position,
+        visible:
+          actor.position.z === presentation?.floor() &&
+          (this.actorSprites.get(actor.entityId)?.visible ?? false),
+      })),
+    );
+  }
+
+  private ensureTargetRing(): Phaser.GameObjects.Graphics {
+    if (this.targetRing !== undefined) return this.targetRing;
+
+    const ring = this.add.graphics();
+    const anchor = cellAnchor({
+      cell: { x: 0, y: 0 },
+      cellWidth: 32,
+      cellHeight: 32,
+      scale: 1,
+      tileSize: this.tileSize,
+    });
+    ring
+      .lineStyle(Math.max(2, this.tileSize / 16), 0xffd166, 0.95)
+      .strokeCircle(
+        -anchor.width / 2,
+        -anchor.height / 2,
+        Math.min(anchor.width, anchor.height) * 0.36,
+      )
+      .setVisible(false)
+      .setData('hunt-target-ring', true);
+    this.targetRing = ring;
+    return ring;
+  }
+
+  private syncTargetRing(): void {
+    const state = this.targetRingState();
+    const ring = this.ensureTargetRing();
+    const position = state.position;
+    if (!state.visible || position === null) {
+      ring.setVisible(false);
+      return;
+    }
+
+    const anchor = cellAnchor({
+      cell: position,
+      cellWidth: 32,
+      cellHeight: 32,
+      scale: 1,
+      tileSize: this.tileSize,
+    });
+    ring
+      .setPosition(anchor.x, anchor.y)
+      .setDepth(this.depthFor('objectsBelow', position, 0))
+      .setVisible(true);
   }
 
   private destroyCombatDecorations(): void {
@@ -1068,13 +1139,12 @@ export class HuntScene extends Phaser.Scene {
     for (const [entityId, sprite] of this.actorSprites) {
       if (this.combatImpulses.isActive('flash', entityId, renderTimeMs)) {
         sprite.setTint(0xffffff);
-      } else if (entityId === targetEntityId) {
-        sprite.setTint(0xffd166);
       } else {
         sprite.clearTint();
       }
       sprite.setData('hunt-targeted', entityId === targetEntityId);
     }
+    this.syncTargetRing();
   }
 
   private assignCombatNumberColors(

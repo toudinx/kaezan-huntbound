@@ -58,6 +58,11 @@ function emptyState(): HuntProbeState {
     decorationTextWrites: 0,
     player: null,
     actors: [],
+    targetRing: {
+      targetEntityId: null,
+      position: null,
+      visible: false,
+    },
     camera: {
       scrollX: 0,
       scrollY: 0,
@@ -65,6 +70,7 @@ function emptyState(): HuntProbeState {
       height: 0,
       zoom: 1,
       visibleRows: 11,
+      roundPixels: false,
     },
     drawn: {
       total: 0,

@@ -4,6 +4,7 @@ import type {
   MoveBlockedReason,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
+import type { TargetRingState } from './TargetRing';
 
 /**
  * Test-only observation of the hunt as it is actually presented.
@@ -62,6 +63,7 @@ export interface HuntProbeState {
   readonly decorationTextWrites: number;
   readonly player: HuntProbeActor | null;
   readonly actors: readonly HuntProbeActor[];
+  readonly targetRing: TargetRingState;
   readonly camera: {
     readonly scrollX: number;
     readonly scrollY: number;
@@ -69,6 +71,7 @@ export interface HuntProbeState {
     readonly height: number;
     readonly zoom: number;
     readonly visibleRows: number;
+    readonly roundPixels: boolean;
   };
   readonly drawn: {
     readonly total: number;

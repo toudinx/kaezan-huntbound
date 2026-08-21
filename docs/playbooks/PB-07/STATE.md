@@ -2,8 +2,9 @@
 
 **Playbook:** `docs/playbooks/PB-07/README.md`
 
-**Estado geral:** em execução. **PB-07-01 integrada.** Próxima elegível na trilha de combate:
-**PB-07-03**. PB-07-02 permanece bloqueada por B1. PB-07-12 e PB-07-13 são independentes.
+**Estado geral:** em execução. **PB-07-01 integrada.** PB-07-02 implementada na branch, mas
+permanece bloqueada para integração pelo B2. PB-07-03 é a próxima elegível após o desbloqueio.
+PB-07-12 e PB-07-13 são independentes.
 
 **Última atualização:** 2026-08-21
 
@@ -14,7 +15,7 @@
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
 | PB-07-01 | done | `codex/pb07-01-rotations-reference` | (este commit) | `docs/content/PB-07-ROTATIONS.md` — seis slots confirmados |
-| PB-07-02 | blocked | `<agente>/pb07-02-target-and-impact` | — | bloqueada por B1 |
+| PB-07-02 | blocked | `codex/pb07-02-target-and-impact` | — | 223 testes game; hunt-play 13/13; verify bloqueado por B2; GPT-5 Codex / esforço padrão |
 | PB-07-03 | pending | `<agente>/pb07-03-combat-contract-v5` | — | lê a tabela de slots e o buraco de contrato |
 | PB-07-04 | pending | `<agente>/pb07-04-sustain` | — | — |
 | PB-07-05 | pending | `<agente>/pb07-05-conditions` | — | — |
@@ -34,9 +35,13 @@ de commit da 01; arquivo ainda untracked na `main`). Sem divergência PB-05 que 
 
 ## Bloqueios
 
-**B1 — aberto em 2026-08-21.** `main` tem trabalho em voo do PB-05-FIX (`CombatImpulses`,
-`HuntScene`, `createGame`, `MAX_FRAME_DELTA_MS` 250→100, `tools/dev/`, cards FIX-05/06/08/09).
-PB-07-02 toca esses arquivos. **Dado que remove B1:** commitar ou descartar o trabalho em voo.
+**B1 — resolvido em 2026-08-21.** Os três paths que colidiam com PB-07-02 foram preservados
+em `c98e1c7`; a worktree desta task parte desse commit.
+
+**B2 — aberto em 2026-08-21.** `corepack pnpm verify` não ficou verde por falhas fora do escopo
+da PB-07-02: quatro casos de `save-persistence` esperam `SAVE_VERSION_UNSUPPORTED`, mas a UI
+exibe a mensagem textual, e cinco snapshots de `shell` divergem. A task não altera save,
+snapshots ou as causas dessas falhas; a integração fica pendente até o gate externo ser tratado.
 
 ## Decisões congeladas
 
