@@ -16,7 +16,7 @@ PB-07-04 done nesta branch. Próxima elegível: **PB-07-05**. PB-07-12 e PB-07-1
 | PB-07-01 | done | `codex/pb07-01-rotations-reference` | `95f5a42` | `docs/content/PB-07-ROTATIONS.md` — seis slots confirmados |
 | PB-07-02 | done | `codex/pb07-02-target-and-impact` | `ead4405` | anel de alvo + shake por magnitude; ff na `main` |
 | PB-07-03 | done | `codex/pb07-03-combat-contract-v5` | `b490e2e` | schema 5 / rules 4; events byte-idênticos |
-| PB-07-04 | done | `codex/pb07-04-sustain` | — | leech 100‰ + OOC 1 HP/2 mana / 500 ms; janela 4 s; 238 testes de simulação |
+| PB-07-04 | done | `codex/pb07-04-sustain` | `5400ab0` | leech 100‰ + OOC 1 HP/2 mana / 500 ms; janela 4 s; 238 testes de simulação |
 | PB-07-05 | pending | `<agente>/pb07-05-conditions` | — | — |
 | PB-07-06 | pending | `<agente>/pb07-06-generic-skills` | — | `exori vis` é `range(3)`, não cinco tiles |
 | PB-07-07 | pending | `<agente>/pb07-07-paladin` | — | — |
