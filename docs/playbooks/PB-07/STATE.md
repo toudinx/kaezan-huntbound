@@ -2,9 +2,8 @@
 
 **Playbook:** `docs/playbooks/PB-07/README.md`
 
-**Estado geral:** em execução. **PB-07-01 a PB-07-04 integradas na `main`.**
-PB-07-05 done na branch. Próxima elegível após o ff: **PB-07-06**.
-PB-07-12 e PB-07-13 são independentes.
+**Estado geral:** em execução. **PB-07-01 a PB-07-05 integradas na `main`.**
+Próxima elegível: **PB-07-06**. PB-07-12 e PB-07-13 são independentes.
 
 **Última atualização:** 2026-08-22
 
