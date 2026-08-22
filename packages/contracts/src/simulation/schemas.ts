@@ -976,6 +976,18 @@ export const CombatHealedEventPayloadSchema = z
   })
   .strict();
 
+export const CombatLeechedEventPayloadSchema = z
+  .object({
+    type: z.literal('combat/leeched'),
+    entityId: EntityIdSchema,
+    sourceEntityId: EntityIdSchema,
+    healthAmount: nonNegativeInteger,
+    resourceAmount: nonNegativeInteger,
+    health: nonNegativeInteger,
+    resource: nonNegativeInteger,
+  })
+  .strict();
+
 /**
  * Upkeep restoring health or resource. It carries absolute values because
  * regeneration is a state change nobody commanded: a presentation that only
@@ -1062,6 +1074,7 @@ export const SimulationEventPayloadSchema = z.discriminatedUnion('type', [
   CombatAttackedEventPayloadSchema,
   CombatDamagedEventPayloadSchema,
   CombatHealedEventPayloadSchema,
+  CombatLeechedEventPayloadSchema,
   CombatRegeneratedEventPayloadSchema,
   AbilityCastEventPayloadSchema,
   CombatTargetChangedEventPayloadSchema,

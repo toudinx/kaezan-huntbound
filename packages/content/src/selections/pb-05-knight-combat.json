@@ -51,6 +51,16 @@
     "spellAccess": "unrestricted",
     "trivializesHunt": false
   },
+  "huntboundSustain": {
+    "combatWindowMs": 4000,
+    "outOfCombatHealthRegenMs": 500,
+    "outOfCombatHealthRegenAmount": 1,
+    "outOfCombatResourceRegenMs": 500,
+    "outOfCombatResourceRegenAmount": 2,
+    "lifeLeechPermille": 100,
+    "manaLeechPermille": 100,
+    "source": "PB-07-ROTATIONS.md did not freeze permille or out-of-combat intervals; 100‰ and 500 ms are the simplest visible values"
+  },
   "spells": [
     {
       "stableKey": "spell:tibia:berserk",

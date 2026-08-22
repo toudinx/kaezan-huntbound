@@ -50,8 +50,54 @@ function compareCombatIntents(left: CombatIntent, right: CombatIntent): number {
   return 0;
 }
 
+/** Content and the kernel agree: faction 0 is the player. */
+const PLAYER_FACTION_ID = 0;
+
 function clampNonNegative(value: number): number {
   return value < 0 ? 0 : value;
+}
+
+function clampToMaximum(value: number, maximum: number): number {
+  return value < maximum ? value : maximum;
+}
+
+function permilleOf(amount: number, permille: number): number {
+  if (amount <= 0 || permille <= 0) {
+    return 0;
+  }
+  return Math.trunc((amount * permille) / 1000);
+}
+
+function isInCombat(
+  actor: ActorState,
+  blueprint: ActorBlueprint,
+  currentTick: number,
+): boolean {
+  if (blueprint.factionId !== PLAYER_FACTION_ID) {
+    return true;
+  }
+  if (blueprint.combatWindowTicks === 0) {
+    return true;
+  }
+  if (actor.lastDamageReceivedTick === 0) {
+    return false;
+  }
+  return (
+    currentTick - actor.lastDamageReceivedTick < blueprint.combatWindowTicks
+  );
+}
+
+function pickRegen(
+  inCombat: boolean,
+  combatTicks: number,
+  combatAmount: number,
+  outOfCombatTicks: number,
+  outOfCombatAmount: number,
+): { readonly ticks: number; readonly amount: number } {
+  if (!inCombat && outOfCombatTicks > 0 && outOfCombatAmount > 0) {
+    return { ticks: outOfCombatTicks, amount: outOfCombatAmount };
+  }
+  return { ticks: combatTicks, amount: combatAmount };
 }
 
 function inRange(
@@ -87,26 +133,41 @@ export function applyUpkeep(
 
     let { health, resource, nextHealthRegenTick, nextResourceRegenTick } =
       actor;
+    const inCombat = isInCombat(actor, blueprint, currentTick);
+    const healthRegen = pickRegen(
+      inCombat,
+      blueprint.healthRegenTicks,
+      blueprint.healthRegenAmount,
+      blueprint.outOfCombatHealthRegenTicks,
+      blueprint.outOfCombatHealthRegenAmount,
+    );
+    const resourceRegen = pickRegen(
+      inCombat,
+      blueprint.resourceRegenTicks,
+      blueprint.resourceRegenAmount,
+      blueprint.outOfCombatResourceRegenTicks,
+      blueprint.outOfCombatResourceRegenAmount,
+    );
 
     if (
-      blueprint.healthRegenTicks > 0 &&
-      blueprint.healthRegenAmount > 0 &&
+      healthRegen.ticks > 0 &&
+      healthRegen.amount > 0 &&
       currentTick >= nextHealthRegenTick
     ) {
-      const healed = health + blueprint.healthRegenAmount;
-      health = healed < blueprint.maxHealth ? healed : blueprint.maxHealth;
-      nextHealthRegenTick = currentTick + blueprint.healthRegenTicks;
+      health = clampToMaximum(health + healthRegen.amount, blueprint.maxHealth);
+      nextHealthRegenTick = currentTick + healthRegen.ticks;
     }
 
     if (
-      blueprint.resourceRegenTicks > 0 &&
-      blueprint.resourceRegenAmount > 0 &&
+      resourceRegen.ticks > 0 &&
+      resourceRegen.amount > 0 &&
       currentTick >= nextResourceRegenTick
     ) {
-      const restored = resource + blueprint.resourceRegenAmount;
-      resource =
-        restored < blueprint.maxResource ? restored : blueprint.maxResource;
-      nextResourceRegenTick = currentTick + blueprint.resourceRegenTicks;
+      resource = clampToMaximum(
+        resource + resourceRegen.amount,
+        blueprint.maxResource,
+      );
+      nextResourceRegenTick = currentTick + resourceRegen.ticks;
     }
 
     if (
@@ -184,9 +245,13 @@ function applyDamage(
   amount: number,
   cause: 'attack' | 'ability',
   killers: Map<number, EntityId | null>,
+  blueprints: ReadonlyMap<string, ActorBlueprint>,
 ): void {
   const remaining = clampNonNegative(target.health - amount);
-  world.update({ ...target, health: remaining });
+  const applied = target.health - remaining;
+  const lastDamageReceivedTick =
+    applied > 0 ? (tick === 0 ? 1 : tick) : target.lastDamageReceivedTick;
+  world.update({ ...target, health: remaining, lastDamageReceivedTick });
   if (remaining === 0 && !killers.has(target.entityId)) {
     killers.set(target.entityId, sourceEntityId);
   }
@@ -197,6 +262,41 @@ function applyDamage(
     amount,
     remainingHealth: remaining,
     cause,
+  });
+  if (applied <= 0) {
+    return;
+  }
+
+  const source = world.actor(sourceEntityId);
+  if (source === undefined) {
+    return;
+  }
+  const sourceBlueprint = blueprints.get(source.blueprintId);
+  if (sourceBlueprint === undefined) {
+    return;
+  }
+  const nextHealth = clampToMaximum(
+    source.health + permilleOf(applied, sourceBlueprint.lifeLeechPermille),
+    sourceBlueprint.maxHealth,
+  );
+  const nextResource = clampToMaximum(
+    source.resource + permilleOf(applied, sourceBlueprint.manaLeechPermille),
+    sourceBlueprint.maxResource,
+  );
+  const healthAmount = nextHealth - source.health;
+  const resourceAmount = nextResource - source.resource;
+  if (healthAmount === 0 && resourceAmount === 0) {
+    return;
+  }
+  world.update({ ...source, health: nextHealth, resource: nextResource });
+  journal.emit(tick, {
+    type: 'combat/leeched',
+    entityId: source.entityId,
+    sourceEntityId: target.entityId,
+    healthAmount,
+    resourceAmount,
+    health: nextHealth,
+    resource: nextResource,
   });
 }
 
@@ -343,6 +443,7 @@ function resolveAttack(
     amount,
     'attack',
     killers,
+    blueprints,
   );
 }
 
@@ -615,6 +716,7 @@ function resolveCast(
         power,
         'ability',
         killers,
+        blueprints,
       );
     }
   }

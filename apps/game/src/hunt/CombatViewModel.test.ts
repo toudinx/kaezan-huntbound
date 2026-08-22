@@ -201,6 +201,33 @@ describe('CombatViewModel', () => {
     expect(state.playerDead).toBe(true);
   });
 
+  it('projects combat/leeched onto the source vitals', () => {
+    const viewModel = createCombatViewModel(options);
+    viewModel.handle([
+      event(0, {
+        type: 'actor/spawned',
+        entityId: 1 as EntityId,
+        blueprintId: 'player',
+        position: { x: 5, y: 5, z: 8 },
+        facing: 's',
+      }),
+      event(1, {
+        type: 'combat/leeched',
+        entityId: 1 as EntityId,
+        sourceEntityId: 2 as EntityId,
+        healthAmount: 5,
+        resourceAmount: 3,
+        health: 180,
+        resource: 90,
+      }),
+    ]);
+
+    expect(viewModel.snapshot().player).toMatchObject({
+      health: 180,
+      resource: 90,
+    });
+  });
+
   it('recomputes cooldowns from the current tick without mutating the event projection', () => {
     const viewModel = createCombatViewModel(options);
 

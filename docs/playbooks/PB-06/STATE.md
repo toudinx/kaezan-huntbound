@@ -53,15 +53,13 @@ referências:
 
 ## Bloqueios
 
-Bloqueios abertos: B4, B5 e B6.
+Bloqueios abertos: B5 e B6.
 
 - ~~**B3 — aberto em PB-06-02.**~~ **Recuperado nesta sessão:** `qa:browser` passou 34/34,
   incluindo `hunt-play.spec.ts:366`; nenhuma alteração foi feita em `apps/game`.
 
-- **B4 — aberto em PB-06-02.** No `verify`, o teste preexistente de topologia
-  (`hunt-play.spec.ts:427`) expirou na espera por um passo porque o jogador morreu (`Health: 0/590`,
-  overlay `You died.`) após 33/34 testes passarem. A reprodução isolada passou 1/1. Resolver exige
-  uma decisão fora do escopo do repositório de saves sobre o teste de movimentação e o combate PB-05.
+- ~~**B4 — aberto em PB-06-02.**~~ **Caiu em PB-07-04.** `qa:browser` passou
+  `hunt-play.spec.ts` inclusive o passo de topologia; o jogador não morreu no teste.
 
 - **B5 — aberto em PB-06-09.** Importar `schemaVersion: 2` preserva o save, mas a UI omite
   `SAVE_VERSION_UNSUPPORTED`; reproduzido em 4/4 viewports, exit 1.

@@ -55,7 +55,22 @@ alterem os IDs de conteúdo importado:
 - helper, inicialmente limitado a cura, alvo, ações e loot;
 - dash, caso o playtest demonstre que melhora o combate;
 - instrumentação, replay, debug e ferramentas de importação;
-- UI/UX para browser, touch e acessibilidade.
+- UI/UX para browser, touch e acessibilidade;
+- leech de vida e mana: fração do dano efetivamente aplicado devolve vida e mana à fonte, depois do
+  clamp, sem ultrapassar o máximo. O snapshot já conhece life leech e mana leech como skills de
+  criatura e como imbuement da espada id 3264; sem imbuing e sem item usável, o Huntbound promove
+  leech a regra do personagem. Valoriza bater em criatura viva;
+- regen sensível a combate: “em combate” é o tempo desde o último dano recebido. Quase nada enquanto
+  apanha; forte alguns segundos após o último hit. Só o jogador regenera fora de combate; criatura
+  ferida continua ferida. O loop pretendido é recuar para um spot tranquilo. O regen fiel do snapshot
+  (Knight 1 HP e 2 mana / 6 s) permanece a taxa em combate;
+- habilidade com cargas por hunt: runa e poção reaproveitam a máquina de ability — N cargas,
+  recarregadas fora de combate ou entre runs, sem inventário, sem loja, sem `actor/use-item`. Sudden
+  Death id 3155 carrega 3; GFB id 3191 carrega 4; HMM id 3198 carrega 10; UH id 3160 carrega 1;
+- stances do Vocation Adjustments 2026, com desvio de proveniência: postura adotada é a de Tibia
+  `15.25.3a4a52` (fonte: TibiaWiki), não a do snapshot `157e6f9e`. Vale só para stances; kit, fórmula,
+  custo, cooldown, loot e mapa continuam saindo do snapshot. As stances de Sorcerer que dependem de
+  crítico são adaptadas para dano base por elemento; crítico não entra no kernel.
 
 Metrônomo, Echoing Den, criaturas Kaezan T1, posturas novas, ruptura nova e bosses autorais deixam de
 ser requisitos do primeiro slice. Podem voltar como experimentos posteriores, nunca como bloqueio.

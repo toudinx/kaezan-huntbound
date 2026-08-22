@@ -906,3 +906,378 @@ describe('combat restoration fidelity', () => {
     );
   });
 });
+
+describe('combat-sensitive regeneration', () => {
+  function regenScenario(
+    playerOverrides: Parameters<typeof combatNeutralBlueprint>[3] = {},
+    foeOverrides: Parameters<typeof combatNeutralBlueprint>[3] = {},
+  ) {
+    return kernelScenario({
+      scenarioId: 'sustain-regen-test',
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 0,
+          maxHealth: 100,
+          maxResource: 100,
+          healthRegenTicks: 1,
+          healthRegenAmount: 1,
+          resourceRegenTicks: 1,
+          resourceRegenAmount: 1,
+          outOfCombatHealthRegenTicks: 1,
+          outOfCombatHealthRegenAmount: 7,
+          outOfCombatResourceRegenTicks: 1,
+          outOfCombatResourceRegenAmount: 7,
+          combatWindowTicks: 4,
+          ...playerOverrides,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 50,
+          attackCooldownTicks: 1,
+          attackMinDamage: 3,
+          attackMaxDamage: 3,
+          ...foeOverrides,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 'e' },
+        { blueprintId: 'foe', position: at(3, 2), facing: 'w' },
+      ],
+    });
+  }
+
+  it('never uses the in-combat rate when the player has not been hit', () => {
+    const kernel = withActorPatch(regenScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? { ...actor, health: 20, resource: 20, nextHealthRegenTick: 1 }
+        : actor,
+    );
+
+    kernel.advance(1);
+    expect(kernel.state().actors[0]?.health).toBe(20);
+    kernel.advance(1);
+    expect(kernel.state().actors[0]?.health).toBe(27);
+  });
+
+  it('switches to the in-combat rate after a received combat/damaged and back at both window edges', () => {
+    const kernel = withActorPatch(regenScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            health: 20,
+            lastDamageReceivedTick: 10,
+            nextHealthRegenTick: 13,
+          }
+        : actor,
+    );
+
+    kernel.advance(13);
+    expect(kernel.state().actors[0]?.health).toBe(20);
+    kernel.advance(1);
+    expect(kernel.state().actors[0]?.health).toBe(21);
+    kernel.advance(1);
+    expect(kernel.state().actors[0]?.health).toBe(28);
+  });
+
+  it('returns to the in-combat rate when hit during out-of-combat regeneration', () => {
+    const kernel = withActorPatch(regenScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            health: 20,
+            lastDamageReceivedTick: 10,
+            nextHealthRegenTick: 14,
+          }
+        : actor,
+    );
+
+    kernel.advance(15);
+    expect(kernel.state().actors[0]?.health).toBe(27);
+
+    kernel.enqueue(attack(2, 1, 15));
+    kernel.advanceOne();
+    expect(kernel.state().actors[0]?.lastDamageReceivedTick).toBe(15);
+    expect(kernel.state().actors[0]?.health).toBe(31);
+
+    kernel.advanceOne();
+    expect(kernel.state().actors[0]?.health).toBe(32);
+  });
+
+  it('keeps the original rate when combatWindowTicks is 0', () => {
+    const kernel = withActorPatch(
+      regenScenario({ combatWindowTicks: 0 }),
+      (actor) =>
+        actor.blueprintId === 'hero'
+          ? { ...actor, health: 20, nextHealthRegenTick: 1 }
+          : actor,
+    );
+
+    kernel.advance(2);
+    expect(kernel.state().actors[0]?.health).toBe(21);
+  });
+
+  it('never lets a creature use the out-of-combat rate even when those fields are set', () => {
+    const kernel = withActorPatch(
+      regenScenario(
+        {},
+        {
+          healthRegenTicks: 1,
+          healthRegenAmount: 1,
+          outOfCombatHealthRegenTicks: 1,
+          outOfCombatHealthRegenAmount: 7,
+          combatWindowTicks: 4,
+        },
+      ),
+      (actor) =>
+        actor.blueprintId === 'foe'
+          ? { ...actor, health: 20, nextHealthRegenTick: 1 }
+          : actor,
+    );
+
+    kernel.advance(2);
+    expect(kernel.state().actors[1]?.health).toBe(21);
+  });
+});
+
+describe('leech', () => {
+  function leechScenario(
+    playerOverrides: Parameters<typeof combatNeutralBlueprint>[3] = {},
+    foeOverrides: Parameters<typeof combatNeutralBlueprint>[3] = {},
+  ) {
+    return kernelScenario({
+      scenarioId: 'sustain-leech-test',
+      abilities: [damageAreaAbility({ minPower: 10, maxPower: 10, radius: 1 })],
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 0,
+          maxHealth: 100,
+          maxResource: 100,
+          attackCooldownTicks: 1,
+          attackMinDamage: 10,
+          attackMaxDamage: 10,
+          lifeLeechPermille: 200,
+          manaLeechPermille: 100,
+          abilityIndices: [0],
+          ...playerOverrides,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 40,
+          ...foeOverrides,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 's' },
+        { blueprintId: 'foe', position: at(3, 2), facing: 'w' },
+      ],
+    });
+  }
+
+  it('returns health and mana to the source in configured thousandths of applied damage', () => {
+    const kernel = withActorPatch(leechScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? { ...actor, health: 50, resource: 40 }
+        : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]).toMatchObject({
+      entityId: 2,
+      amount: 10,
+    });
+    expect(payloadsOfType(events, 'combat/leeched')).toEqual([
+      {
+        type: 'combat/leeched',
+        entityId: 1,
+        sourceEntityId: 2,
+        healthAmount: 2,
+        resourceAmount: 1,
+        health: 52,
+        resource: 41,
+      },
+    ]);
+    expect(kernel.state().actors[0]?.health).toBe(52);
+    expect(kernel.state().actors[0]?.resource).toBe(41);
+  });
+
+  it('emits nothing when both leech rates are 0', () => {
+    const kernel = withActorPatch(
+      leechScenario({ lifeLeechPermille: 0, manaLeechPermille: 0 }),
+      (actor) =>
+        actor.blueprintId === 'hero'
+          ? { ...actor, health: 50, resource: 40 }
+          : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/leeched')).toEqual([]);
+    expect(kernel.state().actors[0]?.health).toBe(50);
+    expect(kernel.state().actors[0]?.resource).toBe(40);
+  });
+
+  it('clamps leech so it never exceeds the source maximum', () => {
+    const kernel = withActorPatch(leechScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? { ...actor, health: 99, resource: 99 }
+        : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/leeched')[0]).toMatchObject({
+      healthAmount: 1,
+      resourceAmount: 1,
+      health: 100,
+      resource: 100,
+    });
+  });
+
+  it('does not leech damage applied to a target already at zero health', () => {
+    const kernel = withActorPatch(leechScenario(), (actor) =>
+      actor.blueprintId === 'hero'
+        ? { ...actor, health: 50, resource: 40 }
+        : { ...actor, health: 0 },
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]).toMatchObject({
+      amount: 10,
+      remainingHealth: 0,
+    });
+    expect(payloadsOfType(events, 'combat/leeched')).toEqual([]);
+    expect(kernel.state().actors[0]?.health).toBe(50);
+  });
+
+  it('sums area leech per target in canonical entity order', () => {
+    const scenario = kernelScenario({
+      scenarioId: 'sustain-area-leech-test',
+      abilities: [
+        damageAreaAbility({
+          minPower: 10,
+          maxPower: 10,
+          radius: 1,
+          resourceCost: 0,
+        }),
+      ],
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 0,
+          maxHealth: 100,
+          maxResource: 100,
+          lifeLeechPermille: 1000,
+          manaLeechPermille: 0,
+          abilityIndices: [0],
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 40,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 's' },
+        { blueprintId: 'foe', position: at(3, 2), facing: 'w' },
+        { blueprintId: 'foe', position: at(2, 3), facing: 'n' },
+      ],
+    });
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero' ? { ...actor, health: 50 } : actor,
+    );
+    kernel.enqueue(castAbility(1, 0, null, 0));
+    const events = kernel.advanceOne();
+    const combat = payloads(events).filter((payload) =>
+      payload.type.startsWith('combat/'),
+    );
+
+    expect(combat).toEqual([
+      {
+        type: 'combat/damaged',
+        entityId: 2,
+        sourceEntityId: 1,
+        amount: 10,
+        remainingHealth: 30,
+        cause: 'ability',
+      },
+      {
+        type: 'combat/leeched',
+        entityId: 1,
+        sourceEntityId: 2,
+        healthAmount: 10,
+        resourceAmount: 0,
+        health: 60,
+        resource: 100,
+      },
+      {
+        type: 'combat/damaged',
+        entityId: 3,
+        sourceEntityId: 1,
+        amount: 10,
+        remainingHealth: 30,
+        cause: 'ability',
+      },
+      {
+        type: 'combat/leeched',
+        entityId: 1,
+        sourceEntityId: 3,
+        healthAmount: 10,
+        resourceAmount: 0,
+        health: 70,
+        resource: 100,
+      },
+    ]);
+    expect(kernel.state().actors[0]?.health).toBe(70);
+  });
+
+  it('applies creature leech against the player from the attacker blueprint', () => {
+    const kernel = withActorPatch(
+      leechScenario(
+        { lifeLeechPermille: 0, manaLeechPermille: 0 },
+        {
+          lifeLeechPermille: 500,
+          manaLeechPermille: 0,
+          attackMinDamage: 10,
+          attackMaxDamage: 10,
+          attackCooldownTicks: 1,
+        },
+      ),
+      (actor) =>
+        actor.blueprintId === 'foe' ? { ...actor, health: 20 } : actor,
+    );
+    kernel.enqueue(attack(2, 1, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/leeched')).toEqual([
+      {
+        type: 'combat/leeched',
+        entityId: 2,
+        sourceEntityId: 1,
+        healthAmount: 5,
+        resourceAmount: 0,
+        health: 25,
+        resource: 0,
+      },
+    ]);
+  });
+
+  it('truncates permille division so 7 damage at 100‰ yields no leech', () => {
+    const kernel = withActorPatch(
+      leechScenario({
+        attackMinDamage: 7,
+        attackMaxDamage: 7,
+        lifeLeechPermille: 100,
+        manaLeechPermille: 100,
+      }),
+      (actor) =>
+        actor.blueprintId === 'hero'
+          ? { ...actor, health: 50, resource: 40 }
+          : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/leeched')).toEqual([]);
+    expect(kernel.state().actors[0]?.health).toBe(50);
+  });
+});

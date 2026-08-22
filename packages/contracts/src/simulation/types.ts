@@ -307,6 +307,15 @@ export type SimulationEventPayload =
       readonly health: number;
     }
   | {
+      readonly type: 'combat/leeched';
+      readonly entityId: EntityId;
+      readonly sourceEntityId: EntityId;
+      readonly healthAmount: number;
+      readonly resourceAmount: number;
+      readonly health: number;
+      readonly resource: number;
+    }
+  | {
       readonly type: 'combat/regenerated';
       readonly entityId: EntityId;
       readonly health: number;

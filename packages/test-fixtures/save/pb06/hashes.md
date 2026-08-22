@@ -7,8 +7,8 @@ the sidecar `.sha256`.
 
 | Artifact | SHA-256 |
 |---|---|
-| `checkpoint.golden.json` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
-| `export.golden.txt` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
+| `checkpoint.golden.json` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
+| `export.golden.txt` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
 | `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
 | `migrated.golden.json` | `4adf164efa1c9795330d79af53daae10ce6fefd95f66a3e803aabbeb7ef07bc7` |
 

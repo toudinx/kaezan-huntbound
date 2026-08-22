@@ -35,6 +35,16 @@ export const KNIGHT_HEALTH_REGEN_MS = 6000;
 export const KNIGHT_HEALTH_REGEN_AMOUNT = 1;
 export const KNIGHT_RESOURCE_REGEN_MS = 6000;
 export const KNIGHT_RESOURCE_REGEN_AMOUNT = 2;
+/** Huntbound out-of-combat regime. In-combat numbers above stay Canary. */
+export const KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_MS = 500;
+export const KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_AMOUNT = 1;
+export const KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_MS = 500;
+export const KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_AMOUNT = 2;
+/** 4 s after the last received hit still counts as in combat. */
+export const KNIGHT_COMBAT_WINDOW_MS = 4000;
+/** 100‰ = 10% of applied damage. ROTATIONS.md did not freeze a permille. */
+export const KNIGHT_LIFE_LEECH_PERMILLE = 100;
+export const KNIGHT_MANA_LEECH_PERMILLE = 100;
 
 export const PLAYER_FACTION_ID = 0;
 export const CREATURE_FACTION_ID = 1;

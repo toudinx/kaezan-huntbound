@@ -16,6 +16,7 @@ import {
   ActorStateSchema,
   KernelScenarioSchema,
   ScenarioConditionDefinitionSchema,
+  SimulationEventPayloadSchema,
 } from './schemas';
 import type { SimulationValidationResult } from './types';
 
@@ -602,5 +603,25 @@ describe('groupReadyAtTick v4 to v5 migration', () => {
     expect(at(migrated.value.actors, 0).groupCooldowns).toEqual([
       { groupIndex: 0, readyAtTick: 0 },
     ]);
+  });
+});
+
+describe('combat/leeched event', () => {
+  it('accepts a dedicated leech payload and rejects unknown fields', () => {
+    const payload = {
+      type: 'combat/leeched',
+      entityId: 1,
+      sourceEntityId: 2,
+      healthAmount: 4,
+      resourceAmount: 2,
+      health: 54,
+      resource: 180,
+    };
+
+    expect(SimulationEventPayloadSchema.safeParse(payload).success).toBe(true);
+    expect(
+      SimulationEventPayloadSchema.safeParse({ ...payload, unexpected: true })
+        .success,
+    ).toBe(false);
   });
 });

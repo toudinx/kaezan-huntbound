@@ -271,7 +271,7 @@ publicada com o arquivo e com o sidecar `.sha256`. Task cards não republicam es
 
 ## Hashes congelados — PB-05
 
-Fixture `pb-05-hunt-combat`, revisão `2`, seed `2c3d4e5f60718293`, `2700` ticks, `2240` eventos,
+Fixture `pb-05-hunt-combat`, revisão `2`, seed `2c3d4e5f60718293`, `2700` ticks, `2246` eventos,
 tick final `2700`, `SIMULATION_SCHEMA_VERSION = 5`, `SIMULATION_RULES_VERSION = 4`. Retomada fiel
 em todas as fronteiras `0..2700`.
 
@@ -281,10 +281,10 @@ sem isso o hunter nunca emite `combat/target-changed`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `a084d7c2129cec7801ca4182a057c5ae5a7048c943bf33396c1d622aeff28cc7` |
+| `scenario.json` | `91f4e1144457253c6b21654fb19c92dd7e32535b24afd41787c072e0c17195a4` |
 | `commands.jsonl` | `f8ec4cf67d01124eb25714c3d107f7c41be33be50fbe844ae6e5fc4ce47fa3bd` |
-| `snapshot.golden.json` | `3f7d44a40a39aaba2f3b0b46ef3d2eec1bb8eb367bf59726b33179c0f9cd8989` |
-| `events.golden.jsonl` | `92515975046756dc2aeafb53d811cb016903ff653f08d9a89e9be2ec8d361394` |
+| `snapshot.golden.json` | `ed485307f2d2011b5b3c8bc4cd2194f46e0f2e238bb200bf1b0b942febc1cf1f` |
+| `events.golden.jsonl` | `d4521f09d1186c45ed2932e0c057725553037fda36533f61b889b913086e7c26` |
 
 A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.md`.
 `combat:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.
@@ -299,12 +299,12 @@ gravado, o export e a migração de `legacy.json` (documento sem `schemaVersion`
 de save só acrescenta `SAVE_SCHEMA_VERSION`; o parse do ator converte o escalar em
 `groupCooldowns` e preenche defaults v5, mas **não** sobe `snapshot.schemaVersion`. Por isso
 `migrated.golden.json` deixa de ser byte-idêntico ao checkpoint. O SHA-256 do snapshot retomado é o
-do sidecar do PB-05, `3f7d44a40a39aaba2f3b0b46ef3d2eec1bb8eb367bf59726b33179c0f9cd8989`.
+do sidecar do PB-05, `ed485307f2d2011b5b3c8bc4cd2194f46e0f2e238bb200bf1b0b942febc1cf1f`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `checkpoint.golden.json` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
-| `export.golden.txt` | `6155c5a97a8129cbd4edd456c05f426474316e400724d3f128165b1fffc51dde` |
+| `checkpoint.golden.json` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
+| `export.golden.txt` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
 | `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
 | `migrated.golden.json` | `4adf164efa1c9795330d79af53daae10ce6fefd95f66a3e803aabbeb7ef07bc7` |
 

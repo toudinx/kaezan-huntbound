@@ -203,6 +203,16 @@ export function createCombatViewModel(
           actor.resource = clamp(event.payload.resource, 0, actor.maxResource);
           break;
         }
+        case 'combat/leeched': {
+          const actor = actorFromEvent(
+            event.payload.entityId,
+            undefined,
+            event.payload.health,
+          );
+          actor.health = clamp(event.payload.health, 0, actor.maxHealth);
+          actor.resource = clamp(event.payload.resource, 0, actor.maxResource);
+          break;
+        }
         case 'ability/cast': {
           const ability = abilityFor(event.payload.abilityIndex);
           if (event.payload.entityId === options.playerEntityId && ability) {
