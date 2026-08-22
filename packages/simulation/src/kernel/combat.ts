@@ -5,17 +5,26 @@ import type {
   EntityId,
   GridPosition,
   LootTableDefinition,
+  ScenarioConditionDefinition,
   SimulationCommandType,
   SimulationDiagnosticCode,
   TickIndex,
 } from '@huntbound/contracts';
-import { PRIMARY_COOLDOWN_GROUP } from '@huntbound/contracts';
 import type { EventJournal } from '../events/journal.ts';
 import { chebyshevDistance } from '../grid/directions.ts';
 import { isSightClear } from '../grid/sight.ts';
 import type { StaticGrid } from '../grid/staticGrid.ts';
 import type { RandomSource } from '../random/source.ts';
 import type { MutableWorld } from '../state/worldState.ts';
+import {
+  applyCondition,
+  expireConditions,
+  hasActiveCondition,
+  queryConditionModifiers,
+  removeCondition,
+  scaleByPermille,
+  tickDamageFor,
+} from './conditions.ts';
 import { resolveLoot } from './loot.ts';
 
 export type CombatIntent =
@@ -122,6 +131,7 @@ export function rollClosedRange(
 export function applyUpkeep(
   world: MutableWorld,
   blueprints: ReadonlyMap<string, ActorBlueprint>,
+  conditions: readonly ScenarioConditionDefinition[],
   currentTick: number,
   journal: EventJournal,
 ): void {
@@ -131,9 +141,35 @@ export function applyUpkeep(
       continue;
     }
 
+    const activeConditions = expireConditions(actor, currentTick);
     let { health, resource, nextHealthRegenTick, nextResourceRegenTick } =
       actor;
-    const inCombat = isInCombat(actor, blueprint, currentTick);
+    let { lastDamageReceivedTick } = actor;
+    const pulse = tickDamageFor(
+      { ...actor, activeConditions },
+      conditions,
+      currentTick,
+    );
+    if (pulse > 0) {
+      const remaining = clampNonNegative(health - pulse);
+      lastDamageReceivedTick = currentTick === 0 ? 1 : currentTick;
+      journal.emit(currentTick as TickIndex, {
+        type: 'combat/damaged',
+        entityId: actor.entityId,
+        sourceEntityId: actor.entityId,
+        amount: pulse,
+        remainingHealth: remaining,
+        cause: 'ability',
+      });
+      health = remaining;
+    }
+    const healthAfterPulse = health;
+    const resourceAfterPulse = resource;
+    const inCombat = isInCombat(
+      { ...actor, lastDamageReceivedTick },
+      blueprint,
+      currentTick,
+    );
     const healthRegen = pickRegen(
       inCombat,
       blueprint.healthRegenTicks,
@@ -170,11 +206,22 @@ export function applyUpkeep(
       nextResourceRegenTick = currentTick + resourceRegen.ticks;
     }
 
+    const conditionsChanged =
+      activeConditions.length !== actor.activeConditions.length ||
+      activeConditions.some(
+        (entry, index) =>
+          entry.conditionIndex !==
+            actor.activeConditions[index]?.conditionIndex ||
+          entry.expiresAtTick !== actor.activeConditions[index]?.expiresAtTick,
+      );
+
     if (
       health !== actor.health ||
       resource !== actor.resource ||
       nextHealthRegenTick !== actor.nextHealthRegenTick ||
-      nextResourceRegenTick !== actor.nextResourceRegenTick
+      nextResourceRegenTick !== actor.nextResourceRegenTick ||
+      lastDamageReceivedTick !== actor.lastDamageReceivedTick ||
+      conditionsChanged
     ) {
       world.update({
         ...actor,
@@ -182,8 +229,10 @@ export function applyUpkeep(
         resource,
         nextHealthRegenTick,
         nextResourceRegenTick,
+        lastDamageReceivedTick,
+        activeConditions,
       });
-      if (health !== actor.health || resource !== actor.resource) {
+      if (health !== healthAfterPulse || resource !== resourceAfterPulse) {
         journal.emit(currentTick as TickIndex, {
           type: 'combat/regenerated',
           entityId: actor.entityId,
@@ -246,12 +295,34 @@ function applyDamage(
   cause: 'attack' | 'ability',
   killers: Map<number, EntityId | null>,
   blueprints: ReadonlyMap<string, ActorBlueprint>,
+  conditions: readonly ScenarioConditionDefinition[],
 ): void {
-  const remaining = clampNonNegative(target.health - amount);
+  const targetModifiers = queryConditionModifiers(target, conditions, tick);
+  const incoming = scaleByPermille(
+    amount,
+    targetModifiers.damageReceivedPermille,
+  );
+  let absorbed = 0;
+  let resource = target.resource;
+  if (targetModifiers.manaShield && incoming > 0 && resource > 0) {
+    absorbed = incoming < resource ? incoming : resource;
+    resource -= absorbed;
+  }
+  const healthDamage = incoming - absorbed;
+  const remaining = clampNonNegative(target.health - healthDamage);
   const applied = target.health - remaining;
   const lastDamageReceivedTick =
-    applied > 0 ? (tick === 0 ? 1 : tick) : target.lastDamageReceivedTick;
-  world.update({ ...target, health: remaining, lastDamageReceivedTick });
+    applied > 0 || absorbed > 0
+      ? tick === 0
+        ? 1
+        : tick
+      : target.lastDamageReceivedTick;
+  world.update({
+    ...target,
+    health: remaining,
+    resource,
+    lastDamageReceivedTick,
+  });
   if (remaining === 0 && !killers.has(target.entityId)) {
     killers.set(target.entityId, sourceEntityId);
   }
@@ -259,7 +330,7 @@ function applyDamage(
     type: 'combat/damaged',
     entityId: target.entityId,
     sourceEntityId,
-    amount,
+    amount: incoming,
     remainingHealth: remaining,
     cause,
   });
@@ -328,6 +399,7 @@ function resolveAttack(
   journal: EventJournal,
   streams: { readonly combat: RandomSource },
   blueprints: ReadonlyMap<string, ActorBlueprint>,
+  conditions: readonly ScenarioConditionDefinition[],
   tick: TickIndex,
   intent: Extract<CombatIntent, { kind: 'attack' }>,
   killers: Map<number, EntityId | null>,
@@ -415,16 +487,20 @@ function resolveAttack(
     return;
   }
 
-  const amount = rollClosedRange(
-    streams.combat,
-    blueprint.attackMinDamage,
-    blueprint.attackMaxDamage,
-  );
   const freshAttacker = world.actor(attacker.entityId);
   const freshTarget = world.actor(target.entityId);
   if (freshAttacker === undefined || freshTarget === undefined) {
     return;
   }
+  const amount = scaleByPermille(
+    rollClosedRange(
+      streams.combat,
+      blueprint.attackMinDamage,
+      blueprint.attackMaxDamage,
+    ),
+    queryConditionModifiers(freshAttacker, conditions, tick)
+      .damageDealtPermille,
+  );
   world.update({
     ...freshAttacker,
     attackReadyAtTick: tick + blueprint.attackCooldownTicks,
@@ -444,6 +520,7 @@ function resolveAttack(
     'attack',
     killers,
     blueprints,
+    conditions,
   );
 }
 
@@ -468,11 +545,11 @@ function groupReadyAt(actor: ActorState, groupIndex: number): number {
 }
 
 function setGroupCooldown(
-  actor: ActorState,
+  groupCooldowns: ActorState['groupCooldowns'],
   groupIndex: number,
   readyAtTick: number,
 ): ActorState['groupCooldowns'] {
-  const next = actor.groupCooldowns.filter(
+  const next = groupCooldowns.filter(
     (entry) => entry.groupIndex !== groupIndex,
   );
   next.push({ groupIndex, readyAtTick });
@@ -480,12 +557,39 @@ function setGroupCooldown(
   return next;
 }
 
+function abilityGroupCooldowns(
+  actor: ActorState,
+  ability: AbilityDefinition,
+  tick: number,
+): ActorState['groupCooldowns'] {
+  let groups = setGroupCooldown(
+    actor.groupCooldowns,
+    ability.primaryCooldownGroup,
+    tick + ability.groupCooldownTicks,
+  );
+  if (ability.secondaryCooldownGroup !== null) {
+    groups = setGroupCooldown(
+      groups,
+      ability.secondaryCooldownGroup,
+      tick + ability.secondaryGroupCooldownTicks,
+    );
+  }
+  return groups;
+}
+
 function abilityOnCooldown(
   actor: ActorState,
+  ability: AbilityDefinition,
   abilityIndex: number,
   tick: number,
 ): boolean {
-  if (tick < groupReadyAt(actor, PRIMARY_COOLDOWN_GROUP)) {
+  if (tick < groupReadyAt(actor, ability.primaryCooldownGroup)) {
+    return true;
+  }
+  if (
+    ability.secondaryCooldownGroup !== null &&
+    tick < groupReadyAt(actor, ability.secondaryCooldownGroup)
+  ) {
     return true;
   }
   return actor.abilityCooldowns.some(
@@ -514,6 +618,7 @@ function resolveCast(
   streams: { readonly combat: RandomSource },
   blueprints: ReadonlyMap<string, ActorBlueprint>,
   abilities: readonly AbilityDefinition[],
+  conditions: readonly ScenarioConditionDefinition[],
   tick: TickIndex,
   intent: Extract<CombatIntent, { kind: 'cast' }>,
   killers: Map<number, EntityId | null>,
@@ -537,6 +642,48 @@ function resolveCast(
     );
     return;
   }
+  if (abilityOnCooldown(caster, ability, intent.abilityIndex, tick)) {
+    reject(
+      journal,
+      tick,
+      'actor/cast-ability',
+      intent.sequence,
+      'SIM_ABILITY_ON_COOLDOWN',
+    );
+    return;
+  }
+
+  const togglingOff =
+    ability.toggle &&
+    ability.appliedConditionIndex !== null &&
+    hasActiveCondition(caster, ability.appliedConditionIndex, tick);
+  if (togglingOff && ability.appliedConditionIndex !== null) {
+    const liveCaster = world.actor(caster.entityId);
+    if (liveCaster === undefined) {
+      return;
+    }
+    world.update({
+      ...liveCaster,
+      activeConditions: removeCondition(
+        liveCaster,
+        ability.appliedConditionIndex,
+      ),
+      groupCooldowns: abilityGroupCooldowns(liveCaster, ability, tick),
+      abilityCooldowns: setAbilityCooldown(
+        liveCaster,
+        intent.abilityIndex,
+        tick + ability.cooldownTicks,
+      ),
+    });
+    journal.emit(tick, {
+      type: 'ability/cast',
+      entityId: caster.entityId,
+      abilityIndex: intent.abilityIndex,
+      targetEntityId: intent.targetEntityId,
+    });
+    return;
+  }
+
   if (caster.resource < ability.resourceCost) {
     reject(
       journal,
@@ -544,16 +691,6 @@ function resolveCast(
       'actor/cast-ability',
       intent.sequence,
       'SIM_ABILITY_NO_RESOURCE',
-    );
-    return;
-  }
-  if (abilityOnCooldown(caster, intent.abilityIndex, tick)) {
-    reject(
-      journal,
-      tick,
-      'actor/cast-ability',
-      intent.sequence,
-      'SIM_ABILITY_ON_COOLDOWN',
     );
     return;
   }
@@ -661,19 +798,28 @@ function resolveCast(
   if (spent === undefined) {
     return;
   }
+  let nextConditions = spent.activeConditions;
+  if (ability.appliedConditionIndex !== null) {
+    const definition = conditions[ability.appliedConditionIndex];
+    if (definition !== undefined) {
+      nextConditions = applyCondition(
+        spent,
+        definition,
+        ability.appliedConditionIndex,
+        tick,
+      );
+    }
+  }
   world.update({
     ...spent,
     resource: spent.resource - ability.resourceCost,
-    groupCooldowns: setGroupCooldown(
-      spent,
-      PRIMARY_COOLDOWN_GROUP,
-      tick + ability.groupCooldownTicks,
-    ),
+    groupCooldowns: abilityGroupCooldowns(spent, ability, tick),
     abilityCooldowns: setAbilityCooldown(
       spent,
       intent.abilityIndex,
       tick + ability.cooldownTicks,
     ),
+    activeConditions: nextConditions,
   });
   journal.emit(tick, {
     type: 'ability/cast',
@@ -681,6 +827,10 @@ function resolveCast(
     abilityIndex: intent.abilityIndex,
     targetEntityId: intent.targetEntityId,
   });
+
+  if (ability.minPower === 0 && ability.maxPower === 0) {
+    return;
+  }
 
   for (const target of targets) {
     const live = world.actor(target.entityId);
@@ -691,7 +841,7 @@ function resolveCast(
     if (liveBlueprint === undefined) {
       continue;
     }
-    const power = rollClosedRange(
+    const rolled = rollClosedRange(
       streams.combat,
       ability.minPower,
       ability.maxPower,
@@ -703,10 +853,18 @@ function resolveCast(
         tick,
         live,
         caster.entityId,
-        power,
+        rolled,
         liveBlueprint.maxHealth,
       );
     } else {
+      const power = scaleByPermille(
+        rolled,
+        queryConditionModifiers(
+          world.actor(caster.entityId) ?? spent,
+          conditions,
+          tick,
+        ).damageDealtPermille,
+      );
       applyDamage(
         world,
         journal,
@@ -717,6 +875,7 @@ function resolveCast(
         'ability',
         killers,
         blueprints,
+        conditions,
       );
     }
   }
@@ -729,6 +888,7 @@ export function resolveCombat(
   streams: { readonly combat: RandomSource },
   blueprints: ReadonlyMap<string, ActorBlueprint>,
   abilities: readonly AbilityDefinition[],
+  conditions: readonly ScenarioConditionDefinition[],
   tick: TickIndex,
   intents: readonly CombatIntent[],
   killers: Map<number, EntityId | null>,
@@ -741,6 +901,7 @@ export function resolveCombat(
         journal,
         streams,
         blueprints,
+        conditions,
         tick,
         intent,
         killers,
@@ -752,6 +913,7 @@ export function resolveCombat(
         streams,
         blueprints,
         abilities,
+        conditions,
         tick,
         intent,
         killers,

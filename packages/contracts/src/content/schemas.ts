@@ -253,6 +253,8 @@ export const CreatureDefenseActionSchema = z.discriminatedUnion('kind', [
 ]);
 export type CreatureDefenseAction = z.infer<typeof CreatureDefenseActionSchema>;
 
+const signedInteger = z.number().int();
+
 const PoisonConditionSchema = z
   .object({
     kind: z.literal('poison'),
@@ -261,8 +263,57 @@ const PoisonConditionSchema = z
   })
   .strict();
 
+const SkillModifierConditionSchema = z
+  .object({
+    kind: z.literal('skill-modifier'),
+    skillIndex: nonNegativeInteger,
+    permille: signedInteger,
+    durationMs: nonNegativeInteger,
+    exclusivityGroup: nonNegativeInteger.nullable().default(null),
+  })
+  .strict();
+
+const DamageDealtConditionSchema = z
+  .object({
+    kind: z.literal('damage-dealt'),
+    permille: signedInteger,
+    durationMs: nonNegativeInteger,
+    exclusivityGroup: nonNegativeInteger.nullable().default(null),
+  })
+  .strict();
+
+const DamageReceivedConditionSchema = z
+  .object({
+    kind: z.literal('damage-received'),
+    permille: signedInteger,
+    durationMs: nonNegativeInteger,
+    exclusivityGroup: nonNegativeInteger.nullable().default(null),
+  })
+  .strict();
+
+const SpeedConditionSchema = z
+  .object({
+    kind: z.literal('speed'),
+    permille: signedInteger,
+    durationMs: nonNegativeInteger,
+    exclusivityGroup: nonNegativeInteger.nullable().default(null),
+  })
+  .strict();
+
+const ManaShieldConditionSchema = z
+  .object({
+    kind: z.literal('mana-shield'),
+    durationMs: nonNegativeInteger,
+  })
+  .strict();
+
 export const ConditionDefinitionSchema = z.discriminatedUnion('kind', [
   PoisonConditionSchema,
+  SkillModifierConditionSchema,
+  DamageDealtConditionSchema,
+  DamageReceivedConditionSchema,
+  SpeedConditionSchema,
+  ManaShieldConditionSchema,
 ]);
 export type ConditionDefinition = z.infer<typeof ConditionDefinitionSchema>;
 

@@ -7,6 +7,7 @@ import type {
   Direction,
   GridPosition,
   KernelScenario,
+  ScenarioConditionDefinition,
   ScenarioFloor,
   Seed,
   SimulationCommandInput,
@@ -268,6 +269,48 @@ function abilityV5Defaults(): Pick<
     maxCharges: null,
     rechargeKind: 'none',
     toggle: false,
+  };
+}
+
+export function scenarioCondition(
+  overrides: Partial<ScenarioConditionDefinition> = {},
+): ScenarioConditionDefinition {
+  return {
+    conditionId: 'haste',
+    exclusivityGroup: null,
+    durationTicks: 0,
+    skillIndex: null,
+    skillModifierPermille: 0,
+    damageDealtPermille: 0,
+    damageReceivedPermille: 0,
+    speedPermille: 0,
+    manaShield: false,
+    tickDamageAmount: 0,
+    tickDamageIntervalTicks: 0,
+    elementBonusPermille: 0,
+    convertNextAbilityElement: false,
+    bonusElement: null,
+    ...overrides,
+  };
+}
+
+export function supportSelfAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'blood-rage',
+    effect: 'heal',
+    shape: 'self',
+    radius: 0,
+    rangeTiles: 0,
+    resourceCost: 20,
+    cooldownTicks: 0,
+    groupCooldownTicks: 0,
+    minPower: 0,
+    maxPower: 0,
+    ...abilityV5Defaults(),
+    toggle: true,
+    ...overrides,
   };
 }
 

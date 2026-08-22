@@ -888,6 +888,9 @@ export class SqliteContentCatalog
           );
       }
       for (const [ordinal, condition] of creature.conditions.entries()) {
+        if (condition.kind !== 'poison') {
+          continue;
+        }
         this.database
           .prepare(
             'INSERT INTO creature_conditions (slice_key, creature_guid, ordinal, kind, total_damage, interval_ms) VALUES (?, ?, ?, ?, ?, ?)',

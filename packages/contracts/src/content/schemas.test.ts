@@ -7,6 +7,7 @@ import { createContentGuid } from './identity';
 import {
   CatalogContentBundleSchema,
   CharacterDefinitionSchema,
+  ConditionDefinitionSchema,
   RuntimeContentBundleSchema,
   SpellFormulaDefinitionSchema,
 } from './schemas';
@@ -411,6 +412,54 @@ describe('content schemas', () => {
     };
 
     expect(CatalogContentBundleSchema.safeParse(bundle).success).toBe(false);
+  });
+
+  it('accepts the six condition kinds the combat kernel understands', () => {
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'poison',
+        totalDamage: 18,
+        intervalMs: 3000,
+      }).kind,
+    ).toBe('poison');
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'skill-modifier',
+        skillIndex: 2,
+        permille: 250,
+        durationMs: 0,
+        exclusivityGroup: 1,
+      }),
+    ).toMatchObject({ kind: 'skill-modifier', permille: 250 });
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'damage-dealt',
+        permille: -150,
+        durationMs: 0,
+        exclusivityGroup: 1,
+      }).kind,
+    ).toBe('damage-dealt');
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'damage-received',
+        permille: 150,
+        durationMs: 0,
+        exclusivityGroup: 1,
+      }).kind,
+    ).toBe('damage-received');
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'speed',
+        permille: 300,
+        durationMs: 30_000,
+      }).kind,
+    ).toBe('speed');
+    expect(
+      ConditionDefinitionSchema.parse({
+        kind: 'mana-shield',
+        durationMs: 180_000,
+      }).kind,
+    ).toBe('mana-shield');
   });
 
   it('rejects a projection without consumer or rationale and a field outside its facet', () => {

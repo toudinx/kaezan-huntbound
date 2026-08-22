@@ -54,6 +54,10 @@ import {
   resolveCombat,
   resolveDeath,
 } from './combat.ts';
+import {
+  effectiveStepCooldownTicks,
+  queryConditionModifiers,
+} from './conditions.ts';
 import { KernelInvariantError } from './errors.ts';
 import {
   createSpawnTable,
@@ -194,8 +198,13 @@ export function createSimulationKernel(
     });
   };
 
-  const baseStepTicks = (actor: ActorState): number =>
-    blueprints.get(actor.blueprintId)?.stepCooldownTicks ?? 0;
+  const stepTicksFor = (actor: ActorState, tick: number): number => {
+    const base = blueprints.get(actor.blueprintId)?.stepCooldownTicks ?? 0;
+    return effectiveStepCooldownTicks(
+      base,
+      queryConditionModifiers(actor, scenario.conditions, tick).speedPermille,
+    );
+  };
 
   const wanders = (actor: ActorState): boolean =>
     blueprints.get(actor.blueprintId)?.behavior === 'wander';
@@ -211,6 +220,7 @@ export function createSimulationKernel(
     occupancy: ReturnType<typeof createOccupancyIndex>,
     actor: ActorState,
     targetPosition: GridPosition,
+    tick: number,
   ): Direction | undefined => {
     const greedy = greedyStepDirection(actor.position, targetPosition);
     if (greedy === undefined) {
@@ -221,7 +231,7 @@ export function createSimulationKernel(
       occupancy,
       actor,
       greedy,
-      baseStepTicks(actor),
+      stepTicksFor(actor, tick),
     );
     if (outcome.ok && outcome.transitionedTo !== undefined) {
       return undefined;
@@ -589,7 +599,7 @@ export function createSimulationKernel(
           createOccupancyIndex(world.actors()),
           actor,
           intent.direction,
-          baseStepTicks(actor),
+          stepTicksFor(actor, currentTick),
         );
 
         if (!outcome.ok) {
@@ -741,7 +751,13 @@ export function createSimulationKernel(
                 walkerId: actor.entityId,
                 targetDistance,
               },
-            ) ?? chaseFallbackDirection(occupancy, actor, target.position);
+            ) ??
+            chaseFallbackDirection(
+              occupancy,
+              actor,
+              target.position,
+              currentTick,
+            );
           if (direction !== undefined) {
             queueInternalIntent(nextTick, actor.entityId, direction);
           }
@@ -884,7 +900,7 @@ export function createSimulationKernel(
 
     runLifecycle();
     runMovement();
-    applyUpkeep(world, blueprints, currentTick, journal);
+    applyUpkeep(world, blueprints, scenario.conditions, currentTick, journal);
     const killers = new Map<number, EntityId | null>();
     resolveCombat(
       world,
@@ -893,6 +909,7 @@ export function createSimulationKernel(
       streams,
       blueprints,
       scenario.abilities,
+      scenario.conditions,
       currentTick,
       combatIntents,
       killers,

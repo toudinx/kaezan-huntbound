@@ -6,8 +6,9 @@ acrescentou andares, transição automática e o sistema de spawn. PB-05-04 impl
 vocabulário de combate (`schemaVersion` 4, `rulesVersion` 3): as sete fases do tick, `S3 upkeep`,
 `S4 combat`, a morte de `S5` e a rolagem determinística de `loot/granted`. O comportamento `hunter`
 foi entregue por PB-05-05. PB-07-03 abre o envelope `schemaVersion` 5 / `rulesVersion` 4 com
-campos aditivos de sustentação, condição, elemento e carga; as regras de `applyUpkeep`,
-`applyDamage` e `resolveCast` continuam as da v4 até as tasks seguintes.
+campos aditivos de sustentação, condição, elemento e carga. PB-07-04 preencheu regen fora de
+combate e leech. PB-07-05 preenche a regra de condição com duração, stance e o canal de cooldown
+secundário.
 
 ## Versões e tempo
 
@@ -93,7 +94,8 @@ com default: `element` `'physical'`, `primaryCooldownGroup` `0` (`PRIMARY_COOLDO
 `abilities` e `lootTables`. Default é `[]`. `conditionId` é kebab-case e único. Não há string livre
 de condição no estado do ator: `ActorState.activeConditions` guarda `conditionIndex`. A definição
 carrega grupo de exclusividade, duração, modificadores por milhar, `manaShield`, dano periódico e
-conversão elemental. O kernel ainda não aplica essas regras; o campo existe para as tasks seguintes.
+conversão elemental. O kernel aplica essas regras em `applyUpkeep`, `applyDamage`, `resolveCast` e
+no custo efetivo do passo.
 
 ### Tabelas de loot
 
@@ -205,8 +207,9 @@ Ordem errada é recusa com caminho localizado, não reordenação. `lastDamageRe
 ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a restrição de
 `abilityCooldowns` aos índices declarados no blueprint dependem do cenário e seguem o mesmo padrão
 de `transitionGuard`: a checagem mora em `restoreSimulationKernel`, não no schema isolado do
-snapshot. O kernel de combate ainda lê e escreve somente o grupo primário (`PRIMARY_COOLDOWN_GROUP`
-`0`); grupos secundários entram em PB-07-05. `SpawnSlotState` guarda `groupIndex`, `slotIndex`,
+snapshot. O kernel lê e escreve `primaryCooldownGroup` e, quando presente, `secondaryCooldownGroup`.
+Uma habilidade só consulta os grupos que declara: o canal secundário não trava o primário, e o
+primário não trava o secundário. `SpawnSlotState` guarda `groupIndex`, `slotIndex`,
 `readyAtTick` e `entityId`, que é `null` quando o assento está vago. Um `entityId` de slot que não
 corresponda a nenhum ator do snapshot é reprovado.
 
@@ -458,8 +461,10 @@ causas nesta precedência fixa:
 O teste de corte de canto considera somente terreno, e somente o do andar de origem: não existe
 passo diagonal entre andares, porque `translate` preserva `z`. Um ator em um dos vizinhos ortogonais
 não impede o passo diagonal. Passos ortogonais custam `baseTicks`; passos diagonais custam
-`Math.ceil(baseTicks * 3 / 2)` ticks. O `baseTicks` é o `stepCooldownTicks` do blueprint, e a decisão
-de `cooldown` pertence ao chamador, não à camada geométrica.
+`Math.ceil(baseTicks * 3 / 2)` ticks. O `baseTicks` é o `stepCooldownTicks` efetivo do ator: o valor
+do blueprint após os modificadores de velocidade das condições vivas, `trunc(base * 1000 /
+max(1, 1000 + speedPermille))`, com piso 1 quando o base é positivo. A decisão de `cooldown` pertence
+ao chamador, não à camada geométrica.
 
 `StepOutcome` bem-sucedido ganha `transitionedTo`, presente somente quando o passo dispara uma
 transição. `to` continua sendo o destino geométrico; `transitionedTo` é onde o ator termina o tick.
@@ -593,11 +598,16 @@ Como a resolução é sequencial, dois atores disputando a mesma célula no mesm
 pelo menor `EntityId`: o primeiro move e o segundo recebe `occupied`. Pelo mesmo motivo, a célula
 liberada por um ator já pode ser ocupada por um ator de `EntityId` maior no mesmo tick.
 
-`S3 upkeep` percorre os atores vivos em ordem crescente de `EntityId`. Para cada um, se
-`healthRegenTicks > 0` e `healthRegenAmount > 0` e `currentTick >= nextHealthRegenTick`, soma o
-amount a `health` sem ultrapassar `maxHealth` e avança `nextHealthRegenTick` para
-`currentTick + healthRegenTicks`. O mesmo vale para mana com `resource` / `maxResource`. Ticks ou
-amount iguais a zero nunca regeneram. O sistema não emite evento e não consome nenhum stream.
+`S3 upkeep` percorre os atores vivos em ordem crescente de `EntityId`. Para cada um, primeiro
+expira condições cujo `expiresAtTick` é positivo e `currentTick >= expiresAtTick` (`expiresAtTick`
+`0` significa que a condição não expira). Em seguida aplica dano periódico das condições ainda
+vivas: o instante de aplicação é `expiresAtTick - durationTicks`, e o pulso cai quando o elapsed é
+positivo e múltiplo de `tickDamageIntervalTicks`. O pulso é a soma dos `tickDamageAmount` na ordem
+canônica de `conditionIndex`. Depois, se `healthRegenTicks > 0` e `healthRegenAmount > 0` e
+`currentTick >= nextHealthRegenTick`, soma o amount a `health` sem ultrapassar `maxHealth` e avança
+`nextHealthRegenTick` para `currentTick + healthRegenTicks`. O mesmo vale para mana com `resource` /
+`maxResource`. Ticks ou amount iguais a zero nunca regeneram. Regeneração emite `combat/regenerated`;
+dano periódico emite `combat/damaged`. O sistema não consome nenhum stream.
 
 `S4 combat` resolve as intents de golpe e conjuração em ordem crescente de `EntityId`, desempatando
 pelo `sourceRank` (externa antes da interna) e depois pela ordem de entrada. Recusas emitem
@@ -611,11 +621,26 @@ em `[attackMinDamage, attackMaxDamage]` por um `nextBelow(max - min + 1)` do str
 passa a `attackReadyAtTick = currentTick + attackCooldownTicks`.
 
 Conjuração: consome `resourceCost` só depois de validar índice, recurso, cooldown próprio e cooldown
-de grupo. Emite `ability/cast` e então um `combat/damaged` ou `combat/healed` por alvo. `self` cura o
+dos grupos que a habilidade declara (`primaryCooldownGroup` e, se houver, `secondaryCooldownGroup`).
+Habilidade com `toggle: true` cuja condição aplicada já está viva **desliga** essa condição, não
+cobra mana e não aplica efeito de poder. Relançar a rival do mesmo `exclusivityGroup` troca,
+cobrando a rival. `appliedConditionIndex` não nulo aplica ou renova a condição (tick de expiração
+absoluto `currentTick + durationTicks`, ou `0` quando a duração é `0`) e expulsa a ocupante do
+mesmo slot. Sem chave de slot, índices diferentes empilham; o mesmo índice renova. A lista fica
+ordenada por `conditionIndex`. Emite `ability/cast` e então um `combat/damaged` ou `combat/healed`
+por alvo, salvo poder `0`/`0` (cast só de condição). `self` cura o
 conjurador; `target` exige alcance e, para dano, facção diferente; `area` atinge o quadrado de raio
 declarado centrado no conjurador, em ordem crescente de `EntityId`, com **um** sorteio por alvo.
 Cura só atinge a mesma facção; dano só atravessa facções diferentes. Ninguém fere a si mesmo.
-Mitigação é zero.
+
+O dano rolado é um inteiro. Modificadores de condição são inteiros por milhar. **A composição é
+soma-então-aplica-uma-vez:** os permilles vivos do mesmo canal são somados na ordem canônica de
+`conditionIndex` e o resultado é `trunc(base * (1000 + soma) / 1000)`, nunca uma cadeia de
+multiplicações. Dois `+100` sobre `7` produzem `8`, não `7`. A ordem dos canais no golpe é: dano
+causado do atacante, dano recebido do alvo, depois escudo de mana (o dano come `resource` antes de
+`health`; o que sobra passa para a vida; mana em zero devolve o comportamento normal). A consulta é
+a função pura `queryConditionModifiers`; `resolveAttack` e `resolveCast` não ramificam por tipo de
+condição.
 
 `S5 death` remove quem tem `health <= 0`, em ordem crescente de `EntityId`, emite `actor/died` com a
 posição e libera o assento de spawn com `readyAtTick = tickDaMorte + respawnTicks`. Jogador não tem
