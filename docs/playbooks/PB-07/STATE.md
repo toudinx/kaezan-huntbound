@@ -2,8 +2,8 @@
 
 **Playbook:** `docs/playbooks/PB-07/README.md`
 
-**Estado geral:** em execução. **PB-07-01 e PB-07-02 integradas na `main`.** PB-07-03 e
-PB-07-04 done nesta branch. Próxima elegível: **PB-07-05**. PB-07-12 e PB-07-13 são independentes.
+**Estado geral:** em execução. **PB-07-01 a PB-07-04 integradas na `main`.**
+Próxima elegível: **PB-07-05**. PB-07-12 e PB-07-13 são independentes.
 
 **Última atualização:** 2026-08-21
 
@@ -35,9 +35,8 @@ PB-07-04 done nesta branch. Próxima elegível: **PB-07-05**. PB-07-12 e PB-07-1
 **B2 — aberto.** `verify` ainda vermelho por save-persistence/`SAVE_VERSION_UNSUPPORTED` e
 snapshots de `shell`, fora do escopo da 02. Não bloqueia a trilha de combate; não bloqueia merge.
 
-**B3 — aberto.** `--ff-only` na `main` abortou: WIP local em `identity.ts`. Worktree
-`C:\Kaezan\kaezan-huntbound-pb07-03-contract` e branch `codex/pb07-03-combat-contract-v5`
-preservadas.
+**B3 — resolvido em 2026-08-21.** WIP da `main` em stash temporário; `--ff-only`
+de `codex/pb07-04-sustain` em `9ee152d` (inclui PB-07-03). WIP restaurado.
 
 ## Decisões congeladas
 
