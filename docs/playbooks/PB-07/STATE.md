@@ -18,7 +18,7 @@ PB-07-12 e PB-07-13 são independentes.
 | PB-07-02 | done | `codex/pb07-02-target-and-impact` | `ead4405` | anel de alvo + shake por magnitude; ff na `main` |
 | PB-07-03 | done | `codex/pb07-03-combat-contract-v5` | `b490e2e` | schema 5 / rules 4; events byte-idênticos |
 | PB-07-04 | done | `codex/pb07-04-sustain` | `5400ab0` | leech 100‰ + OOC 1 HP/2 mana / 500 ms; janela 4 s; 238 testes de simulação |
-| PB-07-05 | done | `codex/pb07-05-conditions` | — | 257 testes; soma permille então `trunc` uma vez; golden PB-05 inalterado |
+| PB-07-05 | done | `codex/pb07-05-conditions` | `e4c1028` | 257 testes; soma permille então `trunc` uma vez; golden PB-05 inalterado |
 | PB-07-06 | pending | `<agente>/pb07-06-generic-skills` | — | `exori vis` é `range(3)`, não cinco tiles |
 | PB-07-07 | pending | `<agente>/pb07-07-paladin` | — | — |
 | PB-07-08 | pending | `<agente>/pb07-08-sorcerer` | — | — |
