@@ -15,7 +15,7 @@ describe('CameraController', () => {
     expect([camera.scrollX, camera.scrollY]).toEqual([0, 0]);
   });
 
-  it('does not clamp the finite authored map at its edges', () => {
+  it('does not clamp when the caller declares no ground bounds', () => {
     const camera = createCameraController({
       viewportWidth: 320,
       viewportHeight: 240,
@@ -43,6 +43,32 @@ describe('CameraController', () => {
     for (const scroll of scrolls) {
       expect(scroll).toEqual([839, 879]);
     }
+  });
+
+  it('stops the view at the edge of the ground it was given', () => {
+    const camera = createCameraController({
+      viewportWidth: 320,
+      viewportHeight: 240,
+      zoom: 1,
+      bounds: { minX: 64, minY: 64, maxX: 768, maxY: 736 },
+    });
+
+    camera.follow({ x: 80, y: 80 });
+
+    expect([camera.scrollX, camera.scrollY]).toEqual([64, 64]);
+  });
+
+  it('keeps a bounded follow that is already inside the ground untouched', () => {
+    const camera = createCameraController({
+      viewportWidth: 320,
+      viewportHeight: 240,
+      zoom: 1,
+      bounds: { minX: 64, minY: 64, maxX: 768, maxY: 736 },
+    });
+
+    camera.follow({ x: 400, y: 400 });
+
+    expect([camera.scrollX, camera.scrollY]).toEqual([240, 280]);
   });
 
   it('clamps interpolation alpha and remains monotonic between endpoints', () => {

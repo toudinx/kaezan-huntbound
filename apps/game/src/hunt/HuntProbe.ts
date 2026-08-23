@@ -72,12 +72,31 @@ export interface HuntProbeState {
     readonly zoom: number;
     readonly visibleRows: number;
     readonly roundPixels: boolean;
+    /** The world box the camera is held inside, or `null` when unbounded. */
+    readonly bounds: {
+      readonly minX: number;
+      readonly minY: number;
+      readonly maxX: number;
+      readonly maxY: number;
+    } | null;
   };
   readonly drawn: {
     readonly total: number;
     readonly layers: HuntProbeLayerCounts;
     readonly composedGroundCells: number;
     readonly unresolvedGroundCells: number;
+  };
+  /** How the scene is covering the cells that have no ground under them. */
+  readonly worldEdge: {
+    /** Cells the treatment painted over on the floor being presented. */
+    readonly treatedCells: number;
+    /** Depth of the treatment. Must sit under every drawn tile. */
+    readonly depth: number;
+    readonly visible: boolean;
+    /** Times the treatment object was constructed. Must not grow per frame. */
+    readonly objectCreations: number;
+    /** Visible cells with neither ground nor treatment. Must always be 0. */
+    readonly untreatedVisibleCells: number;
   };
 }
 

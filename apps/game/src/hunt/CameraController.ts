@@ -1,4 +1,8 @@
-import { centeredCameraScroll } from './CameraFraming';
+import {
+  type CameraBounds,
+  centeredCameraScroll,
+  clampCameraScroll,
+} from './CameraFraming';
 
 export interface CameraTarget {
   readonly x: number;
@@ -15,6 +19,8 @@ export interface CameraControllerOptions {
   readonly viewportWidth: number;
   readonly viewportHeight: number;
   readonly zoom: number;
+  /** The ground box the view may not leave. Omitted, the camera is unbounded. */
+  readonly bounds?: CameraBounds;
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -35,8 +41,19 @@ export function createCameraController(
       viewportHeight: options.viewportHeight,
       zoom: options.zoom,
     });
-    scrollX = centered.scrollX;
-    scrollY = centered.scrollY;
+    const bounds = options.bounds;
+    const framed =
+      bounds === undefined
+        ? centered
+        : clampCameraScroll({
+            ...centered,
+            viewportWidth: options.viewportWidth,
+            viewportHeight: options.viewportHeight,
+            zoom: options.zoom,
+            bounds,
+          });
+    scrollX = framed.scrollX;
+    scrollY = framed.scrollY;
   };
 
   return {

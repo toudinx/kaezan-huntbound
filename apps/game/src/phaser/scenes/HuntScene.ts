@@ -26,8 +26,10 @@ import {
   createCameraController,
 } from '../../hunt/CameraController';
 import {
+  type CameraBounds,
   type CameraFraming,
   calculateCameraFraming,
+  clampCameraScroll,
 } from '../../hunt/CameraFraming';
 import { type CellAnchor, cellAnchor } from '../../hunt/CellAnchor';
 import {
@@ -48,6 +50,11 @@ import {
 } from '../../hunt/CombatTargeting';
 import { DEFAULT_COMBAT_ABILITIES } from '../../hunt/CombatViewModel';
 import { effectFrame } from '../../hunt/EffectAnimation';
+import {
+  groundBounds,
+  groundEdgeCells,
+  unresolvedGroundCells,
+} from '../../hunt/GroundCompositor';
 import {
   type CombatInputContext,
   combatCommandForAction,
@@ -74,6 +81,30 @@ import type { InputMap } from '../../input/InputMap';
 import { createTickInputGate } from '../../input/TickInputGate';
 
 export const HUNT_TILE_SIZE = 32;
+
+/**
+ * Under everything. `tileDepth` starts at 0 for the ground of the first cell,
+ * so a negative depth is the only place the treatment can sit and still be
+ * covered by every tile, actor and decoration painted over it.
+ */
+export const WORLD_EDGE_DEPTH = -1;
+
+/**
+ * Unlit rock, from the same warm family as the cave floor rather than from the
+ * canvas blue-black. It has to be plainly darker than the lit floor and just as
+ * plainly not black: a near-black fill next to a walkable tile reads as a hole
+ * punched in the page, which is the complaint the canvas colour earned.
+ */
+export const WORLD_EDGE_COLOR = 0x241812;
+
+/**
+ * The face of that rock where it meets the floor.
+ *
+ * One flat tone still ends the map on a hard line. Lifting the ring of empty
+ * cells that touch ground reads as the light on the floor falling on the wall
+ * beside it, so the boundary becomes a surface instead of an edge.
+ */
+export const WORLD_EDGE_RIM_COLOR = 0x3a281c;
 
 export interface HuntSimulationDriver {
   readonly tick: TickIndex;
@@ -126,6 +157,11 @@ export class HuntScene extends Phaser.Scene {
     Phaser.GameObjects.Sprite
   >();
   private targetRing: Phaser.GameObjects.Graphics | undefined;
+  private worldEdge: Phaser.GameObjects.Graphics | undefined;
+  private worldEdgeCreations = 0;
+  private readonly worldEdgeCells = new Set<number>();
+  private readonly drawnGroundCells = new Set<number>();
+  private cameraBounds: CameraBounds | undefined;
   private readonly decorationObjects = new Map<
     number,
     Phaser.GameObjects.Sprite | Phaser.GameObjects.Text
@@ -223,6 +259,7 @@ export class HuntScene extends Phaser.Scene {
     }
     this.renderClock = 0;
     this.floorRebuilds = 0;
+    this.worldEdgeCreations = 0;
     this.decorationTextWrites = 0;
     this.decorationTextValues.clear();
     this.inputCommands = [];
@@ -327,6 +364,10 @@ export class HuntScene extends Phaser.Scene {
       this.destroyCombatDecorations();
       this.targetRing?.destroy();
       this.targetRing = undefined;
+      this.worldEdge?.destroy();
+      this.worldEdge = undefined;
+      this.worldEdgeCells.clear();
+      this.drawnGroundCells.clear();
       this.combatDecorations.reset();
       this.combatImpulses.reset();
       this.combatNumberColors.clear();
@@ -447,6 +488,7 @@ export class HuntScene extends Phaser.Scene {
         visibleRows:
           this.scale.height / (this.tileSize * this.cameras.main.zoom),
         roundPixels: this.cameras.main.roundPixels,
+        bounds: this.cameraBounds ?? null,
       },
       drawn: {
         total: this.sprites.length,
@@ -455,6 +497,13 @@ export class HuntScene extends Phaser.Scene {
           presentation?.groundComposition().composedGroundCells ?? 0,
         unresolvedGroundCells:
           presentation?.groundComposition().unresolvedGroundCells ?? 0,
+      },
+      worldEdge: {
+        treatedCells: this.worldEdgeCells.size,
+        depth: this.worldEdge?.depth ?? Number.NaN,
+        visible: this.worldEdge?.visible ?? false,
+        objectCreations: this.worldEdgeCreations,
+        untreatedVisibleCells: this.untreatedVisibleCells(),
       },
     };
   }
@@ -521,6 +570,7 @@ export class HuntScene extends Phaser.Scene {
       viewportWidth: width,
       viewportHeight: height,
       zoom: framing.zoom,
+      ...(this.cameraBounds === undefined ? {} : { bounds: this.cameraBounds }),
     });
   }
 
@@ -537,7 +587,10 @@ export class HuntScene extends Phaser.Scene {
       tileSize: this.tileSize,
     });
     this.cameras.main.setZoom(this.cameraFraming.zoom);
-    this.cameras.main.setBackgroundColor('#24120e');
+    // The same tone the treatment paints, so a viewport wider than the whole
+    // region — where the clamp centres the box and leaves real slack — carries
+    // on in the same rock instead of showing a different colour at the seam.
+    this.cameras.main.setBackgroundColor(WORLD_EDGE_COLOR);
   }
 
   private publishReady(width = this.scale.width, height = this.scale.height) {
@@ -666,6 +719,8 @@ export class HuntScene extends Phaser.Scene {
 
     this.floorRebuilds += 1;
     this.destroySprites();
+    this.drawnGroundCells.clear();
+    this.syncCameraBounds();
     for (const command of presentation.drawCommands()) {
       const asset = this.assetByKey.get(command.key);
       if (!asset) continue;
@@ -686,11 +741,105 @@ export class HuntScene extends Phaser.Scene {
       sprite.setData('hunt-layer', command.layer);
       this.sprites.push(sprite);
 
+      if (command.layer === 'ground') {
+        this.drawnGroundCells.add(this.cellIndex(command.x, command.y));
+      }
+
       if (command.kind === 'actor') {
         this.bindActorSprite(sprite, command.entityId);
       }
     }
+    this.renderWorldEdge();
     this.syncTargetHighlight();
+  }
+
+  private cellIndex(x: number, y: number): number {
+    return y * this.options.hunt.region.width + x;
+  }
+
+  /**
+   * Reframes the camera on the ground of the floor now being presented.
+   *
+   * The two floors of the hunt do not carry ground in the same cells, so the
+   * box has to be recomputed whenever the floor is rebuilt; the controller
+   * holds its bounds by value and is cheap enough to replace.
+   */
+  private syncCameraBounds(): void {
+    const presentation = this.presentation;
+    const region = this.options.hunt.region;
+    const cells = groundBounds(
+      region,
+      presentation?.floor() ?? this.options.hunt.playerStart.z,
+    );
+    this.cameraBounds =
+      cells === undefined
+        ? undefined
+        : {
+            minX: cells.minX * this.tileSize,
+            minY: cells.minY * this.tileSize,
+            maxX: (cells.maxX + 1) * this.tileSize,
+            maxY: (cells.maxY + 1) * this.tileSize,
+          };
+    this.cameraController = this.makeCameraController();
+  }
+
+  private ensureWorldEdge(): Phaser.GameObjects.Graphics {
+    if (this.worldEdge !== undefined) return this.worldEdge;
+
+    const edge = this.add
+      .graphics()
+      .setDepth(WORLD_EDGE_DEPTH)
+      .setData('hunt-world-edge', true);
+    this.worldEdgeCreations += 1;
+    this.worldEdge = edge;
+    return edge;
+  }
+
+  /**
+   * Paints every cell the compositor cannot put ground under.
+   *
+   * One Graphics carries the whole floor and is redrawn only when the floor is
+   * rebuilt, so a hunt at 60 fps creates nothing per frame: a sprite per empty
+   * cell would have been 152 objects on the lower floor and 201 on the upper
+   * one. The cells come from `unresolvedGroundCells` rather than from a second
+   * reading of the palette, so the treatment and the floor can never disagree
+   * about which cell is empty.
+   */
+  private renderWorldEdge(): void {
+    const presentation = this.presentation;
+    if (!presentation) return;
+
+    const region = this.options.hunt.region;
+    const floor = presentation.floor();
+    const edge = this.ensureWorldEdge();
+    edge.clear();
+    this.worldEdgeCells.clear();
+
+    const fillCell = (index: number): void => {
+      const x = index % region.width;
+      const y = Math.floor(index / region.width);
+      edge.fillRect(
+        x * this.tileSize,
+        y * this.tileSize,
+        this.tileSize,
+        this.tileSize,
+      );
+    };
+
+    edge.fillStyle(WORLD_EDGE_COLOR, 1);
+    for (const index of unresolvedGroundCells(region, floor)) {
+      fillCell(index);
+      this.worldEdgeCells.add(index);
+    }
+
+    // Painted over the base, never instead of it, so the rim can never be the
+    // only thing covering a cell and leave a gap if the two lists disagree.
+    edge.fillStyle(WORLD_EDGE_RIM_COLOR, 1);
+    for (const index of groundEdgeCells(region, floor)) {
+      fillCell(index);
+    }
+
+    edge.setVisible(true);
   }
 
   /** Every creature on screen is a click target: that is how Tibia aims. */
@@ -1273,11 +1422,89 @@ export class HuntScene extends Phaser.Scene {
       x: position.x * this.tileSize,
       y: position.y * this.tileSize,
     });
-    this.cameras.main.setScroll(controller.scrollX, controller.scrollY);
+    // The shake is added before the clamp, not after it: an impulse that
+    // nudged the camera past the edge would expose the void for exactly the
+    // frames the player is being hit, which is when he is least able to
+    // explain what he saw.
     const shake = this.combatImpulses.cameraOffset(renderTimeMs);
-    this.cameras.main.setScroll(
+    const scroll = this.framedScroll(
       controller.scrollX + shake.x,
       controller.scrollY + shake.y,
     );
+    this.cameras.main.setScroll(scroll.scrollX, scroll.scrollY);
+  }
+
+  private framedScroll(
+    scrollX: number,
+    scrollY: number,
+  ): { readonly scrollX: number; readonly scrollY: number } {
+    const bounds = this.cameraBounds;
+    const zoom = this.cameras.main.zoom;
+    if (bounds === undefined || !(zoom > 0)) return { scrollX, scrollY };
+
+    return clampCameraScroll({
+      scrollX,
+      scrollY,
+      viewportWidth: this.scale.width,
+      viewportHeight: this.scale.height,
+      zoom,
+      bounds,
+    });
+  }
+
+  /** What the camera is showing right now, in world pixels. */
+  private visibleWorldRect(): {
+    readonly left: number;
+    readonly right: number;
+    readonly top: number;
+    readonly bottom: number;
+  } {
+    const camera = this.cameras.main;
+    const zoom = camera.zoom > 0 ? camera.zoom : 1;
+    const halfWidth = this.scale.width / (2 * zoom);
+    const halfHeight = this.scale.height / (2 * zoom);
+    const centreX = camera.scrollX + this.scale.width / 2;
+    const centreY = camera.scrollY + this.scale.height / 2;
+
+    return {
+      left: centreX - halfWidth,
+      right: centreX + halfWidth,
+      top: centreY - halfHeight,
+      bottom: centreY + halfHeight,
+    };
+  }
+
+  /**
+   * Visible cells showing neither ground nor treatment — the canvas, in other
+   * words. It counts what was actually drawn rather than recomputing the
+   * compositor's answer, so a missing tile asset, a stale treatment and a
+   * camera that walked off the map all show up here as the same number.
+   */
+  private untreatedVisibleCells(): number {
+    const region = this.options.hunt.region;
+    const rect = this.visibleWorldRect();
+    const firstX = Math.floor(rect.left / this.tileSize);
+    const lastX = Math.ceil(rect.right / this.tileSize) - 1;
+    const firstY = Math.floor(rect.top / this.tileSize);
+    const lastY = Math.ceil(rect.bottom / this.tileSize) - 1;
+    let untreated = 0;
+
+    for (let y = firstY; y <= lastY; y += 1) {
+      for (let x = firstX; x <= lastX; x += 1) {
+        if (x < 0 || y < 0 || x >= region.width || y >= region.height) {
+          untreated += 1;
+          continue;
+        }
+        const index = this.cellIndex(x, y);
+        if (
+          !this.drawnGroundCells.has(index) &&
+          !this.worldEdgeCells.has(index)
+        ) {
+          untreated += 1;
+        }
+      }
+    }
+
+    return untreated;
   }
 }

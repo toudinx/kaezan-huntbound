@@ -78,16 +78,70 @@ export function reachableWalkableCount(
 }
 
 /** Returns a deterministic cardinal route within one authored floor. */
+/**
+ * Every cell a cardinal walk can reach from `root`.
+ *
+ * `reachableWalkableCount` answers eight-way, which is the kernel's own step
+ * rule, but a browser spec drives the four arrow keys: a cell only diagonally
+ * reachable would leave `cardinalRoute` with no path to it. Sharing the walk
+ * the router itself uses is what keeps the two answers consistent.
+ */
+export function reachableCardinalCells(
+  hunt: HuntDefinition,
+  root: GridPosition,
+  avoid: readonly GridPosition[] = [],
+): readonly GridPosition[] {
+  const floor = floorAt(hunt, root.z);
+  const width = hunt.region.width;
+  const height = hunt.region.height;
+  const closed = closedCells(avoid, root.z, width);
+
+  if (!walkable(floor, root.x, root.y, width, height)) return [];
+
+  const visited = new Set([indexOf(root.x, root.y, width)]);
+  const queue = [...visited];
+
+  while (queue.length > 0) {
+    const current = queue.shift() as number;
+    const x = current % width;
+    const y = Math.floor(current / width);
+
+    for (const step of CARDINALS) {
+      const nextX = x + step.dx;
+      const nextY = y + step.dy;
+      if (!canStep(floor, x, y, nextX, nextY, width, height)) continue;
+
+      const next = indexOf(nextX, nextY, width);
+      if (visited.has(next) || closed.has(next)) continue;
+      visited.add(next);
+      queue.push(next);
+    }
+  }
+
+  return [...visited].map((index) => ({
+    x: index % width,
+    y: Math.floor(index / width),
+    z: root.z,
+  }));
+}
+
+/**
+ * `avoid` closes cells the walk must not enter even though the terrain allows
+ * it. A floor transition is walkable and swaps the floor the moment it is
+ * stepped on, so a route that crosses one silently ends up somewhere else.
+ */
 export function cardinalRoute(
   hunt: HuntDefinition,
   from: GridPosition,
   to: GridPosition,
+  avoid: readonly GridPosition[] = [],
 ): readonly Direction[] {
   if (from.z !== to.z) {
     throw new Error('A cardinal route cannot cross floors.');
   }
 
   const floor = floorAt(hunt, from.z);
+  const closed = closedCells(avoid, from.z, hunt.region.width);
   const start = indexOf(from.x, from.y, hunt.region.width);
   const target = indexOf(to.x, to.y, hunt.region.width);
   const parent = new Map<
@@ -121,7 +175,7 @@ export function cardinalRoute(
       }
 
       const next = indexOf(nextX, nextY, hunt.region.width);
-      if (visited.has(next)) continue;
+      if (visited.has(next) || (closed.has(next) && next !== target)) continue;
       visited.add(next);
       parent.set(next, { previous: current, direction: step.direction });
       queue.push(next);
@@ -145,6 +199,18 @@ export function cardinalRoute(
   }
 
   return route.reverse();
+}
+
+function closedCells(
+  cells: readonly GridPosition[],
+  z: number,
+  width: number,
+): ReadonlySet<number> {
+  return new Set(
+    cells
+      .filter((cell) => cell.z === z)
+      .map((cell) => indexOf(cell.x, cell.y, width)),
+  );
 }
 
 function floorAt(hunt: HuntDefinition, z: number): MapRegionFloor {

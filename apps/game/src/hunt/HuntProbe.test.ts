@@ -71,12 +71,20 @@ function emptyState(): HuntProbeState {
       zoom: 1,
       visibleRows: 11,
       roundPixels: false,
+      bounds: null,
     },
     drawn: {
       total: 0,
       layers: { ground: 0, objectsBelow: 0, actors: 0, objectsAbove: 0 },
       composedGroundCells: 0,
       unresolvedGroundCells: 0,
+    },
+    worldEdge: {
+      treatedCells: 0,
+      depth: -1,
+      visible: false,
+      objectCreations: 0,
+      untreatedVisibleCells: 0,
     },
   };
 }

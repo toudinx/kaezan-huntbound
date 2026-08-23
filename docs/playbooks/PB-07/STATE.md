@@ -3,8 +3,9 @@
 **Playbook:** `docs/playbooks/PB-07/README.md`
 
 **Estado geral:** **CONGELADO em 2026-08-23, por decisão do dono do projeto.**
-PB-07-01 a PB-07-05 estão integradas na `main` e são a base do PB-08. As tasks 06 a 14 **não são
-elegíveis** — retomam depois do PB-09.
+PB-07-01 a PB-07-05 estão integradas na `main` e são a base do PB-08. **PB-07-12 também está
+integrada**, por pedido do dono depois do congelamento: já estava pronta e verde. As demais tasks
+06 a 14 **não são elegíveis** — retomam depois do PB-09.
 
 Motivo: antes de criar mobs, bosses e vocações novas, a run precisa ser divertida e ter propósito.
 Isso virou `docs/playbooks/PB-08/README.md`. O que o Knight precisa do PB-07 — alcance real de
@@ -30,7 +31,7 @@ criatura com kit, boss e segunda hunt esperam.
 | PB-07-09 | frozen | `<agente>/pb07-09-elements` | — | — |
 | PB-07-10 | frozen | `<agente>/pb07-10-creature-kit` | — | — |
 | PB-07-11 | frozen | `<agente>/pb07-11-charges` | — | — |
-| PB-07-12 | frozen | `<agente>/pb07-12-world-edge` | — | — |
+| PB-07-12 | done | `codex/pb07-12-world-edge` | — | rocha `#241812` com face `#3a281c` num Graphics reaproveitado, depth −1; câmera presa ao box de chão; composição inalterada (z8 424/152, z9 375/201), `untreatedVisibleCells` = 0 |
 | PB-07-13 | frozen | `<agente>/pb07-13-second-hunt` | — | — |
 | PB-07-14 | frozen | `<agente>/pb07-14-acceptance` | — | — |
 

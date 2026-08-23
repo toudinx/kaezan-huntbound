@@ -63,3 +63,75 @@ export function centeredCameraScroll(input: {
     scrollY: input.targetY - input.viewportHeight / 2,
   };
 }
+
+/** A box of world pixels the camera is allowed to show, edges included. */
+export interface CameraBounds {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
+function clampAxis(input: {
+  readonly centre: number;
+  readonly visible: number;
+  readonly minimum: number;
+  readonly maximum: number;
+}): number {
+  const span = input.maximum - input.minimum;
+
+  // A box narrower than the view cannot fill it however it is placed, so the
+  // leftover is split evenly instead of piled against one side, and the void
+  // treatment covers both halves rather than a single fat band.
+  if (span <= input.visible) {
+    return (input.minimum + input.maximum) / 2;
+  }
+
+  const half = input.visible / 2;
+  return Math.min(
+    Math.max(input.centre, input.minimum + half),
+    input.maximum - half,
+  );
+}
+
+/**
+ * Holds the view inside the ground box.
+ *
+ * `centeredCameraScroll` puts the player under the camera centre wherever he
+ * is, which walks the view off the map at the edge and fills half the screen
+ * with cells that never existed. Clamping the *centre* rather than the scroll
+ * is what keeps the player on screen: the centre moves by at most half a view
+ * away from him, so he can never leave the frame — including at the corners,
+ * where both axes clamp at once. A clamp that could hide him would be a worse
+ * bug than the void it hides.
+ */
+export function clampCameraScroll(input: {
+  readonly scrollX: number;
+  readonly scrollY: number;
+  readonly viewportWidth: number;
+  readonly viewportHeight: number;
+  readonly zoom: number;
+  readonly bounds: CameraBounds;
+}): { readonly scrollX: number; readonly scrollY: number } {
+  assertPositiveFinite('viewportWidth', input.viewportWidth);
+  assertPositiveFinite('viewportHeight', input.viewportHeight);
+  assertPositiveFinite('zoom', input.zoom);
+
+  const centreX = clampAxis({
+    centre: input.scrollX + input.viewportWidth / 2,
+    visible: input.viewportWidth / input.zoom,
+    minimum: input.bounds.minX,
+    maximum: input.bounds.maxX,
+  });
+  const centreY = clampAxis({
+    centre: input.scrollY + input.viewportHeight / 2,
+    visible: input.viewportHeight / input.zoom,
+    minimum: input.bounds.minY,
+    maximum: input.bounds.maxY,
+  });
+
+  return {
+    scrollX: centreX - input.viewportWidth / 2,
+    scrollY: centreY - input.viewportHeight / 2,
+  };
+}
