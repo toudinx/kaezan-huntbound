@@ -263,10 +263,14 @@ export function createSaveSession(
         return;
       }
 
+      const run = activeRun;
       try {
-        latestBag = copyBag(activeRun.getBag());
-        const session = captureActiveSession(activeRun);
-        scheduler.onTick(tick, () => session);
+        latestBag = copyBag(run.getBag());
+        // `capture` is lazy on purpose: the scheduler only calls it on the
+        // ticks that actually write. Building the session eagerly snapshotted
+        // the kernel twenty times a second and discarded all but one in two
+        // hundred of them.
+        scheduler.onTick(tick, () => captureActiveSession(run));
       } catch (error) {
         publishError('Save checkpoint capture failed', error);
       }

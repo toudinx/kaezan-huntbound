@@ -129,6 +129,42 @@ describe('createSaveSession', () => {
     saveSession.destroy();
   });
 
+  it('snapshots the kernel only on the ticks that actually checkpoint', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const saveSession = createSaveSession(repository, { everyTicks: 4 });
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    // The scheduler takes a lazy `capture` for exactly this reason. Building
+    // the snapshot before handing it over threw away 3 of every 4 and made the
+    // session allocate a fresh copy of kernel state twenty times a second.
+    let snapshots = 0;
+    const driver = {
+      ...boot.driver,
+      snapshot: () => {
+        snapshots += 1;
+        return boot.driver.snapshot();
+      },
+    };
+    saveSession.attachRun({
+      identity: TEST_IDENTITY,
+      driver,
+      getBag: () => [],
+    });
+
+    saveSession.onTick(1);
+    saveSession.onTick(2);
+    saveSession.onTick(3);
+    expect(snapshots).toBe(0);
+
+    saveSession.onTick(4);
+    expect(snapshots).toBe(1);
+
+    saveSession.destroy();
+  });
+
   it('checkpoints only at the configured boundary and consolidates a run once', async () => {
     const counted = createCountingDriver();
     const repository = createSaveRepository(counted.driver);
