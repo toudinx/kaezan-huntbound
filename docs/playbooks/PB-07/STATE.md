@@ -2,10 +2,16 @@
 
 **Playbook:** `docs/playbooks/PB-07/README.md`
 
-**Estado geral:** em execução. **PB-07-01 a PB-07-05 integradas na `main`.**
-Próxima elegível: **PB-07-06**. PB-07-12 e PB-07-13 são independentes.
+**Estado geral:** **CONGELADO em 2026-08-23, por decisão do dono do projeto.**
+PB-07-01 a PB-07-05 estão integradas na `main` e são a base do PB-08. As tasks 06 a 14 **não são
+elegíveis** — retomam depois do PB-09.
 
-**Última atualização:** 2026-08-22
+Motivo: antes de criar mobs, bosses e vocações novas, a run precisa ser divertida e ter propósito.
+Isso virou `docs/playbooks/PB-08/README.md`. O que o Knight precisa do PB-07 — alcance real de
+magia, stances como conteúdo, cargas — foi absorvido pelo PB-08; Paladin, Sorcerer, elemento,
+criatura com kit, boss e segunda hunt esperam.
+
+**Última atualização:** 2026-08-23
 
 **Base:** PB-06 integrado em `main`. PB-06-09 bloqueada não impede PB-07.
 
@@ -18,15 +24,15 @@ Próxima elegível: **PB-07-06**. PB-07-12 e PB-07-13 são independentes.
 | PB-07-03 | done | `codex/pb07-03-combat-contract-v5` | `b490e2e` | schema 5 / rules 4; events byte-idênticos |
 | PB-07-04 | done | `codex/pb07-04-sustain` | `5400ab0` | leech 100‰ + OOC 1 HP/2 mana / 500 ms; janela 4 s; 238 testes de simulação |
 | PB-07-05 | done | `codex/pb07-05-conditions` | `e4c1028` | 257 testes; soma permille então `trunc` uma vez; golden PB-05 inalterado |
-| PB-07-06 | pending | `<agente>/pb07-06-generic-skills` | — | `exori vis` é `range(3)`, não cinco tiles |
-| PB-07-07 | pending | `<agente>/pb07-07-paladin` | — | — |
-| PB-07-08 | pending | `<agente>/pb07-08-sorcerer` | — | — |
-| PB-07-09 | pending | `<agente>/pb07-09-elements` | — | — |
-| PB-07-10 | pending | `<agente>/pb07-10-creature-kit` | — | — |
-| PB-07-11 | pending | `<agente>/pb07-11-charges` | — | — |
-| PB-07-12 | pending | `<agente>/pb07-12-world-edge` | — | — |
-| PB-07-13 | pending | `<agente>/pb07-13-second-hunt` | — | — |
-| PB-07-14 | pending | `<agente>/pb07-14-acceptance` | — | — |
+| PB-07-06 | frozen | `<agente>/pb07-06-generic-skills` | — | `exori vis` é `range(3)`, não cinco tiles |
+| PB-07-07 | frozen | `<agente>/pb07-07-paladin` | — | — |
+| PB-07-08 | frozen | `<agente>/pb07-08-sorcerer` | — | — |
+| PB-07-09 | frozen | `<agente>/pb07-09-elements` | — | — |
+| PB-07-10 | frozen | `<agente>/pb07-10-creature-kit` | — | — |
+| PB-07-11 | frozen | `<agente>/pb07-11-charges` | — | — |
+| PB-07-12 | frozen | `<agente>/pb07-12-world-edge` | — | — |
+| PB-07-13 | frozen | `<agente>/pb07-13-second-hunt` | — | — |
+| PB-07-14 | frozen | `<agente>/pb07-14-acceptance` | — | — |
 
 ## Bloqueios
 
