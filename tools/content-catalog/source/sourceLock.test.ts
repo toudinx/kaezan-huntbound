@@ -28,6 +28,17 @@ afterEach(() => {
   }
 });
 
+/**
+ * A commit id that is guaranteed to differ from `commit`.
+ *
+ * Overwriting the first character with a fixed 'f' left the id untouched
+ * whenever the temporary repository happened to hash to one starting with 'f',
+ * which is one run in sixteen and reported no mismatch at all.
+ */
+function otherCommit(commit: string): string {
+  return `${commit.startsWith('f') ? '0' : 'f'}${commit.slice(1)}`;
+}
+
 function createSnapshot(files: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), 'huntbound-source-lock-'));
   temporaryRoots.push(root);
@@ -150,7 +161,7 @@ describe('source lock verification', () => {
       'data/creature.lua': 'actual\n',
     });
     const lock = {
-      ...lockFor(snapshot.commit.replace(/^./, 'f'), [
+      ...lockFor(otherCommit(snapshot.commit), [
         {
           ...sourceFile('data/creature.lua'),
           sha256: hashFor('actual\n'),
