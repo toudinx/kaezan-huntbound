@@ -31,7 +31,7 @@ criatura com kit, boss e segunda hunt esperam.
 | PB-07-09 | frozen | `<agente>/pb07-09-elements` | — | — |
 | PB-07-10 | frozen | `<agente>/pb07-10-creature-kit` | — | — |
 | PB-07-11 | frozen | `<agente>/pb07-11-charges` | — | — |
-| PB-07-12 | done | `codex/pb07-12-world-edge` | — | rocha `#241812` com face `#3a281c` num Graphics reaproveitado, depth −1; câmera presa ao box de chão; composição inalterada (z8 424/152, z9 375/201), `untreatedVisibleCells` = 0 |
+| PB-07-12 | done | `codex/pb07-12-world-edge` | `90830fc` | rocha `#241812` com face `#3a281c` num Graphics reaproveitado, depth −1; câmera presa ao box de chão; composição inalterada (z8 424/152, z9 375/201), `untreatedVisibleCells` = 0 |
 | PB-07-13 | frozen | `<agente>/pb07-13-second-hunt` | — | — |
 | PB-07-14 | frozen | `<agente>/pb07-14-acceptance` | — | — |
 
