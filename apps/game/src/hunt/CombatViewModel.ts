@@ -115,6 +115,13 @@ export function createCombatViewModel(
   let groupReadyAtTick = 0;
   let currentTick = 0;
   let playerDead = false;
+  /**
+   * Whether any roster has been seen yet. A resumed run is bootstrapped with a
+   * spawn for every actor its snapshot holds, and a fresh one spawns its
+   * initial actors on the first tick, so once one spawn has arrived the roster
+   * is complete for that moment.
+   */
+  let sawRoster = false;
   let bag: readonly RunBagEntry[] = [];
   let lootLog: readonly CombatLootLogEntry[] = [];
   let lastRejection: CombatCommandRejection | null = null;
@@ -164,6 +171,7 @@ export function createCombatViewModel(
       targetSelection.handle([event]);
       switch (event.payload.type) {
         case 'actor/spawned': {
+          sawRoster = true;
           actorFromEvent(
             event.payload.entityId,
             event.payload.blueprintId,
@@ -312,7 +320,14 @@ export function createCombatViewModel(
       ),
       lootLog: Object.freeze(lootLog.map((entry) => ({ ...entry }))),
       bag: Object.freeze(bag.map((entry) => ({ ...entry }))),
-      playerDead,
+      // A run resumed from a save written after the player died never replays
+      // his `actor/died`, so the absence of him from the roster is the only
+      // evidence left that he is gone. Without this the hunt came back
+      // reporting him alive and merely missing: no vitals, no sprite, and no
+      // death overlay to reach the restart button through.
+      playerDead:
+        playerDead ||
+        (sawRoster && actorFor(options.playerEntityId) === undefined),
       lastRejection: lastRejection === null ? null : { ...lastRejection },
     };
   };
@@ -335,6 +350,7 @@ export function createCombatViewModel(
       groupReadyAtTick = 0;
       currentTick = 0;
       playerDead = false;
+      sawRoster = false;
       bag = [];
       lootLog = [];
       lastRejection = null;

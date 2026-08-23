@@ -201,6 +201,55 @@ describe('CombatViewModel', () => {
     expect(state.playerDead).toBe(true);
   });
 
+  /**
+   * A resumed run never replays `actor/died`, so a save written after the
+   * player died came back with the hunt reporting him alive and merely absent:
+   * no vitals, no sprite, and no death overlay — which is where the only
+   * restart button lives. The roster the run comes up with is the answer: if it
+   * names every actor and none of them is the player, he is gone.
+   */
+  it('reports the player dead when the restored roster does not name him', () => {
+    const viewModel = createCombatViewModel(options);
+
+    expect(viewModel.snapshot().playerDead).toBe(false);
+
+    viewModel.handle([
+      event(1400, {
+        type: 'actor/spawned',
+        entityId: 7 as EntityId,
+        blueprintId: 'rotworm',
+        position: { x: 9, y: 9, z: 8 },
+        facing: 's',
+      }),
+    ]);
+
+    expect(viewModel.snapshot().player).toBeNull();
+    expect(viewModel.snapshot().playerDead).toBe(true);
+  });
+
+  it('leaves the player alive when the restored roster names him', () => {
+    const viewModel = createCombatViewModel(options);
+
+    viewModel.handle([
+      event(1400, {
+        type: 'actor/spawned',
+        entityId: 1 as EntityId,
+        blueprintId: 'player',
+        position: { x: 5, y: 5, z: 8 },
+        facing: 's',
+      }),
+      event(1400, {
+        type: 'actor/spawned',
+        entityId: 7 as EntityId,
+        blueprintId: 'rotworm',
+        position: { x: 9, y: 9, z: 8 },
+        facing: 's',
+      }),
+    ]);
+
+    expect(viewModel.snapshot().playerDead).toBe(false);
+  });
+
   it('projects combat/leeched onto the source vitals', () => {
     const viewModel = createCombatViewModel(options);
     viewModel.handle([
