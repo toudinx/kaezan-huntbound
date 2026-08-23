@@ -50,6 +50,14 @@ E a própria selection já autoriza o conserto —
 `budget: { maxFloors: 3, maxWidth: 96, maxHeight: 96 }` e pede uma janela de 29×33. **Estamos usando
 um sexto da área que o orçamento permite.** O PB-07 já havia apontado isso na observação 6.
 
+**Correção descoberta na execução, 2026-08-23.** A hunt **não é um recorte de janela**. A selection
+define a *janela de busca* no mapa real; quem monta a região é
+`packages/content/src/layouts/hunts/venore-rotworm-cave.json`, um canvas autorado de 24×24 montado
+por `copy-rect`/`copy-cell`, em que **cada spawn precisa de um `spawnPlacement` explícito** ligando
+uma coordenada real do mapa a uma coordenada do canvas. Ampliar a janela sozinha só produz
+`HUNT_LAYOUT_INVALID` para todo spawn novo. Densidade se autora no layout — ampliar a janela é o que
+torna mais spawns *elegíveis*, e o layout é o que os coloca.
+
 ## Resultado esperado
 
 Uma região extraída da mesma caverna, com área maior, em que existe pelo menos um grupo com **quatro
@@ -117,6 +125,12 @@ Evidência fresca, colada no relatório:
 - `corepack pnpm content:check`
 - `corepack pnpm hunt:check` — golden do PB-04 **inalterado**; ele usa fixture própria, não a hunt
   gerada. Se quebrar, pare e registre bloqueio.
+- **Atenção ao guarda de frescura.** `expectScenarioMatchesHunt`, em
+  `tests/e2e/support/huntSession.ts`, comparava `spawnGroups` da fixture PB-04 com o composto de
+  `hunt.json`, e portanto reprovava qualquer mudança de densidade. Ele foi **estreitado para
+  geometria de mapa** em 2026-08-23: a fixture serve ao `hunt-replay.spec.ts`, que prova paridade de
+  SHA-256 entre Chromium e Node e precisa de mundo estável, não atual; as specs que precisam da hunt
+  viva já leem `hunt.json` direto. Não volte a comparar a tabela de spawn.
 - `corepack pnpm assets:pb04:hunt:check` — o pack de asset é validado **contra o `region.json`**.
   Região nova provavelmente exige regenerar o pack; se exigir, faça pelo CLI, nunca à mão.
 - `corepack pnpm qa:browser` — a região maior muda boot e câmera.

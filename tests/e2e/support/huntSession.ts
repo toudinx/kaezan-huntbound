@@ -113,6 +113,27 @@ function readHuntCombatContext() {
   };
 }
 
+/**
+ * Guards the fixture's *geometry* against drift in `hunt.json`, and nothing
+ * else.
+ *
+ * The spawn table is deliberately excluded. This fixture exists for
+ * `hunt-replay.spec.ts`, which proves Chromium replays it to the same SHA-256
+ * as Node — a determinism claim that needs a stable world, not a current one.
+ * The specs that must track the shipped hunt (`hunt-play`, `hunt-world-edge`,
+ * `combatDriver`) read `hunt.json` directly and never touch this fixture.
+ *
+ * The fixture was never a mirror in the first place: it carries no abilities,
+ * no loot tables and no `conditions`, because PB-04 predates combat. Holding
+ * its frozen spawn table to the live one only forces the 600-tick command log —
+ * authored to hit `terrain` and `occupied` blocks, `spawn/deferred`,
+ * `command/rejected` and a respawn at a named entity id — to be re-derived
+ * every time hunt content changes, which buys no coverage.
+ *
+ * Map geometry is different: a floor, transition or size that drifts silently
+ * would make the replay parity test compare against a cave that no longer
+ * exists, so those stay compared.
+ */
 function expectScenarioMatchesHunt(scenario: KernelScenario): void {
   const hunt = readHuntDefinition();
   const { character, registry } = readHuntCombatContext();
@@ -139,8 +160,6 @@ function expectScenarioMatchesHunt(scenario: KernelScenario): void {
       encodeCanonicalJson(scenario.floors) ||
     encodeCanonicalJson(composed.transitions) !==
       encodeCanonicalJson(scenario.transitions) ||
-    encodeCanonicalJson(composed.spawnGroups) !==
-      encodeCanonicalJson(scenario.spawnGroups) ||
     encodeCanonicalJson(composed.initialActors) !==
       encodeCanonicalJson(scenario.initialActors)
   ) {

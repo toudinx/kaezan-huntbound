@@ -12,14 +12,45 @@
   "region": {
     "minX": 33002,
     "minY": 31995,
-    "maxX": 33030,
-    "maxY": 32027,
-    "floors": [8, 9]
+    "maxX": 33065,
+    "maxY": 32090,
+    "floors": [
+      8,
+      9
+    ]
   },
-  "creatures": ["creature:tibia:rotworm"],
-  "excludedCreatures": [],
-  "expectedSpawnGroups": 8,
-  "expectedSpawnSlots": 12,
+  "creatures": [
+    "creature:tibia:rotworm"
+  ],
+  "excludedCreatures": [
+    {
+      "name": "Bat",
+      "reason": "absent from the PB-01 catalog selection",
+      "count": 2
+    },
+    {
+      "name": "Bonelord",
+      "reason": "absent from the PB-01 catalog selection",
+      "count": 1
+    },
+    {
+      "name": "Orc",
+      "reason": "absent from the PB-01 catalog selection",
+      "count": 10
+    },
+    {
+      "name": "Orc Spearman",
+      "reason": "absent from the PB-01 catalog selection",
+      "count": 11
+    },
+    {
+      "name": "Snake",
+      "reason": "in the catalog but absent from the PB-04 asset pack; needs a sprite before it can enter the hunt",
+      "count": 17
+    }
+  ],
+  "expectedSpawnGroups": 13,
+  "expectedSpawnSlots": 20,
   "expectedDroppedTransitions": 0,
   "budget": {
     "maxFloors": 3,

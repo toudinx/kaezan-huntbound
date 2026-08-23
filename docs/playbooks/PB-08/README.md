@@ -77,8 +77,12 @@ Estas não se redesenham dentro de uma task. Mudá-las é decisão de produto, f
 4. **A run termina por escolha do jogador.** Sair fora de combate consolida bag → stash e conta a
    run. Morrer perde a bag e uma fração do XP. É o que dá peso à decisão de recuar que o PB-07-04
    assumiu e nunca cobrou.
-5. **Densidade vem do mapa real.** A caverna é re-extraída com a área maior que o budget já permite.
-   **Nenhum spawn é inventado.**
+5. **O mapa não precisa ser igual ao do Tibia; precisa fazer sentido estruturalmente.** Decisão do
+   dono em 2026-08-23. Huntbound é inspirado em Tibia, não uma réplica dele: a hunt é um **canvas
+   autorado** — o `layout` cola pedaços do mapa real e realoca spawns reais para coordenadas do
+   canvas, que é o que a pipeline sempre fez. O que continua proibido é **inventar criatura ou
+   spawn**: toda criatura sai do catálogo e todo spawn tem uma origem real em
+   `otservbr-monster.xml`, declarada em `spawnPlacements`. Onde puser, é decisão de design.
 6. **Set reduzido: arma, armadura, escudo.** Helmet, legs, boots, amulet e ring ficam para depois.
 7. **Curva do Tibia mantida, com multiplicador Huntbound.** `experienceRate` é um número na selection,
    valor inicial `10`. Extensão declarada — exige emenda à ADR-05, como leech e cargas já têm.
