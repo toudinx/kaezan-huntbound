@@ -21,6 +21,7 @@ export interface RestartableHuntDriver {
   snapshot(): SimulationSnapshot;
   enqueue(input: SimulationCommandInput): CommandAcceptance;
   advanceTo(nowMs: number): readonly SimulationEvent[];
+  resyncClock(): void;
   restart(nowMs?: number): void;
 }
 
@@ -90,6 +91,9 @@ export function createRestartableHuntDriver(
       const bootstrapEvents = pendingBootstrapEvents;
       pendingBootstrapEvents = [];
       return [...bootstrapEvents, ...simulationHost.advanceTo(nowMs)];
+    },
+    resyncClock: () => {
+      simulationHost.resyncClock();
     },
     restart: (nowMs = 0) => {
       kernel = createRunKernel();

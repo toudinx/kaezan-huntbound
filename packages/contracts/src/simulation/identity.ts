@@ -10,7 +10,16 @@ export const SIMULATION_RULES_VERSION = 4;
 /** Shared v4 cooldown channel. Later groups are addressed by index from here. */
 export const PRIMARY_COOLDOWN_GROUP = 0;
 export const TICK_DURATION_MS = 50;
-export const MAX_FRAME_DELTA_MS = 250;
+/**
+ * The most wall time one frame may spend catching the simulation up.
+ *
+ * Time beyond this is dropped rather than banked, so a stall costs simulated
+ * time instead of visual continuity. The ceiling is therefore also the worst
+ * jump a single frame can show: at `100 ms` that is two ticks, a fifth of a
+ * tile on a ten-tick step. `250 ms` bought a closer match to wall time and paid
+ * for it with a visible half-tile hop after every hitch.
+ */
+export const MAX_FRAME_DELTA_MS = 100;
 
 const safeInteger = z.number().safe();
 

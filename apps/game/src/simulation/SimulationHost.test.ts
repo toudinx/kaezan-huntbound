@@ -4,6 +4,10 @@ import type {
   SimulationEvent,
   TickIndex,
 } from '../../../../packages/contracts/src/index.ts';
+import {
+  MAX_FRAME_DELTA_MS,
+  TICK_DURATION_MS,
+} from '../../../../packages/contracts/src/index.ts';
 import type { SimulationKernel } from '../../../../packages/simulation/src/index.ts';
 
 import { createSimulationHost } from './SimulationHost';
@@ -30,6 +34,9 @@ function createKernelStub(events: readonly SimulationEvent[] = []): KernelStub {
   return { calls, kernel };
 }
 
+/** The most ticks one frame is allowed to buy. */
+const CATCH_UP_TICKS = Math.floor(MAX_FRAME_DELTA_MS / TICK_DURATION_MS);
+
 describe('createSimulationHost', () => {
   it('advances only after a complete fixed tick', () => {
     const { kernel } = createKernelStub();
@@ -46,37 +53,85 @@ describe('createSimulationHost', () => {
     const { kernel } = createKernelStub();
     const host = createSimulationHost(kernel, 0);
 
-    host.advanceTo(149);
-    expect(host.tick).toBe(2);
+    host.advanceTo(99);
+    expect(host.tick).toBe(1);
     expect(host.alpha).toBeCloseTo(0.98);
 
-    host.advanceTo(150);
-    expect(host.tick).toBe(3);
+    host.advanceTo(100);
+    expect(host.tick).toBe(2);
     expect(host.alpha).toBe(0);
   });
 
-  it('clamps alpha when the catch-up budget is still pending', () => {
+  it('drops the time it could not consume instead of carrying it as debt', () => {
     const { kernel } = createKernelStub();
     const host = createSimulationHost(kernel, 0);
 
+    // A 600 ms frame is worth twelve ticks and the catch-up budget pays for
+    // only a few. Keeping the rest made the accumulator a debt the next frames
+    // had to work off, which is the spiral of death.
     host.advanceTo(600);
 
-    expect(host.tick).toBe(5);
-    expect(host.alpha).toBe(1);
+    expect(host.tick).toBe(CATCH_UP_TICKS);
+    expect(host.alpha).toBe(0);
   });
 
-  it('limits work per call without discarding accumulated time', () => {
+  it('never latches alpha at one while frames stay slower than the budget', () => {
     const { kernel } = createKernelStub();
     const host = createSimulationHost(kernel, 0);
 
-    host.advanceTo(600);
-    expect(host.tick).toBe(5);
+    // Frames slower than the catch-up budget used to pin alpha at 1 forever, so
+    // interpolation died and every actor hopped a fixed fraction of a tile per
+    // frame instead of gliding.
+    let now = 0;
+    for (let frame = 0; frame < 12; frame += 1) {
+      now += 300;
+      host.advanceTo(now);
+      expect(host.alpha).toBeLessThan(1);
+    }
+  });
 
-    host.advanceTo(600);
-    expect(host.tick).toBe(10);
+  it('caps how far the kernel can jump in a single frame', () => {
+    const { kernel } = createKernelStub();
+    const host = createSimulationHost(kernel, 0);
 
-    host.advanceTo(600);
-    expect(host.tick).toBe(12);
+    // Ten seconds away from the window must not buy two hundred ticks of
+    // catch-up in one frame: the player would teleport across the map.
+    host.advanceTo(10_000);
+
+    expect(host.tick).toBe(CATCH_UP_TICKS);
+  });
+
+  it('drops the gap a paused window opened, instead of banking it', () => {
+    const { kernel } = createKernelStub();
+    const host = createSimulationHost(kernel, 0);
+
+    host.advanceTo(100);
+    expect(host.tick).toBe(2);
+
+    // The window lost focus here and the loop slept for thirty seconds. Phaser
+    // rebases its own clock on focus, so the first frame back reports the whole
+    // away-duration as one delta. Banking it spent the entire catch-up budget
+    // on a hunt that was supposed to be paused.
+    host.resyncClock();
+    host.advanceTo(30_100);
+
+    expect(host.tick).toBe(2);
+    expect(host.alpha).toBe(0);
+
+    host.advanceTo(30_150);
+    expect(host.tick).toBe(3);
+  });
+
+  it('keeps running normally when no resync was requested', () => {
+    const { kernel } = createKernelStub();
+    const host = createSimulationHost(kernel, 0);
+
+    host.resyncClock();
+    host.advanceTo(50);
+    expect(host.tick).toBe(0);
+
+    host.advanceTo(100);
+    expect(host.tick).toBe(1);
   });
 
   it('forwards events emitted by each consumed kernel tick', () => {
@@ -114,29 +169,46 @@ describe('createSimulationHost', () => {
     const host = createSimulationHost(kernel, 0);
 
     host.advanceTo(600);
-    expect(host.tick).toBe(5);
+    expect(host.tick).toBe(CATCH_UP_TICKS);
 
     host.reset(600);
-    expect(host.tick).toBe(5);
+    expect(host.tick).toBe(CATCH_UP_TICKS);
 
     host.advanceTo(600);
-    expect(host.tick).toBe(5);
+    expect(host.tick).toBe(CATCH_UP_TICKS);
     host.advanceTo(650);
-    expect(host.tick).toBe(6);
+    expect(host.tick).toBe(CATCH_UP_TICKS + 1);
   });
 
-  it('matches one equivalent elapsed interval across fractional calls', () => {
-    const split = createKernelStub();
-    const splitHost = createSimulationHost(split.kernel, 0);
-    splitHost.advanceTo(60);
-    splitHost.advanceTo(120);
-    splitHost.advanceTo(180);
+  it('matches equivalent elapsed intervals while no frame exceeds the budget', () => {
+    const fine = createKernelStub();
+    const fineHost = createSimulationHost(fine.kernel, 0);
+    for (const now of [50, 100, 150, 200]) fineHost.advanceTo(now);
 
-    const single = createKernelStub();
-    const singleHost = createSimulationHost(single.kernel, 0);
-    singleHost.advanceTo(180);
+    const coarse = createKernelStub();
+    const coarseHost = createSimulationHost(coarse.kernel, 0);
+    for (const now of [100, 200]) coarseHost.advanceTo(now);
 
-    expect(splitHost.tick).toBe(singleHost.tick);
-    expect(split.calls).toEqual(single.calls);
+    expect(fineHost.tick).toBe(coarseHost.tick);
+    expect(fine.calls).toEqual(coarse.calls);
+  });
+
+  it('deliberately loses simulated time to a frame that exceeds the budget', () => {
+    // This is the trade the catch-up ceiling buys, stated rather than implied:
+    // wall time and simulated time stop agreeing across a stall. A hunt that
+    // hitches runs a little behind the clock, and in exchange it never stops
+    // interpolating. Nothing here is networked or scored against wall time, so
+    // the drift costs nothing a player can observe.
+    const smooth = createKernelStub();
+    const smoothHost = createSimulationHost(smooth.kernel, 0);
+    for (const now of [100, 200, 300, 400, 500, 600]) smoothHost.advanceTo(now);
+
+    const stalled = createKernelStub();
+    const stalledHost = createSimulationHost(stalled.kernel, 0);
+    stalledHost.advanceTo(600);
+
+    expect(smoothHost.tick).toBe(12);
+    expect(stalledHost.tick).toBe(CATCH_UP_TICKS);
+    expect(stalledHost.tick).toBeLessThan(smoothHost.tick);
   });
 });

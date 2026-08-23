@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-
 import type {
   EntityId,
   GridPosition,
   SimulationEvent,
   TickIndex,
 } from '../../../../packages/contracts/src/index.ts';
+import { TICK_DURATION_MS } from '../../../../packages/contracts/src/index.ts';
 
 import {
   createCombatImpulses,
@@ -188,6 +188,44 @@ describe('CombatImpulses', () => {
       x: 0,
       y: 0,
     });
+  });
+
+  it('gives the actor its own clock back once the hit-stop expires', () => {
+    const impulses = createCombatImpulses();
+
+    impulses.handle(input([damaged(10, 1, 2)]));
+    impulses.advance(10 * TICK_DURATION_MS);
+
+    // Frozen while the hit lands: the sprite holds the tile it was on.
+    expect(impulses.renderTickFor(1 as EntityId, 10.5)).toBe(10);
+
+    // And running again the moment it is over. A hit-stop is a pause, not a
+    // permanent handicap on the actor's clock.
+    impulses.advance(12 * TICK_DURATION_MS);
+    expect(impulses.renderTickFor(1 as EntityId, 12)).toBe(12);
+  });
+
+  it('does not let a long fight drift an actor away from the world clock', () => {
+    const impulses = createCombatImpulses();
+
+    // Forty exchanges. Every combat/damaged hit-stops both the target and the
+    // attacker, so the player collects one on each swing landed and each one
+    // taken. Accumulating those permanently put his sprite whole tiles behind
+    // the camera, which is what read on screen as moonwalking.
+    for (let tick = 10; tick < 50; tick += 1) {
+      impulses.handle(input([damaged(tick, 1, 2)]));
+      impulses.advance(tick * TICK_DURATION_MS);
+    }
+
+    const settledTick = 200;
+    impulses.advance(settledTick * TICK_DURATION_MS);
+
+    expect(impulses.renderTickFor(1 as EntityId, settledTick)).toBe(
+      settledTick,
+    );
+    expect(impulses.renderTickFor(2 as EntityId, settledTick)).toBe(
+      settledTick,
+    );
   });
 
   it('caps every hit-stop at 60 milliseconds and coalesces same-tick flashes', () => {

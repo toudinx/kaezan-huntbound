@@ -193,6 +193,9 @@ test.describe('the first hunt is playable by synthetic input', () => {
     expect(state.camera.visibleRows).toBeGreaterThanOrEqual(10);
     expect(state.camera.visibleRows).toBeLessThanOrEqual(12);
     expect(state.camera.zoom).toBeGreaterThan(1);
+    // A fractional zoom plus per-object pixel rounding tears the floor apart
+    // while the camera scrolls, so the hunt camera must not round.
+    expect(state.camera.roundPixels).toBe(false);
     expect(state.drawn.composedGroundCells).toBeGreaterThan(0);
     expect(state.drawn.layers.actors).toBeGreaterThan(0);
     expect(state.drawn.total).toBeGreaterThan(state.drawn.layers.ground);
