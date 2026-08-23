@@ -77,23 +77,35 @@ export function animationPhase(
 }
 
 /**
- * The frame to show for an actor after `elapsedMs` of animation.
+ * Which phase a walking figure shows, spread across the step it is taking.
  *
- * The phase comes from the clock rather than from how far along the step the
- * actor is: a step lasts as long as the simulation says, while a phase lasts as
- * long as the asset says, and tying one to the other made the whole cycle play
- * inside a single step.
+ * A walk cycle belongs to the step, not to the wall clock. Tibia divides the
+ * step duration by the number of walk phases and advances a phase per slice,
+ * so the feet stay planted whatever the creature's speed; reading the phase
+ * off the clock instead leaves the two running at unrelated rates. The knight
+ * declares eight 300 ms phases, a 2400 ms cycle, against a 500 ms step: on the
+ * clock his legs needed almost five tiles to finish one cycle and he slid over
+ * the ground the whole way.
  */
-export function actorFrame(
-  asset: ResolvedAsset,
-  facing: Direction,
-  elapsedMs: number,
-  moving = true,
+export function stepAnimationPhase(
+  animation: ResolvedAsset['animations'][number],
+  progress: number,
 ): number {
-  if (asset.atlasFrameCount <= 1) return 0;
+  const count = animation.phaseDurationsMs.length;
+  if (count <= 1) return 0;
 
-  const animation = animationFor(asset, moving);
-  const phase = animationPhase(animation, elapsedMs);
+  const clamped = Number.isFinite(progress)
+    ? Math.min(Math.max(progress, 0), 1)
+    : 0;
+  return Math.min(Math.floor(clamped * count), count - 1);
+}
+
+function frameFor(
+  asset: ResolvedAsset,
+  animation: ResolvedAsset['animations'][number],
+  facing: Direction,
+  phase: number,
+): number {
   const patternX = Math.max(animation.patternX, 1);
   const patternY = Math.max(animation.patternY, 1);
   const patternZ = Math.max(animation.patternZ, 1);
@@ -107,12 +119,39 @@ export function actorFrame(
 }
 
 /**
+ * The frame to show for an actor after `elapsedMs` of animation.
+ *
+ * This is the clock-driven reading, which is what a figure standing still
+ * wants: an idle set cycles on its own declared durations, and so does a
+ * creature that declares no idle set at all. A figure mid-step is driven by
+ * `stepAnimationPhase` instead.
+ */
+export function actorFrame(
+  asset: ResolvedAsset,
+  facing: Direction,
+  elapsedMs: number,
+  moving = true,
+): number {
+  if (asset.atlasFrameCount <= 1) return 0;
+
+  const animation = animationFor(asset, moving);
+  return frameFor(
+    asset,
+    animation,
+    facing,
+    animationPhase(animation, elapsedMs),
+  );
+}
+
+/**
  * The frame an actor shows at a render tick, given the step it is walking.
  *
- * The animation clock runs off the simulation tick rather than wall time so the
- * presentation stays reproducible, and it keeps running once the step is over:
- * a creature that declares no idle set carries on cycling its moving set, which
- * is what standing creatures do in Tibia.
+ * Mid-step the phase comes from how far along the step the actor is, so one
+ * walk cycle covers exactly one tile. Standing still it comes from the
+ * simulation tick rather than wall time, so the presentation stays
+ * reproducible, and it keeps running once the step is over: a creature that
+ * declares no idle set carries on cycling its moving set, which is what
+ * standing creatures do in Tibia.
  */
 export function actorFrameAtTick(input: {
   readonly asset: ResolvedAsset;
@@ -120,15 +159,19 @@ export function actorFrameAtTick(input: {
   readonly motion: ActorMotionSegment | undefined;
   readonly renderTick: number;
 }): number {
+  if (input.asset.atlasFrameCount <= 1) return 0;
+
   const motion = input.motion;
   const moving =
     motion !== undefined &&
     input.renderTick < motion.startTick + motion.durationTicks;
+  const animation = animationFor(input.asset, moving);
+  const phase = moving
+    ? stepAnimationPhase(
+        animation,
+        (input.renderTick - motion.startTick) / motion.durationTicks,
+      )
+    : animationPhase(animation, input.renderTick * TICK_DURATION_MS);
 
-  return actorFrame(
-    input.asset,
-    input.facing,
-    input.renderTick * TICK_DURATION_MS,
-    moving,
-  );
+  return frameFor(input.asset, animation, input.facing, phase);
 }

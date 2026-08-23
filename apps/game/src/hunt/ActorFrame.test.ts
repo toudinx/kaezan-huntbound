@@ -5,7 +5,12 @@ import {
   type ResolvedAsset,
 } from '../../../../packages/assets/src/index.ts';
 
-import { actorFrame, actorFrameAtTick, animationPhase } from './ActorFrame';
+import {
+  actorFrame,
+  actorFrameAtTick,
+  animationPhase,
+  stepAnimationPhase,
+} from './ActorFrame';
 import type { ActorMotionSegment } from './ActorMotion';
 
 function animation(input: {
@@ -93,6 +98,32 @@ describe('animationPhase', () => {
   });
 });
 
+describe('stepAnimationPhase', () => {
+  it('divides the step evenly between the declared phases', () => {
+    const moving = requireAnimation(movingAsset, 'moving');
+
+    expect(stepAnimationPhase(moving, 0)).toBe(0);
+    expect(stepAnimationPhase(moving, 0.33)).toBe(0);
+    expect(stepAnimationPhase(moving, 0.34)).toBe(1);
+    expect(stepAnimationPhase(moving, 0.67)).toBe(2);
+  });
+
+  it('holds the last phase at the end of the step and never overruns', () => {
+    const moving = requireAnimation(movingAsset, 'moving');
+
+    expect(stepAnimationPhase(moving, 1)).toBe(2);
+    expect(stepAnimationPhase(moving, 2)).toBe(2);
+    expect(stepAnimationPhase(moving, -1)).toBe(0);
+    expect(stepAnimationPhase(moving, Number.NaN)).toBe(0);
+  });
+
+  it('has a single phase to show when the animation declares one', () => {
+    const single = requireAnimation(singleFrameAsset, 'default');
+
+    expect(stepAnimationPhase(single, 0.9)).toBe(0);
+  });
+});
+
 describe('ActorFrame', () => {
   it('picks the moving phase from elapsed milliseconds', () => {
     const moving = requireAnimation(movingAsset, 'moving');
@@ -117,16 +148,50 @@ describe('ActorFrame', () => {
     expect(actorFrame(idleless, 'n', 300, false)).toBe(0);
   });
 
-  it('animates with the moving set while the step is in flight', () => {
-    // 2 render ticks x 50 ms = 100 ms, which is the second moving phase.
-    expect(
-      actorFrameAtTick({
+  it('spreads the walk cycle across the step rather than the wall clock', () => {
+    const moving = requireAnimation(movingAsset, 'moving');
+    const stride = moving.patternX * moving.layers;
+    const phaseAt = (renderTick: number) =>
+      (actorFrameAtTick({
         asset: movingAsset,
         facing: 'n',
         motion: stepMotion,
-        renderTick: 2,
-      }),
-    ).toBe(8);
+        renderTick,
+      }) -
+        moving.startFrame) /
+      stride;
+
+    // Three phases over a ten-tick step: one phase every 3 1/3 ticks, so the
+    // legs finish exactly one cycle in the time the feet cross one tile.
+    expect(phaseAt(0)).toBe(0);
+    expect(phaseAt(3)).toBe(0);
+    expect(phaseAt(4)).toBe(1);
+    expect(phaseAt(6)).toBe(1);
+    expect(phaseAt(7)).toBe(2);
+    expect(phaseAt(9)).toBe(2);
+  });
+
+  it('keeps the cycle inside the step when the step is slow', () => {
+    const moving = requireAnimation(movingAsset, 'moving');
+    const stride = moving.patternX * moving.layers;
+    const slowStep: ActorMotionSegment = { ...stepMotion, durationTicks: 30 };
+    const phaseAt = (renderTick: number) =>
+      (actorFrameAtTick({
+        asset: movingAsset,
+        facing: 'n',
+        motion: slowStep,
+        renderTick,
+      }) -
+        moving.startFrame) /
+      stride;
+
+    // The asset declares 100 ms phases, which on the wall clock would run the
+    // cycle five times over a 1500 ms step. Tied to the step it runs once.
+    expect(phaseAt(0)).toBe(0);
+    expect(phaseAt(9)).toBe(0);
+    expect(phaseAt(10)).toBe(1);
+    expect(phaseAt(20)).toBe(2);
+    expect(phaseAt(29)).toBe(2);
   });
 
   it('falls back to the idle set once the step has ended', () => {
