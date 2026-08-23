@@ -14,7 +14,7 @@ sensível a combate está integrada e sem conteúdo que a use.
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-08-01 | done | `claude/pb08-01-cave-density` | PENDENTE | puxão máximo 4 → 11; tiles com ≥4 pulláveis 3 → 125; 29 slots (12 rotworm + 17 snake); goldens PB-04 e PB-05 inalterados |
+| PB-08-01 | done | `claude/pb08-01-cave-density` | `c23c819` | puxão máximo 4 → 11; tiles com ≥4 pulláveis 3 → 125; 29 slots (12 rotworm + 17 snake); goldens PB-04 e PB-05 inalterados |
 | PB-08-02 | pending | `<agente>/pb08-02-knight-actions` | — | — |
 | PB-08-03 | não escrita | — | — | só se jogar a 01 e a 02 mostrar que faz falta |
 | PB-08-04 | pending | `<agente>/pb08-04-selection-gate` | — | — |
@@ -59,6 +59,29 @@ fora da `main`** com trabalho real: `claude/render-resolution-cap` (2 commits),
 verificada contra a `main` atual; as três últimas podem ter sido superadas por commits posteriores.
 Triagem pendente, decisão do usuário.
 
+**B8 — ABERTO, BLOQUEANTE, decisão do usuário.** `verify` **vermelho** na `main` com a PB-08-01
+integrada (`c23c819`): 8 falhas em `save-persistence.spec.ts`, testes `:503` e `:620` nos quatro
+viewports, todas com a mesma causa — `Unable to restore hunt snapshot: Snapshot holds spawn slot
+(4, 1) that the scenario does not declare`. O fixture desses testes é o export golden do PB-06, cujo
+snapshot referencia spawn slot por `(índice de grupo, índice de slot)`; a PB-08-01 reordenou os
+grupos de 8 para 13 e o par (4,1) deixou de existir. O jogo se comporta corretamente — recusa o
+resume e começa fresh —, mas o teste afirma `Run resumed`.
+
+Consertar exige **regenerar o golden de save do PB-06**, o que contraria a decisão congelada 9 do
+README ("golden regenerado uma única vez, na task do `armor`; regenerar em qualquer outra task é
+defeito"). Não foi feito. Opções na mensagem do chat; nenhuma tomada sem o usuário.
+
+Achado colateral que vale task própria: o snapshot de save referenciar spawn por índice significa
+que **toda mudança de conteúdo na hunt invalida todo save existente**. Isso é acoplamento frágil e
+vai doer a cada task de conteúdo, não só nesta.
+
+**B7 — informativo, resolvido em 2026-08-23.** Um `qa:browser` da sessão abandonada da PB-08-01 —
+`corepack pnpm qa`, `playwright test` e `vite preview` — continuava vivo na worktree antiga por
+horas. Ele reprovou `tools/replay` por **timeout**, não por divergência: o arquivo levou 642 s sob
+essa carga e leva **73 s** com a máquina livre, e a cobertura sobre o cenário composto passa em
+1,47 s isolada. Processo órfão de sessão abandonada é a mesma família do B1: sessão que termina sem
+limpar o que subiu. Derrubados.
+
 **B6 — aberto, decisão do usuário.** `claude/pb05-fixture-drift` (`6fc0efb`) traz duas coisas
 empacotadas, achadas soltas na worktree da PB-08-01. **(1)** A fixture PB-05 estava desatualizada:
 `rotworm.aggroRadius` 1 em vez de 11, jogador com 185 de HP em vez de 590, `berserk` 14–41 em vez de
@@ -67,7 +90,11 @@ nunca recompõe, então o desvio era invisível — é buraco de gate real. **(2
 convergência do replay deixou de checar os 2701 boundaries e passa a checar 117 amostrados, com a
 forma exaustiva atrás de `HUNTBOUND_EXHAUSTIVE_REPLAY=1`, por causa de ~17 min de wall time. Isso é
 asserção enfraquecida no sentido do AGENTS.md. Separar: (1) entra sozinha; (2) precisa da sua
-decisão.
+decisão. **Medido em 2026-08-23:** com a fixture como está commitada, a varredura exaustiva dos 2701
+boundaries roda em 73 s, bem dentro do teto de 360 s — os ~17 min citados só aparecem *depois* da
+recomposição da parte (1), que é o que põe todo rotworm a perseguir. Logo o enfraquecimento não é
+consequência da PB-08-01: é o preço da própria recomposição, e é aí que a decisão tem que ser
+tomada.
 
 **B5 — aberto, decisão do usuário.** PB-08-01 está **implementada e não integrada** em `1270526`:
 janela ampliada para 64×96, oito placements novos, `analyzeBoxDensity`, max pull 4→7 e tiles com

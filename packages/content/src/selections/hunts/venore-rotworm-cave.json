@@ -14,14 +14,9 @@
     "minY": 31995,
     "maxX": 33065,
     "maxY": 32090,
-    "floors": [
-      8,
-      9
-    ]
+    "floors": [8, 9]
   },
-  "creatures": [
-    "creature:tibia:rotworm"
-  ],
+  "creatures": ["creature:tibia:rotworm"],
   "excludedCreatures": [
     {
       "name": "Bat",

@@ -246,6 +246,19 @@ Um servidor `vite` de pé segura `apps/game/public/assets` e faz `assets:stage:t
 `EPERM ... rename` de forma **determinística** — o que é diferente da flake da armadilha 5. Derrube
 o listener antes dos gates e suba de volta no fim; não confunda um com o outro.
 
+**Processo também fica pendente.** Uma sessão abandonada deixou um `qa:browser` inteiro vivo —
+`corepack pnpm qa`, `playwright test` e `vite preview` — por horas, numa worktree que ninguém mais
+usava. Ele não quebrou nada por estar errado: quebrou por consumir a máquina, e `tools/replay`
+reprovou por **timeout**, 642 s contra 73 s com a máquina livre. Um gate lento é sintoma de máquina
+ocupada antes de ser sintoma de código lento. Antes de teorizar sobre performance, liste o que está
+rodando:
+
+```bash
+Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*kaezan-huntbound*' }
+```
+
+E ao terminar, derrube o que você subiu. Vale para o passo 0: worktree órfã pode ter processo órfão.
+
 ### Ambiguidade não é motivo para parar
 
 Comportamento com mais de uma leitura plausível acontece toda hora numa implementação. **Escolha a
