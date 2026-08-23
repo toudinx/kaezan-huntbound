@@ -8,8 +8,10 @@
     "node": ">=24.14.0 <25"
   },
   "scripts": {
-    "dev": "corepack pnpm assets:stage:test && corepack pnpm --filter @huntbound/game dev",
-    "dev:personal": "corepack pnpm assets:pb04:personal:generate && corepack pnpm --filter @huntbound/game exec vite --mode personal",
+    "start": "corepack pnpm dev",
+    "dev": "node --no-warnings --experimental-transform-types tools/dev/start.ts --profile personal",
+    "dev:test": "node --no-warnings --experimental-transform-types tools/dev/start.ts --profile test",
+    "dev:personal": "node --no-warnings --experimental-transform-types tools/dev/start.ts --profile personal",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "typecheck": "corepack pnpm --recursive run typecheck",
