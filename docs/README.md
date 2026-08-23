@@ -68,9 +68,15 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
 - [`PB-06 — Save local e inventário`](playbooks/PB-06/README.md) — **elegível**; PB-06-01 pode
   começar. Design em
   [`2026-08-18-pb-06-local-save-inventory-design.md`](superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md).
+- [`PB-07 — Profundidade de combate e vocações`](playbooks/PB-07/README.md) — implementação parcial;
+  congelado depois da task 05 até a retomada do combate.
+- [`PB-08 — O loop de farm do Knight`](playbooks/PB-08/README.md) — em execução.
+- [`PB-ME — Map Editor local`](playbooks/PB-ME/README.md) — trilha transversal para mapas autorados;
+  a materialização inicial a partir do Canary é feita por agente de IA e os retoques são feitos em
+  uma aplicação local separada do bundle publicado.
 
-**Playbook em execução: PB-06 — save local e inventário.** A ordem e a Definition of Ready estão
-em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
+PB-ME não renumera nem bloqueia os playbooks de produto. A ordem principal e a Definition of Ready
+estão em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
 ## Decisão vigente em uma linha
 

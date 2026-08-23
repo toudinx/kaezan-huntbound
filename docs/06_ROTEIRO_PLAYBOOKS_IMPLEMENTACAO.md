@@ -63,6 +63,10 @@ contagem de arquivos, linhas ou minutos.
 |                                PB-12 | Helper mínimo                      | cura, alvo, ações e loot como módulos desligáveis                                                                                       |
 |                                PB-13 | Playtest e performance             | browser QA, screenshots, métricas e orçamento de assets                                                                                 |
 
+[`PB-ME`](playbooks/PB-ME/README.md) é uma trilha transversal, fora da numeração acima. Ela cria o
+editor local e o fluxo agente de IA → mapa autorado → retoque → publicação → jogo, sem entrar no
+bundle do site e sem bloquear PB-08 ou PB-09.
+
 PB-00R foi fechado em 2026-08-11 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-00R-05, e
 **deixa de bloquear PB-01**. A PB-00R-FIX-01 foi integrada no commit `91fd968`; `format:check` e
 `verify` estão verdes em checkout novo. Os warnings remanescentes são não bloqueantes e estão
