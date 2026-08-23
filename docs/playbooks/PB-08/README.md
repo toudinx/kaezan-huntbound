@@ -41,17 +41,20 @@ Em caso de conflito, ler nesta ordem:
 
 ## O problema, medido
 
-O playbook nasce de cinco reclamações de quem jogou. A investigação mostrou que **quatro das cinco
-são conteúdo ou conversão, não sistema faltando** — o que torna o playbook muito mais barato do que
-o sintoma sugere.
+O playbook nasce de cinco reclamações de quem jogou. Medindo o cenário **composto em runtime** —
+não a selection, que é documento de proveniência — as cinco colapsam em **três** causas, e a
+primeira sozinha responde por três reclamações.
+
+Uma hipótese foi levantada e **descartada com evidência**: `exori` não é single-target. O bundle
+que `main.ts` carrega já traz `area: { radiusTiles: 1 }`, e `abilityShapeFromSpell` devolve
+`shape: 'area'`. O que a selection `pb-05-knight-combat.json` não declara é documentação faltando,
+não comportamento errado.
 
 | # | Observação | Causa real |
 |---|---|---|
-| 1 | "Não fecha box" | **`exori` não é área no nosso jogo.** O snapshot diz `createCombatArea(AREA_SQUARE1X1)` — 3×3, até 8 alvos. A selection não declara `area`, então `abilityShapeFromSpell` devolve `shape:'target'` com alcance 1. O box-closer do Knight bate em um mob |
-| 2 | "Os mobs são poucos" | **12 slots em 8 grupos** num 24×24 de dois andares; grupos de 1–2 slots, raio 2–3, respawn 90 s. Box é geometricamente impossível. O `budget` da própria selection permite 96×96 |
-| 3 | "O leech não funciona" | Pool de 185 de mana, `exori` custa **115 (62% da barra)** com CD 4 s, e rotworm tem 65 HP. Não circula dano suficiente para 100‰ significar algo, nem sobra mana para gastar de novo |
-| 4 | "A run é infinita e sem propósito" | **`finish('completed')` não é chamado em lugar nenhum do código.** Só `finish('abandoned')`, no `pagehide`. `completedRuns` é permanentemente 0. Não existe momento de recompensa |
-| 5 | "Não existe level nem farm de equips" | `CreatureDefinition.stats.experience` **já existe** no catálogo (rotworm = 40) e é descartado na conversão — `ActorBlueprint` não tem o campo. `ItemDefinition` é só `{stackable, maxStackSize, weight}`; `parseItemsXml` descarta `attack`, `defense`, `armor`, `slot` e `weaponType` **de propósito** |
+| 1 | "Não fecha box" · "só auto-attack" · "o leech não funciona" | **Uma causa só: densidade.** A hunt tem **12 slots em 8 grupos** num 24×24 de dois andares, grupos de 1–2 slots, raio 2–3, respawn 90 s. Não existe onde juntar quatro criaturas. Sem alvos juntos, `exori` — que **já é área de raio 1** e mata rotworm de um golpe — vira uma magia de 115 mana para matar um bicho de 65 HP; o leech de 100‰ não tem dano para circular; e a única linha de jogo que sobra é o auto-attack. O `budget` da própria selection permite 96×96, e usamos um sexto disso |
+| 2 | "A run é infinita e sem propósito" | **`finish('completed')` não é chamado em lugar nenhum do código.** Só `finish('abandoned')`, no `pagehide`. `completedRuns` é permanentemente 0. Não existe momento de recompensa |
+| 3 | "Não existe level nem farm de equips" | `CreatureDefinition.stats.experience` **já existe** no catálogo (rotworm = 40) e é descartado na conversão — `ActorBlueprint` não tem o campo. `ItemDefinition` é só `{stackable, maxStackSize, weight}`; `parseItemsXml` descarta `attack`, `defense`, `armor`, `slot` e `weaponType` **de propósito** |
 
 O PB-07-03/04/05 entregaram a máquina que falta ligar: `ScenarioConditionDefinition`,
 `AbilityDefinition.toggle`, cooldown secundário, leech e regen sensível a combate estão em `main` e
@@ -116,6 +119,33 @@ de experiência. Rotworm dá 40; num box denso, ~30 kills/min ⇒ ~1.200 exp/min
 A `experienceRate = 10`: ~12.000 exp/min ⇒ **≈5 min por level no 35**, **≈40 min por level no 99**,
 level 100 em ~20–25 h. Se estiver lento ou rápido demais, muda-se a constante e nada mais.
 
+## Medições de runtime — a base numérica
+
+Tiradas do cenário **composto**, não da selection. Toda decisão de balanceamento deste playbook
+parte daqui; refaça a medição antes de mudar qualquer número.
+
+| Ator / ação | Valor |
+|---|---|
+| `exori` | área, raio 1, **48–129 por alvo**, 115 mana, CD 4 s |
+| `exori ico` | alvo único, alcance 1, 35–63, 30 mana, CD 6 s |
+| `exura ico` | self, cura 32–58, 40 mana, CD 1 s |
+| Jogador | 590 HP, 185 mana, auto-attack **7–78** a cada 2 s, passo 0,55 s, leech 100‰ de vida e mana, janela de combate 4 s, regen fora de combate 1 HP e 2 mana / 0,5 s |
+| Rotworm | **65 HP**, 0–40 a cada 2 s, passo 1,05 s, aggro 11 tiles, comportamento `hunter` |
+
+O que a aritmética diz, e que a 01 vai confirmar ou derrubar jogando:
+
+- `exori` **mata rotworm de um golpe** em ~79% dos casos (48–129 contra 65 HP). Num box de quatro,
+  um cast limpa o box e devolve ~26 HP e ~26 mana de leech.
+- O jogador anda a 0,55 s/passo contra 1,05 s do rotworm: **puxar funciona**, é quase o dobro da
+  velocidade.
+- Da pool cheia saem ~2 boxes; recarregar 185 de mana fora de combate leva ~46 s. É exatamente o
+  ritmo "boxa, boxa, recua e regenera" que o PB-07-04 desenhou e que nunca teve onde acontecer.
+- Um box de quatro entrega 260 de dano recebido em potencial, contra 590 HP de pool. Sobrevivível
+  sem armadura — e é por isso que `armor` continua tarde no playbook, e não vira urgência.
+
+**Conclusão que ordena o playbook:** a densidade não é um dos problemas, é a causa de três deles.
+Ela vem primeiro, e o resto do balanceamento se decide *depois de jogar com ela*.
+
 ## Restrições globais
 
 Toda task herda esta seção; ela não se repete nos cards.
@@ -137,10 +167,10 @@ Toda task herda esta seção; ela não se repete nos cards.
 
 | ID | Estado da escrita | Título | Resultado |
 |---|---|---|---|
-| PB-08-01 | **card escrito** | `exori` fecha o box | `area` fiel ao snapshot na selection; um cast atinge todos os adjacentes |
-| PB-08-02 | **card escrito** | A caverna cabe num box | Região re-extraída até o budget; existe grupo com ≥4 slots |
-| PB-08-03 | bullet | Economia de mana e ações do Knight | Kit recustado à pool; stances `utito tempo` e `utamo tempo` como conteúdo sobre a máquina do PB-07-05 |
-| PB-08-04 | bullet | Mobilidade | `utani hur` como condição de velocidade; o recuo vira jogável |
+| PB-08-01 | **card escrito** | A caverna cabe num box | Região re-extraída até o budget; existe grupo com ≥4 slots. **Destrava três das cinco reclamações sozinha** |
+| PB-08-02 | **card escrito** | Ações do Knight | Stances `utito tempo` e `utamo tempo` e mobilidade `utani hur` como conteúdo sobre a máquina do PB-07-05, medidas contra o box que a 01 criou |
+| PB-08-03 | bullet | Economia de mana, se ainda fizer falta | Só entra se jogar a 01 e a 02 mostrar que o kit continua sem sustentação. A aritmética diz que pode não ser preciso |
+| PB-08-04 | bullet | Gate de proveniência da selection | `check-combat` valida `area` contra `setArea` na fonte, para a selection parar de omitir o que o catálogo tem |
 | PB-08-05 | bullet | A run termina | Sair fora de combate → `finish('completed')`, bag → stash; morte perde a bag |
 | PB-08-06 | bullet | XP | `projectRunProgress` sobre `actor/died`; `experienceRate`; save 1→2 com migração |
 | PB-08-07 | bullet | Skill de sword por uso | Projetada de `combat/attacked` |
@@ -156,11 +186,15 @@ o PB-07 escreveu catorze antecipadas e pagou por isso.
 
 ## Dependências e paralelismo
 
-PB-08-01 e PB-08-02 são **independentes entre si** e podem rodar em paralelo: uma é selection de
-combate, a outra é selection de mapa, e não há arquivo em comum.
+**PB-08-01 vem primeiro e sozinha.** Ela é a única task cujo resultado muda o julgamento das
+seguintes: sem um box real não dá para avaliar kit, sustentação nem economia. Jogue depois de
+integrá-la, antes de escrever a 03.
 
-A partir daí: 03 e 04 dependem de 01 e 02 integradas (é preciso ver o box para recustar o kit).
-05 é independente e pode ser puxada para frente. 06 → 07 → 08 é serial. 09 → 10 → 11 → 12 é serial.
+PB-08-02 depende da 01 integrada. PB-08-03 **pode não existir** — só se escreve se jogar mostrar que
+faz falta. PB-08-04 é independente e pode ser puxada para frente a qualquer momento.
+
+PB-08-05 é independente de tudo e pode rodar em paralelo com a 01. 06 → 07 → 08 é serial.
+09 → 10 → 11 → 12 é serial.
 
 ## Fora de escopo
 

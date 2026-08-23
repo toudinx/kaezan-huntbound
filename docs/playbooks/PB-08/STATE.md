@@ -2,8 +2,8 @@
 
 **Playbook:** `docs/playbooks/PB-08/README.md`
 
-**Estado geral:** escrito e elegível. Nenhuma task integrada.
-Próximas elegíveis: **PB-08-01 e PB-08-02**, que podem rodar em paralelo.
+**Estado geral:** em execução. Nenhuma task integrada.
+Próxima elegível: **PB-08-01**, que vem sozinha — o resultado dela muda o julgamento das seguintes.
 
 **Última atualização:** 2026-08-23
 
@@ -14,10 +14,10 @@ sensível a combate está integrada e sem conteúdo que a use.
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-08-01 | pending | `<agente>/pb08-01-exori-area` | — | — |
-| PB-08-02 | pending | `<agente>/pb08-02-cave-density` | — | — |
-| PB-08-03 | pending | `<agente>/pb08-03-knight-economy` | — | — |
-| PB-08-04 | pending | `<agente>/pb08-04-haste` | — | — |
+| PB-08-01 | in-progress | `claude/pb08-01-cave-density` | — | — |
+| PB-08-02 | pending | `<agente>/pb08-02-knight-actions` | — | — |
+| PB-08-03 | não escrita | — | — | só se jogar a 01 e a 02 mostrar que faz falta |
+| PB-08-04 | pending | `<agente>/pb08-04-selection-gate` | — | — |
 | PB-08-05 | pending | `<agente>/pb08-05-run-ends` | — | — |
 | PB-08-06 | pending | `<agente>/pb08-06-experience` | — | — |
 | PB-08-07 | pending | `<agente>/pb08-07-skill-by-use` | — | — |
@@ -38,7 +38,11 @@ do B3 do PB-07.
 **B2 — herdado do PB-07, aberto.** `verify` vermelho por save-persistence/`SAVE_VERSION_UNSUPPORTED`
 e snapshots de `shell`. Não bloqueia a trilha deste playbook; não bloqueia merge.
 
-**B3 — informativo.** Onze worktrees antigas seguem registradas em `git worktree list`, de PB-02 a
+**B3 — informativo.** Hipótese descartada em 2026-08-23: `exori` **não** é single-target. O bundle
+de runtime já traz `area: { radiusTiles: 1 }`. A task que ia consertar isso foi retirada; sobrou
+apenas o gate de proveniência, rebaixado para PB-08-04.
+
+**B4 — informativo.** Onze worktrees antigas seguem registradas em `git worktree list`, de PB-02 a
 PB-07. Limpeza pendente; não bloqueia nada.
 
 ## Decisões congeladas

@@ -1,4 +1,4 @@
-# PB-08-02 — A caverna cabe num box
+# PB-08-01 — A caverna cabe num box
 
 **Status inicial:** pending
 
@@ -11,11 +11,27 @@
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
 Skills operacionais: `playbook-task`, `run-gates`, `worktree-cycle`, `hunt-content-pipeline`.
 
-**Paralelismo:** paralela com PB-08-01. Nenhum arquivo em comum.
+**Paralelismo:** **primeira e sozinha.** PB-08-02 e PB-08-03 só se julgam depois de jogar com o
+resultado desta. PB-08-05 pode rodar em paralelo.
 
 ## Objetivo
 
-Dar à hunt um lugar onde caibam 4–8 rotworms juntos. Hoje não existe.
+Dar à hunt um lugar onde caibam 4–8 rotworms juntos. Hoje não existe — e essa ausência sozinha
+produz três das cinco reclamações do jogador.
+
+## Por que esta task vem primeiro
+
+Medindo o cenário composto, o kit do Knight **não está quebrado**: `exori` já é área de raio 1, bate
+48–129 por alvo e mata rotworm de 65 HP num golpe em ~79% dos casos. O jogador anda a 0,55 s por
+passo contra 1,05 s do rotworm, então puxar funciona.
+
+O que falta é **em quem bater**. Num box de quatro, um `exori` limpa o box e devolve ~26 HP e
+~26 mana de leech; da pool de 185 saem dois boxes, e recarregar leva ~46 s fora de combate. Esse é
+exatamente o ritmo que o PB-07-04 desenhou e que nunca teve onde acontecer.
+
+Por isso: **não recuste magia, não mexa em leech e não toque no kit nesta task.** A hipótese a testar
+é que a densidade resolve os três sintomas sozinha. Se depois de jogar ela não resolver, aí sim se
+escreve a task de economia — com evidência, não com suposição.
 
 ## O defeito, com evidência
 
