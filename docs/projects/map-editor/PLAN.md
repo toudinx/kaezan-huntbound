@@ -19,7 +19,7 @@ O editor fica no mesmo monorepo:
 ```text
 apps/map-editor/                 aplicação local Vite + Phaser + painéis DOM
 packages/map-authoring/         contrato, comandos, validação e compilação puros
-tools/map-authoring/            servidor local, draft, publish e integração com os CLIs
+tools/map-editor/               servidor Node, filesystem, draft, publish, play e seed helpers
 packages/content/src/layouts/   fonte canônica dos mapas autorados
 packages/content/src/generated/ saída runtime gerada; nunca editada à mão
 ```
@@ -79,11 +79,15 @@ task de agente, com diff explícito entre seed, versão publicada e nova evidên
 
 - `apps/map-editor` é local-only, abre apenas em `127.0.0.1` e não ganha rota dentro de
   `apps/game`.
+- `apps/map-editor` é uma casca visual sem acesso ao filesystem: lê e solicita operações pela API
+  loopback estrita de `tools/map-editor`.
 - Phaser renderiza o mapa; painéis, formulários e toolbar são DOM/CSS.
 - `packages/map-authoring` é TypeScript puro, determinístico e browser-safe. Não conhece Phaser,
   DOM, Node, filesystem ou Canary e depende no máximo de `@huntbound/contracts`.
-- Escrita em disco e processos ficam em `tools/map-authoring`; o browser não recebe acesso direto ao
-  filesystem.
+- `tools/map-editor` segue a convenção vigente de `tools/*`: TypeScript Node executado pelos scripts
+  da raiz, sem virar uma segunda aplicação ou manter dependências próprias. Ele concentra leitura e
+  escrita em disco, servidor loopback, validate, publish, play e helpers mecânicos usados pelo agente
+  na materialização de seeds.
 - O runtime não lê o documento de authoring. `publish` compila para `MapRegion`, `TransitionTable`,
   `SpawnTable`, `HuntDefinition` e seleção de assets já existentes.
 - O documento canônico guarda stacks completos de `clientId` por SQM. Ground, objetos abaixo/acima e

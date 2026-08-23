@@ -57,6 +57,9 @@ Extraia componente browser-safe compartilhável somente se houver duplicação r
 
 - App separado em `apps/map-editor`, não uma rota ou modo de `apps/game`.
 - Bind exclusivo em `127.0.0.1`; host público exige mudança explícita futura.
+- `apps/map-editor` não lê filesystem e não executa processo; toda capacidade local passa pela API
+  loopback mínima de `tools/map-editor`.
+- `tools/map-editor` é CLI/servidor Node no padrão existente de `tools/*`, sem `package.json` próprio.
 - Phaser 4.2.1 + TypeScript + Vite; painéis densos ficam em DOM/CSS.
 - Renderização lê o documento autorado; não lê OTBM/Canary e não lê artefato gerado como fonte.
 - Assets são resolvidos por manifesto/profile; nenhum path de sprite entra no domínio.
@@ -71,7 +74,7 @@ Extraia componente browser-safe compartilhável somente se houver duplicação r
 - `apps/map-editor/**`;
 - `packages/map-authoring/**` somente para adapter browser-safe comprovadamente ausente;
 - `packages/assets/**` somente para API pública browser-safe comprovadamente ausente;
-- `tools/map-authoring/**` para servidor local read-only;
+- `tools/map-editor/**` para servidor local read-only;
 - root scripts/configs e testes de arquitetura/QA estritamente necessários;
 - `docs/projects/map-editor/STATE.md` para handoff.
 
@@ -107,7 +110,7 @@ Prefira testar transformações puras fora do Phaser e reservar browser QA para 
 
 Com saída fresca:
 
-- testes direcionados de `apps/map-editor` e `tools/map-authoring`;
+- testes direcionados de `apps/map-editor` e `tools/map-editor`;
 - `corepack pnpm --filter @huntbound/map-editor typecheck`;
 - `corepack pnpm --filter @huntbound/map-editor build`;
 - `corepack pnpm map:check -- --map venore-rotworm-cave`;

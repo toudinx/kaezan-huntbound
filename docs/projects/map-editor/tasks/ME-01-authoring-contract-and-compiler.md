@@ -125,7 +125,7 @@ automático para futuros mapas. O commit deve registrar em uma linha quais evid�
 
 - `packages/map-authoring/**`;
 - `packages/content/src/layouts/hunts/venore-rotworm-cave.json`;
-- `tools/map-extractor/**` e `tools/map-authoring/**` apenas para integrar/compilar o schema v2;
+- `tools/map-extractor/**` e `tools/map-editor/**` apenas para integrar/compilar o schema v2;
 - `tools/architecture/dependency-policy.json` e seus testes;
 - `package.json`, `pnpm-lock.yaml` e configs estritamente necessários;
 - testes/fixtures novos da task;
