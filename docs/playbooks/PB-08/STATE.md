@@ -3,7 +3,8 @@
 **Playbook:** `docs/playbooks/PB-08/README.md`
 
 **Estado geral:** em execução. Nenhuma task integrada.
-Próxima elegível: **PB-08-01**, que vem sozinha — o resultado dela muda o julgamento das seguintes.
+Próxima ação: **integrar PB-08-01** (B5), que está pronta na branch. Nada mais começa antes disso —
+ela muda o mapa e o julgamento de todas as seguintes.
 
 **Última atualização:** 2026-08-23
 
@@ -14,7 +15,7 @@ sensível a combate está integrada e sem conteúdo que a use.
 
 | ID | Status | Branch prevista | Commit integrado | Evidência principal |
 |---|---|---|---|---|
-| PB-08-01 | in-progress | `claude/pb08-01-cave-density` | — | — |
+| PB-08-01 | aguardando integração | `claude/pb08-01-cave-density` | `1270526`, **não integrado** | ver B5 |
 | PB-08-02 | pending | `<agente>/pb08-02-knight-actions` | — | — |
 | PB-08-03 | não escrita | — | — | só se jogar a 01 e a 02 mostrar que faz falta |
 | PB-08-04 | pending | `<agente>/pb08-04-selection-gate` | — | — |
@@ -30,20 +31,30 @@ sensível a combate está integrada e sem conteúdo que a use.
 
 ## Bloqueios
 
-**B1 — aberto.** A árvore de `main` tem WIP não commitado do PB-05-FIX (game feel, `MAX_FRAME_DELTA_MS`
-250→100, target ring, `tools/dev`). Não bloqueia execução em worktree, **bloqueia o
-`git merge --ff-only` de volta na `main`**. Resolver antes da primeira integração. É a mesma causa
-do B3 do PB-07.
+**B1 — fechado em 2026-08-23.** O WIP do PB-05-FIX foi commitado na `main` em seis commits,
+`4fb17f6..1fef759`. Árvore limpa.
 
-**B2 — herdado do PB-07, aberto.** `verify` vermelho por save-persistence/`SAVE_VERSION_UNSUPPORTED`
-e snapshots de `shell`. Não bloqueia a trilha deste playbook; não bloqueia merge.
+**B2 — fechado em 2026-08-23.** `verify` verde, 73 specs. Eram três defeitos independentes:
+`errorText` descartava o `code` do `SaveError`; `save-persistence.spec.ts:616` apontava para
+`[data-testid="game-root"]`, que não existe no app; e os cinco baselines de `shell` eram de
+`db04d9d` (2026-08-19), anteriores ao painel de save de `ce2d10f` (2026-08-20). `8d698bd` e
+`a749c2b`.
 
 **B3 — informativo.** Hipótese descartada em 2026-08-23: `exori` **não** é single-target. O bundle
 de runtime já traz `area: { radiusTiles: 1 }`. A task que ia consertar isso foi retirada; sobrou
 apenas o gate de proveniência, rebaixado para PB-08-04.
 
-**B4 — informativo.** Onze worktrees antigas seguem registradas em `git worktree list`, de PB-02 a
-PB-07. Limpeza pendente; não bloqueia nada.
+**B4 — aberto.** Onze worktrees antigas em `git worktree list`, de PB-02 a PB-08, e **cinco branches
+fora da `main`** com trabalho real: `claude/pb08-01-cave-density` (ver B5),
+`claude/render-resolution-cap` (2 commits), `codex/fix-dead-run-resume`, `codex/pb00r-01-resize` e
+`codex/pb00r-03-package-tests`. Nenhuma foi verificada contra a `main` atual; as três últimas podem
+ter sido superadas por commits posteriores. Triagem pendente, decisão do usuário.
+
+**B5 — aberto, decisão do usuário.** PB-08-01 está **implementada e não integrada** em `1270526`:
+janela ampliada para 64×96, oito placements novos, `analyzeBoxDensity`, max pull 4→7 e tiles com
+≥4 de 3 para 62. A `main` andou oito commits desde então, então `--ff-only` não passa mais e a
+integração exige rebase + gates. **Isso muda o layout da caverna**, logo qualquer trabalho sobre
+`layouts/hunts/venore-rotworm-cave.json` deve esperar esta integração.
 
 ## Decisões congeladas
 

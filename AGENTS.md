@@ -173,17 +173,26 @@ explica. Resumo:
    `apps/game`. Mate o listener (`Get-NetTCPConnection -LocalPort <porta> -State Listen`, depois
    `Stop-Process -Id <pid> -Force`) antes de apagar.
 5. **`EPERM: operation not permitted, rename` no `assets:stage:test`.** O staging escreve
-   `.staging-profile-pb04-<pid>` e renomeia para `apps/game/public/assets/test/pb04`. No Windows o
-   rename falha de forma intermitente porque antivírus ou indexador ainda seguram o diretório recém
-   criado, e derruba `test`, `build` ou `qa:browser` no meio. **Não é código.** Confirme que não há
-   `vite preview` vivo (`Get-NetTCPConnection -LocalPort 4173 -State Listen`) e rode de novo. Já
-   custou dois ciclos completos de `verify` em 2026-08-18.
+   `.staging-profile-pb04-<pid>` e renomeia para `apps/game/public/assets/test/pb04`, e no Windows
+   esse rename falha se **qualquer** processo estiver segurando o diretório. Derruba `test`, `build`
+   ou `qa:browser` no meio, e **nunca é código**. São duas causas, e elas se distinguem pela
+   repetição:
+   - **Determinística** — um `vite` de pé (`dev` na 5173 ou `preview` na 4173) segura
+     `apps/game/public/assets`. Falha em toda tentativa. Ache o listener com
+     `Get-NetTCPConnection -LocalPort 5173,4173 -State Listen`, derrube com `Stop-Process -Id <pid>
+     -Force`, rode os gates e **suba o servidor de volta no fim** — se era o usuário jogando, avise.
+   - **Intermitente** — antivírus ou indexador ainda seguram o diretório recém-criado. Passa na
+     segunda tentativa. Já custou dois ciclos completos de `verify` em 2026-08-18.
+
+   Rode de novo antes de teorizar: se falhar duas vezes seguidas, é a primeira causa, não a segunda.
 
 ## Protocolo de execução
 
 Uma task = um chat. O procedimento completo está em `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`; o
 essencial:
 
+0. **Rode `git status` e `git branch --no-merged main` antes de qualquer outra coisa.** Se sobrou
+   trabalho de uma sessão anterior, ele é seu agora — veja "Você herda o que ficou pendente".
 1. Leia a task card, o `STATE.md` do playbook e **apenas** as referências que a task listar.
 2. Inspecione o workspace real antes de editar. Preserve decisões congeladas.
 3. Teste antes da implementação quando o comportamento for testável.
@@ -194,6 +203,48 @@ essencial:
    Serial ou paralela: o executor integra; não deixe a branch para um integrador. Já autorizado pela
    task, não peça confirmação.
 7. Não inicie a próxima task.
+
+### A task não acaba na árvore de trabalho
+
+Trabalho que existe só como arquivo modificado não existe. Ninguém além de você sabe que ele está
+lá, o próximo agente vai tropeçar nele, e o usuário só descobre pedindo. **Não é ele que deve pedir
+o merge.**
+
+Uma task só está concluída quando as três linhas abaixo respondem vazio:
+
+```bash
+git status --porcelain && git branch --no-merged main && git worktree list
+```
+
+Ou seja: **árvore limpa, branch integrada na `main`, worktree removida.** Isso vale para qualquer
+mudança que passe nos gates, não só para as que "fecham" uma task — um fix, um teste, um ajuste de
+doc, tudo. Rode as três antes de escrever o relatório final e cole a saída nele.
+
+Nunca termine um turno com árvore suja em silêncio. Se algo genuinamente não pode ser integrado
+agora, você tem exatamente duas saídas legítimas, nesta ordem de preferência:
+
+1. **Commitar numa branch** e dizer, no relatório, qual é a branch e o que falta para integrar;
+2. registrar bloqueio no `STATE.md` **e** dizer no relatório, se nem commitar der.
+
+"Deixei como WIP para você olhar" não é uma delas.
+
+### Você herda o que ficou pendente
+
+Se o `git status` do passo 0 vier sujo, ou existir branch fora da `main`, **isso vira sua primeira
+tarefa, antes da que você foi chamado para fazer** — e você não precisa pedir permissão para
+resolver, porque integrar já é autorização normal da task que gerou aquilo.
+
+Trabalho pendente escrito por outro agente ainda é trabalho: leia o diff, rode os gates e commite em
+unidades coerentes com mensagens que expliquem o *porquê*. Não é seu para descartar. Só descarte com
+autorização explícita do usuário, dita nesta conversa.
+
+Se ficar claro que o pendente é grande demais para caber na sua task, commite numa branch, diga isso
+no relatório e siga com o que você foi chamado para fazer. O que não pode acontecer é ele
+sobreviver mais um turno como arquivo solto.
+
+Um servidor `vite` de pé segura `apps/game/public/assets` e faz `assets:stage:test` falhar com
+`EPERM ... rename` de forma **determinística** — o que é diferente da flake da armadilha 5. Derrube
+o listener antes dos gates e suba de volta no fim; não confunda um com o outro.
 
 ### Ambiguidade não é motivo para parar
 
