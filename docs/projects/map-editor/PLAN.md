@@ -1,8 +1,8 @@
-# PB-ME — Map Editor local do Huntbound
+# Map Editor — Plano do projeto
 
-**Status:** pronto para PB-ME-01 quando a `main` voltar a ter `corepack pnpm verify` verde
+**Status:** pronto para ME-01 quando a `main` voltar a ter `corepack pnpm verify` verde
 
-**Natureza:** correção e ferramenta de produto transversal; não pertence a PB-08 ou PB-09
+**Natureza:** projeto auxiliar independente dos playbooks numerados do jogo
 
 **Diretriz de execução:** `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`
 
@@ -118,10 +118,10 @@ task de agente, com diff explícito entre seed, versão publicada e nova evidên
 Os comandos abaixo são contrato do PB e só passam a existir nas tasks indicadas:
 
 ```text
-corepack pnpm map:edit       # PB-ME-02: abre o editor local
-corepack pnpm map:check      # PB-ME-01/04: valida sem escrever
-corepack pnpm map:publish    # PB-ME-04: publica atomicamente
-corepack pnpm map:play       # PB-ME-04: publica e abre o jogo
+corepack pnpm map:edit       # ME-02: abre o editor local
+corepack pnpm map:check      # ME-01/04: valida sem escrever
+corepack pnpm map:publish    # ME-04: publica atomicamente
+corepack pnpm map:play       # ME-04: publica e abre o jogo
 ```
 
 Não haverá `map:new` automático. Uma task de agente cria a seed e entrega o path que `map:edit` abre.
@@ -130,17 +130,17 @@ Não haverá `map:new` automático. Uma task de agente cria a seed e entrega o p
 
 | Task | Resultado | Modelo sugerido | Estado |
 |---|---|---|---|
-| PB-ME-01 | contrato autoral v2, compilador determinístico e seed da hunt atual materializada por agente | GPT-5.6 Sol `xhigh` | card escrito |
-| PB-ME-02 | editor local read-only, mapa real, andares e paleta de assets | GPT-5.6 Luna `max` | card escrito |
-| PB-ME-03 | reducer de comandos, seleção, pintura, stack e undo/redo | GPT-5.6 Luna `max` | bullet |
-| PB-ME-04 | drafts, validação, publish atômico e play no jogo | GPT-5.6 Luna `max` | bullet |
-| PB-ME-05 | player start, spawns, transições e overlays de diagnóstico | GPT-5.6 Luna `max` | bullet |
-| PB-ME-06 | cave brush, auto-wall, preenchimento e detector de borda/saída falsa | GPT-5.6 Luna `max` | bullet |
-| PB-ME-07 | template executável da task de IA e ensaio com uma segunda seed | GPT-5.6 Luna `max` | bullet |
-| PB-ME-08 | retoque real da Venore Rotworm Cave e aceite jogando | GPT-5.6 Sol `xhigh` | bullet |
-| PB-ME-09 | isolamento do bundle, QA do editor e fechamento | GPT-5.6 Luna `max` | bullet |
+| ME-01 | contrato autoral v2, compilador determinístico e seed da hunt atual materializada por agente | GPT-5.6 Sol `xhigh` | card escrito |
+| ME-02 | editor local read-only, mapa real, andares e paleta de assets | GPT-5.6 Luna `max` | card escrito |
+| ME-03 | reducer de comandos, seleção, pintura, stack e undo/redo | GPT-5.6 Luna `max` | bullet |
+| ME-04 | drafts, validação, publish atômico e play no jogo | GPT-5.6 Luna `max` | bullet |
+| ME-05 | player start, spawns, transições e overlays de diagnóstico | GPT-5.6 Luna `max` | bullet |
+| ME-06 | cave brush, auto-wall, preenchimento e detector de borda/saída falsa | GPT-5.6 Luna `max` | bullet |
+| ME-07 | template executável da task de IA e ensaio com uma segunda seed | GPT-5.6 Luna `max` | bullet |
+| ME-08 | retoque real da Venore Rotworm Cave e aceite jogando | GPT-5.6 Sol `xhigh` | bullet |
+| ME-09 | isolamento do bundle, QA do editor e fechamento | GPT-5.6 Luna `max` | bullet |
 
-Somente PB-ME-01 e PB-ME-02 têm task cards. A task seguinte é escrita quando a anterior revelar as
+Somente ME-01 e ME-02 têm task cards. A task seguinte é escrita quando a anterior revelar as
 interfaces reais, evitando documentação que envelhece antes do código.
 
 ## Aceite do playbook

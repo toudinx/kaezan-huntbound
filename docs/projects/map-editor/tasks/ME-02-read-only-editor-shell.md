@@ -1,6 +1,6 @@
-# PB-ME-02 — Editor local read-only
+# ME-02 — Editor local read-only
 
-**Status inicial:** not-ready; depende de PB-ME-01 integrada
+**Status inicial:** not-ready; depende de ME-01 integrada
 
 **Classe da tarefa:** implementação geral bem especificada
 
@@ -12,7 +12,7 @@
 `game-studio:phaser-2d-game` → `game-studio:game-ui-frontend` →
 `game-studio:game-playtest` → `superpowers:verification-before-completion`
 
-**Paralelismo:** não. Começa somente após PB-ME-01 integrada e verde.
+**Paralelismo:** não. Começa somente após ME-01 integrada e verde.
 
 ## Objetivo
 
@@ -35,15 +35,15 @@ Nenhuma ferramenta altera estado ou escreve arquivo nesta task.
 
 ## Dependências
 
-- PB-ME-01 integrada em `main`, `STATE.md` atualizado e `corepack pnpm verify` verde.
+- ME-01 integrada em `main`, `STATE.md` atualizado e `corepack pnpm verify` verde.
 - A seed v2 da Venore cave abre por `map:check`.
 - Perfis `test` e `personal` existentes continuam sendo as únicas fontes visuais locais.
 
 ## Leitura mínima
 
 1. `AGENTS.md`;
-2. esta task e `docs/playbooks/PB-ME/{README,STATE}.md`;
-3. APIs públicas reais de `@huntbound/map-authoring` entregues pela PB-ME-01;
+2. esta task, `docs/projects/map-editor/PLAN.md` e `STATE.md`;
+3. APIs públicas reais de `@huntbound/map-authoring` entregues pela ME-01;
 4. `apps/game/src` apenas nos loaders/renderização de mapa e assets reutilizáveis;
 5. `packages/assets/src` nas APIs públicas de manifesto e pack;
 6. `tools/dev/start.ts`, configs Vite e Playwright existentes;
@@ -73,7 +73,7 @@ Extraia componente browser-safe compartilhável somente se houver duplicação r
 - `packages/assets/**` somente para API pública browser-safe comprovadamente ausente;
 - `tools/map-authoring/**` para servidor local read-only;
 - root scripts/configs e testes de arquitetura/QA estritamente necessários;
-- `docs/playbooks/PB-ME/STATE.md` para handoff.
+- `docs/projects/map-editor/STATE.md` para handoff.
 
 Não modifique a seed, artefatos gerados, packs, gameplay, simulação, save ou golden.
 
@@ -136,18 +136,18 @@ limpeza.
 
 Pare após dois ciclos RED/GREEN com a mesma causa ou se a UI exigir mudar o schema v2, expor o
 filesystem ao browser, adicionar dependência não pinada ou alterar o renderer do jogo. Registre o
-bloqueio; não antecipe PB-ME-03.
+bloqueio; não antecipe ME-03.
 
 ## Handoff, commit e integração
 
-- Branch: `codex/pbme-02-editor-shell`
-- Worktree: `C:\Kaezan\kaezan-huntbound-pbme-02-editor-shell`
+- Branch: `codex/map-editor-02-editor-shell`
+- Worktree: `C:\Kaezan\kaezan-huntbound-map-editor-02-editor-shell`
 - Commit: `feat: open authored maps in a local editor`
 - Base e destino: `main`
-- Integração: `git merge --ff-only codex/pbme-02-editor-shell`
+- Integração: `git merge --ff-only codex/map-editor-02-editor-shell`
 - Pós-integração: `corepack pnpm verify`
 - Limpeza: remover a worktree validada, `git worktree prune` e
-  `git branch -d codex/pbme-02-editor-shell`.
+  `git branch -d codex/map-editor-02-editor-shell`.
 
 ## Prompt copiável para novo chat
 
@@ -155,13 +155,13 @@ bloqueio; não antecipe PB-ME-03.
 Trabalhe no workspace C:\Kaezan\kaezan-huntbound usando GPT-5.6 Luna com effort max.
 
 Execute integralmente e somente a task:
-docs/playbooks/PB-ME/tasks/PB-ME-02-read-only-editor-shell.md
+docs/projects/map-editor/tasks/ME-02-read-only-editor-shell.md
 
 Use, nesta ordem, as skills superpowers:using-git-worktrees,
 superpowers:test-driven-development, game-studio:phaser-2d-game,
 game-studio:game-ui-frontend, game-studio:game-playtest e
-superpowers:verification-before-completion. Leia o AGENTS.md, o README/STATE do PB-ME e apenas a
-leitura adicional indicada na task. Confirme que PB-ME-01 está integrada e verde.
+superpowers:verification-before-completion. Leia o AGENTS.md, o PLAN/STATE do projeto Map Editor e
+apenas a leitura adicional indicada na task. Confirme que ME-01 está integrada e verde.
 
 Crie somente o app local read-only em apps/map-editor, o servidor loopback, a navegação/inspeção e
 os testes previstos. Não implemente edição, draft, publish, undo/redo, spawn tools nem importação do
@@ -170,6 +170,6 @@ Canary. Prove por teste e build que o editor não entra no site publicado.
 Faça red-green, execute todos os gates e a inspeção browser da task, atualize somente a linha
 necessária do STATE.md e crie o commit `feat: open authored maps in a local editor`. Integre por
 fast-forward na main, repita `corepack pnpm verify`, pare os processos que subiu e remova worktree e
-branch integradas. Não inicie PB-ME-03. Se uma condição de parada ocorrer, preserve o trabalho,
+branch integradas. Não inicie ME-03. Se uma condição de parada ocorrer, preserve o trabalho,
 registre o bloqueio e relate a evidência.
 ```

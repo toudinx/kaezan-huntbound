@@ -71,12 +71,14 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
 - [`PB-07 — Profundidade de combate e vocações`](playbooks/PB-07/README.md) — implementação parcial;
   congelado depois da task 05 até a retomada do combate.
 - [`PB-08 — O loop de farm do Knight`](playbooks/PB-08/README.md) — em execução.
-- [`PB-ME — Map Editor local`](playbooks/PB-ME/README.md) — trilha transversal para mapas autorados;
-  a materialização inicial a partir do Canary é feita por agente de IA e os retoques são feitos em
-  uma aplicação local separada do bundle publicado.
+Os playbooks de produto seguem a ordem e a Definition of Ready de
+[`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 
-PB-ME não renumera nem bloqueia os playbooks de produto. A ordem principal e a Definition of Ready
-estão em [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
+## Projetos auxiliares
+
+- [`Map Editor local`](projects/map-editor/PLAN.md) — projeto independente dos playbooks do jogo. A
+  materialização inicial a partir do Canary é feita por agente de IA; os retoques acontecem numa
+  aplicação local que não entra no bundle publicado.
 
 ## Decisão vigente em uma linha
 

@@ -1,4 +1,4 @@
-# PB-ME-01 — Contrato autoral, compilador e primeira seed
+# ME-01 — Contrato autoral, compilador e primeira seed
 
 **Status inicial:** pending
 
@@ -11,7 +11,7 @@
 **Rota:** `superpowers:using-git-worktrees` → `superpowers:test-driven-development` →
 `superpowers:verification-before-completion`
 
-**Paralelismo:** não. PB-ME-02 depende do contrato e da seed integrados.
+**Paralelismo:** não. ME-02 depende do contrato e da seed integrados.
 
 ## Objetivo
 
@@ -41,13 +41,13 @@ agente de IA; o código automatiza somente validação, compilação e publicaç
    representar o layout vigente, não uma versão arbitrária.
 3. `HUNTBOUND_CANARY_SOURCE` resolve para o snapshot local apenas durante a investigação da seed.
 
-Se uma pré-condição falhar, registre o bloqueio em `docs/playbooks/PB-ME/STATE.md` e pare. Não conserte
-PB-08, save ou golden dentro desta task.
+Se uma pré-condição falhar, registre o bloqueio em `docs/projects/map-editor/STATE.md` e pare. Não
+conserte PB-08, save ou golden dentro desta task.
 
 ## Leitura mínima
 
 1. `AGENTS.md`;
-2. `docs/playbooks/PB-ME/README.md` e `STATE.md`;
+2. `docs/projects/map-editor/PLAN.md` e `STATE.md`;
 3. `.cursor/rules/10-boundaries.mdc`, `.cursor/rules/20-content.mdc`,
    `.cursor/rules/30-assets.mdc` e `.cursor/rules/50-tests.mdc`;
 4. `docs/architecture/PACKAGE_BOUNDARIES.md` e `tools/architecture/dependency-policy.json`;
@@ -129,7 +129,7 @@ automático para futuros mapas. O commit deve registrar em uma linha quais evid�
 - `tools/architecture/dependency-policy.json` e seus testes;
 - `package.json`, `pnpm-lock.yaml` e configs estritamente necessários;
 - testes/fixtures novos da task;
-- `docs/playbooks/PB-ME/STATE.md` somente para handoff.
+- `docs/projects/map-editor/STATE.md` somente para handoff.
 
 Artefatos em `packages/content/src/generated/**` só podem mudar por CLI e, nesta task, o diff final
 deles deve ser vazio. Não toque em save, simulação, golden, UI ou `apps/game`.
@@ -195,14 +195,14 @@ registre evidência objetiva em `STATE.md`.
 
 ## Handoff, commit e integração
 
-- Branch: `codex/pbme-01-authoring-contract`
-- Worktree: `C:\Kaezan\kaezan-huntbound-pbme-01-authoring-contract`
+- Branch: `codex/map-editor-01-authoring-contract`
+- Worktree: `C:\Kaezan\kaezan-huntbound-map-editor-01-authoring-contract`
 - Commit: `feat: define the authored Huntbound map format`
 - Base e destino: `main`
-- Integração: `git merge --ff-only codex/pbme-01-authoring-contract`
+- Integração: `git merge --ff-only codex/map-editor-01-authoring-contract`
 - Pós-integração: `corepack pnpm verify`
 - Limpeza: remover a worktree validada, `git worktree prune` e
-  `git branch -d codex/pbme-01-authoring-contract`.
+  `git branch -d codex/map-editor-01-authoring-contract`.
 
 ## Prompt copiável para novo chat
 
@@ -210,13 +210,13 @@ registre evidência objetiva em `STATE.md`.
 Trabalhe no workspace C:\Kaezan\kaezan-huntbound usando GPT-5.6 Sol com effort xhigh.
 
 Execute integralmente e somente a task:
-docs/playbooks/PB-ME/tasks/PB-ME-01-authoring-contract-and-compiler.md
+docs/projects/map-editor/tasks/ME-01-authoring-contract-and-compiler.md
 
 Use, nesta ordem, as skills superpowers:using-git-worktrees,
 superpowers:test-driven-development e superpowers:verification-before-completion. Leia o AGENTS.md,
-o README/STATE do PB-ME e somente a leitura adicional indicada na task. Inspecione o estado real,
-prove a linha de base e não comece se a main estiver vermelha ou se o layout pendente da PB-08-01
-ainda não estiver decidido.
+o PLAN/STATE do projeto Map Editor e somente a leitura adicional indicada na task. Inspecione o
+estado real, prove a linha de base e não comece se a main estiver vermelha. Confirme que o layout
+integrado em `c23c819` continua sendo a base da seed.
 
 A primeira seed da Venore cave deve ser materializada por você como agente de IA após investigar o
 Canary e o layout vigente. Não crie importador automático, wizard ou botão Canary → mapa. Implemente
@@ -225,6 +225,6 @@ artefatos runtime.
 
 Faça red-green, rode todas as verificações da task, atualize somente a linha/bloco necessário do
 STATE.md e crie o commit `feat: define the authored Huntbound map format`. Integre por fast-forward
-na main, repita `corepack pnpm verify`, remova a worktree e a branch integradas. Não inicie PB-ME-02.
+na main, repita `corepack pnpm verify`, remova a worktree e a branch integradas. Não inicie ME-02.
 Se uma condição de parada ocorrer, preserve o trabalho, registre o bloqueio e relate a evidência.
 ```
