@@ -74,7 +74,12 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { huntFloorSync } from '../../hunt/huntFloorSync';
-import { resolveTargetRing, type TargetRingState } from '../../hunt/TargetRing';
+import {
+  resolveTargetRing,
+  TARGET_RING_COLOR,
+  TARGET_RING_DEPTH_LAYER,
+  type TargetRingState,
+} from '../../hunt/TargetRing';
 import { actorDepth, tileDepth } from '../../hunt/TileDepth';
 import { createUnresolvedHuntAssetTracker } from '../../hunt/UnresolvedHuntAssets';
 import type { InputMap } from '../../input/InputMap';
@@ -641,7 +646,7 @@ export class HuntScene extends Phaser.Scene {
       tileSize: this.tileSize,
     });
     ring
-      .lineStyle(Math.max(2, this.tileSize / 16), 0xffd166, 0.95)
+      .lineStyle(Math.max(2, this.tileSize / 16), TARGET_RING_COLOR, 0.95)
       .strokeCircle(
         -anchor.width / 2,
         -anchor.height / 2,
@@ -671,7 +676,7 @@ export class HuntScene extends Phaser.Scene {
     });
     ring
       .setPosition(anchor.x, anchor.y)
-      .setDepth(this.depthFor('objectsBelow', position, 0))
+      .setDepth(this.depthFor(TARGET_RING_DEPTH_LAYER, position, 0))
       .setVisible(true);
   }
 

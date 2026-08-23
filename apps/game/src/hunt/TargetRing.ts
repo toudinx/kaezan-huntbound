@@ -15,6 +15,9 @@ export interface TargetRingState {
   readonly visible: boolean;
 }
 
+export const TARGET_RING_COLOR = 0xff3030;
+export const TARGET_RING_DEPTH_LAYER = 'objectsAbove' as const;
+
 const HIDDEN_TARGET_RING: TargetRingState = Object.freeze({
   targetEntityId: null,
   position: null,

@@ -5,6 +5,7 @@ import type {
   GridPosition,
 } from '../../../../packages/contracts/src/index.ts';
 
+import * as targetRingModule from './TargetRing';
 import { resolveTargetRing, type TargetRingActor } from './TargetRing';
 
 function actor(
@@ -21,6 +22,13 @@ function actor(
 }
 
 describe('TargetRing', () => {
+  it('uses a Tibia-style red ring painted above the target actor', () => {
+    expect(Reflect.get(targetRingModule, 'TARGET_RING_COLOR')).toBe(0xff3030);
+    expect(Reflect.get(targetRingModule, 'TARGET_RING_DEPTH_LAYER')).toBe(
+      'objectsAbove',
+    );
+  });
+
   it('derives a visible ring from the selected actor tile', () => {
     expect(
       resolveTargetRing(2 as EntityId, [actor(1, 5, 5), actor(2, 6, 5)]),
