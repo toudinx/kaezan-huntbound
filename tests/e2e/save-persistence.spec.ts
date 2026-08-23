@@ -613,9 +613,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('[data-testid="save-status"]')).toContainText(
       'SAVE_VERSION_UNSUPPORTED',
     );
-    await expect(page.locator('[data-testid="game-root"] canvas')).toHaveCount(
-      1,
-    );
+    await expect(page.locator('#game-root canvas')).toHaveCount(1);
     expectQuiet(watch);
   });
 

@@ -12,7 +12,7 @@ import {
   decideResume,
   type ResumeDecision,
   type RunIdentity,
-  type SaveError,
+  SaveError,
   type SaveRepository,
 } from '../../../../packages/save/src/index.ts';
 
@@ -74,12 +74,23 @@ function sameBag(
   );
 }
 
+/**
+ * What the player is shown when a save operation fails.
+ *
+ * A `SaveError` leads with its code. The prose is written for a human and can
+ * be reworded at any time; the code is the failure's only stable name, so it is
+ * what a test can assert on, what a report can be searched for and what maps to
+ * a recovery path. Dropping it left `SAVE_VERSION_UNSUPPORTED` — the one
+ * failure with a real recovery — indistinguishable from a sentence.
+ */
 function errorText(error: unknown): string {
   if (!(error instanceof Error)) return String(error);
   const cause = 'cause' in error ? error.cause : undefined;
-  return cause instanceof Error
-    ? `${error.message}: ${cause.message}`
-    : error.message;
+  const text =
+    cause instanceof Error
+      ? `${error.message}: ${cause.message}`
+      : error.message;
+  return error instanceof SaveError ? `${error.code}: ${text}` : text;
 }
 
 function saveState(

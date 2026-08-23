@@ -4,6 +4,7 @@ import {
   createMemorySaveDriver,
   createSaveRepository,
   type SaveDriver,
+  SaveError,
   type TransactionOutcome,
 } from '../../../../packages/save/src/index.ts';
 import {
@@ -125,6 +126,41 @@ describe('createSaveSession', () => {
     expect(boot.driver.tick).toBe(0);
     expect(saveSession.getState().status).toBe('error');
     expect(saveSession.getState().message).toContain('IndexedDB unavailable');
+
+    saveSession.destroy();
+  });
+
+  it('names the save error code the player is looking at', async () => {
+    const failure = new SaveError(
+      'SAVE_VERSION_UNSUPPORTED',
+      'Save schema version 2 is newer than supported version 1',
+    );
+    const driver: SaveDriver = {
+      read: async () => {
+        throw failure;
+      },
+      runTransaction: async <T>(
+        _operation: (current: unknown) => TransactionOutcome<T>,
+      ) => {
+        throw failure;
+      },
+      close: () => undefined,
+    };
+    const saveSession = createSaveSession(createSaveRepository(driver));
+
+    await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    // The prose alone cannot be searched for, mapped to a recovery path or
+    // matched by a test. The code is the only stable name the failure has.
+    expect(saveSession.getState().message).toContain(
+      'SAVE_VERSION_UNSUPPORTED',
+    );
+    expect(saveSession.getState().message).toContain(
+      'newer than supported version 1',
+    );
 
     saveSession.destroy();
   });
