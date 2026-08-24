@@ -167,6 +167,8 @@ export class HuntScene extends Phaser.Scene {
   private readonly tileSize: number;
   private renderClock = 0;
   private floorRebuilds = 0;
+  private cachedDriverSnapshot: SimulationSnapshot | undefined;
+  private cachedDriverSnapshotTick: TickIndex | undefined;
   private readonly actorSprites = new Map<
     EntityId,
     Phaser.GameObjects.Sprite
@@ -280,6 +282,7 @@ export class HuntScene extends Phaser.Scene {
     this.decorationTextWrites = 0;
     this.decorationTextValues.clear();
     this.inputCommands = [];
+    this.invalidateDriverSnapshotCache();
     this.targetSelection.reset();
     this.inputGate.reset();
     this.applyCameraFraming();
@@ -359,6 +362,7 @@ export class HuntScene extends Phaser.Scene {
       this.options.input.releaseHeld();
       this.targetSelection.reset();
       this.options.bridge.publishTargetSelected(null);
+      this.invalidateDriverSnapshotCache();
       this.options.driver.restart?.(performance.now());
       this.scene.restart();
     });
@@ -382,6 +386,7 @@ export class HuntScene extends Phaser.Scene {
       this.postureAura?.destroy();
       this.postureAura = undefined;
       this.postureAuraState = null;
+      this.invalidateDriverSnapshotCache();
       this.targetRing?.destroy();
       this.targetRing = undefined;
       this.worldEdge?.destroy();
@@ -440,7 +445,11 @@ export class HuntScene extends Phaser.Scene {
       }
     }
 
+    const tickBeforeAdvance = this.options.driver.tick;
     const events = this.options.driver.advanceTo(time);
+    if (events.length > 0 || this.options.driver.tick !== tickBeforeAdvance) {
+      this.invalidateDriverSnapshotCache();
+    }
     if (events.length > 0) {
       this.options.bridge.publishEvents(events);
     }
@@ -691,6 +700,26 @@ export class HuntScene extends Phaser.Scene {
     this.postureAuraState = null;
   }
 
+  private invalidateDriverSnapshotCache(): void {
+    this.cachedDriverSnapshot = undefined;
+    this.cachedDriverSnapshotTick = undefined;
+  }
+
+  private currentDriverSnapshot(): SimulationSnapshot {
+    const tick = this.options.driver.tick;
+    if (
+      this.cachedDriverSnapshot !== undefined &&
+      this.cachedDriverSnapshotTick === tick
+    ) {
+      return this.cachedDriverSnapshot;
+    }
+
+    const snapshot = this.options.driver.snapshot();
+    this.cachedDriverSnapshot = snapshot;
+    this.cachedDriverSnapshotTick = tick;
+    return snapshot;
+  }
+
   private snapshotPlayerConditions(
     snapshot: SimulationSnapshot,
   ): readonly ActiveConditionState[] {
@@ -722,7 +751,7 @@ export class HuntScene extends Phaser.Scene {
   }
 
   private syncPostureAura(): void {
-    const snapshot = this.options.driver.snapshot();
+    const snapshot = this.currentDriverSnapshot();
     const player = snapshot.actors.find(
       (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
     );

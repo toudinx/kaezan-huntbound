@@ -526,12 +526,18 @@ const hunt: HuntDefinition = {
 class FakeDriver implements HuntSimulationDriver {
   tick = 0 as TickIndex;
   alpha = 0;
+  snapshotCalls = 0;
   private readonly queue: SimulationEvent[][] = [];
 
   constructor(private currentSnapshot: SimulationSnapshot) {}
 
   snapshot() {
+    this.snapshotCalls += 1;
     return this.currentSnapshot;
+  }
+
+  resetSnapshotCalls() {
+    this.snapshotCalls = 0;
   }
 
   setSnapshot(next: SimulationSnapshot) {
@@ -756,5 +762,32 @@ describe('HuntScene posture aura', () => {
     expect(
       (scene as unknown as { postureAura?: unknown }).postureAura,
     ).toBeUndefined();
+  });
+
+  it('reuses one snapshot across repeated syncs in the same tick and refreshes it after a tick advance', () => {
+    const { scene, driver } = createHarness(
+      snapshot({
+        activeConditionIndices: [0],
+      }),
+    );
+
+    scene.create();
+    driver.resetSnapshotCalls();
+
+    scene.update(250);
+    scene.update(260);
+
+    expect(driver.snapshotCalls).toBe(1);
+
+    driver.setSnapshot(
+      snapshot({
+        tick: 6,
+        activeConditionIndices: [0],
+      }),
+    );
+
+    scene.update(270);
+
+    expect(driver.snapshotCalls).toBe(2);
   });
 });
