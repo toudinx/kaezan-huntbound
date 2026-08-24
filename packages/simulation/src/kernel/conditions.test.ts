@@ -14,6 +14,7 @@ import {
   castAbility,
   combatNeutralBlueprint,
   damageTargetAbility,
+  healSelfAbility,
   kernelScenario,
   moveStep,
   payloadsOfType,
@@ -336,6 +337,7 @@ describe('stance toggle', () => {
           conditionId: 'blood-rage',
           exclusivityGroup: 1,
           durationTicks: 0,
+          skillIndex: 2,
           skillModifierPermille: 250,
         }),
         scenarioCondition({
@@ -343,6 +345,7 @@ describe('stance toggle', () => {
           exclusivityGroup: 1,
           durationTicks: 0,
           damageDealtPermille: -150,
+          damageReceivedPermille: -150,
         }),
       ],
       abilities: [
@@ -408,6 +411,79 @@ describe('stance toggle', () => {
 });
 
 describe('modifier kinds', () => {
+  function physicalSkillScenario(
+    heroOverrides: Partial<Parameters<typeof combatNeutralBlueprint>[3]> = {},
+  ) {
+    return kernelScenario({
+      scenarioId: 'physical-skill-channel',
+      conditions: [
+        scenarioCondition({
+          conditionId: 'blood-rage',
+          skillIndex: 2,
+          skillModifierPermille: 250,
+          durationTicks: 0,
+        }),
+        scenarioCondition({
+          conditionId: 'protector',
+          damageReceivedPermille: -150,
+          durationTicks: 0,
+        }),
+      ],
+      abilities: [
+        damageTargetAbility({
+          abilityId: 'physical-strike',
+          minPower: 100,
+          maxPower: 100,
+          resourceCost: 1,
+          cooldownTicks: 0,
+          groupCooldownTicks: 0,
+          element: 'physical',
+        }),
+        damageTargetAbility({
+          abilityId: 'fire-strike',
+          minPower: 100,
+          maxPower: 100,
+          resourceCost: 1,
+          cooldownTicks: 0,
+          groupCooldownTicks: 0,
+          element: 'fire',
+        }),
+        healSelfAbility({
+          abilityId: 'big-heal',
+          minPower: 100,
+          maxPower: 100,
+          resourceCost: 1,
+          cooldownTicks: 0,
+          groupCooldownTicks: 0,
+        }),
+      ],
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 200,
+          maxResource: 20,
+          attackMinDamage: 100,
+          attackMaxDamage: 100,
+          attackCooldownTicks: 1,
+          abilityIndices: [0, 1, 2],
+          attackSkillIndex: 2,
+          ...heroOverrides,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 200,
+          attackMinDamage: 100,
+          attackMaxDamage: 100,
+          attackCooldownTicks: 1,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 'e' },
+        { blueprintId: 'foe', position: at(3, 2), facing: 'w' },
+      ],
+    });
+  }
+
   it('changes the skill number the damage formula reads', () => {
     const scenario = kernelScenario({
       scenarioId: 'skill-modifier',
@@ -447,6 +523,115 @@ describe('modifier kinds', () => {
 
     expect(scaleByPermille(70, modifiers.skillModifierPermille(2))).toBe(87);
     expect(scaleByPermille(70, modifiers.skillModifierPermille(5))).toBe(70);
+  });
+
+  it('scales a physical basic attack by the matching skill modifier', () => {
+    const scenario = physicalSkillScenario();
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            activeConditions: [
+              { conditionIndex: 0, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]?.amount).toBe(125);
+  });
+
+  it('scales a physical damage ability by the matching skill modifier', () => {
+    const scenario = physicalSkillScenario();
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            activeConditions: [
+              { conditionIndex: 0, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(castAbility(1, 0, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]?.amount).toBe(125);
+  });
+
+  it('keeps physical damage at 100 when the blueprint has no attackSkillIndex', () => {
+    const scenario = physicalSkillScenario({ attackSkillIndex: undefined });
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            activeConditions: [
+              { conditionIndex: 0, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]?.amount).toBe(100);
+  });
+
+  it('does not apply the skill modifier to non-physical damage abilities', () => {
+    const scenario = physicalSkillScenario();
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            activeConditions: [
+              { conditionIndex: 0, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(castAbility(1, 1, 2, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]?.amount).toBe(100);
+  });
+
+  it('does not apply the skill modifier to healing abilities', () => {
+    const scenario = physicalSkillScenario();
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            health: 50,
+            activeConditions: [
+              { conditionIndex: 0, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(castAbility(1, 2, null, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/healed')[0]?.amount).toBe(100);
+  });
+
+  it('applies Protector damageReceivedPermille on incoming damage', () => {
+    const scenario = physicalSkillScenario();
+    const kernel = withActorPatch(scenario, (actor) =>
+      actor.blueprintId === 'hero'
+        ? {
+            ...actor,
+            activeConditions: [
+              { conditionIndex: 1, expiresAtTick: 0, exclusivityGroup: null },
+            ],
+          }
+        : actor,
+    );
+    kernel.enqueue(attack(2, 1, 0));
+    const events = kernel.advanceOne();
+
+    expect(payloadsOfType(events, 'combat/damaged')[0]?.amount).toBe(85);
   });
 
   it('scales outgoing damage by damageDealtPermille', () => {

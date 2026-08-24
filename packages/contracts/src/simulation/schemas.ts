@@ -137,6 +137,7 @@ export const ActorBlueprintSchema = z
     attackCooldownTicks: nonNegativeInteger,
     attackMinDamage: nonNegativeInteger,
     attackMaxDamage: nonNegativeInteger,
+    attackSkillIndex: nonNegativeInteger.optional(),
     attackRangeTiles: nonNegativeInteger.default(1),
     aggroRadius: nonNegativeInteger,
     lootTableIndex: nonNegativeInteger.nullable(),

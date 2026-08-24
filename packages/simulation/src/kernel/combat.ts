@@ -2,6 +2,7 @@ import type {
   AbilityDefinition,
   ActorBlueprint,
   ActorState,
+  CombatElement,
   EntityId,
   GridPosition,
   LootTableDefinition,
@@ -18,6 +19,7 @@ import type { RandomSource } from '../random/source.ts';
 import type { MutableWorld } from '../state/worldState.ts';
 import {
   applyCondition,
+  type ConditionModifiers,
   expireConditions,
   hasActiveCondition,
   queryConditionModifiers,
@@ -75,6 +77,18 @@ function permilleOf(amount: number, permille: number): number {
     return 0;
   }
   return Math.trunc((amount * permille) / 1000);
+}
+
+function outgoingDamagePermille(
+  blueprint: ActorBlueprint,
+  element: CombatElement,
+  modifiers: ConditionModifiers,
+): number {
+  let permille = modifiers.damageDealtPermille;
+  if (element === 'physical' && blueprint.attackSkillIndex !== undefined) {
+    permille += modifiers.skillModifierPermille(blueprint.attackSkillIndex);
+  }
+  return permille;
 }
 
 function isInCombat(
@@ -498,8 +512,11 @@ function resolveAttack(
       blueprint.attackMinDamage,
       blueprint.attackMaxDamage,
     ),
-    queryConditionModifiers(freshAttacker, conditions, tick)
-      .damageDealtPermille,
+    outgoingDamagePermille(
+      blueprint,
+      blueprint.attackElement,
+      queryConditionModifiers(freshAttacker, conditions, tick),
+    ),
   );
   world.update({
     ...freshAttacker,
@@ -857,13 +874,14 @@ function resolveCast(
         liveBlueprint.maxHealth,
       );
     } else {
+      const liveCaster = world.actor(caster.entityId) ?? spent;
       const power = scaleByPermille(
         rolled,
-        queryConditionModifiers(
-          world.actor(caster.entityId) ?? spent,
-          conditions,
-          tick,
-        ).damageDealtPermille,
+        outgoingDamagePermille(
+          blueprint,
+          ability.element,
+          queryConditionModifiers(liveCaster, conditions, tick),
+        ),
       );
       applyDamage(
         world,

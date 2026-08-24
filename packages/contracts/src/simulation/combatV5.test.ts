@@ -217,6 +217,40 @@ describe('ActorBlueprint v5 defaults and refusals', () => {
     ).toBe('physical');
   });
 
+  it('keeps attackSkillIndex omitted by default', () => {
+    expect(
+      ActorBlueprintSchema.parse(combatNeutralBlueprint('walker'))
+        .attackSkillIndex,
+    ).toBeUndefined();
+  });
+
+  it.each([0, 2])('accepts attackSkillIndex %i', (attackSkillIndex) => {
+    expect(
+      ActorBlueprintSchema.parse({
+        ...combatNeutralBlueprint('walker'),
+        attackSkillIndex,
+      }).attackSkillIndex,
+    ).toBe(attackSkillIndex);
+  });
+
+  it.each([
+    [-1, 'attackSkillIndex'],
+    [1.5, 'attackSkillIndex'],
+    ['2', 'attackSkillIndex'],
+  ])(
+    'rejects invalid attackSkillIndex %p at that path',
+    (attackSkillIndex, path) => {
+      const parsed = ActorBlueprintSchema.safeParse({
+        ...combatNeutralBlueprint('walker'),
+        attackSkillIndex,
+      });
+      expect(parsed.success).toBe(false);
+      if (!parsed.success) {
+        expect(parsed.error.issues[0]?.path).toEqual([path]);
+      }
+    },
+  );
+
   it('accepts a declared attackElement', () => {
     expect(
       ActorBlueprintSchema.parse({
