@@ -70,7 +70,14 @@ medições continuam úteis; suas recomendações de stack cedem ao ADR atual.
   [`2026-08-18-pb-06-local-save-inventory-design.md`](superpowers/specs/2026-08-18-pb-06-local-save-inventory-design.md).
 - [`PB-07 — Profundidade de combate e vocações`](playbooks/PB-07/README.md) — implementação parcial;
   congelado depois da task 05 até a retomada do combate.
-- [`PB-08 — O loop de farm do Knight`](playbooks/PB-08/README.md) — em execução.
+- [`PB-08 — O Knight completo`](playbooks/PB-08/README.md) — **reescrito em 2026-08-24**; a
+  próxima task é PB-08-02, primeira e sozinha.
+- [`PB-09 — Progressão`](playbooks/PB-09/README.md) — esqueleto; **começa por design doc**.
+- [`PB-10 — Novas criaturas`](playbooks/PB-10/README.md) — esqueleto.
+- [`PB-11 — O loot vira poder`](playbooks/PB-11/README.md) — esqueleto.
+- [`PB-12 — Hunts moduladas e level sync`](playbooks/PB-12/README.md) — esqueleto; **exige
+  emenda à ADR-05**.
+
 Os playbooks de produto seguem a ordem e a Definition of Ready de
 [`06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
 

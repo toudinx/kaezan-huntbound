@@ -55,13 +55,23 @@ contagem de arquivos, linhas ou minutos.
 |   [PB-04](playbooks/PB-04/README.md) | Primeira hunt ponta a ponta        | região, spawn, câmera, colisão, transições e correções da primeira experiência — **fechado** em `9f1c14c` como `APPROVED_WITH_WARNINGS` |
 |   [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary           | Knight, ataque, spells selecionadas, morte e loot — **integrado** em `d4490e9`, aguardando aceite do usuário                            |
 |   [PB-06](playbooks/PB-06/README.md) | Save local e inventário            | IndexedDB versionado, transações e import/export — **integrado**; PB-06-09 segue bloqueada e não bloqueia o próximo                     |
-|   [PB-07](playbooks/PB-07/README.md) | Profundidade de combate e vocações | sustentação por leech e regen, condições e stances — **CONGELADO na 05** em 2026-08-23; tasks 06 a 14 retomam depois do PB-09           |
-|   [PB-08](playbooks/PB-08/README.md) | O loop de farm do Knight           | box de verdade, run que termina e recompensa, level e skill persistentes, set de arma/armadura/escudo — **elegível**, PB-08-01 e 02 são as próximas |
-|                                PB-09 | Bestiary e charms leves            | contador de kills por criatura, desbloqueio de informação e bônus de dano por espécie                                                   |
-|                                PB-10 | Catálogo e compositor de outfits   | famílias, `lookType`, addons, cores e troca visual                                                                                      |
-|                                PB-11 | Gacha cosmético                    | banner, pulls, garantia, duplicatas e tokens                                                                                            |
-|                                PB-12 | Helper mínimo                      | cura, alvo, ações e loot como módulos desligáveis                                                                                       |
-|                                PB-13 | Playtest e performance             | browser QA, screenshots, métricas e orçamento de assets                                                                                 |
+|   [PB-07](playbooks/PB-07/README.md) | Profundidade de combate e vocações | sustentação por leech e regen, condições e stances — **CONGELADO na 05**; 09 e 10 absorvidas por PB-10 e PB-11; o resto retoma depois do PB-12 |
+|   [PB-08](playbooks/PB-08/README.md) | O Knight completo                  | nove ações que se distinguem olhando, cinco delas de dano; mapa da classe congelado — **reescrito em 2026-08-24 e elegível**, PB-08-02 é a próxima |
+|   [PB-09](playbooks/PB-09/README.md) | Progressão                         | **começa por design doc**: o que level, XP, skill e Códex significam num jogo que não é MMORPG                                          |
+|   [PB-10](playbooks/PB-10/README.md) | Novas criaturas                    | snake, orc, orc spearman (ranged) e orc shaman (caster); IA que conjura; spawn por identidade estável                                   |
+|   [PB-11](playbooks/PB-11/README.md) | O loot vira poder                  | fim da run, stats de item, três slots equipáveis, `armor` no kernel, elemento e resistência, loot equipável                             |
+|   [PB-12](playbooks/PB-12/README.md) | Hunts moduladas e level sync       | conteúdo de faixa antiga continua relevante — **exige emenda à ADR-05**                                                                |
+|                                PB-13 | Catálogo e compositor de outfits   | famílias, `lookType`, addons, cores e troca visual                                                                                      |
+|                                PB-14 | Gacha cosmético                    | banner, pulls, garantia, duplicatas e tokens                                                                                            |
+|                                PB-15 | Helper mínimo                      | cura, alvo, ações e loot como módulos desligáveis                                                                                       |
+|                                PB-16 | Playtest e performance             | browser QA, screenshots, métricas e orçamento de assets                                                                                 |
+
+**Renumeração de 2026-08-24.** O PB-08 original — "o loop de farm do Knight" — foi replanejado e
+dissolvido em cinco playbooks: a classe ficou no PB-08, e progressão, criaturas, loot e modulação
+viraram PB-09 a PB-12. Outfits, gacha, helper e playtest deslocam para PB-13 a PB-16. Bestiary e
+charms deixaram de ser playbook próprio: o Códex entra no PB-09 e os charms ficam para depois do
+PB-12. O motivo está em `docs/playbooks/PB-08/README.md`, seção "Por que este playbook foi
+reescrito".
 
 PB-00R foi fechado em 2026-08-11 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-00R-05, e
 **deixa de bloquear PB-01**. A PB-00R-FIX-01 foi integrada no commit `91fd968`; `format:check` e
@@ -98,8 +108,8 @@ o veredito vigente. Detalhe em
 A hunt **é jogável** — a reavaliação andou, colidiu, desceu, subiu e viu rotworms andarem em
 Chromium real, sem um único erro de runtime — e o aceite de produto do usuário está registrado em
 [`playbooks/PB-04/artifacts/product-acceptance.md`](playbooks/PB-04/artifacts/product-acceptance.md).
-B2 permanece não bloqueante e é pré-requisito do playbook de outfits, que passou a ser **PB-08**
-na renumeração de 2026-08-21. O relatório de aceite do PB-04 ainda o chama de PB-07: é registro
+B2 permanece não bloqueante e é pré-requisito do playbook de outfits, que é **PB-13** desde a
+renumeração de 2026-08-24. O relatório de aceite do PB-04 ainda o chama de PB-07: é registro
 histórico e não se reescreve.
 
 **PB-05 está liberado** e é o próximo playbook a executar. O playbook já está escrito — spec,
@@ -309,7 +319,7 @@ em 2026-08-18 (`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de playbook
       força nem descartada em silêncio.
 - [x] O inventário do V0 é bolsa e estoque. Equipar, usar item, capacidade e peso ficam fora.
 - [x] XP e level continuam fora: a ficha do personagem é conteúdo congelado do PB-05.
-- [x] O schema do save é mínimo; coleção e moeda entram por migração em PB-08 e PB-09.
+- [x] O schema do save é mínimo; coleção e moeda entram por migração em PB-13 e PB-14.
 - [x] Não há checksum, assinatura nem anti-tamper: a ADR diz que o dono editar o próprio save não é
       ameaça no V0 pessoal.
 - [x] `packages/simulation` não é alterado. `SIMULATION_SCHEMA_VERSION` continua `4` e
@@ -350,8 +360,9 @@ nascem escritas e as demais viram card quando a anterior fecha, conforme
 dependência do PB-06 é código integrado em `main` e verde, não veredito: PB-06-09 segue bloqueada e
 isso não bloqueia PB-07.
 
-**Renumeração:** este playbook toma o número 7 e desloca os anteriores planos — outfits para PB-08,
-gacha para PB-09, helper para PB-10 e playtest para PB-11. O motivo é de ordem, não de gosto: o
+**Renumeração (histórico de 2026-08-21):** este playbook toma o número 7 e desloca os anteriores
+planos — outfits para PB-08, gacha para PB-09, helper para PB-10 e playtest para PB-11. **Superada
+pela renumeração de 2026-08-24**, registrada na tabela de sequência; mantida aqui por rastreabilidade. O motivo é de ordem, não de gosto: o
 compositor de outfits é cosmético e não destrava nada, enquanto combate raso limita todo o resto.
 
 - [x] A hunt é jogável e o save sobrevive ao `F5`: o pré-requisito de "outras vocações" e "segunda
@@ -405,40 +416,41 @@ nenhuma borda de mapa termina em buraco preto; e que duas hunts saem da mesma pi
 
 ## PB-08 — Definition of Ready
 
-**Playbook modular:** `docs/playbooks/PB-08/README.md` — treze tasks, das quais **as duas primeiras
+**Playbook modular:** `docs/playbooks/PB-08/README.md` — dez tasks, das quais **PB-08-02 e PB-08-03
 estão escritas**; o resto é bullet, conforme a regra de congelar só duas à frente.
 
-**Estado:** **elegível**. As primeiras tasks são PB-08-01 e PB-08-02, que podem rodar em paralelo. A
-dependência do PB-07 é código integrado em `main` e verde — PB-07-01 a PB-07-05 estão lá.
+**Estado:** **elegível**. A próxima task é PB-08-02, que roda **primeira e sozinha**: ela produz o
+mapa da classe, e as demais dependem do resultado dela. A dependência do PB-07 é código integrado em
+`main` e verde — PB-07-01 a PB-07-05 estão lá.
 
-**Congelamento do PB-07:** decisão do dono do projeto em 2026-08-23. Antes de criar mobs, bosses e
-vocações novas, a run precisa ser divertida e ter propósito. As tasks PB-07-06 a PB-07-14 retomam
-depois do PB-09. Isto desloca outfits para PB-10, gacha para PB-11, helper para PB-12 e playtest
-para PB-13.
+**Replanejamento de 2026-08-24.** O PB-08 original entregava substrato — XP, level, equipamento,
+`armor` — e não gameplay. Foi reescrito em torno da classe e dissolvido em cinco playbooks. PB-08-01
+(densidade da caverna) permanece integrada e vale.
 
-- [x] O problema está **medido**, não suposto: `exori` é single-target por omissão de `area` na
-      selection; a hunt tem 12 slots em 8 grupos num 24×24 com budget de 96×96; `exori` custa 62% da
-      pool de mana; `finish('completed')` não é chamado em lugar nenhum do código;
-      `CreatureDefinition.stats.experience` já existe e é descartado na conversão.
-- [x] **Quatro das cinco causas são conteúdo ou conversão**, não sistema faltando. O playbook é
-      barato por isso, e a ordem das tasks reflete isso: consertar conversão antes de construir.
-- [x] A costura de progressão é `composePlayer`, que já monta o blueprint do jogador a partir de um
-      `CharacterDefinition`. A ficha deixa de ser conteúdo congelado e passa a ser **derivada** de
-      conteúdo base + save + equipamento. Isto **substitui** a decisão do PB-06 de que "a ficha do
-      personagem é conteúdo congelado, não save".
-- [x] XP, skill por uso e contadores entram como **projeção de evento**, no molde de
-      `projectRunBag`. O kernel não aprende o que é XP e **nenhuma dessas tasks regenera golden**.
-- [x] **Level não destrava spell.** Level dá HP, mana e dano; o Knight começa com o kit inteiro.
-      Desvio declarado do Tibia, deliberado.
-- [x] Curva de exp do Tibia mantida, com multiplicador Huntbound `experienceRate` — um número na
-      selection, valor inicial `10`, que entrega ~5 min por level no 35 e level 100 em ~20–25 h.
-- [x] Um único campo novo de kernel, `armor`, aditivo com default `0` e mitigação determinística sem
-      novo draw de RNG. Bump de schema 5→6. **Golden regenerado uma única vez**, nessa task.
-- [x] `experienceRate`, progressão persistente e equipamento são extensões Huntbound e exigem emenda
-      à seção "Extensões Huntbound permitidas" da ADR-05, como leech e cargas já exigiram.
-- [x] Set reduzido a arma, armadura e escudo. Bestiary e charms ficam para PB-09.
-- [x] O aceite é o usuário jogando: puxar 4+ rotworms, fechar com `exori`, ver a vida subir por
-      leech durante o box, sair com o loot, ver o level subir e equipar a espada que dropou.
+**Congelamento do PB-07:** decisão do dono em 2026-08-23. As tasks PB-07-06 a PB-07-14 retomam
+depois que a classe e a progressão estiverem resolvidas. Elemento e resistência (PB-07-09) e criatura
+com kit (PB-07-10) são absorvidos por PB-10 e PB-11.
+
+- [x] O problema está **medido**, não suposto: o Knight tem **três ações de dano e uma cura**; o kit
+      de nível ≤ 35 do snapshot tem nove ações; cinco faltam.
+- [x] **Quatro das cinco ações que faltam são conteúdo sobre máquina pronta.** `rangeTiles`,
+      `radius`, `speedPermille`, `damageDealtPermille`, `damageReceivedPermille`, `toggle` e
+      `secondaryCooldownGroup` estão implementados e **sem consumidor**. Só o taunt pede kernel —
+      alvo forçado não existe.
+- [x] O princípio de design está escrito e é **regra de projeto**, não do playbook: sem escada entre
+      faixas; coexistência só com **distinção visual**; orçamento de **8–9 ações com ~5 de dano**.
+      Vale para magia, criatura, item e equipamento.
+- [x] O critério de coexistência é de **leitura, não de mecânica**, porque o helper vai executar a
+      rotação e o valor dela é ser divertida de assistir. Cooldown e mana são invisíveis.
+- [x] **Level não destrava spell.** Reafirmado. Faixa é curadoria de conteúdo, nunca portão. A
+      selection já declara `spellAccess: "unrestricted"`.
+- [x] Uma única task regenera golden (PB-08-06, taunt), com prova escrita de intencionalidade.
+- [x] Stances já estão listadas na seção "Extensões Huntbound permitidas" da ADR-05. **Taunt não é
+      extensão** — `exeta res` existe no snapshot em `data/scripts/spells/support/challenge.lua`.
+- [x] Seis vocações por arma estão recusadas; subclasses ficam **reservadas** e o mapa da PB-08-02 é
+      obrigado a declarar os eixos por célula, para que entrem como conteúdo e não como refatoração.
+- [x] O aceite é o usuário jogando: nove ações disponíveis desde o começo, cada uma com efeito
+      visual próprio, nenhum par produzindo a mesma imagem, e a rotação de dano legível de assistir.
 
 ## Contrato para escolher a primeira hunt
 

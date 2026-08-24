@@ -1,4 +1,4 @@
-# PB-08 — O loop de farm do Knight
+# PB-08 — O Knight completo
 
 > **Para agentes executores:** skill obrigatória por task:
 > `superpowers:test-driven-development` e `superpowers:verification-before-completion`. Procedimento
@@ -6,21 +6,32 @@
 > chat. O formato, o handoff e o ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** escrito e **elegível**. A primeira task é PB-08-01.
+**Status:** reescrito em 2026-08-24 e **elegível**. A próxima task é PB-08-02.
 
-**Goal:** dar à run começo, fim e recompensa, e ao Knight a rotação que justifica farmar. O jogador
-puxa um box de rotworms, fecha com `exori`, o leech o segura, decide quando sair com o loot, vê o
-level subir e equipa a espada que dropou.
+**Goal:** o Knight sai de quatro ações — das quais só três dão dano — para **nove ações que se
+distinguem olhando, cinco delas de dano**, com o mapa da classe inteira congelado para nunca mais
+precisar de mudança estrutural.
 
-**Architecture:** quase tudo é **projeção de evento e conteúdo**, não kernel novo. `composePlayer`
-já monta o blueprint do jogador a partir de um `CharacterDefinition`; basta essa definição deixar de
-ser JSON congelado e passar a ser derivada de conteúdo + save + equipamento. XP e skill por uso são
-projeções no molde de `projectRunBag`. Um único campo novo entra no kernel — `armor` — e só ele
-regenera golden.
+**Architecture:** quase tudo é **conteúdo sobre máquina pronta**. `rangeTiles`, `radius`,
+`speedPermille`, `damageDealtPermille`, `damageReceivedPermille`, `toggle` e `secondaryCooldownGroup`
+existem no contrato v5 e estão implementados sem consumidor. Das cinco ações que faltam, **quatro são
+preenchimento de conteúdo** e só uma — o taunt — pede kernel.
 
 **Tech Stack:** TypeScript 7.0.2 strict, Zod 4.4.3 (somente em `@huntbound/contracts`),
-Vitest 4.1.10, Vite 8.2.1, Phaser 4, Playwright 1.62.1, Node 24.14.0. **Nenhuma biblioteca nova**
-entra no PB-08.
+Vitest 4.1.10, Vite 8.2.1, Phaser 4, Playwright 1.62.1, Node 24.14.0. **Nenhuma biblioteca nova.**
+
+## Por que este playbook foi reescrito
+
+O PB-08 original — densidade, run que termina, XP, level, skill, equipamento, `armor` — era um
+playbook de **substrato**, não de gameplay. Foi escrito rápido, com pouca consulta a
+`docs/research/**`, e nenhuma das mecânicas já pesquisadas entrou nele.
+
+O replanejamento de 2026-08-24 dissolveu-o em cinco playbooks e produziu o princípio de design da
+seção seguinte. O que sobrou aqui é a classe: o Knight tem **três ações de dano e uma cura**, e isso
+é o motivo mais direto de o combate parecer trivial.
+
+O trabalho já integrado da PB-08-01 (densidade da caverna) permanece; ele deu ao Knight um lugar
+onde as nove ações fazem diferença.
 
 ## Fontes normativas
 
@@ -34,132 +45,177 @@ Em caso de conflito, ler nesta ordem:
 6. `docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`;
 7. `docs/architecture/PACKAGE_BOUNDARIES.md`;
 8. `docs/simulation/KERNEL_CONTRACT.md` e `docs/simulation/REPLAY_CONTRACT.md`;
-9. `docs/content/PB-07-ROTATIONS.md` — continua vigente para kit e rotação de Knight;
-10. este README;
-11. a task card em execução;
-12. `STATE.md` apenas para estado operacional.
+9. `docs/content/PB-07-ROTATIONS.md` — kit, custo, cooldown e fórmula do Knight, com proveniência.
+   **Emendado por este README** no ponto da hipótese de seis slots (decisão congelada 3);
+10. `docs/content/KNIGHT_BANDS.md` — entregue pela PB-08-02; a partir dela, é a fonte do kit;
+11. este README;
+12. a task card em execução;
+13. `STATE.md` apenas para estado operacional.
 
-## O problema, medido
+## O princípio de design — e os três critérios que o operam
 
-O playbook nasce de cinco reclamações de quem jogou. Medindo o cenário **composto em runtime** —
-não a selection, que é documento de proveniência — as cinco colapsam em **três** causas, e a
-primeira sozinha responde por três reclamações.
+Formulado pelo dono em 2026-08-24. **Vale para magia, criatura, item e equipamento**, não só para
+este playbook.
 
-Uma hipótese foi levantada e **descartada com evidência**: `exori` não é single-target. O bundle
-que `main.ts` carrega já traz `area: { radiusTiles: 1 }`, e `abilityShapeFromSpell` devolve
-`shape: 'area'`. O que a selection `pb-05-knight-combat.json` não declara é documentação faltando,
-não comportamento errado.
+### 1. Nada convive com a própria versão obsoleta
 
-| # | Observação | Causa real |
+`exura` → `exura gran` → `exura vita` é escada: mesma coisa com número maior, e a de baixo vira peso
+morto. Em Huntbound cada faixa tem **a sua** forma de cada papel, e cruzar a faixa **substitui**.
+Minotauro e demônio não competem — cada um é a forma da sua faixa.
+
+`docs/research/tibia/02_vocations_spells_runes.md` §4.2 já dizia metade: *"Escadas de tier
+(light → heavy → great). Uma runa que sobe de qualidade, não cinco runas."*
+`docs/research/tibia/01_hunts_progression.md` §13 item 12 recusa "dezenas de spells situacionais e
+centenas de itens quase idênticos".
+
+**Faixa decide o que existe, não quando você recebe.** Ver decisão congelada 2.
+
+### 2. O critério de coexistência é de leitura, não de mecânica
+
+> **Duas ações só coexistem se um espectador distingue as duas olhando** — forma no grid, efeito,
+> alvo, o que acontece com o inimigo. Se produzem a mesma imagem e só muda o número, é escada,
+> **mesmo com cooldowns diferentes**. Cooldown e mana são invisíveis.
+
+O motivo é de produto: **o helper vai executar a rotação**, então o valor dela é ser divertida de
+assistir e fácil de identificar. Não é APM.
+
+Consequência direta: **Charge (`utani tempo hur`) é corte declarado** — produz a mesma imagem de
+Haste, o boneco andando mais rápido, e difere só em duração e fórmula.
+
+### 3. O orçamento: 8–9 ações, cerca de metade de dano
+
+O teto não é um número pequeno — é **redundância zero**. Dez ações no Tibia global produzem
+tendinite; nove no League of Legends são divertidas. A diferença não é a contagem: é que as nove do
+LoL são todas distintas.
+
+Referência adotada: **QWER + D/F + 1–2 itens ativáveis + auto-attack ≈ 8–9 ações.**
+
+| Camada | Em Huntbound | Quantidade |
 |---|---|---|
-| 1 | "Não fecha box" · "só auto-attack" · "o leech não funciona" | **Uma causa só: densidade.** A hunt tem **12 slots em 8 grupos** num 24×24 de dois andares, grupos de 1–2 slots, raio 2–3, respawn 90 s. Não existe onde juntar quatro criaturas. Sem alvos juntos, `exori` — que **já é área de raio 1** e mata rotworm de um golpe — vira uma magia de 115 mana para matar um bicho de 65 HP; o leech de 100‰ não tem dano para circular; e a única linha de jogo que sobra é o auto-attack. O `budget` da própria selection permite 96×96, e usamos um sexto disso |
-| 2 | "A run é infinita e sem propósito" | **`finish('completed')` não é chamado em lugar nenhum do código.** Só `finish('abandoned')`, no `pagehide`. `completedRuns` é permanentemente 0. Não existe momento de recompensa |
-| 3 | "Não existe level nem farm de equips" | `CreatureDefinition.stats.experience` **já existe** no catálogo (rotworm = 40) e é descartado na conversão — `ActorBlueprint` não tem o campo. `ItemDefinition` é só `{stackable, maxStackSize, weight}`; `parseItemsXml` descarta `attack`, `defense`, `armor`, `slot` e `weaponType` **de propósito** |
+| QWER + auto-attack | **rotação de dano** — o que se assiste | **~5** |
+| D/F + itens ativáveis | situacionais — cura, postura, taunt, mobilidade | ~4 |
 
-O PB-07-03/04/05 entregaram a máquina que falta ligar: `ScenarioConditionDefinition`,
-`AbilityDefinition.toggle`, cooldown secundário, leech e regen sensível a combate estão em `main` e
-**não têm conteúdo que os use**. As stances de Knight são conteúdo, não código novo.
+**O mais importante é a rotação de dano.** É ela que produz o espetáculo; utilidade é situacional
+por definição. Um kit com quatro utilidades e duas ações de dano gasta o orçamento no lugar errado.
+
+## O kit alvo — nove ações, cinco de dano
+
+Verificado em `references/canary/data/scripts/spells/{attack,support}/*.lua` em 2026-08-24. É o kit
+de nível ≤ 35 **inteiro**, menos exatamente uma escada.
+
+| | Ação | Words | Nv | Mana | CD | Imagem própria | Temos? |
+|---|---|---|---|---|---|---|---|
+| **Dano** | auto-attack | — | — | 0 | 2 s | golpe de espada | ✅ |
+| **Dano** | Berserk | `exori` | 35 | 115 | 4 s | giro ao redor, `AREA_SQUARE1X1` | ✅ |
+| **Dano** | **Groundshaker** | `exori mas` | 33 | 160 | 8 s | pancada no chão, `AREA_CIRCLE3X3` | ❌ |
+| **Dano** | Brutal Strike | `exori ico` | 16 | 30 | 6 s | golpe pesado, `range(1)` | ✅ |
+| **Dano** | **Whirlwind Throw** | `exori hur` | 28 | 40 | 6 s | **a arma sai voando**, `range(5)` | ❌ |
+| Situacional | Wound Cleansing | `exura ico` | 8 | 40 | 1 s | brilho verde no jogador | ✅ |
+| Situacional | **Blood Rage / Protector** | — | ~20 | — | toggle | estado permanente visível | ❌ |
+| Situacional | **Challenge** | `exeta res` | 20 | 30 | 2 s | **a tela inteira vira para você** | ❌ |
+| Situacional | **Haste** | `utani hur` | 14 | 60 | 2 s | o boneco acelera | ❌ |
+| ~~corte~~ | ~~Charge~~ | `utani tempo hur` | 25 | 100 | 2 s | mesma imagem de Haste → escada | — |
+
+**Temos 4 das 9.** Faltam Groundshaker, Whirlwind Throw, postura, Challenge e Haste.
+
+Duas observações que ordenam o playbook:
+
+1. **Challenge é a ação mais legível do kit e não compete com nada.**
+   `docs/research/tibia/02_vocations_spells_runes.md` §3.1 define a identidade do Knight como *"eu
+   escolho onde a luta acontece"*, e §11 lista "AoE centrado em si **+ taunt**" como o diferencial a
+   preservar. Ele roda em `group("support")` — **fora do cooldown de ataque** —, então não rouba
+   tempo da rotação de dano.
+2. **O valor pleno do taunt chega com o PB-10.** Contra rotworms, que correm para o jogador de
+   qualquer jeito, taunt não faz nada. Contra inimigos ranged, ele é a resposta.
+
+## Por que isto é barato — as peças ociosas
+
+O achado que define o playbook: **quatro das cinco ações que faltam são preenchimento de conteúdo.**
+
+| Peça | Onde | Estado |
+|---|---|---|
+| `AbilityDefinition.rangeTiles` | contrato v5 | implementado → Whirlwind Throw é conteúdo |
+| `AbilityDefinition.radius` + `shape: 'area'` | contrato v5 | implementado → Groundshaker é conteúdo |
+| `speedPermille` | `packages/simulation/src/kernel/conditions.ts:37,63` | **aplicado** → Haste é conteúdo |
+| `damageDealtPermille` / `damageReceivedPermille` | `conditions.ts:62`, `combat.ts:303` | **aplicado** → postura é conteúdo |
+| `skillModifierPermille` | `conditions.ts:71` | **aplicado** |
+| `AbilityDefinition.toggle` | contrato v5 | implementado, **sem consumidor** |
+| `secondaryCooldownGroup` | contrato v5 | implementado → o grupo `support` do Challenge cabe |
+| `skillMultipliers` (`skill:1` club, `:2` sword, `:3` axe) | catálogo | importado, **Character não lê** |
+| `CombatFxTable` chaveada por `abilityId` | `apps/game/src/hunt/CombatFxTable.ts` | existe → FX por ação é preenchimento |
+| **alvo forçado (taunt)** | — | **não existe**; a IA escolhe alvo em `isAcquirableTarget` |
+| `tickDamageAmount` | `conditions.ts:162` | **recusa `<= 0`** → cura por tick não existe (Recovery) |
+| `AbilityShape` | contrato | só `self \| target \| area`; sem onda (Front Sweep) |
 
 ## Decisões congeladas
 
-Estas não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do playbook.
+Não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do playbook.
 
-1. **PB-07 congela na 05.** Paladin, Sorcerer, elemento/resistência, criatura com kit, boss e segunda
-   hunt saem do caminho. O que o Knight precisa do PB-07 é absorvido aqui; o resto espera. A trilha
-   de combate volta depois do PB-09.
-2. **Level não destrava spell.** Level é grinding puro e influencia **HP, mana e dano**. O Knight
-   começa com o kit inteiro; `exori` deixa de ser um portão de nível. É desvio declarado do Tibia,
-   e é deliberado: o prazer de upar não pode depender de o kit estar incompleto até lá.
-3. **Progressão é persistente, estilo Tibia.** Level, XP e skills vivem no `GameSave` e sobem entre
-   runs. Skill de sword sobe **por uso**. Isso derruba a decisão do roteiro de que "a ficha do
-   personagem é conteúdo congelado, não save": a ficha passa a ser **derivada** de conteúdo base +
-   progressão + equipamento.
-4. **A run termina por escolha do jogador.** Sair fora de combate consolida bag → stash e conta a
-   run. Morrer perde a bag e uma fração do XP. É o que dá peso à decisão de recuar que o PB-07-04
-   assumiu e nunca cobrou.
-5. **O mapa não precisa ser igual ao do Tibia; precisa fazer sentido estruturalmente.** Decisão do
-   dono em 2026-08-23. Huntbound é inspirado em Tibia, não uma réplica dele: a hunt é um **canvas
-   autorado** — o `layout` cola pedaços do mapa real e realoca spawns reais para coordenadas do
-   canvas, que é o que a pipeline sempre fez. O que continua proibido é **inventar criatura ou
-   spawn**: toda criatura sai do catálogo e todo spawn tem uma origem real em
-   `otservbr-monster.xml`, declarada em `spawnPlacements`. Onde puser, é decisão de design.
-6. **Set reduzido: arma, armadura, escudo.** Helmet, legs, boots, amulet e ring ficam para depois.
-7. **Curva do Tibia mantida, com multiplicador Huntbound.** `experienceRate` é um número na selection,
-   valor inicial `10`. Extensão declarada — exige emenda à ADR-05, como leech e cargas já têm.
-8. **Um único campo novo no kernel: `armor`.** Aditivo, default `0`, mitigação **determinística**
-   (sem novo draw de RNG, para não deslocar os streams). Bump `SIMULATION_SCHEMA_VERSION` 5→6 com
-   defaults que reproduzem v5.
-9. **Golden se regenera só com prova escrita de intencionalidade.** A redação original previa **uma
-   única vez**, na task do `armor`. A PB-08-01 mostrou que a previsão estava errada por um motivo
-   estrutural, não por descuido: **o snapshot de save referencia spawn por `(índice de grupo, índice
-   de slot)`**, então qualquer mudança de conteúdo na hunt invalida o golden de save — e isso vai
-   acontecer de novo a cada task de conteúdo. Regeneradas em PB-08-01, com prova:
-   `packages/test-fixtures/hunt/pb05` e `packages/test-fixtures/save/pb06`, que deriva dela. O
-   golden do **PB-04 não** foi tocado.
+1. **O princípio de design da seção acima é regra de projeto.** Os três critérios — sem escada,
+   coexistência só com distinção visual, orçamento de 8–9 ações com ~5 de dano — valem para magia,
+   criatura, item e equipamento, e não só para o Knight.
+2. **Level não destrava spell.** Herdada do PB-08 original e **reafirmada**: o Knight tem o kit
+   inteiro desde o começo. *"Imagina passar do level 1 ao 15 só dando auto-attack. Isso acontece no
+   Tibia porque ele é um MMORPG de mundo aberto e as coisas são mais lentas por lá."* Faixa é
+   ferramenta de **curadoria de conteúdo** — decide o que existe e o que é escada —, nunca portão de
+   acesso. Se o playtest mostrar que nove ações de saída é demais, a lógica de limitar entra depois,
+   **editando dado**.
+3. **A hipótese de seis slots do `PB-07-ROTATIONS.md` fica emendada.** Aquele documento perguntava
+   quantos *papéis* existem e acertou em seis. A pergunta deste playbook é quantas *imagens
+   distintas* a rotação sustenta, e a resposta é maior, porque o papel "dano" sozinho comporta
+   cinco. Os números de kit, custo, cooldown e fórmula do PB-07-ROTATIONS continuam normativos.
+4. **Seis vocações por arma estão recusadas.** A fantasia entrega-se como **eixo de build dentro do
+   Knight**: skill separada por sword/axe/club e passiva por tipo. Seis vocações exigiria emenda à
+   ADR-05 e multiplicaria kit, balanceamento e asset por seis para a mesma sensação.
+5. **Subclasses de Knight ficam reservadas, não fechadas.** 1 mão × 2 mãos e arquétipos — sword
+   balanceado, axe agressivo, club defensivo — são tópico futuro. **O mapa da PB-08-02 é obrigado a
+   declarar os eixos de arma reservados por célula**, para que subclasses entrem como conteúdo e não
+   como refatoração.
+6. **Se o club virar o arquétipo defensivo, ele paga em ofensa.** Defensivo puro é o arquétipo que
+   ninguém escolhe. A saída é mitigação **virar dano** — dano derivado do que foi bloqueado, não
+   sobrevida. Restrição de design registrada para quando a subclasse for decidida.
+7. **Toda ação entra com efeito visual próprio.** `CombatFxTable.ts` já é chaveada por `abilityId`.
+   Ação que cai no recipe genérico falha o critério 2 por construção, e a task não fecha.
+8. **Golden se regenera só com prova escrita de intencionalidade.** Neste playbook, só a PB-08-06
+   (taunt) regenera. Vale a lição do B8 do PB-08 original: `hunt:check`, `combat:check` e
+   `save:check` conferem bytes contra hashes publicados, **não** frescura em relação ao conteúdo.
 
-   Duas lições que valem mais que a exceção. Primeira: `hunt:check`, `combat:check` e `save:check`
-   conferem que os bytes batem com os hashes publicados, **não** que o golden está fresco em relação
-   à hunt; só o e2e pega isso, e por isso a fixture PB-05 carregou `rotworm.aggroRadius` 1 por
-   várias tasks enquanto o jogo compunha 11. Segunda: o acoplamento por índice é frágil e merece
-   task própria — endereçar spawn por identidade estável tiraria essa classe inteira de quebra.
-10. **Bestiary e charms ficam para o PB-09.** Este playbook não entrega contador de criatura nem
-    bônus por espécie.
+## Tasks
 
-## Por que isto é barato — a costura
+| ID | Estado da escrita | Título | Resultado | Kernel? |
+|---|---|---|---|---|
+| PB-08-01 | **integrada** | A caverna cabe num box | `c23c819`; permanece como histórico | não |
+| PB-08-02 | **card escrita** | O mapa do Knight | `docs/content/KNIGHT_BANDS.md`: papéis × faixas, uma imagem por ação, cortes com motivo, orçamento e eixos de arma reservados. Sem código | não |
+| PB-08-03 | **card escrita** | O kit vem de uma tabela | `CharacterDefinition` resolve `abilityIndices` por tabela de faixas — hoje **uma linha, tudo liberado**. Task estrutural | não |
+| PB-08-04 | bullet | A rotação de dano se completa | Groundshaker e Whirlwind Throw. **A task mais importante do playbook** | não |
+| PB-08-05 | bullet | Postura | Blood Rage e Protector: `toggle` + condição exclusiva, com ganho **e** perda explícitos | não |
+| PB-08-06 | bullet | Taunt — Challenge | `exeta res`. Alvo forçado não existe no kernel. **Única que regenera golden** | **sim** |
+| PB-08-07 | bullet | Mobilidade — Haste | `utani hur`. Charge é corte declarado | não |
+| PB-08-08 | bullet | Nove ações no HUD e no input | Hoje `Digit1..3` e três botões. Rotação de dano agrupada e separada das situacionais; toggle visível; cooldown por grupo legível | não |
+| PB-08-09 | bullet | Arma como eixo de build | Skill por sword/axe/club e passiva por tipo. Fecha no PB-11 | não |
+| PB-08-10 | bullet | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e o que olhar | — |
 
-O achado que define o playbook está em `packages/content/src/hunts/buildHuntScenario.ts`:
-`composePlayer` já monta o `ActorBlueprint` do jogador inteiramente a partir de um
-`CharacterDefinition`. Basta essa definição deixar de ser JSON congelado:
+Conforme `AGENTS.md`, só **duas** cards estão congeladas. As demais são bullets até chegar a vez — o
+PB-07 escreveu catorze antecipadas e pagou por isso.
+
+**Bullets contingentes ao mapa da PB-08-02**, que só viram card se ele decidir que fazem falta:
+Recovery (`utura`, pede cura por tick em `conditions.ts:162`) e Front Sweep (`exori min`, pede forma
+de onda em `AbilityShape`).
+
+## Dependências e paralelismo
 
 ```
-CharacterDefinition = base da vocação (conteúdo)
-                    + progressão (save: level, XP, skills)
-                    + equipamento (save: arma, armadura, escudo)
+02 (mapa) --> 03 (kit por tabela) --+-> 04 rotação de dano   <- a mais importante
+                                    +-> 05 postura
+                                    +-> 06 taunt (kernel, golden)
+                                    +-> 07 mobilidade
+                                             \--> 08 HUD --> 10 aceite
+09 (arma) depende de 03; fecha no PB-11.
 ```
 
-Consequências que valem como restrição de projeto:
-
-- **XP, skill por uso e qualquer contador são projeção de evento**, no molde de `projectRunBag`.
-  `actor/died` já carrega `killerEntityId`; `combat/attacked` já existe. **O kernel não precisa
-  saber o que é XP, e nenhuma dessas tasks regenera golden.**
-- **Level e equipamento não tocam o kernel.** Entram pelo `CharacterDefinition` e saem como
-  `maxHealth`, `maxResource`, `attackMinDamage` e `attackMaxDamage` — campos que já existem.
-- **Só `armor` é kernel**, porque mitigação de dano é regra de combate e não cabe em projeção.
-
-## Curva de XP — a aritmética
-
-`exp(level) = (50·L³ − 150·L² + 400·L) / 3`, a fórmula do Tibia, permanece. 35 → 100 custa ≈ **15,5 M**
-de experiência. Rotworm dá 40; num box denso, ~30 kills/min ⇒ ~1.200 exp/min bruto.
-
-A `experienceRate = 10`: ~12.000 exp/min ⇒ **≈5 min por level no 35**, **≈40 min por level no 99**,
-level 100 em ~20–25 h. Se estiver lento ou rápido demais, muda-se a constante e nada mais.
-
-## Medições de runtime — a base numérica
-
-Tiradas do cenário **composto**, não da selection. Toda decisão de balanceamento deste playbook
-parte daqui; refaça a medição antes de mudar qualquer número.
-
-| Ator / ação | Valor |
-|---|---|
-| `exori` | área, raio 1, **48–129 por alvo**, 115 mana, CD 4 s |
-| `exori ico` | alvo único, alcance 1, 35–63, 30 mana, CD 6 s |
-| `exura ico` | self, cura 32–58, 40 mana, CD 1 s |
-| Jogador | 590 HP, 185 mana, auto-attack **7–78** a cada 2 s, passo 0,55 s, leech 100‰ de vida e mana, janela de combate 4 s, regen fora de combate 1 HP e 2 mana / 0,5 s |
-| Rotworm | **65 HP**, 0–40 a cada 2 s, passo 1,05 s, aggro 11 tiles, comportamento `hunter` |
-
-O que a aritmética diz, e que a 01 vai confirmar ou derrubar jogando:
-
-- `exori` **mata rotworm de um golpe** em ~79% dos casos (48–129 contra 65 HP). Num box de quatro,
-  um cast limpa o box e devolve ~26 HP e ~26 mana de leech.
-- O jogador anda a 0,55 s/passo contra 1,05 s do rotworm: **puxar funciona**, é quase o dobro da
-  velocidade.
-- Da pool cheia saem ~2 boxes; recarregar 185 de mana fora de combate leva ~46 s. É exatamente o
-  ritmo "boxa, boxa, recua e regenera" que o PB-07-04 desenhou e que nunca teve onde acontecer.
-- Um box de quatro entrega 260 de dano recebido em potencial, contra 590 HP de pool. Sobrevivível
-  sem armadura — e é por isso que `armor` continua tarde no playbook, e não vira urgência.
-
-**Conclusão que ordena o playbook:** a densidade não é um dos problemas, é a causa de três deles.
-Ela vem primeiro, e o resto do balanceamento se decide *depois de jogar com ela*.
+**PB-08-02 vem primeiro e sozinha.** É a única task cujo resultado muda o julgamento das seguintes:
+sem o mapa, não se sabe qual forma de cada papel entra. 04, 05 e 07 são paralelizáveis entre si. 06 é
+a única com kernel e golden.
 
 ## Restrições globais
 
@@ -173,51 +229,24 @@ Toda task herda esta seção; ela não se repete nos cards.
 - Artefato gerado não se edita à mão; regenere pelo CLI e valide pelo `--check` correspondente.
 - Todo campo novo de contrato é **aditivo com default que reproduz o comportamento anterior**.
 - Nenhuma extensão Huntbound entra sem estar listada em
-  `docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`, seção "Extensões Huntbound permitidas".
-  `experienceRate`, progressão persistente e equipamento são extensões e precisam da emenda.
+  `docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`, seção "Extensões Huntbound permitidas". Stances já
+  estão listadas; **taunt não é extensão** — `exeta res` existe no snapshot.
 - Número de conteúdo sai do snapshot Canary. Onde o Huntbound divergir, a divergência é **declarada
-  na selection com campo de origem**, nunca silenciosa.
+  na selection com campo de origem**, nunca silenciosa. O corte do Charge é divergência declarada.
 
-## Tasks
+## Fora de escopo — e para onde foi
 
-| ID | Estado da escrita | Título | Resultado |
-|---|---|---|---|
-| PB-08-01 | **card escrito** | A caverna cabe num box | Região re-extraída até o budget; existe grupo com ≥4 slots. **Destrava três das cinco reclamações sozinha** |
-| PB-08-02 | **card escrito** | Ações do Knight | Stances `utito tempo` e `utamo tempo` e mobilidade `utani hur` como conteúdo sobre a máquina do PB-07-05, medidas contra o box que a 01 criou |
-| PB-08-03 | bullet | Economia de mana, se ainda fizer falta | Só entra se jogar a 01 e a 02 mostrar que o kit continua sem sustentação. A aritmética diz que pode não ser preciso |
-| PB-08-04 | bullet | Gate de proveniência da selection | `check-combat` valida `area` contra `setArea` na fonte, para a selection parar de omitir o que o catálogo tem |
-| PB-08-05 | bullet | A run termina | Sair fora de combate → `finish('completed')`, bag → stash; morte perde a bag |
-| PB-08-06 | bullet | XP | `projectRunProgress` sobre `actor/died`; `experienceRate`; save 1→2 com migração |
-| PB-08-07 | bullet | Skill de sword por uso | Projetada de `combat/attacked` |
-| PB-08-08 | bullet | Level realimenta o personagem | `CharacterDefinition` derivada; HP, mana e dano por level |
-| PB-08-09 | bullet | Item ganha stat | `parseItemsXml` para de descartar `attack`/`defense`/`armor`/`slot`/`weaponType` |
-| PB-08-10 | bullet | Três slots equipáveis | Save e `InventoryPanel`; `weaponAttack` vem do item |
-| PB-08-11 | bullet | `armor` no kernel | Campo aditivo v6, mitigação determinística, escudo. **Única task que regenera golden** |
-| PB-08-12 | bullet | Loot equipável | Peça equipável nas tabelas, com drop legível |
-| PB-08-13 | bullet | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e o que olhar |
+O PB-08 original foi redistribuído. **Nada disto entra aqui.**
 
-Conforme `AGENTS.md`, só **duas cards** estão congeladas. As demais são bullets até chegar a vez —
-o PB-07 escreveu catorze antecipadas e pagou por isso.
+| Playbook | Conteúdo | Nota |
+|---|---|---|
+| **PB-09 — Progressão** | XP, level, skill por uso, ficha derivada, Códex | **Começa por design doc**, não por task card. O princípio de design é a entrada dele, e a decisão congelada 2 torna a pergunta *"o que ganhar um level me dá?"* mais afiada, não mais fácil |
+| **PB-10 — Novas criaturas** | Snake, Orc, Orc Spearman, Orc Shaman, IA que conjura, spawn por identidade estável | É o playbook que dá valor ao taunt |
+| **PB-11 — O loot vira poder** | Stats de item, três slots, `armor` no kernel v6, elemento/resistência, loot equipável, **e o fim da run** | Fecha também o eixo de arma da PB-08-09 |
+| **PB-12 — Hunts moduladas e level sync** | Sync de nível e de gear | **A outra metade do princípio de design. Exige emenda à ADR-05** |
+| Depois | Runas com cargas, charms/sigilos, contrato de caça, criatura-do-dia, bossiary, trilha Fenda, subclasses de Knight | |
 
-## Dependências e paralelismo
-
-**PB-08-01 vem primeiro e sozinha.** Ela é a única task cujo resultado muda o julgamento das
-seguintes: sem um box real não dá para avaliar kit, sustentação nem economia. Jogue depois de
-integrá-la, antes de escrever a 03.
-
-PB-08-02 depende da 01 integrada. PB-08-03 **pode não existir** — só se escreve se jogar mostrar que
-faz falta. PB-08-04 é independente e pode ser puxada para frente a qualquer momento.
-
-PB-08-05 é independente de tudo e pode rodar em paralelo com a 01. 06 → 07 → 08 é serial.
-09 → 10 → 11 → 12 é serial.
-
-## Fora de escopo
-
-- Bestiary, charms e contador de criatura — PB-09;
-- Paladin, Sorcerer, elemento/resistência, criatura com kit e boss — PB-07 congelado;
-- helmet, legs, boots, amulet, ring; capacidade, peso, loja ou economia de loot;
-- outfits, gacha e helper;
-- backend, conta ou telemetria remota.
+Também fora: outfits, gacha, helper, backend, conta e telemetria remota.
 
 ## Critérios finais de aceite
 
@@ -225,12 +254,12 @@ O playbook fecha quando o usuário joga e aprova. Objetivamente, isso exige:
 
 - [ ] `corepack pnpm verify` verde em `main` integrada.
 - [ ] `corepack pnpm qa:budgets` **medido e registrado como número** no `STATE.md`.
-- [ ] Um `exori` com quatro rotworms adjacentes atinge os quatro.
-- [ ] Existe pelo menos um spot onde dá para puxar 4+ rotworms para o mesmo box.
-- [ ] Durante o box, a barra de vida **sobe** pelo leech em vez de só cair.
-- [ ] Trocar de stance muda a rotação de forma perceptível, e a stance sobrevive ao `F5`.
-- [ ] Sair da hunt consolida o loot e incrementa a contagem de runs.
-- [ ] Matar criatura dá XP; o level sobe; HP, mana e dano máximos aumentam junto.
-- [ ] Bater com a espada faz a skill de sword subir ao longo de várias runs.
-- [ ] Existe arma, armadura e escudo equipáveis, dropados pela hunt, e equipar muda o número.
-- [ ] Morrer com a bag cheia custa a bag.
+- [ ] O Knight tem **nove ações**, cinco delas de dano, disponíveis desde o começo.
+- [ ] **Cada ação tem efeito visual próprio** e é identificável sem ler o botão.
+- [ ] Nenhum par de ações do kit ativo produz a mesma imagem.
+- [ ] Groundshaker acerta visivelmente mais tiles que Berserk.
+- [ ] Whirlwind Throw acerta um alvo a 5 tiles, com a arma saindo da mão.
+- [ ] Trocar de postura muda a rotação de forma perceptível, e a postura sobrevive ao `F5`.
+- [ ] Challenge faz criaturas que estavam em outro alvo virarem para o jogador.
+- [ ] Haste muda a velocidade de passo de forma visível por 30 s.
+- [ ] As nove ações cabem no HUD sem que a rotação de dano se confunda com as situacionais.

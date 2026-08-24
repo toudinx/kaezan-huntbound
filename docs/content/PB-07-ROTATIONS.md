@@ -8,6 +8,19 @@ auto-attack, dano single-target, dano em área, cura, postura, mobilidade — **
 evidência do snapshot `157e6f9e`. Sete não são necessários; cinco não bastam. A exame está na
 [tabela de slots](#tabela-de-slots) e no [exame do sétimo candidato](#exame-do-setimo-candidato).
 
+> **Emenda de 2026-08-24 — a contagem de seis foi superada; os números não.**
+>
+> A pergunta acima é "quantos **papéis** existem", e a resposta seis continua correta. O PB-08
+> reescrito faz uma pergunta diferente — "quantas **imagens distintas** a rotação sustenta" — e chega
+> a **nove ações, cinco delas de dano**, porque o papel "dano" sozinho comporta várias formas
+> visualmente distinguíveis, e porque o taunt (`exeta res`) é um sétimo papel que esta análise não
+> considerou. O critério de corte deixou de ser mecânico e passou a ser de leitura: duas ações só
+> coexistem se um espectador distingue as duas olhando.
+>
+> **Tudo o mais neste documento continua normativo** — kit por faixa, custo, cooldown, fórmula,
+> identidade, rotação e proveniência com `sourceFile` + `sha256`. Ver
+> `docs/playbooks/PB-08/README.md`, seção "O princípio de design", e `docs/content/KNIGHT_BANDS.md`.
+
 **Snapshot:** `references/canary` local, lido em 2026-08-21. Toda afirmação de kit, custo, cooldown,
 duração ou fórmula aponta `sourceFile` + `sha256` na [tabela de fontes](#arquivos-fonte). Números de
 stance 2026 levam `fonte: TibiaWiki, Tibia 15.25.3a4a52` no lugar do hash — única exceção de

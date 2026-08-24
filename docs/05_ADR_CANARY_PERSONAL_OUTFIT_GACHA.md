@@ -75,6 +75,34 @@ alterem os IDs de conteúdo importado:
 Metrônomo, Echoing Den, criaturas Kaezan T1, posturas novas, ruptura nova e bosses autorais deixam de
 ser requisitos do primeiro slice. Podem voltar como experimentos posteriores, nunca como bloqueio.
 
+### Curadoria de conteúdo — regra de projeto, 2026-08-24
+
+A decisão vinculante 1 diz o que **pode** entrar. Esta regra diz o que **deve ficar de fora**, e vale
+para magia, criatura, item e equipamento. Foi formulada durante o replanejamento do PB-08 e está
+detalhada em `docs/playbooks/PB-08/README.md`, seção "O princípio de design".
+
+1. **Nada convive com a própria versão obsoleta.** `exura` → `exura gran` → `exura vita` é escada:
+   mesma coisa com número maior, e a de baixo vira peso morto. Cada faixa tem a sua forma de cada
+   papel, e cruzar a faixa **substitui**. Minotauro e demônio não competem — cada um é a forma da sua
+   faixa. Isso restringe o que se importa do snapshot, não o que existe nele.
+2. **Coexistência exige distinção visual.** Duas ações só convivem se um espectador distingue as duas
+   **olhando**. Cooldown, mana e dano são invisíveis e não justificam coexistência. O motivo é de
+   produto: o helper vai executar a rotação, então o valor dela é ser divertida de assistir.
+3. **Orçamento de ações: 8–9 por vocação, cerca de metade de dano.** O teto não é a contagem, é
+   redundância zero. A rotação de dano é o que se assiste; utilidade é situacional por definição.
+4. **Faixa decide o que existe, não quando o jogador recebe.** Nenhuma ação é trancada por level. Se
+   o playtest pedir para limitar, a lógica entra depois, editando dado.
+
+**Consequência de escopo, ainda não decidida:** a regra 1 cria obsolescência entre faixas — conteúdo
+antigo morre quando o jogador o ultrapassa. A resposta prevista é sincronização de nível e de gear
+(`docs/playbooks/PB-12/README.md`), que **não existe no Tibia** e portanto exigirá emenda própria a
+esta seção antes de ser implementada.
+
+**Recusado nesta data:** dividir o Knight em vocações por tipo de arma. A fantasia de sword/axe/club
+e de uma mão contra duas entrega-se como eixo de build dentro da vocação — `vocations.xml` já traz
+`skillMultipliers` por skill —, não como seis vocações. Subclasses ficam reservadas como tópico
+futuro e exigiriam emenda.
+
 ## Fontes de verdade
 
 | Domínio | Fonte de verdade | Uso |
