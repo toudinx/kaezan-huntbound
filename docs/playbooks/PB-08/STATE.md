@@ -20,7 +20,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-02 | done | `claude/pb08-02-knight-map` | frontier `xhigh` | Claude Opus 5 `xhigh` | `5bc11ff` | `docs/content/KNIGHT_BANDS.md`: 9 células, 5 de dano; 36 pares conferidos por imagem; Berserk × Groundshaker resolvido por **medição** (8 × 36 tiles no snapshot, 8 × 48 sob o contrato); 3 divergências declaradas (raio Chebyshev, taunt raio 1, Challenge fora da promoção) |
 | PB-08-03 | done | `codex/pb08-03-kit-table` | Luna `xhigh` | GPT-5 Codex `xhigh` | `40251cc` | Character kit por faixas com resolução por nível; migração SQLite e round-trip cobertos; `qa:browser` 73/73; `qa:budgets`: boot 5502 ms e hunt 4 long tasks, informativo |
 | PB-08-04 | done | `codex/pb08-04-damage-rotation` | Luna `xhigh` | GPT-5 Codex `xhigh` | `5b7664f` | 5 abilities; Groundshaker radius 3 / Whirlwind range 5; scenario diff limited to abilities and player indices; `verify`; browser 73/73 |
-| PB-08-05 | pending | `<agente>/pb08-05-stances` | Luna `xhigh` | — | — | — |
+| PB-08-05 | blocked | `codex/pb08-05-stances` | Luna `xhigh` | GPT-5 Codex `xhigh` | — | B12: `skillModifierPermille` é consultado, mas não entra na resolução de dano; a task proíbe kernel/contrato novo |
 | PB-08-06 | pending | `<agente>/pb08-06-taunt` | **frontier `xhigh`** | — | — | — |
 | PB-08-07 | pending | `<agente>/pb08-07-haste` | Luna `xhigh` | — | — | — |
 | PB-08-08 | pending | `<agente>/pb08-08-nine-action-hud` | Luna `xhigh` | — | — | — |
@@ -49,6 +49,13 @@ command") é sensível a carga: reprovou no `verify` pós-integração da PB-08-
 15 e 17) em vez de 1, com **código byte-idêntico** ao da rodada verde anterior — o diff entre elas
 era uma linha de markdown. Passa 14/14 isolada. Vale a regra do AGENTS.md: não mascarar com `retries`
 nem timeout inflado; a correção é tornar o tap determinístico. Vira task quando alguém tocar em input.
+
+**B12 — aberto, específico da PB-08-05.** `ScenarioConditionDefinition.skillModifierPermille` é
+agregado por `queryConditionModifiers`, mas `resolveAttack` e `resolveCast` só aplicam
+`damageDealtPermille`; o cenário não carrega a skill/base formula necessária para transformar o
+ganho de sword do Blood Rage no dano real. A task congela "sem kernel novo" e proíbe substituir o
+ganho por dano causado. Decisão necessária: escalar para uma alteração de contrato/kernel ou aceitar
+que esta task registre apenas o modificador sem efeito numérico.
 
 **B1, B2, B3, B5, B6, B7, B8 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 
