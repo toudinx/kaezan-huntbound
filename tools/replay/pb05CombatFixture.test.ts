@@ -239,8 +239,11 @@ function targetDamaged(events: readonly SimulationEvent[]): boolean {
 }
 
 describe('PB-08-04 Knight damage rotation', () => {
-  it('composes five active abilities with the two new damage spells', async () => {
+  it('composes the five spell abilities plus the two knight postures', async () => {
     const session = await composePb05CombatSession();
+    const player = session.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
 
     expect(
       session.scenario.abilities.map((ability) => ability.abilityId),
@@ -250,12 +253,45 @@ describe('PB-08-04 Knight damage rotation', () => {
       'wound-cleansing',
       'groundshaker',
       'whirlwind-throw',
+      'blood-rage',
+      'protector',
     ]);
-    expect(
-      session.scenario.blueprints.find(
-        (blueprint) => blueprint.blueprintId === 'player',
-      )?.abilityIndices,
-    ).toEqual([0, 1, 2, 3, 4]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(player?.attackSkillIndex).toBe(2);
+    expect(session.scenario.conditions).toEqual([
+      {
+        conditionId: 'blood-rage',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'protector',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: -150,
+        damageReceivedPermille: -150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+    ]);
   });
 
   it('lets Groundshaker hit three tiles while Berserk stops at one', async () => {
@@ -379,8 +415,68 @@ describe('PB-05 combat replay fixture', () => {
       scenarioRevision: 2,
     });
     expect(
+      scenario.value.abilities.map((ability) => ability.abilityId),
+    ).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+      'blood-rage',
+      'protector',
+    ]);
+    const player = scenario.value.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(player?.attackSkillIndex).toBe(2);
+    expect(scenario.value.conditions).toEqual([
+      {
+        conditionId: 'blood-rage',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'protector',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: -150,
+        damageReceivedPermille: -150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+    ]);
+    expect(
       log.value.commands.every((command) => command.issuer === 'player'),
     ).toBe(true);
+    expect(
+      log.value.commands
+        .filter((command) => command.command.type === 'actor/cast-ability')
+        .map((command) => command.command.abilityIndex),
+    ).not.toContain(5);
+    expect(
+      log.value.commands
+        .filter((command) => command.command.type === 'actor/cast-ability')
+        .map((command) => command.command.abilityIndex),
+    ).not.toContain(6);
     // `CANARY_VIEW_RANGE_TILES`, which is what `composeCreature` gives any
     // creature that has an attack. This asserted `1` until 2026-08-23, frozen
     // from before `db04d9d` raised acquisition to Canary's view range; the

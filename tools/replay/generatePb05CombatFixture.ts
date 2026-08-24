@@ -10,6 +10,7 @@ import {
   buildHuntScenario,
   createContentRegistry,
   loadHuntDefinition,
+  parseKnightPostures,
 } from '../../packages/content/src/index.ts';
 import type {
   ActorState,
@@ -154,12 +155,14 @@ export async function buildPb05HuntScenario(): Promise<KernelScenario> {
     join(repoRoot, 'packages/content/src/selections/pb-05-knight-combat.json'),
   );
   const character = characterFromPb05Selection(runtime, selectionRaw);
+  const postures = posturesFromPb05Selection(selectionRaw);
 
   const built = buildHuntScenario(
     hunt.value,
     character,
     createContentRegistry(runtime),
     createSeed(PB05_COMBAT_SEED),
+    { postures },
   );
   if (!built.ok) {
     throw new Error(
@@ -202,6 +205,19 @@ export function characterFromPb05Selection(
     spellKeys: undefined,
     kit,
   });
+}
+
+function posturesFromPb05Selection(selection: unknown) {
+  if (
+    typeof selection !== 'object' ||
+    selection === null ||
+    Array.isArray(selection)
+  ) {
+    throw new Error('PB-05 selection must be an object');
+  }
+  return parseKnightPostures(
+    (selection as { readonly postures?: unknown }).postures,
+  );
 }
 
 function payloadsOfType<T extends SimulationEventPayload['type']>(

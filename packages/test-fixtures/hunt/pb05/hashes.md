@@ -6,7 +6,7 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `91059ba87185d433626e24f516fd4200a054fc0554a6bbd82d8f8a9ff32b4f1e` |
+| `scenario.json` | `44867deeba27b7fe2817c62e933c750fbaa9025d970ba9a3b0982803b214dfce` |
 | `commands.jsonl` | `689cc3a8d44e46c6f25b609496dd7094e7f86304f1054a553014078b9bb734d3` |
 | `snapshot.golden.json` | `3c3fdefcd997b16f8b242a66c709638baacbaea1bcc5893cc7f51417eada8d0f` |
 | `events.golden.jsonl` | `75bd96c37a7a0c097532c8a5e201e15bbc405c677d39aca00fa327dea816ac72` |
