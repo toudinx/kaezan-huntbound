@@ -12,18 +12,20 @@ sensível a combate está integrada e **sem conteúdo que a use** — é o que a
 
 ## Tasks
 
-| ID | Status | Branch prevista | Commit integrado | Evidência principal |
-|---|---|---|---|---|
-| PB-08-01 | done | `claude/pb08-01-cave-density` | `c23c819` | puxão máximo 4 → 11; tiles com ≥4 pulláveis 3 → 125; **20 slots de rotworm em 13 grupos** (ver B9); goldens PB-04 e PB-05 inalterados |
-| PB-08-02 | pending | `<agente>/pb08-02-knight-map` | — | — |
-| PB-08-03 | pending | `<agente>/pb08-03-kit-por-tabela` | — | — |
-| PB-08-04 | pending | `<agente>/pb08-04-rotacao-de-dano` | — | — |
-| PB-08-05 | pending | `<agente>/pb08-05-postura` | — | — |
-| PB-08-06 | pending | `<agente>/pb08-06-taunt` | — | — |
-| PB-08-07 | pending | `<agente>/pb08-07-mobilidade` | — | — |
-| PB-08-08 | pending | `<agente>/pb08-08-hud-nove-acoes` | — | — |
-| PB-08-09 | pending | `<agente>/pb08-09-arma-eixo` | — | — |
-| PB-08-10 | pending | `<agente>/pb08-10-aceite` | — | — |
+Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por task".
+
+| ID | Status | Branch prevista | Modelo previsto | Modelo usado | Commit | Evidência principal |
+|---|---|---|---|---|---|---|
+| PB-08-01 | done | `claude/pb08-01-cave-density` | — | — | `c23c819` | puxão máximo 4 → 11; tiles com ≥4 pulláveis 3 → 125; **20 slots de rotworm em 13 grupos** (ver B9); goldens PB-04 e PB-05 inalterados |
+| PB-08-02 | pending | `<agente>/pb08-02-knight-map` | frontier `xhigh` | — | — | — |
+| PB-08-03 | pending | `<agente>/pb08-03-kit-table` | Luna `xhigh` | — | — | — |
+| PB-08-04 | pending | `<agente>/pb08-04-damage-rotation` | Luna `xhigh` | — | — | — |
+| PB-08-05 | pending | `<agente>/pb08-05-stances` | Luna `xhigh` | — | — | — |
+| PB-08-06 | pending | `<agente>/pb08-06-taunt` | **frontier `xhigh`** | — | — | — |
+| PB-08-07 | pending | `<agente>/pb08-07-haste` | Luna `xhigh` | — | — | — |
+| PB-08-08 | pending | `<agente>/pb08-08-nine-action-hud` | Luna `xhigh` | — | — | — |
+| PB-08-09 | pending | `<agente>/pb08-09-weapon-axis` | **frontier `xhigh`** | — | — | — |
+| PB-08-10 | pending | `<agente>/pb08-10-acceptance` | frontier `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -39,13 +41,10 @@ existente**. Custou 8 testes vermelhos e um ciclo de conserto na PB-08-01. Ender
 identidade estável remove a classe inteira de quebra. **Não é trabalho do PB-08 reescrito** — foi
 para o PB-10, que é o playbook que mexe em conteúdo de hunt.
 
-**B10 — fechado em 2026-08-24.** A linha de evidência da PB-08-01 registrava "29 slots (12 rotworm +
-17 snake)". A `main` compõe **20 slots, todos rotworm** — `generated/hunts/venore-rotworm-cave/spawns.json`.
-O número de snake vinha da intenção original da task; a espécie continua em `excludedCreatures` por
-falta de sprite no asset pack. Linha corrigida acima. Entrada de snake foi para o PB-10.
+**B10 — fechado em 2026-08-24.** A evidência da PB-08-01 dizia "29 slots (12 rotworm + 17 snake)";
+a `main` compõe 20, todos rotworm. Linha corrigida acima; snake segue sem sprite e foi para o PB-10.
 
-**Bloqueios encerrados do PB-08 original (B1, B2, B3, B5, B6, B7, B8):** resolvidos entre 2026-08-23
-e 2026-08-24. Narrativa preservada no histórico do Git; não se repete aqui.
+**B1, B2, B3, B5, B6, B7, B8 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 
 ## Decisões congeladas
 
@@ -54,8 +53,7 @@ Vivem no `README.md`, seção "Decisões congeladas". Task serial ou paralela se
 
 ## Métricas
 
-`corepack pnpm qa:budgets` ainda não medido neste playbook. Vermelho vira task de performance, nunca
-bloqueio.
+`corepack pnpm qa:budgets` não medido neste playbook. Vermelho vira task de performance, nunca bloqueio.
 
 ## Regra de atualização
 

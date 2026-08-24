@@ -202,6 +202,41 @@ PB-07 escreveu catorze antecipadas e pagou por isso.
 Recovery (`utura`, pede cura por tick em `conditions.ts:162`) e Front Sweep (`exori min`, pede forma
 de onda em `AbilityShape`).
 
+## Modelo e effort por task
+
+Classificado por `docs/08_POLITICA_MODELOS_AGENTES.md`. **Vale também para os bullets** — a card
+ainda não existe, mas a alocação sim, para que o trabalho possa ser distribuído sem esperar a
+escrita. A card, quando escrita, repete a linha no cabeçalho.
+
+Camada frontier = **GPT-5.6 Sol, Claude Opus 5 ou Grok 4.6**, intercambiáveis; a escolha entre eles é
+do usuário no momento da execução. Implementação bem especificada = **GPT-5.6 Luna**.
+
+| ID | Classe da tarefa | Modelo e effort | Validador | Por quê |
+|---|---|---|---|---|
+| **02** | especificação / design | **frontier, `xhigh`** | frontier **diferente** do autor | Decide o conjunto ativo da classe inteira e o que é escada. Risco está no julgamento, não no diff — a política manda frontier "mesmo quando o diff esperado é pequeno" |
+| **03** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | Contrato aditivo com **forma congelada na card** e `combat:check` como juiz objetivo: se o golden não mover, a equivalência está provada. Escala se a forma congelada não couber |
+| **04** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | Duas magias sobre `radius` e `rangeTiles`, ambos implementados. Números saem do snapshot; nenhuma decisão de contrato |
+| **05** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | `toggle` e condição exclusiva estão prontos; os números de Blood Rage e Protector têm proveniência declarada na ADR-05 |
+| **06** | **implementação complexa** | **frontier, `xhigh`** | frontier **diferente** do implementador | Alvo forçado **não existe**: muda a política de aquisição de alvo da IA em `isAcquirableTarget`, atravessa kernel e conteúdo e **regenera golden**. Único kernel novo do playbook |
+| **07** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | A mais mecânica das dez. `speedPermille` já é aplicado em `conditions.ts:37` |
+| **08** | implementação geral bem especificada | **Luna, `xhigh`** | **marco de revisão frontier** | Sem kernel, com Playwright como juiz. Ganha revisão frontier por ser a superfície que o usuário julga no aceite, e porque agrupar dano e situacional é decisão de leitura |
+| **09** | **implementação complexa** | **frontier, `xhigh`** | frontier **diferente** do implementador | Exige julgamento para definir o resultado correto — qual passiva por tipo de arma — e é a semente das subclasses reservadas pela decisão congelada 5. Errar aqui custa a promessa da decisão congelada 1 |
+| **10** | gate final / aceite | **frontier, `xhigh`** | **o usuário jogando** | A política manda camada frontier para gate final. E o aceite de produto não é veredito de agente |
+
+**Diversidade de revisão.** 02, 06 e 09 são frontier implementando; cada uma é revisada por um
+frontier **diferente** — Sol prefere Opus 5 ou Grok 4.6; Opus 5 prefere Sol ou Grok 4.6; Grok 4.6
+prefere Opus 5 ou Sol. Mesmo modelo revisando só quando a plataforma não oferecer alternativa, e o
+desvio vai para o `STATE.md` com modelo, effort e motivo.
+
+**Luna-first e escalonamento.** As tasks Luna começam em Luna e **só** trocam para frontier por um
+dos gatilhos da política: a mesma causa bloqueia dois ciclos RED/GREEN; concluir exige mudar decisão
+congelada, schema ou escopo; o executor não consegue provar determinismo ou isolamento com os gates
+da task; aparece comportamento com mais de uma interpretação plausível; ou o usuário pede. Antes de
+escalar, registre no `STATE.md` a evidência do bloqueio, as tentativas e o modelo de destino.
+
+O `STATE.md` registra o modelo e o effort **efetivamente** usados. Divergência entre sugerido e usado
+é desvio registrável, não erro — desde que registrada.
+
 ## Dependências e paralelismo
 
 ```

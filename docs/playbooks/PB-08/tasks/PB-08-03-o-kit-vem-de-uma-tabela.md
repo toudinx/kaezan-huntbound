@@ -5,9 +5,13 @@
 **Classe da tarefa:** mudança de contrato aditiva + resolução no compositor de cenário; sem regra
 de combate nova
 
-**Modelo sugerido:** modelo econômico com effort alto — é implementação bem especificada
+**Modelo sugerido:** **GPT-5.6 Luna**, effort `xhigh`. Classe "implementação geral bem
+especificada" pela `docs/08_POLITICA_MODELOS_AGENTES.md`: a forma do contrato está **congelada
+abaixo** e `combat:check` é juiz objetivo. **Escale para a camada frontier** se a forma congelada não
+couber, ou por qualquer gatilho da seção "Escalonamento Luna-first" — registrando a evidência no
+`STATE.md` antes.
 
-**Validador sugerido:** modelo frontier diferente do implementador
+**Validador sugerido:** gates automatizados. Revisão frontier só por escalonamento.
 
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
 Skills operacionais: `playbook-task`, `run-gates`, `worktree-cycle`.
@@ -66,7 +70,9 @@ isso**, com a divergência declarada.
 `CharacterDefinition` ganha uma tabela de faixas de kit, aditiva, com default que reproduz
 exatamente o comportamento atual. O cenário composto hoje continua **byte-idêntico**.
 
-Forma sugerida — a task pode escolher outra desde que satisfaça as restrições:
+**Forma congelada.** Não a redesenhe — ela é o que torna esta task bem especificada e
+executável em modelo econômico. Se ela não couber, isso é gatilho de escalonamento, não convite para
+inventar outra:
 
 ```
 kit: [
@@ -94,7 +100,8 @@ traga os dois é inválido — não se declara o kit duas vezes.
 ## Ambiguidade conhecida — e a saída
 
 **Faixa aberta no topo.** `maxLevel: null` ou um número grande? Escolha `null` e trate como aberta:
-é mais fácil de ler e não produz um teto arbitrário que alguém vai ter que caçar depois.
+é mais fácil de ler e não produz um teto arbitrário que alguém vai ter que caçar depois. Isto é
+decisão tomada, não pergunta em aberto — está aqui só para você não gastar tempo com ela.
 
 **Faixas sobrepostas ou com buraco.** Com uma linha só, não acontece. Mas a validação deve recusar
 sobreposição e buraco desde já, senão a segunda linha do PB-09 entra torta. Diagnóstico próprio, no
@@ -151,3 +158,78 @@ nenhuma intenção de mudar comportamento.
 - [ ] `verify` verde.
 - [ ] `STATE.md` atualizado só na linha da task.
 - [ ] Branch integrada por `git merge --ff-only` e worktree limpa.
+
+## Prompt copiável para novo chat
+
+```text
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna em xhigh.
+Use obrigatoriamente superpowers:test-driven-development e
+superpowers:verification-before-completion.
+
+Execute integralmente e somente:
+C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-08\tasks\PB-08-03-o-kit-vem-de-uma-tabela.md
+
+Leia AGENTS.md, .cursor/rules/10-boundaries.mdc, .cursor/rules/20-content.mdc,
+docs/playbooks/PB-08/README.md (decisoes congeladas 1, 2 e 3), o STATE.md,
+docs/content/KNIGHT_BANDS.md (entregue pela PB-08-02) e apenas os arquivos que a task indicar.
+
+Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb08-03-kit-table com a branch
+<agente>/pb08-03-kit-table e rode "corepack pnpm install --prefer-offline" dentro dela.
+
+Comece por RED. Faca o kit do Knight vir de uma TABELA DE FAIXAS em vez de um array chapado, com a
+tabela contendo UMA LINHA SO: do level 1 ao teto, tudo liberado.
+
+A FORMA ESTA CONGELADA na task. Nao a redesenhe:
+  kit: [ { minLevel: 1, maxLevel: null, spellKeys: [...] } ]
+spellKeys no topo continua aceito e significa "uma faixa unica de 1 ao teto". Documento com os dois
+e invalido. Se a forma congelada NAO COUBER, isso e gatilho de escalonamento para a camada frontier:
+registre a evidencia no STATE.md antes de escalar, nao invente outra forma.
+
+Regras que precisam de teste:
+- ADITIVO COM DEFAULT QUE REPRODUZ O COMPORTAMENTO ANTERIOR. Sem "kit", o spellKeys atual continua
+  valendo e o cenario composto nao muda um byte.
+- A RESOLUCAO E POR character.level, mesmo com uma linha so. Selecionar sempre a primeira linha e
+  ignorar o level DERROTA O PROPOSITO DA TASK: resolver por level agora e o que torna a segunda linha
+  um problema de dado depois.
+- Documento com "kit" E "spellKeys" juntos e rejeitado com diagnostico nomeado.
+- Sobreposicao e buraco entre faixas sao rejeitados, no molde de
+  packages/contracts/src/content/diagnostics.ts. Com uma linha nao acontece, mas a validacao entra
+  agora para que a segunda linha do PB-09 nao entre torta.
+- Zod vive SO em @huntbound/contracts. packages/content apenas le.
+- NENHUMA MAGIA ENTRA OU SAI nesta task. O conjunto ativo continua sendo as tres atuais mais o
+  auto-attack. Esta task muda FORMATO, nao conteudo — e e assim que ela consegue provar que nao mudou
+  comportamento.
+
+Migre packages/content/src/selections/pb-05-knight-combat.json para a forma nova, com uma linha,
+minLevel 1, sem teto. Atualize character.levelSource: hoje ele justifica o nivel 35 com "Berserk
+requires level 35; a level 8 knight could not cast the kit it was given", o que descreve o Canary e
+nao o Huntbound. Com a tabela sem portao, o nivel 35 vira escolha de balanceamento — HP, mana e dano
+—, nao pre-requisito de kit. Divergencia declarada.
+
+Verificacao exigida, com saida fresca colada no relatorio:
+- corepack pnpm typecheck
+- corepack pnpm test
+- corepack pnpm architecture:check   (Zod nao pode ter vazado para packages/content)
+- corepack pnpm content:check
+- corepack pnpm combat:check   -> GOLDEN INALTERADO
+- corepack pnpm hunt:check e corepack pnpm simulation:check -> INALTERADOS
+- corepack pnpm qa:browser   (confirme que continuam TRES botoes no HUD)
+- corepack pnpm verify no fechamento
+
+O GOLDEN DO COMBATE E O JUIZ DESTA TASK. Ela e uma refatoracao de formato: se combat:check continuar
+verde com a selection migrada, a equivalencia esta provada. Se ficar VERMELHO, e defeito da migracao
+— NUNCA autorizacao para regenerar. Decisao congelada 8 do README: golden so se regenera com prova
+escrita de intencionalidade, e esta task nao tem nenhuma intencao de mudar comportamento. Pare e
+investigue.
+
+Se a mesma causa bloquear dois ciclos RED/GREEN, escale para a camada frontier registrando no
+STATE.md a evidencia, as tentativas e o modelo de destino.
+
+Ao terminar: atualize somente a linha PB-08-03 do STATE.md, registrando o modelo e o effort
+EFETIVAMENTE usados. Commit com mensagem que explique o PORQUE. Integre voce mesmo na main com
+git merge --ff-only, rode a verificacao pos-integracao, remova a worktree e a branch, e cole no
+relatorio a saida de:
+git status --porcelain && git branch --no-merged main && git worktree list
+
+Isso ja esta autorizado pela task; nao peca confirmacao. NAO inicie a proxima task.
+```

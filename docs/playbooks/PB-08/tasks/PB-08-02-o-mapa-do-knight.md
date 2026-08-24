@@ -4,9 +4,12 @@
 
 **Classe da tarefa:** design de conteúdo com proveniência de snapshot; **sem código**
 
-**Modelo sugerido:** modelo frontier, effort `xhigh` — é decisão de produto, não implementação
+**Modelo sugerido:** camada frontier — **GPT-5.6 Sol, Claude Opus 5 ou Grok 4.6** —, effort
+`xhigh`. Classe "especificação/design" pela `docs/08_POLITICA_MODELOS_AGENTES.md`: o risco está no
+julgamento, não no diff, e a política manda frontier "mesmo quando o diff esperado é pequeno".
 
-**Validador sugerido:** modelo frontier diferente do autor
+**Validador sugerido:** modelo frontier **diferente** do autor. Sol prefere Opus 5 ou Grok 4.6;
+Opus 5 prefere Sol ou Grok 4.6; Grok 4.6 prefere Opus 5 ou Sol.
 
 **Rota:** `superpowers:verification-before-completion`. Skills operacionais: `playbook-task`,
 `worktree-cycle`. **Não** use `test-driven-development`: esta task não produz código.
@@ -195,3 +198,76 @@ Esta task não tem gate de código, mas tem gate de consistência. Evidência co
 - [ ] `verify` verde e inalterado.
 - [ ] `STATE.md` atualizado só na linha da task.
 - [ ] Branch integrada por `git merge --ff-only` e worktree limpa.
+
+## Prompt copiável para novo chat
+
+```text
+Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Sol, Claude Opus 5 ou Grok 4.6 em xhigh.
+Use obrigatoriamente superpowers:verification-before-completion.
+NAO use test-driven-development: esta task nao produz codigo.
+
+Execute integralmente e somente:
+C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-08\tasks\PB-08-02-o-mapa-do-knight.md
+
+Leia AGENTS.md, docs/playbooks/PB-08/README.md (secoes "O principio de design", "O kit alvo" e
+"Decisoes congeladas"), o STATE.md, docs/content/PB-07-ROTATIONS.md secao Knight, e apenas os
+arquivos que a task indicar. O principio e as decisoes congeladas NAO se redesenham aqui: esta task
+os APLICA.
+
+Crie a worktree irma C:\Kaezan\kaezan-huntbound-pb08-02-knight-map com a branch
+<agente>/pb08-02-knight-map e rode "corepack pnpm install --prefer-offline" dentro dela.
+
+Entregue docs/content/KNIGHT_BANDS.md com cinco secoes: conjunto ativo, cortes, faixas futuras,
+eixos de arma reservados, e o que o contrato ainda nao representa.
+
+Regras que o mapa precisa obedecer:
+- LEIA OS DOZE ARQUIVOS DE SPELL em references/canary/data/scripts/spells/ e extraia mana, cooldown,
+  nivel, formula e setArea DO ARQUIVO. Nao confie nos numeros da task nem do README: eles estao la
+  para orientar, e um erro de transcricao nao pode virar conteudo. Calcule o sha256 de cada arquivo.
+- Cada linha do conjunto ativo carrega sourceFile e sha256. Excecao unica ja aprovada: os numeros de
+  Blood Rage e Protector vem do Vocation Adjustments 2026 (fonte TibiaWiki, Tibia 15.25.3a4a52),
+  porque o snapshot 157e6f9e e anterior. Vale so para stances.
+- ORCAMENTO: no maximo 9 acoes contando o auto-attack, pelo menos 4 de dano, e NENHUM par produz a
+  mesma imagem.
+- A coluna "imagem propria" NAO ACEITA NUMERO. "Mais forte que Berserk" nao e imagem. "Pancada no
+  chao que acende um anel de tiles maior que o giro do Berserk" e.
+- Todo par que sobrevive no conjunto ativo ganha uma linha dizendo qual e a imagem de CADA UM. Par
+  justificado por cooldown, mana ou dano e escada nao detectada — e o erro exato que esta task existe
+  para nao cometer.
+- Os cortes se dividem em ESCADA (mesma imagem, so muda numero — ex.: Charge, que e Haste com outra
+  duracao) e SUBSTITUICAO FUTURA (a forma de uma faixa que ainda nao existe — ex.: exori gran,
+  exura gran ico, Annihilation, Front Sweep). Substituicao futura NUNCA coexiste com a forma atual.
+- NENHUMA FAIXA GATEIA. Decisao congelada 2: o Knight tem o kit inteiro desde o level 1. A tabela de
+  faixas e documentacao do futuro. A selection ja declara spellAccess "unrestricted".
+- Declare os eixos de arma reservados por celula: 1 mao x 2 maos, sword balanceado, axe agressivo,
+  club defensivo. E documentacao de intencao, nao desenho de subclasse. Registre tambem que se o club
+  virar o arquetipo defensivo ele PAGA EM OFENSA — mitigacao vira dano derivado do bloqueado, nao
+  sobrevida.
+- Nenhum numero inventado, nenhuma magia nova. O mapa escolhe entre o que existe no snapshot.
+
+A DECISAO MAIS CONSEQUENTE: Berserk (AREA_SQUARE1X1, 4s, 115) vs Groundshaker (AREA_CIRCLE3X3, 8s,
+160). Ambos sao "dano em area ao meu redor". A investigacao de 2026-08-24 julgou que PASSAM no
+criterio de leitura porque o numero de tiles acesos e visivelmente diferente, mas isso e julgamento,
+nao medicao. Se voce discordar, DERRUBE UM DELES com argumento de imagem — e entao diga se a rotacao
+de dano sobrevive com quatro acoes ou se algo entra no lugar. O mesmo julgamento, com menos forca,
+vale para Brutal Strike vs auto-attack. Registre a decisao em uma linha no commit e siga; nao pare o
+ciclo por isso.
+
+Verificacao exigida, com saida fresca colada no relatorio:
+- corepack pnpm verify VERDE E INALTERADO. Nenhuma linha de codigo muda nesta task; se mudar, a task
+  saiu do escopo.
+- conjunto ativo com <= 9 acoes e >= 4 de dano;
+- proveniencia por linha; todo par com justificativa DE IMAGEM; nenhum papel vazio;
+- toda magia de "substituicao futura" esta FORA do conjunto ativo.
+
+Se o mapa mudar o conjunto ativo em relacao ao README do PB-08, ATUALIZE a tabela do README e diga no
+commit o que mudou e por que.
+
+Ao terminar: atualize somente a linha PB-08-02 do STATE.md, registrando o modelo e o effort
+EFETIVAMENTE usados. Commit com mensagem que explique o PORQUE. Integre voce mesmo na main com
+git merge --ff-only, rode a verificacao pos-integracao, remova a worktree e a branch, e cole no
+relatorio a saida de:
+git status --porcelain && git branch --no-merged main && git worktree list
+
+Isso ja esta autorizado pela task; nao peca confirmacao. NAO inicie a proxima task.
+```
