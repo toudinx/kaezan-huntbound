@@ -178,9 +178,19 @@ Não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do
    sobrevida. Restrição de design registrada para quando a subclasse for decidida.
 7. **Toda ação entra com efeito visual próprio.** `CombatFxTable.ts` já é chaveada por `abilityId`.
    Ação que cai no recipe genérico falha o critério 2 por construção, e a task não fecha.
-8. **Golden se regenera só com prova escrita de intencionalidade.** Neste playbook, só a PB-08-06
-   (taunt) regenera. Vale a lição do B8 do PB-08 original: `hunt:check`, `combat:check` e
-   `save:check` conferem bytes contra hashes publicados, **não** frescura em relação ao conteúdo.
+8. **Golden se regenera só com prova escrita de intencionalidade — e regenera mais vezes do que a
+   primeira redação previu.** `packages/test-fixtures/hunt/pb05/scenario.json` carrega a tabela de
+   `abilities` e de `conditions` do cenário composto, hoje com exatamente três abilities. **Toda task
+   que acrescenta ação ao kit recompõe a fixture**: são as tasks **04, 05, 06 e 07**, não apenas a
+   06, como esta decisão afirmava até 2026-08-24. A 06 regenera por dois motivos — kit e kernel.
+
+   As que **não** regeneram são 03 e 09, ambas aditivas com default que reproduz o comportamento
+   anterior; nelas, `combat:check` inalterado é a **prova** de que o default está certo, e golden que
+   move é defeito, não autorização.
+
+   Vale a lição estrutural do B8: `hunt:check`, `combat:check` e `save:check` conferem bytes contra
+   hashes publicados e **nunca recompõem**, então desvio entre fixture e conteúdo é invisível até
+   alguém recompor. O gerador é `tools/replay/generatePb05CombatFixture.ts`.
 
 ## Tasks
 
@@ -189,16 +199,22 @@ Não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do
 | PB-08-01 | **integrada** | A caverna cabe num box | `c23c819`; permanece como histórico | não |
 | PB-08-02 | **card escrita** | O mapa do Knight | `docs/content/KNIGHT_BANDS.md`: papéis × faixas, uma imagem por ação, cortes com motivo, orçamento e eixos de arma reservados. Sem código | não |
 | PB-08-03 | **card escrita** | O kit vem de uma tabela | `CharacterDefinition` resolve `abilityIndices` por tabela de faixas — hoje **uma linha, tudo liberado**. Task estrutural | não |
-| PB-08-04 | bullet | A rotação de dano se completa | Groundshaker e Whirlwind Throw. **A task mais importante do playbook** | não |
-| PB-08-05 | bullet | Postura | Blood Rage e Protector: `toggle` + condição exclusiva, com ganho **e** perda explícitos | não |
-| PB-08-06 | bullet | Taunt — Challenge | `exeta res`. Alvo forçado não existe no kernel. **Única que regenera golden** | **sim** |
-| PB-08-07 | bullet | Mobilidade — Haste | `utani hur`. Charge é corte declarado | não |
-| PB-08-08 | bullet | Nove ações no HUD e no input | Hoje `Digit1..3` e três botões. Rotação de dano agrupada e separada das situacionais; toggle visível; cooldown por grupo legível | não |
-| PB-08-09 | bullet | Arma como eixo de build | Skill por sword/axe/club e passiva por tipo. Fecha no PB-11 | não |
-| PB-08-10 | bullet | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e o que olhar | — |
+| PB-08-04 | **card escrita** | A rotação de dano se completa | Groundshaker e Whirlwind Throw. **A task mais importante do playbook** | não |
+| PB-08-05 | **card escrita** | Postura | Blood Rage e Protector: `toggle` + condição exclusiva, com ganho **e** perda explícitos | não |
+| PB-08-06 | **card escrita** | Taunt — Challenge | `exeta res`, raio 1. Alvo forçado não existe no kernel. **Único kernel novo do playbook** | **sim** |
+| PB-08-07 | **card escrita** | Mobilidade — Haste | `utani hur`. Charge é corte declarado | não |
+| PB-08-08 | **card escrita** | Nove ações no HUD e no input | Hoje `Digit1..3` e três botões. Rotação de dano agrupada e separada das situacionais; toggle visível; cooldown por grupo legível | não |
+| PB-08-09 | **card escrita** | Arma como eixo de build | Skill por sword/axe/club e passiva por tipo. Fecha no PB-11 | não |
+| PB-08-10 | **card escrita** | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e o que olhar | — |
 
-Conforme `AGENTS.md`, só **duas** cards estão congeladas. As demais são bullets até chegar a vez — o
-PB-07 escreveu catorze antecipadas e pagou por isso.
+**As dez cards estão escritas.** Isso **desvia** da regra do `AGENTS.md` de congelar só duas à
+frente, e o desvio é deliberado, pedido pelo dono em 2026-08-24 para que o trabalho possa ser
+distribuído entre Codex, Claude e Cursor sem esperar a escrita de cada uma.
+
+O risco que a regra existe para evitar é real e continua: **card escrita antecipadamente envelhece
+contra o código**. A mitigação é que 04 a 10 consomem o `KNIGHT_BANDS.md`, que já está congelado —
+elas não antecipam decisões, aplicam uma decisão já tomada. Ainda assim, **quem executar uma card
+confere se o mapa mudou desde que ela foi escrita**, e corrige a card antes de implementar.
 
 **Bullets contingentes ao mapa da PB-08-02**, que só viram card se ele decidir que fazem falta:
 Recovery (`utura`, pede cura por tick em `conditions.ts:162`) e Front Sweep (`exori min`, pede forma
