@@ -103,6 +103,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         cooldownTicks: 80,
         remainingCooldownTicks: 2,
         available: false,
+        active: false,
       },
       {
         index: 1,
@@ -112,8 +113,60 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         cooldownTicks: 120,
         remainingCooldownTicks: 0,
         available: true,
+        active: false,
+      },
+      {
+        index: 2,
+        abilityId: 'wound-cleansing',
+        label: 'Wound Cleansing',
+        resourceCost: 40,
+        cooldownTicks: 20,
+        remainingCooldownTicks: 0,
+        available: true,
+        active: false,
+      },
+      {
+        index: 3,
+        abilityId: 'groundshaker',
+        label: 'Groundshaker',
+        resourceCost: 160,
+        cooldownTicks: 160,
+        remainingCooldownTicks: 0,
+        available: true,
+        active: false,
+      },
+      {
+        index: 4,
+        abilityId: 'whirlwind-throw',
+        label: 'Whirlwind Throw',
+        resourceCost: 40,
+        cooldownTicks: 120,
+        remainingCooldownTicks: 0,
+        available: true,
+        active: false,
+      },
+      {
+        index: 5,
+        abilityId: 'blood-rage',
+        label: 'Blood Rage',
+        resourceCost: 20,
+        cooldownTicks: 0,
+        remainingCooldownTicks: 0,
+        available: true,
+        active: true,
+      },
+      {
+        index: 6,
+        abilityId: 'protector',
+        label: 'Protector',
+        resourceCost: 20,
+        cooldownTicks: 0,
+        remainingCooldownTicks: 40,
+        available: false,
+        active: false,
       },
     ],
+    playerPosture: { abilityId: 'blood-rage', label: 'Blood Rage' },
     lootLog: [{ itemKey: 'item:tibia:dead-rotworm', count: 2, tick: 8 }],
     bag: [{ itemKey: 'item:tibia:dead-rotworm', count: 2 }],
     playerDead: true,
@@ -151,6 +204,21 @@ describe('CombatHud', () => {
     expect(
       byTestId(root, 'combat-ability-0').getAttribute('aria-disabled'),
     ).toBe('true');
+    expect(byTestId(root, 'combat-posture').textContent).toBe(
+      'Posture: Blood Rage',
+    );
+    expect(byTestId(root, 'combat-posture').getAttribute('data-posture')).toBe(
+      'blood-rage',
+    );
+    expect(
+      byTestId(root, 'combat-ability-5').getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(byTestId(root, 'combat-ability-5').getAttribute('data-active')).toBe(
+      'true',
+    );
+    expect(
+      byTestId(root, 'combat-ability-6').getAttribute('aria-pressed'),
+    ).toBe('false');
     expect(byTestId(root, 'combat-loot-log').textContent).toContain(
       'dead-rotworm × 2',
     );
@@ -204,6 +272,38 @@ describe('CombatHud', () => {
         'data-visible',
       ),
     ).toBe('false');
+    expect(
+      byTestId(remountedRoot, 'combat-posture').getAttribute('data-posture'),
+    ).toBe('blood-rage');
     remountedHud.destroy();
+  });
+
+  it('shows the empty posture state when no stance is active', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement);
+
+    hud.render(
+      state({
+        playerPosture: null,
+        abilities: state().abilities.map((ability) => ({
+          ...ability,
+          active: false,
+        })),
+      }),
+    );
+
+    expect(byTestId(root, 'combat-posture').textContent).toBe('Posture: None');
+    expect(byTestId(root, 'combat-posture').getAttribute('data-posture')).toBe(
+      'none',
+    );
+    expect(
+      byTestId(root, 'combat-ability-5').getAttribute('aria-pressed'),
+    ).toBe('false');
+    expect(byTestId(root, 'combat-ability-5').getAttribute('data-active')).toBe(
+      'false',
+    );
+
+    hud.destroy();
   });
 });

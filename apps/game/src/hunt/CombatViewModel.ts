@@ -4,9 +4,12 @@ import {
 } from '../../../../packages/content/src/index.ts';
 import type {
   AbilityDefinition,
+  ActiveConditionState,
   EntityId,
   RuntimeContentBundle,
+  ScenarioConditionDefinition,
   SimulationEvent,
+  SimulationSnapshot,
 } from '../../../../packages/contracts/src/index.ts';
 
 import {
@@ -19,6 +22,7 @@ export interface CombatViewModelOptions {
   readonly playerEntityId: EntityId;
   readonly playerBlueprintId: string;
   readonly abilities: readonly AbilityDefinition[];
+  readonly conditions?: readonly ScenarioConditionDefinition[];
   readonly itemKeys: readonly string[];
   readonly maxHealthByBlueprint: ReadonlyMap<string, number>;
   readonly maxResourceByBlueprint: ReadonlyMap<string, number>;
@@ -40,6 +44,7 @@ export interface CombatAbilityView {
   readonly cooldownTicks: number;
   readonly remainingCooldownTicks: number;
   readonly available: boolean;
+  readonly active: boolean;
 }
 
 export interface CombatLootLogEntry {
@@ -54,6 +59,10 @@ export interface CombatViewState {
   readonly targetEntityId: EntityId | null;
   readonly target: CombatVitalsView | null;
   readonly abilities: readonly CombatAbilityView[];
+  readonly playerPosture: {
+    readonly abilityId: string;
+    readonly label: string;
+  } | null;
   readonly lootLog: readonly CombatLootLogEntry[];
   readonly bag: readonly RunBagEntry[];
   readonly playerDead: boolean;
@@ -63,6 +72,7 @@ export interface CombatViewState {
 export interface CombatViewModel {
   handle(events: readonly SimulationEvent[]): void;
   restoreBag(bag: readonly RunBagEntry[]): void;
+  restoreSnapshot(snapshot: SimulationSnapshot): void;
   setTick(tick: number): void;
   setTarget(entityId: EntityId | null): void;
   selectTarget(
@@ -104,15 +114,21 @@ function copyVitals(actor: MutableVitals): CombatVitalsView {
   };
 }
 
+const EMPTY_CONDITIONS: readonly ScenarioConditionDefinition[] = Object.freeze(
+  [],
+);
+
 export function createCombatViewModel(
   options: CombatViewModelOptions,
 ): CombatViewModel {
+  const conditions = options.conditions ?? EMPTY_CONDITIONS;
   const actorsById = new Map<EntityId, MutableVitals>();
   const targetSelection = createCombatTargetSelection({
     playerEntityId: options.playerEntityId,
   });
   const abilityReadyAtTick = new Map<number, number>();
-  let groupReadyAtTick = 0;
+  const groupReadyAtTick = new Map<number, number>();
+  let activeConditions: readonly ActiveConditionState[] = [];
   let currentTick = 0;
   let playerDead = false;
   /**
@@ -164,6 +180,109 @@ export function createCombatViewModel(
 
   const abilityFor = (index: number): AbilityDefinition | undefined =>
     options.abilities[index];
+
+  const conditionFor = (
+    index: number,
+  ): ScenarioConditionDefinition | undefined => conditions[index];
+
+  const activePosture = (): {
+    readonly abilityId: string;
+    readonly label: string;
+  } | null => {
+    for (const ability of options.abilities) {
+      if (ability.appliedConditionIndex === null) {
+        continue;
+      }
+      if (
+        activeConditions.some(
+          (entry) => entry.conditionIndex === ability.appliedConditionIndex,
+        )
+      ) {
+        return {
+          abilityId: ability.abilityId,
+          label: titleFromAbilityId(ability.abilityId),
+        };
+      }
+    }
+    return null;
+  };
+
+  const restoreCooldownsFromSnapshot = (snapshot: SimulationSnapshot): void => {
+    abilityReadyAtTick.clear();
+    groupReadyAtTick.clear();
+    const player = snapshot.actors.find(
+      (actor) => actor.entityId === options.playerEntityId,
+    );
+    if (player === undefined) {
+      return;
+    }
+
+    for (const entry of player.abilityCooldowns) {
+      abilityReadyAtTick.set(entry.abilityIndex, entry.readyAtTick);
+    }
+    for (const entry of player.groupCooldowns) {
+      groupReadyAtTick.set(entry.groupIndex, entry.readyAtTick);
+    }
+  };
+
+  const applyPlayerPosture = (
+    ability: AbilityDefinition,
+    tick: number,
+  ): boolean => {
+    if (ability.appliedConditionIndex === null) {
+      return false;
+    }
+
+    const activeConditionIndex = ability.appliedConditionIndex;
+    const alreadyActive = activeConditions.some(
+      (entry) => entry.conditionIndex === activeConditionIndex,
+    );
+    if (ability.toggle && alreadyActive) {
+      activeConditions = activeConditions.filter(
+        (entry) => entry.conditionIndex !== activeConditionIndex,
+      );
+      return true;
+    }
+
+    const definition = conditionFor(activeConditionIndex);
+    activeConditions = activeConditions.filter((entry) => {
+      if (entry.conditionIndex === activeConditionIndex) {
+        return false;
+      }
+      if (definition?.exclusivityGroup === null || definition === undefined) {
+        return true;
+      }
+      return entry.exclusivityGroup !== definition.exclusivityGroup;
+    });
+    activeConditions = [
+      ...activeConditions,
+      {
+        conditionIndex: activeConditionIndex,
+        exclusivityGroup: definition?.exclusivityGroup ?? null,
+        expiresAtTick:
+          definition === undefined || definition.durationTicks === 0
+            ? 0
+            : tick + definition.durationTicks,
+      },
+    ];
+    return false;
+  };
+
+  const clearProjectionState = (preserveBag: boolean): void => {
+    actorsById.clear();
+    abilityReadyAtTick.clear();
+    groupReadyAtTick.clear();
+    activeConditions = [];
+    currentTick = 0;
+    playerDead = false;
+    sawRoster = false;
+    if (!preserveBag) {
+      bag = [];
+    }
+    lootLog = [];
+    lastRejection = null;
+    targetSelection.reset();
+  };
 
   const handle = (events: readonly SimulationEvent[]): void => {
     for (const event of events) {
@@ -229,19 +348,34 @@ export function createCombatViewModel(
               options.playerBlueprintId,
               1,
             );
-            caster.resource = clamp(
-              caster.resource - ability.resourceCost,
-              0,
-              caster.maxResource,
-            );
+            const toggledOff = applyPlayerPosture(ability, event.tick);
+            if (!toggledOff) {
+              caster.resource = clamp(
+                caster.resource - ability.resourceCost,
+                0,
+                caster.maxResource,
+              );
+            }
             abilityReadyAtTick.set(
               event.payload.abilityIndex,
               event.tick + ability.cooldownTicks,
             );
-            groupReadyAtTick = Math.max(
-              groupReadyAtTick,
-              event.tick + ability.groupCooldownTicks,
+            groupReadyAtTick.set(
+              ability.primaryCooldownGroup,
+              Math.max(
+                groupReadyAtTick.get(ability.primaryCooldownGroup) ?? 0,
+                event.tick + ability.groupCooldownTicks,
+              ),
             );
+            if (ability.secondaryCooldownGroup !== null) {
+              groupReadyAtTick.set(
+                ability.secondaryCooldownGroup,
+                Math.max(
+                  groupReadyAtTick.get(ability.secondaryCooldownGroup) ?? 0,
+                  event.tick + ability.secondaryGroupCooldownTicks,
+                ),
+              );
+            }
           }
           break;
         }
@@ -291,6 +425,7 @@ export function createCombatViewModel(
 
   const snapshot = (): CombatViewState => {
     const selectedTargetId = targetSelection.targetId();
+    const playerPosture = activePosture();
     return {
       tick: currentTick,
       player: vitalsFor(options.playerEntityId),
@@ -300,7 +435,10 @@ export function createCombatViewModel(
         options.abilities.map((ability, index) => {
           const readyAtTick = Math.max(
             abilityReadyAtTick.get(index) ?? 0,
-            groupReadyAtTick,
+            groupReadyAtTick.get(ability.primaryCooldownGroup) ?? 0,
+            ability.secondaryCooldownGroup === null
+              ? 0
+              : (groupReadyAtTick.get(ability.secondaryCooldownGroup) ?? 0),
           );
           const remainingCooldownTicks = Math.max(0, readyAtTick - currentTick);
           const player = actorFor(options.playerEntityId);
@@ -315,9 +453,16 @@ export function createCombatViewModel(
               !playerDead &&
               remainingCooldownTicks === 0 &&
               (player?.resource ?? 0) >= ability.resourceCost,
+            active:
+              ability.appliedConditionIndex !== null &&
+              activeConditions.some(
+                (entry) =>
+                  entry.conditionIndex === ability.appliedConditionIndex,
+              ),
           };
         }),
       ),
+      playerPosture,
       lootLog: Object.freeze(lootLog.map((entry) => ({ ...entry }))),
       bag: Object.freeze(bag.map((entry) => ({ ...entry }))),
       // A run resumed from a save written after the player died never replays
@@ -337,6 +482,27 @@ export function createCombatViewModel(
     restoreBag: (entries) => {
       bag = entries.map((entry) => ({ ...entry }));
     },
+    restoreSnapshot: (state) => {
+      clearProjectionState(true);
+      currentTick = state.tick;
+      sawRoster = state.actors.length > 0;
+      for (const actorState of state.actors) {
+        const actor = actorFromEvent(
+          actorState.entityId,
+          actorState.blueprintId,
+          actorState.health,
+        );
+        actor.health = clamp(actorState.health, 0, actor.maxHealth);
+        actor.resource = clamp(actorState.resource, 0, actor.maxResource);
+      }
+      const player = state.actors.find(
+        (actor) => actor.entityId === options.playerEntityId,
+      );
+      activeConditions =
+        player?.activeConditions.map((entry) => ({ ...entry })) ?? [];
+      restoreCooldownsFromSnapshot(state);
+      targetSelection.setTarget(player?.targetEntityId ?? null);
+    },
     setTick: (tick) => {
       currentTick = tick;
     },
@@ -345,16 +511,7 @@ export function createCombatViewModel(
       targetSelection.select(entityId, actors),
     cycleTarget: (actors) => targetSelection.cycle(actors),
     reset: () => {
-      actorsById.clear();
-      abilityReadyAtTick.clear();
-      groupReadyAtTick = 0;
-      currentTick = 0;
-      playerDead = false;
-      sawRoster = false;
-      bag = [];
-      lootLog = [];
-      lastRejection = null;
-      targetSelection.reset();
+      clearProjectionState(false);
     },
     snapshot,
   };
@@ -473,6 +630,82 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       rechargeKind: 'none',
       toggle: false,
     },
+    {
+      abilityId: 'blood-rage',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 20,
+      cooldownTicks: 0,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      element: 'physical',
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: 2,
+      secondaryGroupCooldownTicks: 40,
+      appliedConditionIndex: 0,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: true,
+    },
+    {
+      abilityId: 'protector',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 20,
+      cooldownTicks: 0,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      element: 'physical',
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: 2,
+      secondaryGroupCooldownTicks: 40,
+      appliedConditionIndex: 1,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: true,
+    },
+  ]);
+
+export const DEFAULT_COMBAT_CONDITIONS: readonly ScenarioConditionDefinition[] =
+  Object.freeze([
+    {
+      conditionId: 'blood-rage',
+      exclusivityGroup: 1,
+      durationTicks: 0,
+      skillIndex: 2,
+      skillModifierPermille: 250,
+      damageDealtPermille: 0,
+      damageReceivedPermille: 150,
+      speedPermille: 0,
+      manaShield: false,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    },
+    {
+      conditionId: 'protector',
+      exclusivityGroup: 1,
+      durationTicks: 0,
+      skillIndex: null,
+      skillModifierPermille: 0,
+      damageDealtPermille: 0,
+      damageReceivedPermille: -200,
+      speedPermille: 0,
+      manaShield: false,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    },
   ]);
 
 /**
@@ -506,6 +739,7 @@ export function createHuntCombatViewModel(
     playerEntityId,
     playerBlueprintId,
     abilities: DEFAULT_COMBAT_ABILITIES,
+    conditions: DEFAULT_COMBAT_CONDITIONS,
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint,
     maxResourceByBlueprint,
@@ -519,6 +753,7 @@ export function createDefaultCombatViewModel(
     playerEntityId,
     playerBlueprintId: 'player',
     abilities: DEFAULT_COMBAT_ABILITIES,
+    conditions: DEFAULT_COMBAT_CONDITIONS,
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint: new Map([
       ['player', 185],

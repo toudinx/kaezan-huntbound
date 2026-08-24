@@ -67,12 +67,23 @@ function updateAbilityButton(
     'data-cooldown-ticks',
     String(ability.remainingCooldownTicks),
   );
+  button.setAttribute('aria-pressed', String(ability.active));
+  button.setAttribute('data-active', String(ability.active));
   button.disabled = !ability.available;
   const text =
     ability.remainingCooldownTicks > 0
       ? `${ability.index + 1}. ${ability.label} · ${ability.remainingCooldownTicks}`
       : `${ability.index + 1}. ${ability.label}`;
   if (button.textContent !== text) button.textContent = text;
+}
+
+function postureDataValue(
+  posture: CombatViewState['playerPosture'],
+): 'blood-rage' | 'protector' | 'none' {
+  return posture?.abilityId === 'blood-rage' ||
+    posture?.abilityId === 'protector'
+    ? posture.abilityId
+    : 'none';
 }
 
 export function mountCombatHud(
@@ -108,8 +119,10 @@ export function mountCombatHud(
   attack.setAttribute('data-hunt-action', 'attack');
   attack.setAttribute('aria-label', 'Attack selected target');
   attack.textContent = 'Attack';
+  const posture = createElement(document, 'p', 'combat-posture');
+  posture.setAttribute('aria-live', 'polite');
   const abilities = createElement(document, 'div', 'combat-abilities');
-  actions.append(attack, abilities);
+  actions.append(attack, posture, abilities);
 
   const lootPanel = createElement(document, 'section', 'combat-loot');
   lootPanel.setAttribute('aria-label', 'Loot');
@@ -194,6 +207,12 @@ export function mountCombatHud(
       'data-visible',
       String(state.lastRejection !== null),
     );
+    const postureValue = postureDataValue(state.playerPosture);
+    posture.setAttribute('data-posture', postureValue);
+    posture.textContent =
+      state.playerPosture === null
+        ? 'Posture: None'
+        : `Posture: ${state.playerPosture.label}`;
 
     // The scene publishes a tick every frame, so this runs ~60 times a second.
     // Rebuilding the buttons here dropped frames and destroyed the very node
