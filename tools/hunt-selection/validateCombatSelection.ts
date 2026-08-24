@@ -400,17 +400,17 @@ function validatePostures(value: unknown): {
       }
     }
 
-    if (
-      posture.skillIndex !== null &&
-      asSafeInteger(posture.skillIndex) === undefined
-    ) {
-      diagnostics.push(
-        diagnostic(
-          `${path}.skillIndex`,
-          'PB05_POSTURE_INVALID',
-          'skillIndex must be a safe integer or null',
-        ),
-      );
+    if (posture.skillIndex !== null) {
+      const skillIndex = asSafeInteger(posture.skillIndex);
+      if (skillIndex === undefined || skillIndex < 0) {
+        diagnostics.push(
+          diagnostic(
+            `${path}.skillIndex`,
+            'PB05_POSTURE_INVALID',
+            'skillIndex must be a safe non-negative integer or null',
+          ),
+        );
+      }
     }
 
     if (isRecord(posture.source) === false) {

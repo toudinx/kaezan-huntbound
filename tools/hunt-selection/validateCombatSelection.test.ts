@@ -234,6 +234,13 @@ describe('validateCombatSelection', () => {
       readonly postures: readonly {
         readonly abilityId: string;
         readonly conditionId: string;
+        readonly level: number;
+        readonly mana: number;
+        readonly skillIndex: number | null;
+        readonly skillModifierPermille: number;
+        readonly damageReceivedPermille: number;
+        readonly damageDealtPermille: number;
+        readonly shieldingPermille: number;
         readonly source: {
           readonly provider: string;
           readonly version: string;
@@ -274,27 +281,44 @@ describe('validateCombatSelection', () => {
     expect(
       frozen.spells.every((spell) => spell.huntboundAccess === 'unrestricted'),
     ).toBe(true);
-    expect(frozen.postures).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          abilityId: 'blood-rage',
-          conditionId: 'blood-rage',
-          source: expect.objectContaining({
-            provider: 'TibiaWiki',
-            version: '15.25.3a4a52',
-          }),
-        }),
-        expect.objectContaining({
-          abilityId: 'protector',
-          conditionId: 'protector',
-          source: expect.objectContaining({
-            provider: 'TibiaWiki',
-            version: '15.25.3a4a52',
-            divergence: expect.stringContaining('PB-11'),
-          }),
-        }),
-      ]),
-    );
+    expect(frozen.postures).toEqual([
+      {
+        abilityId: 'blood-rage',
+        conditionId: 'blood-rage',
+        displayName: 'Blood Rage',
+        level: 20,
+        mana: 20,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageReceivedPermille: 150,
+        damageDealtPermille: 0,
+        shieldingPermille: 0,
+        source: {
+          provider: 'TibiaWiki',
+          version: '15.25.3a4a52',
+          divergence:
+            'Uses the 2026 stance values because the Canary snapshot predates toggle stances.',
+        },
+      },
+      {
+        abilityId: 'protector',
+        conditionId: 'protector',
+        displayName: 'Protector',
+        level: 20,
+        mana: 20,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageReceivedPermille: -150,
+        damageDealtPermille: -150,
+        shieldingPermille: 300,
+        source: {
+          provider: 'TibiaWiki',
+          version: '15.25.3a4a52',
+          divergence:
+            'Shielding stays declarative until PB-11 adds armor and shielding resolution.',
+        },
+      },
+    ]);
     expect(
       frozen.sourceFiles.some((entry) => /tibiawiki/i.test(entry.relativePath)),
     ).toBe(false);
@@ -354,6 +378,27 @@ describe('validateCombatSelection', () => {
       expect.arrayContaining([
         expect.objectContaining({
           path: 'postures[0].source.version',
+        }),
+      ]),
+    );
+  });
+
+  it('rejects a negative posture skillIndex and withholds posture ids', () => {
+    const result = validateCombatSelection(
+      selection({
+        postures: [{ ...postures[0], skillIndex: -1 }, postures[1]],
+      }),
+      files(),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.presentIds).not.toContain('posture:blood-rage');
+    expect(result.presentIds).not.toContain('posture:protector');
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'postures[0].skillIndex',
+          code: 'PB05_POSTURE_INVALID',
         }),
       ]),
     );
