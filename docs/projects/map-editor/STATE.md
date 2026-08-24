@@ -9,7 +9,7 @@
 | Task | Status | Branch | Commit | Modelo/effort efetivo |
 |---|---|---|---|---|
 | MB-01 | done | `codex/mb-01-material-border-mining` | `feat: measure the border table from the authored map` | GPT-5 (Codex), esforço padrão |
-| MB-02 | not-ready; depende do formato de MB-01 | `codex/mb-02-borderize-pure` | — | — |
+| MB-02 | done | `codex/mb-02-borderize-pure` | `feat: decide map borders from the measured table` | GPT-5 (Codex), esforço padrão |
 | MB-03 | not-ready; depende de MB-01 e MB-02 | `codex/mb-03-apply-and-play` | — | — |
 | ME-01 | pending | `codex/map-editor-01-authoring-contract` | — | — |
 | ME-02 | not-ready; depende de 01 | `codex/map-editor-02-editor-shell` | — | — |

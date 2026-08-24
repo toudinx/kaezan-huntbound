@@ -12,6 +12,7 @@ const packagePolicy = {
   '@huntbound/simulation': ['@huntbound/contracts'],
   '@huntbound/content': ['@huntbound/contracts'],
   '@huntbound/assets': ['@huntbound/contracts'],
+  '@huntbound/map-authoring': ['@huntbound/contracts'],
   '@huntbound/save': ['@huntbound/contracts', '@huntbound/simulation'],
   '@huntbound/test-fixtures': ['@huntbound/contracts', '@huntbound/simulation'],
   '@huntbound/game': [
@@ -55,6 +56,11 @@ async function createWorkspace(
         ...packagePolicy,
         external: {
           '@huntbound/simulation': {
+            allowedDependencies: [],
+            forbidDomLibraries: ['phaser'],
+            forbidNodeBuiltins: true,
+          },
+          '@huntbound/map-authoring': {
             allowedDependencies: [],
             forbidDomLibraries: ['phaser'],
             forbidNodeBuiltins: true,
@@ -202,6 +208,23 @@ describe('checkBoundaries', () => {
   it('reports a Node builtin import from simulation', async () => {
     const workspace = await createWorkspace({
       '@huntbound/simulation': {
+        source: 'import { readFile } from "node:fs";\nvoid readFile;\n',
+      },
+    });
+
+    assert.ok(
+      (await checkBoundaries(workspace.root, workspace.policyPath)).some(
+        (diagnostic) =>
+          diagnostic.includes(
+            'import "node:fs" violates the Node builtin rule',
+          ),
+      ),
+    );
+  });
+
+  it('reports a Node builtin import from map-authoring', async () => {
+    const workspace = await createWorkspace({
+      '@huntbound/map-authoring': {
         source: 'import { readFile } from "node:fs";\nvoid readFile;\n',
       },
     });

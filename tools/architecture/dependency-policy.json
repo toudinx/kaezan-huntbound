@@ -3,6 +3,7 @@
   "@huntbound/simulation": ["@huntbound/contracts"],
   "@huntbound/content": ["@huntbound/contracts"],
   "@huntbound/assets": ["@huntbound/contracts"],
+  "@huntbound/map-authoring": ["@huntbound/contracts"],
   "@huntbound/save": ["@huntbound/contracts", "@huntbound/simulation"],
   "@huntbound/test-fixtures": ["@huntbound/contracts", "@huntbound/simulation"],
   "@huntbound/game": [
@@ -20,6 +21,11 @@
     },
     "@huntbound/assets": {
       "allowedDependencies": ["zod"],
+      "forbidDomLibraries": ["phaser"],
+      "forbidNodeBuiltins": true
+    },
+    "@huntbound/map-authoring": {
+      "allowedDependencies": [],
       "forbidDomLibraries": ["phaser"],
       "forbidNodeBuiltins": true
     }
