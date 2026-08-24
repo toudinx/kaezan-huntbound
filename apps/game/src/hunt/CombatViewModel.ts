@@ -672,7 +672,13 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
     },
   ]);
 
-export const DEFAULT_COMBAT_CONDITIONS: readonly ScenarioConditionDefinition[] =
+/**
+ * Compatibility fallback for local/default view-model fixtures until the hunt
+ * boot path passes scenario-authored conditions through `createHuntCombatViewModel`.
+ * Keep this aligned with the approved PB-05 posture content; it is not a new
+ * production source of truth.
+ */
+export const DEFAULT_COMBAT_FALLBACK_CONDITIONS: readonly ScenarioConditionDefinition[] =
   Object.freeze([
     {
       conditionId: 'blood-rage',
@@ -696,8 +702,8 @@ export const DEFAULT_COMBAT_CONDITIONS: readonly ScenarioConditionDefinition[] =
       durationTicks: 0,
       skillIndex: null,
       skillModifierPermille: 0,
-      damageDealtPermille: 0,
-      damageReceivedPermille: -200,
+      damageDealtPermille: -150,
+      damageReceivedPermille: -150,
       speedPermille: 0,
       manaShield: false,
       tickDamageAmount: 0,
@@ -718,6 +724,7 @@ export function createHuntCombatViewModel(
   runtime: RuntimeContentBundle,
   playerEntityId: EntityId = 1 as EntityId,
   playerBlueprintId = 'player',
+  conditions: readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_FALLBACK_CONDITIONS,
 ): CombatViewModel {
   const character = runtime.characters[0];
   const maxHealthByBlueprint = new Map<string, number>();
@@ -739,7 +746,7 @@ export function createHuntCombatViewModel(
     playerEntityId,
     playerBlueprintId,
     abilities: DEFAULT_COMBAT_ABILITIES,
-    conditions: DEFAULT_COMBAT_CONDITIONS,
+    conditions,
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint,
     maxResourceByBlueprint,
@@ -753,7 +760,7 @@ export function createDefaultCombatViewModel(
     playerEntityId,
     playerBlueprintId: 'player',
     abilities: DEFAULT_COMBAT_ABILITIES,
-    conditions: DEFAULT_COMBAT_CONDITIONS,
+    conditions: DEFAULT_COMBAT_FALLBACK_CONDITIONS,
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint: new Map([
       ['player', 185],

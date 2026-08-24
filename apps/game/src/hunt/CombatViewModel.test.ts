@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
   AbilityDefinition,
   EntityId,
+  RuntimeContentBundle,
   ScenarioConditionDefinition,
   Seed,
   SimulationEvent,
@@ -14,6 +15,8 @@ import {
   type CombatViewModelOptions,
   createCombatViewModel,
   createDefaultCombatViewModel,
+  createHuntCombatViewModel,
+  DEFAULT_COMBAT_FALLBACK_CONDITIONS,
 } from './CombatViewModel';
 
 const abilityV5Defaults = {
@@ -253,6 +256,78 @@ function snapshot(
   };
 }
 
+function runtimeFixture(): RuntimeContentBundle {
+  return {
+    schemaVersion: '1',
+    contentVersion: 'fixture-1',
+    slice: {
+      key: 'fixture:combat-view-model',
+      objective: 'Combat view model fixture',
+      consumer: 'unit test',
+      roots: ['character:huntbound:knight-test'],
+      dependencies: [],
+      projections: [
+        {
+          entityKey: 'character:huntbound:knight-test',
+          facets: ['identity', 'progression'],
+          consumer: 'unit test',
+          rationale: 'Minimal runtime for combat view model',
+        },
+      ],
+      dependencyMode: 'reachable-only',
+      curationState: 'accepted',
+      exportVersion: '1',
+    },
+    vocationFamilies: [],
+    vocations: [],
+    creatures: [
+      {
+        guid: '11111111-1111-4111-8111-111111111111',
+        stableKey: 'creature:tibia:rotworm',
+        displayName: 'Rotworm',
+        includedFacets: [
+          'identity',
+          'stats',
+          'appearance',
+          'combat',
+          'conditions',
+          'loot',
+        ],
+        stats: { health: 65, experience: 40, speed: 100 },
+        lookType: 26,
+        attacks: [],
+        defenses: [],
+        conditions: [],
+        summons: [],
+        resistances: {},
+        immunities: [],
+        loot: [],
+      },
+    ],
+    items: [],
+    spells: [],
+    characters: [
+      {
+        stableKey: 'character:huntbound:knight-test',
+        vocationKey: 'vocation:tibia:knight',
+        level: 35,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponAttack: 14,
+        maxHealth: 590,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+    ],
+  } as unknown as RuntimeContentBundle;
+}
+
 describe('CombatViewModel', () => {
   it('exposes seven active Knight abilities in the default combat model', () => {
     const viewModel = createDefaultCombatViewModel();
@@ -267,6 +342,43 @@ describe('CombatViewModel', () => {
       'whirlwind-throw',
       'blood-rage',
       'protector',
+    ]);
+  });
+
+  it('keeps fallback posture condition values aligned with the approved content data', () => {
+    expect(DEFAULT_COMBAT_FALLBACK_CONDITIONS).toEqual([
+      {
+        conditionId: 'blood-rage',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'protector',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: -150,
+        damageReceivedPermille: -150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
     ]);
   });
 
@@ -700,6 +812,54 @@ describe('CombatViewModel', () => {
     expect(viewModel.snapshot().abilities[2]).toMatchObject({
       available: false,
       remainingCooldownTicks: 40,
+    });
+  });
+
+  it('uses explicit scenario conditions in the hunt combat model instead of the compatibility fallback', () => {
+    const bloodRageFallback = DEFAULT_COMBAT_FALLBACK_CONDITIONS[0];
+    const protectorFallback = DEFAULT_COMBAT_FALLBACK_CONDITIONS[1];
+    if (bloodRageFallback === undefined || protectorFallback === undefined) {
+      throw new Error('Expected posture fallback conditions to be present');
+    }
+    const explicitConditions: readonly ScenarioConditionDefinition[] = [
+      bloodRageFallback,
+      {
+        ...protectorFallback,
+        exclusivityGroup: null,
+      },
+    ];
+    const viewModel = createHuntCombatViewModel(
+      runtimeFixture(),
+      1 as EntityId,
+      'player',
+      explicitConditions,
+    );
+
+    viewModel.handle([
+      event(0, {
+        type: 'actor/spawned',
+        entityId: 1 as EntityId,
+        blueprintId: 'player',
+        position: { x: 5, y: 5, z: 8 },
+        facing: 's',
+      }),
+      event(10, {
+        type: 'ability/cast',
+        entityId: 1 as EntityId,
+        abilityIndex: 5,
+        targetEntityId: null,
+      }),
+      event(20, {
+        type: 'ability/cast',
+        entityId: 1 as EntityId,
+        abilityIndex: 6,
+        targetEntityId: null,
+      }),
+    ]);
+
+    expect(viewModel.snapshot().playerPosture).toEqual({
+      abilityId: 'blood-rage',
+      label: 'Blood Rage',
     });
   });
 });
