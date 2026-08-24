@@ -47,7 +47,9 @@ Em caso de conflito, ler nesta ordem:
 8. `docs/simulation/KERNEL_CONTRACT.md` e `docs/simulation/REPLAY_CONTRACT.md`;
 9. `docs/content/PB-07-ROTATIONS.md` — kit, custo, cooldown e fórmula do Knight, com proveniência.
    **Emendado por este README** no ponto da hipótese de seis slots (decisão congelada 3);
-10. `docs/content/KNIGHT_BANDS.md` — entregue pela PB-08-02; a partir dela, é a fonte do kit;
+10. `docs/content/KNIGHT_BANDS.md` — **entregue e vigente** desde a PB-08-02; é a fonte do kit. Onde
+    ele divergir da tabela "O kit alvo" abaixo, **ele vence**: a tabela é a proposta de 2026-08-24,
+    o mapa é o resultado;
 11. este README;
 12. a task card em execução;
 13. `STATE.md` apenas para estado operacional.
@@ -112,7 +114,7 @@ de nível ≤ 35 **inteiro**, menos exatamente uma escada.
 | **Dano** | **Whirlwind Throw** | `exori hur` | 28 | 40 | 6 s | **a arma sai voando**, `range(5)` | ❌ |
 | Situacional | Wound Cleansing | `exura ico` | 8 | 40 | 1 s | brilho verde no jogador | ✅ |
 | Situacional | **Blood Rage / Protector** | — | ~20 | — | toggle | estado permanente visível | ❌ |
-| Situacional | **Challenge** | `exeta res` | 20 | 30 | 2 s | **a tela inteira vira para você** | ❌ |
+| Situacional | **Challenge** | `exeta res` | 20 | 30 | 2 s | **os oito vizinhos viram para você** | ❌ |
 | Situacional | **Haste** | `utani hur` | 14 | 60 | 2 s | o boneco acelera | ❌ |
 | ~~corte~~ | ~~Charge~~ | `utani tempo hur` | 25 | 100 | 2 s | mesma imagem de Haste → escada | — |
 
