@@ -57,6 +57,45 @@ enum ShootType_t : uint8_t {
 };
 `;
 
+const postures = [
+  {
+    abilityId: 'blood-rage',
+    conditionId: 'blood-rage',
+    displayName: 'Blood Rage',
+    level: 20,
+    mana: 20,
+    skillIndex: 2,
+    skillModifierPermille: 250,
+    damageReceivedPermille: 150,
+    damageDealtPermille: 0,
+    shieldingPermille: 0,
+    source: {
+      provider: 'TibiaWiki',
+      version: '15.25.3a4a52',
+      divergence:
+        'Uses the 2026 stance values because the Canary snapshot predates toggle stances.',
+    },
+  },
+  {
+    abilityId: 'protector',
+    conditionId: 'protector',
+    displayName: 'Protector',
+    level: 20,
+    mana: 20,
+    skillIndex: null,
+    skillModifierPermille: 0,
+    damageReceivedPermille: -150,
+    damageDealtPermille: -150,
+    shieldingPermille: 300,
+    source: {
+      provider: 'TibiaWiki',
+      version: '15.25.3a4a52',
+      divergence:
+        'Shielding stays declarative until PB-11 adds armor and shielding resolution.',
+    },
+  },
+] as const;
+
 const sourceFiles = {
   'data/XML/vocations.xml': vocationsXml,
   'data/scripts/spells/attack/berserk.lua': berserkLua,
@@ -164,6 +203,7 @@ function selection(
         sourceFile: 'data/items/items.xml',
       },
     ],
+    postures,
     sourceFiles: hashedSources(),
     ...overrides,
   };
@@ -191,6 +231,18 @@ describe('validateCombatSelection', () => {
       ),
     ) as {
       readonly spellAccess: string;
+      readonly postures: readonly {
+        readonly abilityId: string;
+        readonly conditionId: string;
+        readonly source: {
+          readonly provider: string;
+          readonly version: string;
+          readonly divergence: string;
+        };
+      }[];
+      readonly sourceFiles: readonly {
+        readonly relativePath: string;
+      }[];
       readonly character: {
         readonly level: number;
         readonly maxHealth: number;
@@ -222,6 +274,30 @@ describe('validateCombatSelection', () => {
     expect(
       frozen.spells.every((spell) => spell.huntboundAccess === 'unrestricted'),
     ).toBe(true);
+    expect(frozen.postures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          abilityId: 'blood-rage',
+          conditionId: 'blood-rage',
+          source: expect.objectContaining({
+            provider: 'TibiaWiki',
+            version: '15.25.3a4a52',
+          }),
+        }),
+        expect.objectContaining({
+          abilityId: 'protector',
+          conditionId: 'protector',
+          source: expect.objectContaining({
+            provider: 'TibiaWiki',
+            version: '15.25.3a4a52',
+            divergence: expect.stringContaining('PB-11'),
+          }),
+        }),
+      ]),
+    );
+    expect(
+      frozen.sourceFiles.some((entry) => /tibiawiki/i.test(entry.relativePath)),
+    ).toBe(false);
     expect(frozen.resolvedPower.berserk).toEqual({
       minPower: 48,
       maxPower: 129,
@@ -247,9 +323,40 @@ describe('validateCombatSelection', () => {
         'item:5967',
         'item:2889',
         'creature:rotworm',
+        'posture:blood-rage',
+        'posture:protector',
       ],
       diagnostics: [],
     });
+  });
+
+  it('only reports posture ids when the posture block is valid', () => {
+    const result = validateCombatSelection(
+      selection({
+        postures: [
+          {
+            ...postures[0],
+            source: {
+              provider: 'TibiaWiki',
+              divergence: postures[0].source.divergence,
+            },
+          },
+          postures[1],
+        ],
+      }),
+      files(),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.presentIds).not.toContain('posture:blood-rage');
+    expect(result.presentIds).not.toContain('posture:protector');
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'postures[0].source.version',
+        }),
+      ]),
+    );
   });
 
   it('lists every missing ID in one report instead of stopping at the first', () => {

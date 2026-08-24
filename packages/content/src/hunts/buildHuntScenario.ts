@@ -10,6 +10,7 @@ import {
   type HuntDiagnostic,
   type KernelScenario,
   type LootTableDefinition,
+  type ScenarioConditionDefinition,
   type Seed,
   SIMULATION_SCHEMA_VERSION,
   type SimulationDiagnostic,
@@ -44,11 +45,16 @@ import {
   stepCooldownTicksFromSpeed,
   ticksFromIntervalMs,
 } from './combatConversion.ts';
+import type { KnightPostureDefinition } from './knightPostures.ts';
 
 export interface HuntScenarioBuild {
   readonly scenario: KernelScenario;
   readonly itemKeys: readonly string[];
   readonly abilityKeys: readonly string[];
+}
+
+export interface HuntScenarioBuildOptions {
+  readonly postures?: readonly KnightPostureDefinition[];
 }
 
 function publicFailure(
@@ -189,6 +195,7 @@ function composePlayer(
     attackCooldownTicks,
     attackMinDamage: melee.minPower,
     attackMaxDamage: melee.maxPower,
+    attackSkillIndex: 2,
     attackRangeTiles: MELEE_RANGE_TILES,
     aggroRadius: 0,
     lootTableIndex: null,
@@ -378,6 +385,53 @@ function composeAbilities(
   return { abilities, abilityKeys };
 }
 
+function composePostureAbilities(
+  postures: readonly KnightPostureDefinition[],
+): readonly AbilityDefinition[] {
+  const groupCooldownTicks = ticksFromIntervalMs(2000) ?? 0;
+  return postures.map((posture, index) => ({
+    abilityId: posture.abilityId,
+    effect: 'heal',
+    shape: 'self',
+    radius: 0,
+    rangeTiles: 0,
+    resourceCost: posture.mana,
+    cooldownTicks: 0,
+    groupCooldownTicks,
+    minPower: 0,
+    maxPower: 0,
+    element: 'physical',
+    primaryCooldownGroup: 1,
+    secondaryCooldownGroup: 2,
+    secondaryGroupCooldownTicks: groupCooldownTicks,
+    appliedConditionIndex: index,
+    maxCharges: null,
+    rechargeKind: 'none',
+    toggle: true,
+  }));
+}
+
+function composePostureConditions(
+  postures: readonly KnightPostureDefinition[],
+): readonly ScenarioConditionDefinition[] {
+  return postures.map((posture) => ({
+    conditionId: posture.conditionId,
+    exclusivityGroup: 1,
+    durationTicks: 0,
+    skillIndex: posture.skillIndex,
+    skillModifierPermille: posture.skillModifierPermille,
+    damageDealtPermille: posture.damageDealtPermille,
+    damageReceivedPermille: posture.damageReceivedPermille,
+    speedPermille: 0,
+    manaShield: false,
+    tickDamageAmount: 0,
+    tickDamageIntervalTicks: 0,
+    elementBonusPermille: 0,
+    convertNextAbilityElement: false,
+    bonusElement: null,
+  }));
+}
+
 function collectMissingLootKeys(
   creatures: readonly CreatureDefinition[],
   registry: ContentRegistry,
@@ -398,6 +452,7 @@ export function buildHuntScenario(
   character: CharacterDefinition,
   registry: ContentRegistry,
   seed: Seed,
+  options?: HuntScenarioBuildOptions,
 ): SimulationValidationResult<HuntScenarioBuild> {
   void seed;
 
@@ -407,11 +462,14 @@ export function buildHuntScenario(
   }
 
   const diagnostics: HuntDiagnostic[] = [];
-  const { abilities, abilityKeys } = composeAbilities(
+  const { abilities: spellAbilities, abilityKeys } = composeAbilities(
     character,
     registry,
     diagnostics,
   );
+  const postureAbilities = composePostureAbilities(options?.postures ?? []);
+  const abilities = [...spellAbilities, ...postureAbilities];
+  const conditions = composePostureConditions(options?.postures ?? []);
   const playerAbilityIndices = abilities.map((_, index) => index);
 
   const creaturesByBlueprint = new Map<string, CreatureDefinition>();
@@ -529,7 +587,7 @@ export function buildHuntScenario(
     ...scenarioGeometry(validatedHunt.value),
     abilities,
     lootTables,
-    conditions: [],
+    conditions,
     blueprints,
   };
 

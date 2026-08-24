@@ -69,6 +69,7 @@ interface CombatSelection {
   readonly weapon: WeaponSelection;
   readonly spells: readonly SpellSelection[];
   readonly assets: readonly AssetSelection[];
+  readonly postures: unknown;
   readonly sourceFiles: readonly SourceFileEntry[];
 }
 
@@ -251,17 +252,243 @@ function parseSelection(value: unknown): CombatSelection | undefined {
   const spells = parseSpells(value.spells);
   const assets = parseAssets(value.assets);
   const sourceFiles = parseSourceFiles(value.sourceFiles);
+  const postures = value.postures;
   if (
     vocation === undefined ||
     creature === undefined ||
     weapon === undefined ||
     spells === undefined ||
     assets === undefined ||
-    sourceFiles === undefined
+    sourceFiles === undefined ||
+    postures === undefined
   ) {
     return undefined;
   }
-  return { vocation, creature, weapon, spells, assets, sourceFiles };
+  return { vocation, creature, weapon, spells, assets, postures, sourceFiles };
+}
+
+function validatePostures(value: unknown): {
+  readonly ids: readonly string[];
+  readonly diagnostics: readonly CombatSelectionDiagnostic[];
+} {
+  const diagnostics: CombatSelectionDiagnostic[] = [];
+  if (Array.isArray(value) === false) {
+    return {
+      ids: [],
+      diagnostics: [
+        diagnostic(
+          'postures',
+          'PB05_POSTURE_INVALID',
+          'postures must be an array of exactly two entries',
+        ),
+      ],
+    };
+  }
+  if (value.length !== 2) {
+    diagnostics.push(
+      diagnostic(
+        'postures',
+        'PB05_POSTURE_INVALID',
+        'postures must contain exactly Blood Rage and Protector',
+      ),
+    );
+  }
+
+  const seen = new Set<string>();
+  for (const [index, posture] of value.entries()) {
+    const path = `postures[${index}]`;
+    if (isRecord(posture) === false) {
+      diagnostics.push(
+        diagnostic(
+          path,
+          'PB05_POSTURE_INVALID',
+          'Posture entry must be an object',
+        ),
+      );
+      continue;
+    }
+
+    const abilityId = asString(posture.abilityId);
+    const conditionId = asString(posture.conditionId);
+    if (abilityId === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.abilityId`,
+          'PB05_POSTURE_INVALID',
+          'abilityId must be a non-empty string',
+        ),
+      );
+    }
+    if (conditionId === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.conditionId`,
+          'PB05_POSTURE_INVALID',
+          'conditionId must be a non-empty string',
+        ),
+      );
+    }
+    if (abilityId !== undefined) {
+      if (abilityId !== 'blood-rage' && abilityId !== 'protector') {
+        diagnostics.push(
+          diagnostic(
+            `${path}.abilityId`,
+            'PB05_POSTURE_INVALID',
+            `Unknown posture ${abilityId}`,
+          ),
+        );
+      }
+      if (seen.has(abilityId)) {
+        diagnostics.push(
+          diagnostic(
+            `${path}.abilityId`,
+            'PB05_POSTURE_INVALID',
+            `Duplicate posture ${abilityId}`,
+          ),
+        );
+      }
+      seen.add(abilityId);
+    }
+    if (
+      abilityId !== undefined &&
+      conditionId !== undefined &&
+      abilityId !== conditionId
+    ) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.conditionId`,
+          'PB05_POSTURE_INVALID',
+          'conditionId must match abilityId',
+        ),
+      );
+    }
+
+    if (asString(posture.displayName) === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.displayName`,
+          'PB05_POSTURE_INVALID',
+          'displayName must be a non-empty string',
+        ),
+      );
+    }
+    for (const field of [
+      'level',
+      'mana',
+      'skillModifierPermille',
+      'damageReceivedPermille',
+      'damageDealtPermille',
+      'shieldingPermille',
+    ] as const) {
+      const parsed = asSafeInteger(posture[field]);
+      if (parsed === undefined) {
+        diagnostics.push(
+          diagnostic(
+            `${path}.${field}`,
+            'PB05_POSTURE_INVALID',
+            `${field} must be a safe integer`,
+          ),
+        );
+      } else if ((field === 'level' || field === 'mana') && parsed < 0) {
+        diagnostics.push(
+          diagnostic(
+            `${path}.${field}`,
+            'PB05_POSTURE_INVALID',
+            `${field} must be non-negative`,
+          ),
+        );
+      }
+    }
+
+    if (
+      posture.skillIndex !== null &&
+      asSafeInteger(posture.skillIndex) === undefined
+    ) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.skillIndex`,
+          'PB05_POSTURE_INVALID',
+          'skillIndex must be a safe integer or null',
+        ),
+      );
+    }
+
+    if (isRecord(posture.source) === false) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source`,
+          'PB05_POSTURE_INVALID',
+          'source must be an object',
+        ),
+      );
+      continue;
+    }
+    const provider = asString(posture.source.provider);
+    if (provider === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source.provider`,
+          'PB05_POSTURE_INVALID',
+          'provider must be a non-empty string',
+        ),
+      );
+    } else if (provider !== 'TibiaWiki') {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source.provider`,
+          'PB05_POSTURE_INVALID',
+          'provider must be TibiaWiki',
+        ),
+      );
+    }
+    const version = asString(posture.source.version);
+    if (version === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source.version`,
+          'PB05_POSTURE_INVALID',
+          'version must be a non-empty string',
+        ),
+      );
+    } else if (version !== '15.25.3a4a52') {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source.version`,
+          'PB05_POSTURE_INVALID',
+          'version must be 15.25.3a4a52',
+        ),
+      );
+    }
+    if (asString(posture.source.divergence) === undefined) {
+      diagnostics.push(
+        diagnostic(
+          `${path}.source.divergence`,
+          'PB05_POSTURE_INVALID',
+          'divergence must be a non-empty string',
+        ),
+      );
+    }
+  }
+
+  for (const postureId of ['blood-rage', 'protector']) {
+    if (seen.has(postureId) === false) {
+      diagnostics.push(
+        diagnostic(
+          'postures',
+          'PB05_POSTURE_INVALID',
+          `Missing posture ${postureId}`,
+        ),
+      );
+    }
+  }
+
+  if (diagnostics.length > 0) {
+    return { ids: [], diagnostics };
+  }
+  return {
+    ids: ['posture:blood-rage', 'posture:protector'],
+    diagnostics: [],
+  };
 }
 
 function fileContainsVocation(contents: string, sourceId: string): boolean {
@@ -472,6 +699,12 @@ export function validateCombatSelection(
       spell.groupCooldownMs,
       diagnostics,
     );
+  }
+
+  const postureValidation = validatePostures(parsed.postures);
+  diagnostics.push(...postureValidation.diagnostics);
+  if (postureValidation.diagnostics.length === 0) {
+    presentIds.push(...postureValidation.ids);
   }
 
   return {

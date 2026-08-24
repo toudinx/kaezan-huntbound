@@ -335,6 +335,7 @@ No molde da tabela homônima do `PB-07-ROTATIONS.md`. Cada linha nomeia **o camp
 | Item | Representável? | Campo que falta | Evidência | Destino |
 |---|---|---|---|---|
 | **Cura por tick** (Recovery) | **Não** | `ScenarioConditionDefinition` só tem `tickDamageAmount`; não há `tickHealAmount` | `packages/simulation/src/kernel/conditions.ts:162` descarta a condição quando `definition.tickDamageAmount <= 0`, então um valor de cura nunca chega a ser aplicado | Fora do PB-08. Bullet contingente do README; Recovery é substituição futura da célula 6 |
+| **+30% shielding** (Protector) | **Não** | `ScenarioConditionDefinition` não carrega `shieldingPermille`, e o kernel não resolve mitigation por shielding | A postura 2026 do Protector exige um bônus declarativo de shielding que o cenário ainda não consegue transportar nem consumir | **PB-11**, junto do eixo de armor/shielding |
 | **Forma de onda** (Front Sweep) | **Não** | `AbilityShape` é `'self' \| 'target' \| 'area'`; não há `'wave'` nem direção de conjuração | `packages/contracts/src/simulation/types.ts:48`. `AREA_WAVE6` + `needDirection(true)` exigem uma área que **rotaciona com o facing** | Fora do PB-08. Bullet contingente do README |
 | **Alvo forçado** (Challenge) | **Não** | Não existe: a IA escolhe alvo livremente, sem canal para impor um | `packages/simulation/src/kernel/kernel.ts:256` `isAcquirableTarget` | **Entra neste playbook**, pela PB-08-06. É o único kernel novo do PB-08 e a única task que regenera golden |
 | **Círculo × quadrado** (Groundshaker) | **Parcial — divergência declarada** | `radius` é escalar e o kernel mede em **Chebyshev**; não há forma de disco | `packages/simulation/src/kernel/combat.ts:117`: `chebyshevDistance(from, to) <= rangeTiles`. `radius: 3` acende um quadrado 7×7 de **49 células**; o `AREA_CIRCLE3X3` do snapshot tem **37**. São **12 tiles de canto a mais** | **Divergência declarada, aceita.** Ver abaixo |
@@ -387,7 +388,7 @@ origem no fato de que o V0 embarca uma vocação só.
    Sweep, Recovery, Intense e Fair Wound Cleansing e Executioner's Throw são substituições futuras,
    cada uma com **dono de célula** — entram trocando, nunca somando.
 5. **Os eixos de arma estão reservados por célula**, com a restrição de que o club paga em ofensa.
-6. **Quatro coisas o contrato não representa** — cura por tick, forma de onda, `armor` e skill por
-   arma —, e **uma** entra neste playbook: alvo forçado, pela PB-08-06.
+6. **Cinco coisas o contrato não representa** — cura por tick, shielding, forma de onda, `armor` e
+   skill por arma —, e **uma** entra neste playbook: alvo forçado, pela PB-08-06.
 
 Mudar qualquer um dos seis é decisão de produto, fora de uma task de implementação.

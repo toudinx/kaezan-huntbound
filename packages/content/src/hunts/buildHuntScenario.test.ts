@@ -9,6 +9,7 @@ import {
   type HuntDefinition,
   type ItemDefinition,
   type RuntimeContentBundle,
+  type Seed,
   SIMULATION_SCHEMA_VERSION,
   type SimulationValidationResult,
   type SpellDefinition,
@@ -27,7 +28,10 @@ import {
   type ContentRegistry,
   createContentRegistry,
 } from '../runtime/contentRegistry.ts';
-import { buildHuntScenario } from './buildHuntScenario.ts';
+import {
+  buildHuntScenario,
+  type HuntScenarioBuild,
+} from './buildHuntScenario.ts';
 import { loadHuntDefinition } from './loadHuntDefinition.ts';
 
 const seed = createSeed('1a2b3c4d5e6f7a8b');
@@ -50,6 +54,60 @@ const character: CharacterDefinition = {
     'spell:tibia:wound-cleansing' as ContentKey,
   ],
 };
+
+const knightRotationCharacter: CharacterDefinition = {
+  ...character,
+  level: 35,
+  skills: { sword: 60, magic: 0 },
+  maxHealth: 590,
+  maxMana: 185,
+  spellKeys: [
+    'spell:tibia:berserk' as ContentKey,
+    'spell:tibia:brutal-strike' as ContentKey,
+    'spell:tibia:wound-cleansing' as ContentKey,
+    'spell:tibia:groundshaker' as ContentKey,
+    'spell:tibia:whirlwind-throw' as ContentKey,
+  ],
+};
+
+const rawKnightPostures = [
+  {
+    abilityId: 'blood-rage',
+    conditionId: 'blood-rage',
+    displayName: 'Blood Rage',
+    level: 20,
+    mana: 20,
+    skillIndex: 2,
+    skillModifierPermille: 250,
+    damageReceivedPermille: 150,
+    damageDealtPermille: 0,
+    shieldingPermille: 0,
+    source: {
+      provider: 'TibiaWiki',
+      version: '15.25.3a4a52',
+      divergence:
+        'Uses the 2026 stance values because the Canary snapshot predates toggle stances.',
+    },
+  },
+  {
+    abilityId: 'protector',
+    conditionId: 'protector',
+    displayName: 'Protector',
+    level: 20,
+    mana: 20,
+    skillIndex: null,
+    skillModifierPermille: 0,
+    damageReceivedPermille: -150,
+    damageDealtPermille: -150,
+    shieldingPermille: 300,
+    source: {
+      provider: 'TibiaWiki',
+      version: '15.25.3a4a52',
+      divergence:
+        'Shielding stays declarative until PB-11 adds armor and shielding resolution.',
+    },
+  },
+] as const;
 
 function identity(
   kind: 'vocation' | 'creature' | 'item' | 'spell',
@@ -208,6 +266,45 @@ function flameStrike(): SpellDefinition {
   };
 }
 
+function groundshakerSpell(): SpellDefinition {
+  return knightSpell(
+    'groundshaker',
+    'exori mas',
+    160,
+    8000,
+    2000,
+    {
+      kind: 'skillAttack',
+      levelFactor: 0.2,
+      minSkillAttackFactor: 0.6,
+      maxSkillAttackFactor: 1.2,
+      finalMultiplier: 1.05,
+    },
+    { shape: 'square', radiusTiles: 3 },
+  );
+}
+
+function whirlwindThrowSpell(): SpellDefinition {
+  return {
+    ...identity('spell', 'whirlwind-throw', ['identity', 'spell']),
+    words: 'exori hur',
+    level: 28,
+    mana: 40,
+    cooldownMs: 6000,
+    groupCooldownMs: 2000,
+    damageType: 'physical',
+    rangeTiles: 5,
+    allowedVocationFamilies: [knightFamily],
+    formula: {
+      kind: 'skillAttack',
+      levelFactor: 0.2,
+      minSkillAttackFactor: 0.5,
+      maxSkillAttackFactor: 1.1,
+      finalMultiplier: 1,
+    },
+  };
+}
+
 const rotwormLoot = [
   lootEntry('gold-coin', 71_760, 1, 17),
   lootEntry('sword', 3000),
@@ -274,6 +371,10 @@ function defaultSpells(): readonly SpellDefinition[] {
       'healing',
     ),
   ];
+}
+
+function knightRotationSpells(): readonly SpellDefinition[] {
+  return [...defaultSpells(), groundshakerSpell(), whirlwindThrowSpell()];
 }
 
 function runtimeBundle(
@@ -474,6 +575,24 @@ function build(
   );
 }
 
+function buildWithOptions(
+  options: { readonly postures?: readonly unknown[] },
+  hunt = syntheticHunt(),
+  nextCharacter = knightRotationCharacter,
+  nextRegistry = registry({ spells: knightRotationSpells() }),
+) {
+  const buildWithPostures = buildHuntScenario as unknown as (
+    hunt: HuntDefinition,
+    character: CharacterDefinition,
+    registry: ContentRegistry,
+    seed: Seed,
+    options: { readonly postures?: readonly unknown[] },
+  ) => SimulationValidationResult<HuntScenarioBuild>;
+  return unwrapSuccess(
+    buildWithPostures(hunt, nextCharacter, nextRegistry, seed, options),
+  );
+}
+
 function stubRegistry(
   creatures: ReadonlyMap<string, CreatureDefinition>,
   extraHas: ReadonlySet<string> = new Set(),
@@ -635,6 +754,79 @@ describe('buildHuntScenario', () => {
   });
 });
 
+describe('parseKnightPostures', () => {
+  it('parses the frozen Blood Rage and Protector definitions', async () => {
+    const hunts = await import('./index.ts');
+
+    expect(hunts.parseKnightPostures).toBeTypeOf('function');
+    const postures = hunts.parseKnightPostures?.(rawKnightPostures);
+
+    expect(postures).toEqual(rawKnightPostures);
+    expect(postures?.[1]?.source.divergence).toContain('PB-11');
+  });
+
+  it.each([
+    {
+      name: 'missing source provider',
+      input: [
+        {
+          ...rawKnightPostures[0],
+          source: {
+            version: '15.25.3a4a52',
+            divergence: rawKnightPostures[0].source.divergence,
+          },
+        },
+        rawKnightPostures[1],
+      ],
+      message: /provider/i,
+    },
+    {
+      name: 'missing source version',
+      input: [
+        {
+          ...rawKnightPostures[0],
+          source: {
+            provider: 'TibiaWiki',
+            divergence: rawKnightPostures[0].source.divergence,
+          },
+        },
+        rawKnightPostures[1],
+      ],
+      message: /version/i,
+    },
+    {
+      name: 'duplicate ids',
+      input: [
+        { ...rawKnightPostures[0] },
+        {
+          ...rawKnightPostures[1],
+          abilityId: 'blood-rage',
+          conditionId: 'blood-rage',
+        },
+      ],
+      message: /unique|duplicate/i,
+    },
+    {
+      name: 'negative mana',
+      input: [{ ...rawKnightPostures[0], mana: -20 }, rawKnightPostures[1]],
+      message: /mana/i,
+    },
+    {
+      name: 'fractional permille',
+      input: [
+        { ...rawKnightPostures[0], skillModifierPermille: 250.5 },
+        rawKnightPostures[1],
+      ],
+      message: /permille|integer/i,
+    },
+  ])('rejects $name', async ({ input, message }) => {
+    const hunts = await import('./index.ts');
+
+    expect(hunts.parseKnightPostures).toBeTypeOf('function');
+    expect(() => hunts.parseKnightPostures?.(input)).toThrow(message);
+  });
+});
+
 describe('buildHuntScenario combat blueprints', () => {
   it('derives rotworm health, melee damage, attack cooldown and step ticks', () => {
     const rotworm = build().scenario.blueprints.find(
@@ -726,6 +918,26 @@ describe('buildHuntScenario combat blueprints', () => {
 });
 
 describe('buildHuntScenario abilities', () => {
+  it('keeps the legacy scenario shape when postures are omitted, except for attackSkillIndex', () => {
+    const { scenario, abilityKeys } = build();
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+
+    expect(abilityKeys).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+    ]);
+    expect(scenario.abilities.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+    ]);
+    expect(scenario.conditions).toEqual([]);
+    expect(player?.attackSkillIndex).toBe(2);
+  });
+
   it('resolves a single kit band to the same scenario as legacy spellKeys', () => {
     const { spellKeys, ...characterWithoutLegacyKit } = character;
     const kitCharacter = {
@@ -820,6 +1032,104 @@ describe('buildHuntScenario abilities', () => {
       (blueprint) => blueprint.blueprintId === 'player',
     );
     expect(player?.abilityIndices).toEqual([0, 1, 2]);
+  });
+
+  it('appends Blood Rage and Protector after the five spell abilities', () => {
+    const { scenario, abilityKeys } = buildWithOptions({
+      postures: rawKnightPostures,
+    });
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+
+    expect(abilityKeys).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(player?.attackSkillIndex).toBe(2);
+    expect(scenario.abilities.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+      'blood-rage',
+      'protector',
+    ]);
+    expect(scenario.abilities[5]).toMatchObject({
+      abilityId: 'blood-rage',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 20,
+      cooldownTicks: 0,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: 2,
+      secondaryGroupCooldownTicks: 40,
+      appliedConditionIndex: 0,
+      rechargeKind: 'none',
+      toggle: true,
+    });
+    expect(scenario.abilities[6]).toMatchObject({
+      abilityId: 'protector',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 20,
+      cooldownTicks: 0,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: 2,
+      secondaryGroupCooldownTicks: 40,
+      appliedConditionIndex: 1,
+      rechargeKind: 'none',
+      toggle: true,
+    });
+    expect(scenario.conditions).toEqual([
+      {
+        conditionId: 'blood-rage',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'protector',
+        exclusivityGroup: 1,
+        durationTicks: 0,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: -150,
+        damageReceivedPermille: -150,
+        speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+    ]);
   });
 
   it('rejects a spell that the knight family cannot cast', () => {
