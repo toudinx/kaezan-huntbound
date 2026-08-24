@@ -1,0 +1,64 @@
+{
+  "materials": [
+    {
+      "key": "earth",
+      "serverIds": [
+        101, 5711, 5712, 5713, 5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721,
+        5722, 5723, 5724, 5725, 5726
+      ]
+    },
+    {
+      "key": "cave-floor",
+      "serverIds": [351, 352, 353, 354, 355]
+    },
+    {
+      "key": "muddy-floor",
+      "serverIds": [
+        16280, 16281, 16282, 16283, 16284, 16285, 16286, 16287, 16288, 16289,
+        16290, 16291, 16292, 16293, 16294, 16295, 16296, 16297, 16298, 16299,
+        17238
+      ]
+    },
+    {
+      "key": "dirt-wall",
+      "serverIds": [356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367]
+    }
+  ],
+  "ambiguityMinimumOccurrence": 75,
+  "schemaVersion": 1,
+  "sourcePath": "data-otservbr-global/world/otservbr.otbm",
+  "windows": [
+    {
+      "floors": [7, 8, 9, 10],
+      "maxX": 32364,
+      "maxY": 32264,
+      "minX": 32236,
+      "minY": 32136,
+      "reason": "Intact Thais troll cave with repeated authored cave borders."
+    },
+    {
+      "floors": [7, 8, 9, 10],
+      "maxX": 32764,
+      "maxY": 31664,
+      "minX": 32636,
+      "minY": 31536,
+      "reason": "Intact Ab'Dendriel cave complex with all twelve dirt-wall pieces."
+    },
+    {
+      "floors": [6, 7, 8, 9],
+      "maxX": 33064,
+      "maxY": 32164,
+      "minX": 32936,
+      "minY": 32036,
+      "reason": "Intact Venore swamp cave edge supplying the muddy-floor family."
+    },
+    {
+      "floors": [8],
+      "maxX": 32962,
+      "maxY": 32190,
+      "minX": 32948,
+      "minY": 32176,
+      "reason": "Additional intact Venore 15x15 sample preserving the 3x3 neighborhood for hunt signature coverage."
+    }
+  ]
+}
