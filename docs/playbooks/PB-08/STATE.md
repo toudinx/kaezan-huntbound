@@ -44,6 +44,12 @@ para o PB-10, que é o playbook que mexe em conteúdo de hunt.
 **B10 — fechado em 2026-08-24.** A evidência da PB-08-01 dizia "29 slots (12 rotworm + 17 snake)";
 a `main` compõe 20, todos rotworm. Linha corrigida acima; snake segue sem sprite e foi para o PB-10.
 
+**B11 — aberto, independente do PB-08.** `hunt-play.spec.ts:504` ("short d-pad tap into one paced
+command") é sensível a carga: reprovou no `verify` pós-integração da PB-08-02 com 2 comandos (ticks
+15 e 17) em vez de 1, com **código byte-idêntico** ao da rodada verde anterior — o diff entre elas
+era uma linha de markdown. Passa 14/14 isolada. Vale a regra do AGENTS.md: não mascarar com `retries`
+nem timeout inflado; a correção é tornar o tap determinístico. Vira task quando alguém tocar em input.
+
 **B1, B2, B3, B5, B6, B7, B8 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 
 ## Decisões congeladas
