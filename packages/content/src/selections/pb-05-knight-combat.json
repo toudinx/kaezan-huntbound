@@ -44,11 +44,22 @@
     "attackFactor": 1,
     "maxHealth": 590,
     "maxMana": 185,
-    "levelSource": "Berserk requires level 35 in data/scripts/spells/attack/berserk.lua; a level 8 knight could not cast the kit it was given",
+    "levelSource": "Level 35 is a Huntbound balance choice for health, mana, and damage; the unrestricted kit does not require Canary spell levels",
     "skillSource": "sword 60 is the ordinary skill of a level 35 knight; at the schema.sql default of 10 the melee formula caps at 13 damage against a 65 HP rotworm",
     "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5; levels 9-35 gain Knight gainhp 15",
     "manaSource": "Canary mana at level 35 is 170, one cast short of the 185 the loadout costs (115+40+30). Huntbound sizes the pool to the kit so all three spells are reachable in one hunt; V0 has no potions.",
     "spellAccess": "unrestricted",
+    "kit": [
+      {
+        "minLevel": 1,
+        "maxLevel": null,
+        "spellKeys": [
+          "spell:tibia:berserk",
+          "spell:tibia:brutal-strike",
+          "spell:tibia:wound-cleansing"
+        ]
+      }
+    ],
     "trivializesHunt": false
   },
   "huntboundSustain": {

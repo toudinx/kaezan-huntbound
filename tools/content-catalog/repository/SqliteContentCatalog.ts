@@ -1049,6 +1049,29 @@ export class SqliteContentCatalog
           }>
         ).map((skill) => [skill.skill, skill.value]),
       );
+      const kitBands = (
+        this.database
+          .prepare(
+            'SELECT ordinal, min_level, max_level FROM character_kit_bands WHERE slice_key = ? AND character_key = ? ORDER BY ordinal',
+          )
+          .all(sliceKey, row.stable_key) as Array<{
+          readonly ordinal: number;
+          readonly min_level: number;
+          readonly max_level: number | null;
+        }>
+      ).map((band) => ({
+        minLevel: band.min_level,
+        maxLevel: band.max_level,
+        spellKeys: (
+          this.database
+            .prepare(
+              'SELECT spell_key FROM character_kit_band_spells WHERE slice_key = ? AND character_key = ? AND band_ordinal = ? ORDER BY ordinal',
+            )
+            .all(sliceKey, row.stable_key, band.ordinal) as Array<{
+            readonly spell_key: string;
+          }>
+        ).map((entry) => entry.spell_key),
+      }));
       const spellKeys = (
         this.database
           .prepare(
@@ -1067,7 +1090,7 @@ export class SqliteContentCatalog
         weaponAttack: row.weapon_attack,
         maxHealth: row.max_health,
         maxMana: row.max_mana,
-        spellKeys,
+        ...(kitBands.length > 0 ? { kit: kitBands } : { spellKeys }),
       };
     }) as CatalogContentBundle['characters'];
   }
@@ -1097,18 +1120,51 @@ export class SqliteContentCatalog
           )
           .run(bundle.slice.key, character.stableKey, skill, value);
       }
-      for (const [ordinal, spellKey] of character.spellKeys.entries()) {
-        this.database
-          .prepare(
-            'INSERT INTO character_spells (slice_key, character_key, ordinal, spell_key) VALUES (?, ?, ?, ?)',
-          )
-          .run(bundle.slice.key, character.stableKey, ordinal, spellKey);
+      if (character.kit !== undefined) {
+        for (const [bandOrdinal, band] of character.kit.entries()) {
+          this.database
+            .prepare(
+              'INSERT INTO character_kit_bands (slice_key, character_key, ordinal, min_level, max_level) VALUES (?, ?, ?, ?, ?)',
+            )
+            .run(
+              bundle.slice.key,
+              character.stableKey,
+              bandOrdinal,
+              band.minLevel,
+              band.maxLevel,
+            );
+          for (const [ordinal, spellKey] of band.spellKeys.entries()) {
+            this.database
+              .prepare(
+                'INSERT INTO character_kit_band_spells (slice_key, character_key, band_ordinal, ordinal, spell_key) VALUES (?, ?, ?, ?, ?)',
+              )
+              .run(
+                bundle.slice.key,
+                character.stableKey,
+                bandOrdinal,
+                ordinal,
+                spellKey,
+              );
+          }
+        }
+      } else if (character.spellKeys !== undefined) {
+        for (const [ordinal, spellKey] of character.spellKeys.entries()) {
+          this.database
+            .prepare(
+              'INSERT INTO character_spells (slice_key, character_key, ordinal, spell_key) VALUES (?, ?, ?, ?)',
+            )
+            .run(bundle.slice.key, character.stableKey, ordinal, spellKey);
+        }
+      } else {
+        throw new Error('Character must define either kit or spellKeys');
       }
     }
   }
 
   private deleteSlice(sliceKey: string): void {
     const statements = [
+      'DELETE FROM character_kit_band_spells WHERE slice_key = ?',
+      'DELETE FROM character_kit_bands WHERE slice_key = ?',
       'DELETE FROM character_spells WHERE slice_key = ?',
       'DELETE FROM character_skills WHERE slice_key = ?',
       'DELETE FROM characters WHERE slice_key = ?',

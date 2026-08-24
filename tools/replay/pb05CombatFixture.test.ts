@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  CharacterDefinitionSchema,
+  RuntimeContentBundleSchema,
   SIMULATION_RULES_VERSION,
   type SimulationEvent,
   validateKernelScenario,
@@ -13,6 +15,7 @@ import {
   encodeCanonicalJson,
 } from '../../packages/simulation/src/index.ts';
 import {
+  characterFromPb05Selection,
   composePb05CombatSession,
   PB05_COMBAT_SEED,
   PB05_COMBAT_TICK_COUNT,
@@ -138,6 +141,44 @@ function parsedEvents(text: string): readonly SimulationEvent[] {
 }
 
 describe('PB-05 combat session coverage', () => {
+  it('feeds the PB-05 character kit into the combat composer', async () => {
+    const [catalogText, selectionText] = await Promise.all([
+      readFile(
+        resolve(
+          fixtureRoot,
+          '../../../content/src/generated/pb-01-contract-coverage.json',
+        ),
+        'utf8',
+      ),
+      readFile(
+        resolve(
+          fixtureRoot,
+          '../../../content/src/selections/pb-05-knight-combat.json',
+        ),
+        'utf8',
+      ),
+    ]);
+    const runtime = RuntimeContentBundleSchema.parse(
+      JSON.parse(catalogText) as unknown,
+    );
+    const selection = JSON.parse(selectionText) as unknown;
+    const character = characterFromPb05Selection(runtime, selection);
+
+    expect(CharacterDefinitionSchema.safeParse(character).success).toBe(true);
+    expect(character.spellKeys).toBeUndefined();
+    expect(character.kit).toEqual([
+      {
+        minLevel: 1,
+        maxLevel: null,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+        ],
+      },
+    ]);
+  });
+
   it('exercises every required combat event on the real hunt scenario', async () => {
     const session = await composePb05CombatSession();
     const scenario = validateKernelScenario(

@@ -13,9 +13,11 @@ import {
 } from '../../packages/content/src/index.ts';
 import type {
   ActorState,
+  CharacterDefinition,
   Direction,
   GridPosition,
   KernelScenario,
+  RuntimeContentBundle,
   SimulationCommandInput,
   SimulationCommandLog,
   SimulationCommandRecord,
@@ -24,6 +26,7 @@ import type {
   SimulationEventPayload,
 } from '../../packages/contracts/src/index.ts';
 import {
+  CharacterDefinitionSchema,
   createEntityId,
   createSeed,
   createTickIndex,
@@ -147,10 +150,10 @@ export async function buildPb05HuntScenario(): Promise<KernelScenario> {
     ),
   );
   const runtime = RuntimeContentBundleSchema.parse(catalogRaw);
-  const character = runtime.characters[0];
-  if (character === undefined) {
-    throw new Error('Catalog is missing the hunt character');
-  }
+  const selectionRaw = await readJson(
+    join(repoRoot, 'packages/content/src/selections/pb-05-knight-combat.json'),
+  );
+  const character = characterFromPb05Selection(runtime, selectionRaw);
 
   const built = buildHuntScenario(
     hunt.value,
@@ -164,6 +167,41 @@ export async function buildPb05HuntScenario(): Promise<KernelScenario> {
     );
   }
   return built.value.scenario;
+}
+
+export function characterFromPb05Selection(
+  runtime: RuntimeContentBundle,
+  selection: unknown,
+): CharacterDefinition {
+  const character = runtime.characters[0];
+  if (character === undefined) {
+    throw new Error('Catalog is missing the hunt character');
+  }
+  if (
+    typeof selection !== 'object' ||
+    selection === null ||
+    Array.isArray(selection)
+  ) {
+    throw new Error('PB-05 selection must be an object');
+  }
+  const selectedCharacter = (selection as { readonly character?: unknown })
+    .character;
+  if (
+    typeof selectedCharacter !== 'object' ||
+    selectedCharacter === null ||
+    Array.isArray(selectedCharacter)
+  ) {
+    throw new Error('PB-05 selection is missing its character');
+  }
+  const kit = (selectedCharacter as { readonly kit?: unknown }).kit;
+  if (kit === undefined) {
+    throw new Error('PB-05 selection character is missing its kit');
+  }
+  return CharacterDefinitionSchema.parse({
+    ...character,
+    spellKeys: undefined,
+    kit,
+  });
 }
 
 function payloadsOfType<T extends SimulationEventPayload['type']>(

@@ -32,8 +32,14 @@ export function diagnosticsFromZodError(
 ): readonly ContentDiagnostic[] {
   return error.issues.map((issue) => {
     const path = formatPath(issue.path);
+    const namedCode =
+      issue.code === 'custom' &&
+      issue.params !== undefined &&
+      typeof issue.params.contentCode === 'string'
+        ? issue.params.contentCode
+        : undefined;
     return {
-      code: `schema.${issue.code}`,
+      code: namedCode ?? `schema.${issue.code}`,
       severity: 'error' as const,
       message: path.length > 0 ? `${path}: ${issue.message}` : issue.message,
     };

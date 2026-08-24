@@ -5,6 +5,7 @@ import type {
   ContentFacet,
   RuntimeContentBundle,
 } from '@huntbound/contracts';
+import { characterSpellKeysAtLevel } from '../../../packages/contracts/src/index.ts';
 
 const facetOrder: readonly ContentFacet[] = [
   'identity',
@@ -82,10 +83,21 @@ function canonicalRuntimeBundle(
       }))
       .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
     characters: [...bundle.characters]
-      .map((character) => ({
-        ...character,
-        spellKeys: [...character.spellKeys],
-      }))
+      .map((character) => {
+        if (character.kit !== undefined) {
+          return {
+            ...character,
+            kit: character.kit.map((band) => ({
+              ...band,
+              spellKeys: [...band.spellKeys],
+            })),
+          };
+        }
+        if (character.spellKeys !== undefined) {
+          return { ...character, spellKeys: [...character.spellKeys] };
+        }
+        throw new Error('Character must define either kit or spellKeys');
+      })
       .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
   };
 }
@@ -203,7 +215,7 @@ export function generateCatalogDocumentation(
           .join(', ')}`,
         `- Weapon: ${character.weaponItemKey} attack ${character.weaponAttack}`,
         `- Vitals: health ${character.maxHealth}, mana ${character.maxMana}`,
-        `- Spells: ${character.spellKeys.join(', ')}`,
+        `- Active spells: ${characterSpellKeysAtLevel(character).join(', ')}`,
         '',
       );
     }

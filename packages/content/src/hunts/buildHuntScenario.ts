@@ -4,6 +4,8 @@ import {
   type CharacterDefinition,
   type ContentKey,
   type CreatureDefinition,
+  characterKitBandAtLevel,
+  characterSpellKeysAtLevel,
   type HuntDefinition,
   type HuntDiagnostic,
   type KernelScenario,
@@ -306,13 +308,18 @@ function composeAbilities(
     ? registry.getVocation(character.vocationKey)
     : undefined;
 
-  character.spellKeys.forEach((spellKey, spellIndex) => {
+  const activeBand = characterKitBandAtLevel(character);
+  const spellPath =
+    character.kit === undefined
+      ? ['character', 'spellKeys']
+      : ['character', 'kit', character.kit.indexOf(activeBand), 'spellKeys'];
+  characterSpellKeysAtLevel(character).forEach((spellKey, spellIndex) => {
     if (!registry.has(spellKey)) {
       diagnostics.push(
         diagnostic(
           'HUNT_SPELL_NOT_ALLOWED',
           `Spell ${spellKey} is missing from the catalog`,
-          ['character', 'spellKeys', spellIndex],
+          [...spellPath, spellIndex],
         ),
       );
       return;
@@ -326,7 +333,7 @@ function composeAbilities(
         diagnostic(
           'HUNT_SPELL_NOT_ALLOWED',
           `Spell ${spellKey} is not allowed for vocation family ${vocation.familyKey}`,
-          ['character', 'spellKeys', spellIndex],
+          [...spellPath, spellIndex],
         ),
       );
       return;
@@ -338,7 +345,7 @@ function composeAbilities(
         diagnostic(
           'HUNT_INTERVAL_NOT_DIVISIBLE',
           `Spell ${spellKey} cooldown is not divisible by 50`,
-          ['character', 'spellKeys', spellIndex],
+          [...spellPath, spellIndex],
         ),
       );
       return;

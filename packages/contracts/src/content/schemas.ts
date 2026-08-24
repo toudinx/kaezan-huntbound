@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+import type { ContentKey } from './identity.ts';
 import {
   ContentGuidSchema,
   ContentKeySchema,
@@ -542,6 +542,41 @@ const spellContentKey = ContentKeySchema.refine(
   'spellKeys must contain spell content keys',
 );
 
+export const CharacterKitBandSchema = z
+  .object({
+    minLevel: positiveInteger,
+    maxLevel: z.union([positiveInteger, z.null()]),
+    spellKeys: uniqueReadonlyArray(spellContentKey).min(1).readonly(),
+  })
+  .strict();
+export type CharacterKitBand = z.infer<typeof CharacterKitBandSchema>;
+
+const CharacterKitSchema = z.array(CharacterKitBandSchema).min(1).readonly();
+
+type CharacterKitDiagnosticCode =
+  | 'schema.character.kit.level'
+  | 'schema.character.kit.exclusive'
+  | 'schema.character.kit.required'
+  | 'schema.character.kit.start'
+  | 'schema.character.kit.range'
+  | 'schema.character.kit.open-ended'
+  | 'schema.character.kit.overlap'
+  | 'schema.character.kit.gap';
+
+function addCharacterKitIssue(
+  context: z.RefinementCtx,
+  path: readonly (string | number)[],
+  code: CharacterKitDiagnosticCode,
+  message: string,
+): void {
+  context.addIssue({
+    code: 'custom',
+    path: [...path],
+    message,
+    params: { contentCode: code },
+  });
+}
+
 export const CharacterDefinitionSchema = z
   .object({
     stableKey: CharacterKeySchema,
@@ -557,10 +592,140 @@ export const CharacterDefinitionSchema = z
     weaponAttack: nonNegativeInteger,
     maxHealth: positiveInteger,
     maxMana: positiveInteger,
-    spellKeys: uniqueReadonlyArray(spellContentKey).min(1).readonly(),
+    spellKeys: uniqueReadonlyArray(spellContentKey)
+      .min(1)
+      .readonly()
+      .optional(),
+    kit: CharacterKitSchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((character, context) => {
+    const hasLegacyKit = character.spellKeys !== undefined;
+    const hasKitTable = character.kit !== undefined;
+    if (hasKitTable && character.level < 1) {
+      addCharacterKitIssue(
+        context,
+        ['level'],
+        'schema.character.kit.level',
+        'character.kit.level: kit bands start at level 1',
+      );
+    }
+    if (hasLegacyKit && hasKitTable) {
+      addCharacterKitIssue(
+        context,
+        ['kit'],
+        'schema.character.kit.exclusive',
+        'character.kit.exclusive: define either kit or spellKeys, not both',
+      );
+    } else if (!hasLegacyKit && !hasKitTable) {
+      addCharacterKitIssue(
+        context,
+        ['kit'],
+        'schema.character.kit.required',
+        'character.kit.required: define either kit or spellKeys',
+      );
+    }
+    const kit = character.kit;
+    if (kit === undefined) return;
+
+    const firstBand = kit[0];
+    if (firstBand !== undefined && firstBand.minLevel !== 1) {
+      addCharacterKitIssue(
+        context,
+        ['kit', 0, 'minLevel'],
+        'schema.character.kit.start',
+        'character.kit.start: the first band must start at level 1',
+      );
+    }
+
+    kit.forEach((band, bandIndex) => {
+      if (band.maxLevel !== null && band.maxLevel < band.minLevel) {
+        addCharacterKitIssue(
+          context,
+          ['kit', bandIndex, 'maxLevel'],
+          'schema.character.kit.range',
+          'character.kit.range: maxLevel must be greater than or equal to minLevel',
+        );
+      }
+      if (band.maxLevel === null && bandIndex < kit.length - 1) {
+        addCharacterKitIssue(
+          context,
+          ['kit', bandIndex, 'maxLevel'],
+          'schema.character.kit.open-ended',
+          'character.kit.open-ended: an open-ended band must be the last band',
+        );
+      }
+      const previousBand = kit[bandIndex - 1];
+      if (previousBand === undefined || previousBand.maxLevel === null) return;
+      if (band.minLevel <= previousBand.maxLevel) {
+        addCharacterKitIssue(
+          context,
+          ['kit', bandIndex, 'minLevel'],
+          'schema.character.kit.overlap',
+          'character.kit.overlap: kit bands must not overlap',
+        );
+      } else if (band.minLevel > previousBand.maxLevel + 1) {
+        addCharacterKitIssue(
+          context,
+          ['kit', bandIndex, 'minLevel'],
+          'schema.character.kit.gap',
+          'character.kit.gap: kit bands must be contiguous',
+        );
+      }
+    });
+    const lastBand = kit.at(-1);
+    if (lastBand !== undefined && lastBand.maxLevel !== null) {
+      addCharacterKitIssue(
+        context,
+        ['kit', kit.length - 1, 'maxLevel'],
+        'schema.character.kit.open-ended',
+        'character.kit.open-ended: the final band must be open-ended',
+      );
+    }
+  });
 export type CharacterDefinition = z.infer<typeof CharacterDefinitionSchema>;
+
+export function characterKitBands(
+  character: CharacterDefinition,
+): readonly CharacterKitBand[] {
+  if (character.kit !== undefined) return character.kit;
+  if (character.spellKeys !== undefined) {
+    return [
+      {
+        minLevel: 1,
+        maxLevel: null,
+        spellKeys: character.spellKeys,
+      },
+    ];
+  }
+  throw new Error('Character must define either kit or spellKeys');
+}
+
+export function characterKitBandAtLevel(
+  character: CharacterDefinition,
+  level = character.level,
+): CharacterKitBand {
+  const band = characterKitBands(character).find(
+    (candidate) =>
+      level >= candidate.minLevel &&
+      (candidate.maxLevel === null || level <= candidate.maxLevel),
+  );
+  if (band === undefined && character.kit === undefined && level < 1) {
+    const legacyBand = characterKitBands(character)[0];
+    if (legacyBand !== undefined) return legacyBand;
+  }
+  if (band === undefined) {
+    throw new Error(`Character kit has no band for level ${level}`);
+  }
+  return band;
+}
+
+export function characterSpellKeysAtLevel(
+  character: CharacterDefinition,
+  level = character.level,
+): readonly ContentKey[] {
+  return characterKitBandAtLevel(character, level).spellKeys;
+}
 
 export const SpellDefinitionSchema = EntityIdentitySchema.extend({
   words: nonEmptyString,
@@ -640,11 +805,7 @@ function addReferenceIssues(
       readonly loot: readonly { readonly itemKey: string }[];
     }[];
     readonly items: readonly { readonly stableKey: string }[];
-    readonly characters: readonly {
-      readonly vocationKey: string;
-      readonly weaponItemKey: string;
-      readonly spellKeys: readonly string[];
-    }[];
+    readonly characters: readonly CharacterDefinition[];
   },
   context: z.RefinementCtx,
 ) {
@@ -727,26 +888,35 @@ function addReferenceIssues(
         message: `Unknown weapon item ${character.weaponItemKey}`,
       });
     }
-    character.spellKeys.forEach((spellKey, spellIndex) => {
-      const spell = spellByKey.get(spellKey);
-      if (spell === undefined) {
-        context.addIssue({
-          code: 'custom',
-          path: ['characters', index, 'spellKeys', spellIndex],
-          message: `Unknown spell ${spellKey}`,
-        });
-        return;
-      }
-      if (
-        vocation !== undefined &&
-        !spell.allowedVocationFamilies.includes(vocation.familyKey)
-      ) {
-        context.addIssue({
-          code: 'custom',
-          path: ['characters', index, 'spellKeys', spellIndex],
-          message: `Spell ${spellKey} does not allow vocation family ${vocation.familyKey}`,
-        });
-      }
+    if (character.kit === undefined && character.spellKeys === undefined) {
+      return;
+    }
+    characterKitBands(character).forEach((band, bandIndex) => {
+      band.spellKeys.forEach((spellKey, spellIndex) => {
+        const spell = spellByKey.get(spellKey);
+        const path =
+          character.kit === undefined
+            ? ['characters', index, 'spellKeys', spellIndex]
+            : ['characters', index, 'kit', bandIndex, 'spellKeys', spellIndex];
+        if (spell === undefined) {
+          context.addIssue({
+            code: 'custom',
+            path,
+            message: `Unknown spell ${spellKey}`,
+          });
+          return;
+        }
+        if (
+          vocation !== undefined &&
+          !spell.allowedVocationFamilies.includes(vocation.familyKey)
+        ) {
+          context.addIssue({
+            code: 'custom',
+            path,
+            message: `Spell ${spellKey} does not allow vocation family ${vocation.familyKey}`,
+          });
+        }
+      });
     });
   });
 }

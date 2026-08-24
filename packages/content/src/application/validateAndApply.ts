@@ -4,6 +4,7 @@ import {
   type ContentDiagnostic,
   type ContentGuid,
   type ContentKey,
+  characterKitBands,
   createContentGuid,
   diagnosticsFromZodError,
   type EntityKind,
@@ -193,7 +194,9 @@ function assertApplicationInvariants(bundle: CatalogContentBundle): void {
     for (const spell of bundle.spells) reachable.add(spell.stableKey);
     for (const character of bundle.characters) {
       reachable.add(character.weaponItemKey);
-      for (const spellKey of character.spellKeys) reachable.add(spellKey);
+      for (const band of characterKitBands(character)) {
+        for (const spellKey of band.spellKeys) reachable.add(spellKey);
+      }
     }
   }
   for (const dependency of dependencies) {

@@ -8,6 +8,7 @@ import {
   CatalogContentBundleSchema,
   CharacterDefinitionSchema,
   ConditionDefinitionSchema,
+  characterSpellKeysAtLevel,
   RuntimeContentBundleSchema,
   SpellFormulaDefinitionSchema,
 } from './schemas';
@@ -370,6 +371,28 @@ describe('content schemas', () => {
     ).toBe(true);
   });
 
+  it('reports a character without either kit form without throwing', () => {
+    const { spellKeys: _spellKeys, ...characterWithoutKit } = createCharacter();
+    const bundle = {
+      ...createCatalogBundle(),
+      characters: [characterWithoutKit],
+    };
+
+    expect(() => CatalogContentBundleSchema.safeParse(bundle)).not.toThrow();
+    const result = CatalogContentBundleSchema.safeParse(bundle);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'custom',
+            message: expect.stringContaining('character.kit.required'),
+          }),
+        ]),
+      );
+    }
+  });
+
   it('accepts a runtime bundle without catalog-only fields', () => {
     expect(
       RuntimeContentBundleSchema.safeParse(createRuntimeBundle()).success,
@@ -615,8 +638,113 @@ describe('content schemas', () => {
     );
   });
 
+  it('accepts a single open kit band and rejects defining both kit forms', () => {
+    const { spellKeys, ...characterWithoutLegacyKit } = createCharacter();
+    const kit = [
+      {
+        minLevel: 1,
+        maxLevel: null,
+        spellKeys,
+      },
+    ];
+    const kitOnly = { ...characterWithoutLegacyKit, kit };
+    const bothForms = { ...createCharacter(), kit };
+
+    expect(CharacterDefinitionSchema.safeParse(kitOnly).success).toBe(true);
+
+    const result = CharacterDefinitionSchema.safeParse(bothForms);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'custom',
+            message: expect.stringContaining('character.kit.exclusive'),
+          }),
+        ]),
+      );
+    }
+
+    const diagnostics = validateCatalogContentBundle({
+      ...createCatalogBundle(),
+      characters: [bothForms],
+    });
+    expect(diagnostics.ok).toBe(false);
+    if (!diagnostics.ok) {
+      expect(diagnostics.diagnostics).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'schema.character.kit.exclusive',
+          }),
+        ]),
+      );
+    }
+  });
+
+  it('rejects kit bands with a gap or overlap using named diagnostics', () => {
+    const { spellKeys, ...characterWithoutLegacyKit } = createCharacter();
+    const band = (minLevel: number, maxLevel: number | null) => ({
+      minLevel,
+      maxLevel,
+      spellKeys,
+    });
+    const gap = {
+      ...characterWithoutLegacyKit,
+      kit: [band(1, 8), band(10, null)],
+    };
+    const overlap = {
+      ...characterWithoutLegacyKit,
+      kit: [band(1, 8), band(8, null)],
+    };
+    const finite = {
+      ...characterWithoutLegacyKit,
+      kit: [band(1, 8)],
+    };
+
+    const gapResult = CharacterDefinitionSchema.safeParse(gap);
+    const overlapResult = CharacterDefinitionSchema.safeParse(overlap);
+    const finiteResult = CharacterDefinitionSchema.safeParse(finite);
+
+    expect(gapResult.success).toBe(false);
+    expect(overlapResult.success).toBe(false);
+    expect(finiteResult.success).toBe(false);
+    if (!gapResult.success && !overlapResult.success && !finiteResult.success) {
+      expect(gapResult.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'custom',
+            message: expect.stringContaining('character.kit.gap'),
+          }),
+        ]),
+      );
+      expect(overlapResult.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'custom',
+            message: expect.stringContaining('character.kit.overlap'),
+          }),
+        ]),
+      );
+      expect(finiteResult.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'custom',
+            message: expect.stringContaining('character.kit.open-ended'),
+          }),
+        ]),
+      );
+    }
+  });
+
   it('rejects a character with negative level, negative skill, or non-positive vitals', () => {
     const negativeLevel = { ...createCharacter(), level: -1 };
+    const zeroLevel = { ...createCharacter(), level: 0 };
+    const { spellKeys, ...characterWithoutLegacyKit } = createCharacter();
+    const zeroLevelKit = {
+      ...characterWithoutLegacyKit,
+      level: 0,
+      kit: [{ minLevel: 1, maxLevel: null, spellKeys }],
+    };
     const negativeSkill = {
       ...createCharacter(),
       skills: { sword: -1, magic: 0 },
@@ -625,6 +753,14 @@ describe('content schemas', () => {
     const zeroMana = { ...createCharacter(), maxMana: 0 };
 
     expect(CharacterDefinitionSchema.safeParse(negativeLevel).success).toBe(
+      false,
+    );
+    expect(CharacterDefinitionSchema.safeParse(zeroLevel).success).toBe(true);
+    const parsedZeroLevel = CharacterDefinitionSchema.parse(zeroLevel);
+    expect(characterSpellKeysAtLevel(parsedZeroLevel)).toEqual(
+      parsedZeroLevel.spellKeys,
+    );
+    expect(CharacterDefinitionSchema.safeParse(zeroLevelKit).success).toBe(
       false,
     );
     expect(CharacterDefinitionSchema.safeParse(negativeSkill).success).toBe(

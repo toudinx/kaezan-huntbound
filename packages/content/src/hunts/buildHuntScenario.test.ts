@@ -2,6 +2,7 @@ import {
   type CharacterDefinition,
   type ContentKey,
   type CreatureDefinition,
+  characterSpellKeysAtLevel,
   createContentGuid,
   createSeed,
   HUNT_SCHEMA_VERSION,
@@ -725,6 +726,51 @@ describe('buildHuntScenario combat blueprints', () => {
 });
 
 describe('buildHuntScenario abilities', () => {
+  it('resolves a single kit band to the same scenario as legacy spellKeys', () => {
+    const { spellKeys, ...characterWithoutLegacyKit } = character;
+    const kitCharacter = {
+      ...characterWithoutLegacyKit,
+      kit: [{ minLevel: 1, maxLevel: null, spellKeys }],
+    } as CharacterDefinition;
+
+    expect(build(syntheticHunt(), kitCharacter, registry())).toEqual(
+      build(syntheticHunt(), character, registry()),
+    );
+  });
+
+  it('resolves the active kit band from character level', () => {
+    const { spellKeys: _spellKeys, ...characterWithoutLegacyKit } = character;
+    const kitCharacter = {
+      ...characterWithoutLegacyKit,
+      kit: [
+        {
+          minLevel: 1,
+          maxLevel: 8,
+          spellKeys: ['spell:tibia:wound-cleansing' as ContentKey],
+        },
+        {
+          minLevel: 9,
+          maxLevel: null,
+          spellKeys: ['spell:tibia:berserk' as ContentKey],
+        },
+      ],
+    } as CharacterDefinition;
+
+    const lowLevel = build(
+      syntheticHunt(),
+      { ...kitCharacter, level: 8 },
+      registry(),
+    );
+    const highLevel = build(
+      syntheticHunt(),
+      { ...kitCharacter, level: 35 },
+      registry(),
+    );
+
+    expect(lowLevel.abilityKeys).toEqual(['spell:tibia:wound-cleansing']);
+    expect(highLevel.abilityKeys).toEqual(['spell:tibia:berserk']);
+  });
+
   it('resolves the three knight spells to frozen integer powers', () => {
     const { scenario, abilityKeys } = build();
     const byId = new Map(
@@ -782,7 +828,7 @@ describe('buildHuntScenario abilities', () => {
       {
         ...character,
         spellKeys: [
-          ...character.spellKeys,
+          ...characterSpellKeysAtLevel(character),
           'spell:tibia:flame-strike' as ContentKey,
         ],
       },

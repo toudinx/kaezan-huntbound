@@ -6,6 +6,7 @@ import {
   type ContentFacet,
   ContentFacetSchema,
   type ContentKey,
+  characterKitBands,
   createContentGuid,
   type EntityKind,
 } from '../../../packages/contracts/src/index.ts';
@@ -224,7 +225,9 @@ function assertSliceClosure(bundle: CatalogContentBundle): void {
   }
   for (const character of bundle.characters) {
     add(character.weaponItemKey);
-    for (const spellKey of character.spellKeys) add(spellKey);
+    for (const band of characterKitBands(character)) {
+      for (const spellKey of band.spellKeys) add(spellKey);
+    }
   }
 
   if ([...dependencies].some((dependency) => !reachable.has(dependency))) {
@@ -406,10 +409,21 @@ export function canonicalizeCatalogBundle(
       allowedVocationFamilies: [...entity.allowedVocationFamilies].sort(),
     })),
     characters: [...bundle.characters]
-      .map((character) => ({
-        ...character,
-        spellKeys: [...character.spellKeys],
-      }))
+      .map((character) => {
+        if (character.kit !== undefined) {
+          return {
+            ...character,
+            kit: character.kit.map((band) => ({
+              ...band,
+              spellKeys: [...band.spellKeys],
+            })),
+          };
+        }
+        if (character.spellKeys !== undefined) {
+          return { ...character, spellKeys: [...character.spellKeys] };
+        }
+        throw new Error('Character must define either kit or spellKeys');
+      })
       .sort((left, right) => left.stableKey.localeCompare(right.stableKey)),
   };
 }
