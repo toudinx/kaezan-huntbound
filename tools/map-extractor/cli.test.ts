@@ -291,6 +291,23 @@ describe('runMapExtractorCli', () => {
     expect(() => readFileSync(join(output, 'hunt.json'), 'utf8')).toThrow();
   });
 
+  it('refuses to write while an empty tile remains in the authored region', () => {
+    writeFileSync(
+      mapPath,
+      encodeOtbmMap(
+        areas().map((area) => ({
+          ...area,
+          tiles: area.tiles.filter((_tile, index) => index !== 3),
+        })),
+      ),
+    );
+    writeSourceLock();
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(1);
+    expect(captured.err.join(' ')).toContain('HUNT_EMPTY_TILE');
+    expect(() => readFileSync(join(output, 'hunt.json'), 'utf8')).toThrow();
+  });
+
   it('fails when the dropped transition count disagrees with the selection', () => {
     writeFileSync(
       selectionPath,

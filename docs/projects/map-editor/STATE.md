@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | MB-01 | done | `codex/mb-01-material-border-mining` | `feat: measure the border table from the authored map` | GPT-5 (Codex), esforço padrão |
 | MB-02 | done | `codex/mb-02-borderize-pure` | `feat: decide map borders from the measured table` | GPT-5 (Codex), esforço padrão |
-| MB-03 | not-ready; depende de MB-01 e MB-02 | `codex/mb-03-apply-and-play` | — | — |
+| MB-03 | done | `codex/mb-03-apply-and-play` | `feat: close the holes the cave collage left behind` | GPT-5 (Codex), esforço padrão |
 | ME-01 | pending | `codex/map-editor-01-authoring-contract` | — | — |
 | ME-02 | not-ready; depende de 01 | `codex/map-editor-02-editor-shell` | — | — |
 | ME-03 | not-written | — | — | — |

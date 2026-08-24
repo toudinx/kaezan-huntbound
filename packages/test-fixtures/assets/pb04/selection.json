@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "selectionId": "selection:pb-04-venore-rotworm-cave",
   "packId": "asset-pack:pb-04-venore-rotworm-cave",
-  "contentVersion": "pb-04-venore-rotworm-cave@a56697fd75a9",
+  "contentVersion": "pb-04-venore-rotworm-cave@7f2ddee151ac",
   "buildProfiles": [
     "test",
     "product"
@@ -2665,7 +2665,7 @@
   "hunt": {
     "packKey": "pb-04-venore-rotworm-cave",
     "huntId": "hunt:tibia:venore-rotworm-cave",
-    "regionSha256": "a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5",
+    "regionSha256": "7f2ddee151ac3ec0fcedb0233ee322f35d2ff5f2ef7c3dad41e35fed8d635d9e",
     "keys": [
       "tile:tibia:101",
       "tile:tibia:194",

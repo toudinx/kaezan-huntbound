@@ -71,7 +71,7 @@ for (const viewport of viewports) {
 
     expect(state.drawn.layers.ground).toBeGreaterThan(0);
     expect(state.drawn.composedGroundCells).toBeGreaterThan(0);
-    expect(state.drawn.unresolvedGroundCells).toBeGreaterThan(0);
+    expect(state.drawn.unresolvedGroundCells).toBe(0);
     expect(state.player).not.toBeNull();
     expect(state.camera.visibleRows).toBeGreaterThanOrEqual(10);
     expect(state.camera.visibleRows).toBeLessThanOrEqual(12);

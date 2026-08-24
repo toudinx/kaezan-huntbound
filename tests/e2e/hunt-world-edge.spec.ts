@@ -17,8 +17,8 @@ import { cardinalRoute, reachableCardinalCells } from './support/huntTopology';
 /**
  * The edge of the extracted world used to be the canvas showing through, which
  * reads as a failed load rather than as the map ending. These specs affirm
- * state rather than pixels: the probe reports how many visible cells carry
- * neither ground nor treatment, and that number is the whole claim.
+ * state rather than pixels: the probe reports that every visible cell carries
+ * ground, and the edge treatment has no cells left to cover.
  *
  * The clamp itself is proved over every ground cell, corners included, in
  * `CameraFraming.test.ts`; a cave with walls in it cannot be walked to the
@@ -213,7 +213,7 @@ function pinnedSides(rect: WorldRect, bounds: CameraBox): readonly string[] {
 }
 
 for (const viewport of viewports) {
-  test(`covers every cell without ground at ${viewport.width}x${viewport.height}`, async ({
+  test(`keeps every visible cell grounded at ${viewport.width}x${viewport.height}`, async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -226,9 +226,7 @@ for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     const state = await waitForHunt(page);
 
-    // The floor really does have holes in it, or the assertions below would
-    // pass on a map that never needed treating.
-    expect(state.drawn.unresolvedGroundCells).toBeGreaterThan(0);
+    expect(state.drawn.unresolvedGroundCells).toBe(0);
     expectWorldEdgeHolds(state, viewport.name);
 
     // One object for the whole floor, kept across frames. A sprite per empty
@@ -257,10 +255,7 @@ test('spawns with the camera already held against the world edge', async ({
   // than half a view on both axes, so the clamp is already load-bearing on the
   // first frame: an unclamped camera would be centred on the player and would
   // be showing cells north and east of anything the region ever carried.
-  expect(pinnedSides(visibleRect(state), bounds).sort()).toEqual([
-    'east',
-    'north',
-  ]);
+  expect(pinnedSides(visibleRect(state), bounds).sort()).toEqual(['east']);
   expectWorldEdgeHolds(state, 'spawn');
 });
 
@@ -313,12 +308,12 @@ test('keeps the edge covered as the camera travels inland', async ({
   );
 });
 
-test('treats the second floor with its own empty cells', async ({ page }) => {
+test('composes the second floor with its own ground', async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1366, height: 768 });
   const upper = await waitForHunt(page);
   expectWorldEdgeHolds(upper, 'upper floor');
-  const upperTreated = upper.worldEdge.treatedCells;
+  const upperEdgeCells = upper.worldEdge.treatedCells;
 
   // The descent sits one cell west of the start, and the step onto it is what
   // fires the transition.
@@ -340,12 +335,11 @@ test('treats the second floor with its own empty cells', async ({ page }) => {
 
   expect(lower.floor).toBe(descent.to.z);
   expectWorldEdgeHolds(lower, 'lower floor');
-  // The two floors do not carry ground in the same cells, so a treatment that
-  // was not rebuilt with the floor would still be showing the upper count.
-  expect(lower.worldEdge.treatedCells).not.toBe(upperTreated);
+  expect(lower.drawn.layers.ground).toBeGreaterThan(0);
+  expect(lower.drawn.unresolvedGroundCells).toBe(0);
   expect(lower.worldEdge.treatedCells).toBe(lower.drawn.unresolvedGroundCells);
 
   console.log(
-    `[world-edge] floors upper=${upperTreated} lower=${lower.worldEdge.treatedCells}`,
+    `[world-edge] floors upper=${upperEdgeCells} lower=${lower.worldEdge.treatedCells}`,
   );
 });

@@ -4,6 +4,7 @@ import { validateHuntDefinition } from '../../packages/contracts/src/hunt/diagno
 import { TICK_DURATION_MS } from '../../packages/contracts/src/index.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 import { extractHunt, PLAYER_BLUEPRINT_ID } from './extract.ts';
+import { parseHuntLayoutRecipe } from './layout.ts';
 import type { OtbmAreaFixture } from './testing/otbmFixture.ts';
 import { encodeOtbmMap } from './testing/otbmFixture.ts';
 import { tileFlags, tileFlagsTable } from './testing/tileFlagsFixture.ts';
@@ -13,11 +14,13 @@ const MIN_Y = 2000;
 const SIZE = 4;
 
 const GROUND = 100;
+const CELL_GROUND = 101;
 const WALL = 200;
 const STAIRS_DOWN = 300;
 
 const flags = tileFlagsTable([
   tileFlags(GROUND, { ground: true }),
+  tileFlags(CELL_GROUND, { blocking: true, ground: true }),
   tileFlags(WALL, { blocking: true }),
   tileFlags(STAIRS_DOWN, { floorChange: 'down' }),
 ]);
@@ -72,6 +75,39 @@ const spawnXml = `<?xml version="1.0"?><monsters><monster centerx="${MIN_X + 2}"
 
 function extract(areas = filledAreas(), xml = spawnXml) {
   return extractHunt(encodeOtbmMap(areas), xml, flags, selection);
+}
+
+function holeLayout() {
+  return parseHuntLayoutRecipe(
+    {
+      schemaVersion: 1,
+      layoutId: 'layout:huntbound:test',
+      width: SIZE,
+      height: SIZE,
+      floors: [7, 8].map((z) => ({
+        z,
+        operations: [
+          {
+            kind: 'copy-rect' as const,
+            from: { minX: MIN_X, minY: MIN_Y, z },
+            width: SIZE,
+            height: SIZE,
+            to: { x: 0, y: 0 },
+          },
+        ],
+      })),
+      cells: [{ x: 1, y: 1, z: 8, ground: CELL_GROUND }],
+      playerStart: { x: 0, y: 0, z: 7 },
+      transitions: [],
+      spawnPlacements: [
+        {
+          source: { x: MIN_X + 2, y: MIN_Y + 3, z: 8 },
+          target: { x: 2, y: 3, z: 8 },
+        },
+      ],
+    },
+    selection.region,
+  );
 }
 
 describe('extractHunt', () => {
@@ -209,5 +245,37 @@ describe('extractHunt', () => {
     expect(
       diagnostics.filter((item) => item.code === 'HUNT_ID_MISMATCH'),
     ).toHaveLength(1);
+  });
+
+  it('fills a synthetic hole so extraction reports no HUNT_EMPTY_TILE', () => {
+    const areas = filledAreas(new Map([[`${MIN_X + 1},${MIN_Y + 1},8`, []]]));
+    const { diagnostics } = extractHunt(
+      encodeOtbmMap(areas),
+      spawnXml,
+      flags,
+      selection,
+      holeLayout(),
+    );
+
+    expect(
+      diagnostics.filter((item) => item.code === 'HUNT_EMPTY_TILE'),
+    ).toHaveLength(0);
+  });
+
+  it('preserves collision when cells fills a synthetic hole', () => {
+    const areas = filledAreas(new Map([[`${MIN_X + 1},${MIN_Y + 1},8`, []]]));
+    const source = encodeOtbmMap(areas);
+    const base = extractHunt(source, spawnXml, flags, selection).hunt;
+    const result = extractHunt(
+      source,
+      spawnXml,
+      flags,
+      selection,
+      holeLayout(),
+    ).hunt;
+
+    expect(
+      result.region.floors.map(({ z, collision }) => ({ z, collision })),
+    ).toEqual(base.region.floors.map(({ z, collision }) => ({ z, collision })));
   });
 });

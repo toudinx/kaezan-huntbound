@@ -12,6 +12,7 @@ export interface HuntLayoutRecipe {
     readonly z: number;
     readonly operations: readonly HuntLayoutOperation[];
   }[];
+  readonly cells: readonly HuntLayoutCell[];
   readonly playerStart: GridPosition;
   readonly transitions: readonly TransitionEntry[];
   readonly spawnPlacements: readonly {
@@ -23,6 +24,21 @@ export interface HuntLayoutRecipe {
     readonly target: GridPosition;
   }[];
 }
+
+export interface HuntLayoutCell {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly ground: number;
+}
+
+export const BORDERIZER_GROUND_IDS: readonly number[] = [
+  101,
+  ...Array.from({ length: 16 }, (_value, index) => 5711 + index),
+  ...Array.from({ length: 12 }, (_value, index) => 356 + index),
+];
+
+const borderizerGroundIds = new Set(BORDERIZER_GROUND_IDS);
 
 export type HuntLayoutOperation =
   | {
@@ -319,6 +335,37 @@ function targetPosition(
   return parsed;
 }
 
+function parseCell(
+  value: unknown,
+  path: string,
+  recipeWidth: number,
+  recipeHeight: number,
+  floors: ReadonlySet<number>,
+): HuntLayoutCell {
+  assertRecord(value, path);
+  assertKeys(value, ['x', 'y', 'z', 'ground'], path);
+  const x = integer(required(value, 'x', path), `${path}.x`);
+  const y = integer(required(value, 'y', path), `${path}.y`);
+  const z = integer(required(value, 'z', path), `${path}.z`);
+  const ground = integer(required(value, 'ground', path), `${path}.ground`);
+
+  withinTarget(x, y, 1, 1, recipeWidth, recipeHeight, path);
+  if (!floors.has(z)) {
+    throw layoutInvalid(
+      `${path}.z`,
+      'floor is absent from the authored region',
+    );
+  }
+  if (!borderizerGroundIds.has(ground)) {
+    throw layoutInvalid(
+      `${path}.ground`,
+      'ground id is outside the borderizer vocabulary',
+    );
+  }
+
+  return { x, y, z, ground };
+}
+
 export function parseHuntLayoutRecipe(
   raw: unknown,
   sourceRegion: HuntSelectionRegion,
@@ -333,6 +380,7 @@ export function parseHuntLayoutRecipe(
       'width',
       'height',
       'floors',
+      'cells',
       'playerStart',
       'transitions',
       'spawnPlacements',
@@ -391,6 +439,22 @@ export function parseHuntLayoutRecipe(
         ),
       ),
     };
+  });
+
+  const cellsValue = raw.cells ?? [];
+  if (!Array.isArray(cellsValue)) {
+    throw layoutInvalid(`${path}.cells`, 'expected an array');
+  }
+  const seenCells = new Set<string>();
+  const cells = cellsValue.map((value, cellIndex) => {
+    const cellPath = `${path}.cells[${cellIndex}]`;
+    const cell = parseCell(value, cellPath, width, height, seenFloors);
+    const key = `${cell.x}:${cell.y}:${cell.z}`;
+    if (seenCells.has(key)) {
+      throw layoutInvalid(`${cellPath}`, 'cell coordinate is duplicated');
+    }
+    seenCells.add(key);
+    return cell;
   });
 
   const playerStart = targetPosition(
@@ -482,6 +546,7 @@ export function parseHuntLayoutRecipe(
     width,
     height,
     floors,
+    cells,
     playerStart,
     transitions,
     spawnPlacements,
@@ -503,6 +568,31 @@ function copyTile(
   z: number,
 ): OtbmTile | undefined {
   return tile === undefined ? undefined : { x, y, z, items: [...tile.items] };
+}
+
+function replaceGround(
+  tile: OtbmTile | undefined,
+  x: number,
+  y: number,
+  z: number,
+  ground: number,
+): OtbmTile {
+  if (!borderizerGroundIds.has(ground)) {
+    throw layoutInvalid(
+      `layout.cells[${x}:${y}:${z}].ground`,
+      'ground id is outside the borderizer vocabulary',
+    );
+  }
+  const existingItems = tile?.items ?? [];
+  return {
+    x,
+    y,
+    z,
+    items:
+      existingItems.length === 0
+        ? [ground]
+        : [ground, ...existingItems.slice(1)],
+  };
 }
 
 export function applyHuntLayout(
@@ -562,6 +652,16 @@ export function applyHuntLayout(
           setTarget(operation.at.x + column, operation.at.y + row, undefined);
         }
       }
+    }
+
+    for (const cell of recipe.cells) {
+      if (cell.z !== floor.z) continue;
+      const key = targetKey(cell.x, cell.y);
+      setTarget(
+        cell.x,
+        cell.y,
+        replaceGround(cells.get(key), cell.x, cell.y, cell.z, cell.ground),
+      );
     }
 
     authored.push(...cells.values());

@@ -170,18 +170,33 @@ export function buildMapRegion(
 
       if (plan.ground === undefined) {
         usedServerIds.add(VOID_SERVER_ID);
-        diagnostics.push(
-          diagnostic(
-            path,
-            'HUNT_EMPTY_TILE',
-            'Cell has no ground item and is extracted as void collision',
-          ),
-        );
         continue;
       }
       usedServerIds.add(plan.ground);
       for (const serverId of plan.below) usedServerIds.add(serverId);
       for (const serverId of plan.above) usedServerIds.add(serverId);
+    }
+  }
+
+  for (const z of floorsZ) {
+    const floorPlans = plans.get(z) as Map<number, CellPlan>;
+    for (let index = 0; index < cellCount; index += 1) {
+      const plan = floorPlans.get(index) as CellPlan;
+      if (plan.ground !== undefined) continue;
+
+      const coveredByHigherFloor = floorsZ.some((higherZ) => {
+        if (higherZ <= z) return false;
+        return plans.get(higherZ)?.get(index)?.ground !== undefined;
+      });
+      if (coveredByHigherFloor) continue;
+
+      diagnostics.push(
+        diagnostic(
+          `region.floors[${z}].cells[${index}]`,
+          'HUNT_EMPTY_TILE',
+          'Cell has no ground item and is extracted as void collision',
+        ),
+      );
     }
   }
 

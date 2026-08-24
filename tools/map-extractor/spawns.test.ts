@@ -93,6 +93,7 @@ describe('buildSpawnTable', () => {
       width: WIDTH,
       height: HEIGHT,
       floors: [7, 8].map((z) => ({ z, operations: [] })),
+      cells: [],
       playerStart: { x: 0, y: 0, z: 7 },
       transitions: [],
       spawnPlacements: [

@@ -22,12 +22,8 @@ export type ExtractionDiagnosticCode =
   | 'HUNT_TRANSITION_UNREACHABLE'
   | 'HUNT_SCHEMA_INVALID';
 
-/**
- * Diagnostics that never block: an empty tile is expected geometry and a
- * dropped transition is reconciled against the frozen selection instead.
- */
+/** A dropped transition is reconciled against the frozen selection. */
 const advisoryCodes = new Set<ExtractionDiagnosticCode>([
-  'HUNT_EMPTY_TILE',
   'HUNT_TRANSITION_DROPPED',
 ]);
 

@@ -117,6 +117,22 @@ describe('buildMapRegion', () => {
     ).toHaveLength(5);
   });
 
+  it('does not report a lower-floor void covered by a higher floor', () => {
+    const built = buildMapRegion(
+      [{ x: 10, y: 20, z: 8, items: [GRASS] }],
+      { ...region, floors: [7, 8] },
+      flags,
+      identity,
+    );
+
+    const emptyPaths = built.diagnostics
+      .filter((item) => item.code === 'HUNT_EMPTY_TILE')
+      .map((item) => item.path);
+
+    expect(emptyPaths).not.toContain('region.floors[7].cells[0]');
+    expect(emptyPaths).toContain('region.floors[7].cells[1]');
+  });
+
   it('emits a sorted palette without duplicates that the layers index into', () => {
     const built = build([
       { x: 12, y: 21, z: 7, items: [GRASS, ROOF] },
