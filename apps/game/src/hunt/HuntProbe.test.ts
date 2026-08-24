@@ -56,6 +56,7 @@ function emptyState(): HuntProbeState {
     floor: 8,
     floorRebuilds: 0,
     decorationTextWrites: 0,
+    postureAura: null,
     player: null,
     actors: [],
     targetRing: {
@@ -223,6 +224,14 @@ describe('installHuntProbe', () => {
       ...emptyState(),
       floorRebuilds: 3,
       decorationTextWrites: 7,
+      postureAura: {
+        abilityId: 'blood-rage' as const,
+        visible: true,
+        shape: 'open' as const,
+        color: 0xff5a5a,
+        x: 64,
+        y: 32,
+      },
     };
 
     installHuntProbe({ huntProbeState: () => state }, (listener) => {
@@ -236,6 +245,7 @@ describe('installHuntProbe', () => {
 
     expect(probe).toBeDefined();
     expect(probe?.state()).toEqual(state);
+    expect(probe?.state().postureAura).toEqual(state.postureAura);
 
     publish?.([moved(4, 1, at(24, 14, 8), at(24, 15, 8))]);
 

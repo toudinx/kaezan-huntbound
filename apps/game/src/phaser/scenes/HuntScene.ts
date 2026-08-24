@@ -9,10 +9,13 @@ import {
 } from '../../../../../packages/assets/src/index.ts';
 import type {
   AbilityDefinition,
+  ActiveConditionState,
   EntityId,
   HuntDefinition,
+  ScenarioConditionDefinition,
   SimulationCommandInput,
   SimulationEvent,
+  SimulationSnapshot,
   TickIndex,
 } from '../../../../../packages/contracts/src/index.ts';
 import { TICK_DURATION_MS } from '../../../../../packages/contracts/src/index.ts';
@@ -38,7 +41,11 @@ import {
   createCombatDecorations,
   createDecorationObjectPool,
 } from '../../hunt/CombatDecorations';
-import { combatFxForCause, combatFxForHeal } from '../../hunt/CombatFxTable';
+import {
+  combatFxForCause,
+  combatFxForHeal,
+  combatPostureAuraForAbility,
+} from '../../hunt/CombatFxTable';
 import {
   type CombatImpulses,
   createCombatImpulses,
@@ -70,6 +77,7 @@ import {
   type HuntProbeDecoration,
   type HuntProbeImpulse,
   type HuntProbeLayerCounts,
+  type HuntProbePostureAura,
   type HuntProbeState,
   installHuntProbe,
 } from '../../hunt/HuntProbe';
@@ -114,6 +122,7 @@ export const WORLD_EDGE_RIM_COLOR = 0x3a281c;
 export interface HuntSimulationDriver {
   readonly tick: TickIndex;
   readonly alpha: number;
+  snapshot(): SimulationSnapshot;
   enqueue(input: SimulationCommandInput): CommandAcceptance;
   advanceTo(nowMs: number): readonly SimulationEvent[];
   resyncClock?(): void;
@@ -127,6 +136,7 @@ export interface HuntSceneOptions {
   readonly input: InputMap;
   readonly driver: HuntSimulationDriver;
   readonly abilities?: readonly AbilityDefinition[];
+  readonly conditions?: readonly ScenarioConditionDefinition[];
   readonly tileSize?: number;
 }
 
@@ -161,6 +171,8 @@ export class HuntScene extends Phaser.Scene {
     EntityId,
     Phaser.GameObjects.Sprite
   >();
+  private postureAura: Phaser.GameObjects.Graphics | undefined;
+  private postureAuraState: HuntProbePostureAura | null = null;
   private targetRing: Phaser.GameObjects.Graphics | undefined;
   private worldEdge: Phaser.GameObjects.Graphics | undefined;
   private worldEdgeCreations = 0;
@@ -367,6 +379,9 @@ export class HuntScene extends Phaser.Scene {
       this.inputGate.reset();
       this.destroySprites();
       this.destroyCombatDecorations();
+      this.postureAura?.destroy();
+      this.postureAura = undefined;
+      this.postureAuraState = null;
       this.targetRing?.destroy();
       this.targetRing = undefined;
       this.worldEdge?.destroy();
@@ -480,6 +495,8 @@ export class HuntScene extends Phaser.Scene {
       floor: presentation?.floor() ?? this.options.hunt.playerStart.z,
       floorRebuilds: this.floorRebuilds,
       decorationTextWrites: this.decorationTextWrites,
+      postureAura:
+        this.postureAuraState === null ? null : { ...this.postureAuraState },
       player:
         actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
       actors,
@@ -656,6 +673,92 @@ export class HuntScene extends Phaser.Scene {
       .setData('hunt-target-ring', true);
     this.targetRing = ring;
     return ring;
+  }
+
+  private ensurePostureAura(): Phaser.GameObjects.Graphics {
+    if (this.postureAura !== undefined) return this.postureAura;
+
+    const aura = this.add
+      .graphics()
+      .setVisible(false)
+      .setData('hunt-posture-aura', true);
+    this.postureAura = aura;
+    return aura;
+  }
+
+  private hidePostureAura(): void {
+    this.postureAura?.clear().setVisible(false);
+    this.postureAuraState = null;
+  }
+
+  private snapshotPlayerConditions(
+    snapshot: SimulationSnapshot,
+  ): readonly ActiveConditionState[] {
+    const player = snapshot.actors.find(
+      (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+    );
+    return player?.activeConditions ?? [];
+  }
+
+  private activePostureAura(
+    snapshot: SimulationSnapshot,
+  ): ReturnType<typeof combatPostureAuraForAbility> {
+    const conditions = this.options.conditions ?? [];
+    const activeConditionIndices = new Set(
+      this.snapshotPlayerConditions(snapshot).map(
+        (entry) => entry.conditionIndex,
+      ),
+    );
+
+    for (const ability of this.options.abilities ?? []) {
+      if (ability.appliedConditionIndex === null) continue;
+      if (conditions[ability.appliedConditionIndex] === undefined) continue;
+      if (!activeConditionIndices.has(ability.appliedConditionIndex)) continue;
+      const aura = combatPostureAuraForAbility(ability.abilityId);
+      if (aura !== undefined) return aura;
+    }
+
+    return undefined;
+  }
+
+  private syncPostureAura(): void {
+    const snapshot = this.options.driver.snapshot();
+    const player = snapshot.actors.find(
+      (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
+    );
+    const sprite =
+      player === undefined ? undefined : this.actorSprites.get(player.entityId);
+    const auraRecipe = this.activePostureAura(snapshot);
+    if (auraRecipe === undefined || sprite === undefined || !sprite.visible) {
+      this.hidePostureAura();
+      return;
+    }
+
+    const aura = this.ensurePostureAura();
+    const radius = Math.max(this.tileSize * 0.28, 8);
+    aura
+      .clear()
+      .lineStyle(Math.max(2, this.tileSize / 12), auraRecipe.color, 0.95)
+      .setPosition(sprite.x, sprite.y)
+      .setDepth(sprite.depth - 0.5)
+      .setVisible(true);
+
+    if (auraRecipe.shape === 'closed') {
+      aura.strokeCircle(0, 0, radius);
+    } else {
+      aura.beginPath();
+      aura.arc(0, 0, radius, Math.PI * 0.2, Math.PI * 1.8, false);
+      aura.strokePath();
+    }
+
+    this.postureAuraState = {
+      abilityId: auraRecipe.abilityId,
+      visible: true,
+      shape: auraRecipe.shape,
+      color: auraRecipe.color,
+      x: sprite.x,
+      y: sprite.y,
+    };
   }
 
   private syncTargetRing(): void {
@@ -977,6 +1080,7 @@ export class HuntScene extends Phaser.Scene {
       if (!visible.has(entityId)) sprite.setVisible(false);
     }
 
+    this.syncPostureAura();
     this.syncTargetHighlight(renderTimeMs);
     this.followPlayer(alpha);
   }

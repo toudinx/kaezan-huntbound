@@ -56,11 +56,21 @@ export interface HuntProbeLayerCounts {
   readonly objectsAbove: number;
 }
 
+export interface HuntProbePostureAura {
+  readonly abilityId: 'blood-rage' | 'protector';
+  readonly visible: boolean;
+  readonly shape: 'open' | 'closed';
+  readonly color: number;
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface HuntProbeState {
   readonly tick: number;
   readonly floor: number;
   readonly floorRebuilds: number;
   readonly decorationTextWrites: number;
+  readonly postureAura: HuntProbePostureAura | null;
   readonly player: HuntProbeActor | null;
   readonly actors: readonly HuntProbeActor[];
   readonly targetRing: TargetRingState;
