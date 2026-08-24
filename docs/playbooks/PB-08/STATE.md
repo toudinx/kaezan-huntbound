@@ -27,8 +27,8 @@ sensível a combate está integrada e **sem conteúdo que a use** — é o que a
 
 ## Bloqueios
 
-**B4 — aberto, decisão do usuário.** Doze worktrees antigas em `git worktree list`, de PB-02 a
-PB-08, e **cinco branches fora da `main`** com trabalho real: `claude/pb05-fixture-drift`,
+**B4 — aberto, decisão do usuário.** Dez worktrees antigas em `git worktree list`, de PB-02 a
+PB-07, e **cinco branches fora da `main`** com trabalho real: `claude/pb05-fixture-drift`,
 `claude/render-resolution-cap`, `codex/fix-dead-run-resume`, `codex/pb00r-01-resize` e
 `codex/pb00r-03-package-tests`. Nenhuma verificada contra a `main` atual; as de PB-00R podem ter
 sido superadas por commits posteriores. Triagem pendente.
