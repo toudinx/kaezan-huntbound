@@ -10,6 +10,7 @@ import type {
 import {
   type CombatViewModelOptions,
   createCombatViewModel,
+  createDefaultCombatViewModel,
 } from './CombatViewModel';
 
 const abilityV5Defaults = {
@@ -85,6 +86,20 @@ function event(
 }
 
 describe('CombatViewModel', () => {
+  it('exposes five active Knight abilities in the default combat model', () => {
+    const viewModel = createDefaultCombatViewModel();
+
+    expect(
+      viewModel.snapshot().abilities.map((ability) => ability.abilityId),
+    ).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+    ]);
+  });
+
   it('restores a persisted run bag without replaying loot events', () => {
     const viewModel = createCombatViewModel(options);
 

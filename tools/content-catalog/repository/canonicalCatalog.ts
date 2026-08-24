@@ -498,6 +498,7 @@ export function facetPayloadHash(
               cooldownMs: entity.cooldownMs,
               groupCooldownMs: entity.groupCooldownMs,
               damageType: entity.damageType,
+              rangeTiles: entity.rangeTiles,
               area: entity.area,
               allowedVocationFamilies: entity.allowedVocationFamilies,
               formula: entity.formula,

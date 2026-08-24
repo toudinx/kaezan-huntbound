@@ -47,6 +47,8 @@ const expectedRoots = [
   'spell:tibia:berserk',
   'spell:tibia:brutal-strike',
   'spell:tibia:wound-cleansing',
+  'spell:tibia:groundshaker',
+  'spell:tibia:whirlwind-throw',
   'creature:tibia:rotworm',
   'creature:tibia:amazon',
   'creature:tibia:orc-shaman',
@@ -60,6 +62,8 @@ const expectedSourceFiles = [
   'data/scripts/spells/attack/berserk.lua',
   'data/scripts/spells/attack/brutal_strike.lua',
   'data/scripts/spells/healing/wound_cleansing.lua',
+  'data/scripts/spells/attack/groundshaker.lua',
+  'data/scripts/spells/attack/whirlwind_throw.lua',
   'data-otservbr-global/monster/vermins/rotworm.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
@@ -86,6 +90,8 @@ const expectedCharacter: FrozenCharacter = {
     'spell:tibia:berserk',
     'spell:tibia:brutal-strike',
     'spell:tibia:wound-cleansing',
+    'spell:tibia:groundshaker',
+    'spell:tibia:whirlwind-throw',
   ],
 };
 
@@ -94,6 +100,8 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
   'spell:tibia:berserk': ['identity', 'spell'],
   'spell:tibia:brutal-strike': ['identity', 'spell'],
   'spell:tibia:wound-cleansing': ['identity', 'spell'],
+  'spell:tibia:groundshaker': ['identity', 'spell'],
+  'spell:tibia:whirlwind-throw': ['identity', 'spell'],
   'creature:tibia:rotworm': [
     'identity',
     'stats',
@@ -154,7 +162,7 @@ function validateSourceIdGroups(
   const diagnostics: ContentDiagnostic[] = [];
   const expected: SourceIdGroups = {
     vocation: ['4'],
-    spell: ['80', '61', '123'],
+    spell: ['80', '61', '123', '106', '107'],
     creature: ['26', '77', '6'],
   };
 
@@ -264,7 +272,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain Knight, three combat spells, Rotworm, Amazon, and Orc Shaman as roots',
+        'Selection must contain Knight, five combat spells, Rotworm, Amazon, and Orc Shaman as roots',
       ),
     );
   }

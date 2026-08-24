@@ -734,6 +734,7 @@ export const SpellDefinitionSchema = EntityIdentitySchema.extend({
   cooldownMs: nonNegativeInteger,
   groupCooldownMs: nonNegativeInteger,
   damageType: DamageTypeSchema,
+  rangeTiles: nonNegativeInteger.optional(),
   area: z
     .object({
       shape: z.literal('square'),

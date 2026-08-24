@@ -22,6 +22,7 @@ export const DAMAGE_NUMBER_TTL_MS = 700;
 export const HEAL_NUMBER_TTL_MS = 700;
 export const AUTOLOOT_ARC_TTL_MS = 600;
 export const BERSERK_STAGGER_MS = 40;
+export const PROJECTILE_TTL_MS = 220;
 
 export type CombatDecorationKind =
   | 'corpse'
@@ -29,7 +30,8 @@ export type CombatDecorationKind =
   | 'impact'
   | 'damage-number'
   | 'heal-number'
-  | 'autoloot-arc';
+  | 'autoloot-arc'
+  | 'projectile';
 
 export interface CombatDecoration {
   readonly id: number;
@@ -203,13 +205,18 @@ export function createCombatDecorations(
             const ability = abilities[event.payload.abilityIndex];
             if (ability === undefined) break;
             const recipe = combatFxForAbility(ability.abilityId);
-            if (recipe === undefined || recipe.impactKey === undefined) break;
+            if (recipe === undefined) break;
             const casterPosition = actorPositions.get(event.payload.entityId);
 
-            if (recipe.placement === 'radius-1') {
+            if (
+              recipe.placement === 'radius-1' ||
+              recipe.placement === 'radius-3'
+            ) {
+              if (recipe.impactKey === undefined) break;
               if (casterPosition === undefined) break;
-              for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
-                for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+              const radius = recipe.placement === 'radius-1' ? 1 : 3;
+              for (let offsetY = -radius; offsetY <= radius; offsetY += 1) {
+                for (let offsetX = -radius; offsetX <= radius; offsetX += 1) {
                   const distance = Math.max(
                     Math.abs(offsetX),
                     Math.abs(offsetY),
@@ -230,6 +237,35 @@ export function createCombatDecorations(
               }
               break;
             }
+
+            if (recipe.placement === 'projectile') {
+              const targetPosition =
+                event.payload.targetEntityId === null
+                  ? undefined
+                  : actorPositions.get(event.payload.targetEntityId);
+              if (
+                casterPosition === undefined ||
+                targetPosition === undefined ||
+                recipe.projectileKey === undefined
+              ) {
+                break;
+              }
+              add('projectile', createdAtMs, PROJECTILE_TTL_MS, {
+                key: recipe.projectileKey,
+                from: copyPosition(casterPosition),
+                to: copyPosition(targetPosition),
+              });
+              if (recipe.impactKey !== undefined) {
+                addImpact(
+                  createdAtMs + PROJECTILE_TTL_MS,
+                  recipe,
+                  targetPosition,
+                );
+              }
+              break;
+            }
+
+            if (recipe.impactKey === undefined) break;
 
             const position =
               recipe.placement === 'self'

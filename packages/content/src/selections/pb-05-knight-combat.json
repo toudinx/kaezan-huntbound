@@ -47,7 +47,7 @@
     "levelSource": "Level 35 is a Huntbound balance choice for health, mana, and damage; the unrestricted kit does not require Canary spell levels",
     "skillSource": "sword 60 is the ordinary skill of a level 35 knight; at the schema.sql default of 10 the melee formula caps at 13 damage against a 65 HP rotworm",
     "healthSource": "schema.sql healthmax=150 at level 1; levels 2-8 gain vocation 0 gainhp 5; levels 9-35 gain Knight gainhp 15",
-    "manaSource": "Canary mana at level 35 is 170, one cast short of the 185 the loadout costs (115+40+30). Huntbound sizes the pool to the kit so all three spells are reachable in one hunt; V0 has no potions.",
+    "manaSource": "Canary mana at level 35 is 170; Huntbound keeps the frozen 185 pool from PB-05 while the unrestricted five-action kit remains individually castable; V0 has no potions.",
     "spellAccess": "unrestricted",
     "kit": [
       {
@@ -56,7 +56,9 @@
         "spellKeys": [
           "spell:tibia:berserk",
           "spell:tibia:brutal-strike",
-          "spell:tibia:wound-cleansing"
+          "spell:tibia:wound-cleansing",
+          "spell:tibia:groundshaker",
+          "spell:tibia:whirlwind-throw"
         ]
       }
     ],
@@ -126,6 +128,47 @@
       "huntboundAccess": "unrestricted",
       "minPower": 32,
       "maxPower": 58
+    },
+    {
+      "stableKey": "spell:tibia:groundshaker",
+      "sourceId": "106",
+      "words": "exori mas",
+      "displayName": "Groundshaker",
+      "sourceFile": "data/scripts/spells/attack/groundshaker.lua",
+      "level": 33,
+      "mana": 160,
+      "cooldownMs": 8000,
+      "groupCooldownMs": 2000,
+      "vocationNames": ["knight", "elite knight"],
+      "effect": "CONST_ME_GROUNDSHAKER",
+      "formulaKind": "skillAttack",
+      "huntboundAccess": "unrestricted",
+      "minPower": 56,
+      "maxPower": 113,
+      "radiusSource": {
+        "sourceFile": "data/scripts/spells/attack/groundshaker.lua",
+        "sourceValue": "AREA_CIRCLE3X3 (37 cells)",
+        "translation": "Huntbound radius 3 uses the existing Chebyshev square (49 cells); the 12 corner tiles are the accepted PB-08 divergence."
+      }
+    },
+    {
+      "stableKey": "spell:tibia:whirlwind-throw",
+      "sourceId": "107",
+      "words": "exori hur",
+      "displayName": "Whirlwind Throw",
+      "sourceFile": "data/scripts/spells/attack/whirlwind_throw.lua",
+      "level": 28,
+      "mana": 40,
+      "cooldownMs": 6000,
+      "groupCooldownMs": 2000,
+      "vocationNames": ["knight", "elite knight"],
+      "effect": "CONST_ME_HITAREA",
+      "distanceEffect": "CONST_ANI_WEAPONTYPE",
+      "rangeTiles": 5,
+      "formulaKind": "skillAttack",
+      "huntboundAccess": "unrestricted",
+      "minPower": 40,
+      "maxPower": 103
     }
   ],
   "conversions": {
@@ -178,7 +221,20 @@
       "name": "CONST_ME_HITAREA",
       "sourceId": 10,
       "sourceFile": "src/utils/utils_definitions.hpp",
-      "usedBy": ["spell:tibia:berserk", "spell:tibia:brutal-strike"]
+      "usedBy": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:whirlwind-throw"
+      ]
+    },
+    {
+      "kind": "effect",
+      "name": "CONST_ME_GROUNDSHAKER",
+      "sourceId": 35,
+      "sourceFile": "src/utils/utils_definitions.hpp",
+      "usedBy": [
+        "spell:tibia:groundshaker source; Huntbound FX falls back to hit-area"
+      ]
     },
     {
       "kind": "effect",
@@ -192,7 +248,10 @@
       "name": "CONST_ANI_WEAPONTYPE",
       "sourceId": 254,
       "sourceFile": "src/utils/utils_definitions.hpp",
-      "usedBy": ["spell:tibia:brutal-strike distance effect"]
+      "usedBy": [
+        "spell:tibia:brutal-strike distance effect",
+        "spell:tibia:whirlwind-throw distance effect"
+      ]
     },
     {
       "kind": "item",
@@ -221,6 +280,14 @@
     {
       "relativePath": "data/scripts/spells/attack/brutal_strike.lua",
       "sha256": "08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/groundshaker.lua",
+      "sha256": "779037e4a1a833cf533be5c0d52a3ced03bacb86b44d93d756fcaac1fcaa2e9e"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/whirlwind_throw.lua",
+      "sha256": "a98632bf83f2828f29af86df80c36e07c682831778bbd90620537932a3e51769"
     },
     {
       "relativePath": "data/scripts/spells/healing/wound_cleansing.lua",

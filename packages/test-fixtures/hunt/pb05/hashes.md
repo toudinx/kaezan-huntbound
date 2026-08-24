@@ -6,7 +6,7 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `15559942481dd4ff9b4b75b063e2585f9a963846886df49679a124d3b2b3d472` |
+| `scenario.json` | `91059ba87185d433626e24f516fd4200a054fc0554a6bbd82d8f8a9ff32b4f1e` |
 | `commands.jsonl` | `689cc3a8d44e46c6f25b609496dd7094e7f86304f1054a553014078b9bb734d3` |
 | `snapshot.golden.json` | `3c3fdefcd997b16f8b242a66c709638baacbaea1bcc5893cc7f51417eada8d0f` |
 | `events.golden.jsonl` | `75bd96c37a7a0c097532c8a5e201e15bbc405c677d39aca00fa327dea816ac72` |
@@ -17,8 +17,8 @@ The frozen session runs for `2700` ticks and emits `2246` events. Tick count is
 `buildHuntScenario`. The command log is player-only; hunter decisions come from
 the seed.
 
-Coverage includes melee, the three kit abilities, a combat command rejection,
-player-received damage, Wound Cleansing, creature death at tick `203`, loot,
+Coverage includes melee, the five-action kit (three casts in this session), a
+combat command rejection, player-received damage, Wound Cleansing, creature death at tick `203`, loot,
 seat respawn of entity `14` at tick `2003` on the death cell, and
 `combat/target-changed`. The player dies at tick `351`; the kernel does not
 respawn them. PB-07-04 added `combat/leeched` (4) and `combat/regenerated` (2);

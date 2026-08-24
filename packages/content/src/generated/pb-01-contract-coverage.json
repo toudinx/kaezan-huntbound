@@ -11,7 +11,9 @@
       "spellKeys": [
         "spell:tibia:berserk",
         "spell:tibia:brutal-strike",
-        "spell:tibia:wound-cleansing"
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
       ],
       "stableKey": "character:huntbound:knight-venore-rotworm-cave",
       "vocationKey": "vocation:tibia:knight",
@@ -1059,6 +1061,24 @@
         "rationale": "The root covers the skill-attack-product formula and single-target knight strike."
       },
       {
+        "consumer": "PB-08 Knight damage rotation",
+        "entityKey": "spell:tibia:groundshaker",
+        "facets": [
+          "identity",
+          "spell"
+        ],
+        "rationale": "The root covers the radius-three area translation and skill-attack formula."
+      },
+      {
+        "consumer": "PB-08 Knight damage rotation",
+        "entityKey": "spell:tibia:whirlwind-throw",
+        "facets": [
+          "identity",
+          "spell"
+        ],
+        "rationale": "The root covers the five-tile target range, weapon distance effect, and skill-attack formula."
+      },
+      {
         "consumer": "knight combat contract tests",
         "entityKey": "spell:tibia:wound-cleansing",
         "facets": [
@@ -1083,6 +1103,8 @@
       "creature:tibia:rotworm",
       "spell:tibia:berserk",
       "spell:tibia:brutal-strike",
+      "spell:tibia:groundshaker",
+      "spell:tibia:whirlwind-throw",
       "spell:tibia:wound-cleansing",
       "vocation:tibia:knight"
     ]
@@ -1141,8 +1163,64 @@
       ],
       "level": 16,
       "mana": 30,
+      "rangeTiles": 1,
       "stableKey": "spell:tibia:brutal-strike",
       "words": "exori ico"
+    },
+    {
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight"
+      ],
+      "area": {
+        "radiusTiles": 3,
+        "shape": "square"
+      },
+      "cooldownMs": 8000,
+      "damageType": "physical",
+      "displayName": "Groundshaker",
+      "formula": {
+        "finalMultiplier": 1.28,
+        "kind": "skillAttack",
+        "levelFactor": 0.2,
+        "maxSkillAttackFactor": 1.1,
+        "minSkillAttackFactor": 0.5
+      },
+      "groupCooldownMs": 2000,
+      "guid": "e7171c40-91ff-5882-9b23-5fcfa380b475",
+      "includedFacets": [
+        "identity",
+        "spell"
+      ],
+      "level": 33,
+      "mana": 160,
+      "stableKey": "spell:tibia:groundshaker",
+      "words": "exori mas"
+    },
+    {
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight"
+      ],
+      "cooldownMs": 6000,
+      "damageType": "physical",
+      "displayName": "Whirlwind Throw",
+      "formula": {
+        "finalMultiplier": 1.28,
+        "kind": "skillAttack",
+        "levelFactor": 0.2,
+        "maxSkillAttackFactor": 1,
+        "minSkillAttackFactor": 0.3333333333333333
+      },
+      "groupCooldownMs": 2000,
+      "guid": "57eda811-dec9-5b5e-b870-b99083671958",
+      "includedFacets": [
+        "identity",
+        "spell"
+      ],
+      "level": 28,
+      "mana": 40,
+      "rangeTiles": 5,
+      "stableKey": "spell:tibia:whirlwind-throw",
+      "words": "exori hur"
     },
     {
       "allowedVocationFamilies": [

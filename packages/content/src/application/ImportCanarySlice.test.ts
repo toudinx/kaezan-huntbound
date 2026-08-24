@@ -11,6 +11,8 @@ const paths = {
   spell: 'data/scripts/spells/attack/berserk.lua',
   brutalStrike: 'data/scripts/spells/attack/brutal_strike.lua',
   woundCleansing: 'data/scripts/spells/healing/wound_cleansing.lua',
+  groundshaker: 'data/scripts/spells/attack/groundshaker.lua',
+  whirlwindThrow: 'data/scripts/spells/attack/whirlwind_throw.lua',
   rotworm: 'data-otservbr-global/monster/vermins/rotworm.lua',
   amazon: 'data-otservbr-global/monster/humans/amazon.lua',
   orc: 'data-otservbr-global/monster/humanoids/orc_shaman.lua',
@@ -100,6 +102,50 @@ spell:mana(40)
 spell:isSelfTarget(true)
 spell:isAggressive(false)
 spell:register()`,
+  [paths.groundshaker]: `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_GROUNDSHAKER)
+combat:setArea(createCombatArea(AREA_CIRCLE3X3))
+function onGetFormulaValues(player, skill, attack, factor)
+  local level = player:getLevel()
+  local min = (level / 5) + (skill + attack) * 0.5
+  local max = (level / 5) + (skill + attack) * 1.1
+  return -min * 1.28, -max * 1.28
+end
+combat:setCallback(CALLBACK_PARAM_SKILLVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+spell:id(106)
+spell:name("Groundshaker")
+spell:words("exori mas")
+spell:level(33)
+spell:mana(160)
+spell:cooldown(8000)
+spell:groupCooldown(2000)
+spell:vocation("knight;true", "elite knight;true")
+spell:register()`,
+  [paths.whirlwindThrow]: `local combat = Combat()
+combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
+combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_HITAREA)
+combat:setParameter(COMBAT_PARAM_DISTANCEEFFECT, CONST_ANI_WEAPONTYPE)
+function onGetFormulaValues(player, skill, attack, factor)
+  local level = player:getLevel()
+  local min = (level / 5) + (skill + attack) / 3
+  local max = (level / 5) + skill + attack
+  return -min * 1.28, -max * 1.28
+end
+combat:setCallback(CALLBACK_PARAM_SKILLVALUE, "onGetFormulaValues")
+local spell = Spell("instant")
+spell:id(107)
+spell:name("Whirlwind Throw")
+spell:words("exori hur")
+spell:level(28)
+spell:mana(40)
+spell:range(5)
+spell:needTarget(true)
+spell:cooldown(6000)
+spell:groupCooldown(2000)
+spell:vocation("knight;true", "elite knight;true")
+spell:register()`,
   [paths.rotworm]: monster('Rotworm', 26, 'gold coin'),
   [paths.amazon]: monster('Amazon', 77, 'gold coin'),
   [paths.orc]: monster('Orc Shaman', 6, 'gold coin', true),
@@ -140,6 +186,8 @@ function selection(): ContentSliceDefinition {
       'spell:tibia:berserk',
       'spell:tibia:brutal-strike',
       'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
@@ -170,6 +218,18 @@ function selection(): ContentSliceDefinition {
         consumer: 'spell tests',
         rationale: 'Wound Cleansing spell is covered',
       },
+      {
+        entityKey: 'spell:tibia:groundshaker',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'Groundshaker spell is covered',
+      },
+      {
+        entityKey: 'spell:tibia:whirlwind-throw',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'Whirlwind Throw spell is covered',
+      },
       ...['rotworm', 'amazon', 'orc-shaman'].map((name) => ({
         entityKey: `creature:tibia:${name}`,
         facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
@@ -189,7 +249,7 @@ function selection(): ContentSliceDefinition {
     sourceFiles: Object.values(paths),
     rootSourceIds: {
       vocation: ['4'],
-      spell: ['80', '61', '123'],
+      spell: ['80', '61', '123', '106', '107'],
       creature: ['26', '77', '6'],
     },
     dependencySourceIds: { creature: ['28'] },
@@ -221,6 +281,8 @@ function selection(): ContentSliceDefinition {
         'spell:tibia:berserk',
         'spell:tibia:brutal-strike',
         'spell:tibia:wound-cleansing',
+        'spell:tibia:groundshaker',
+        'spell:tibia:whirlwind-throw',
       ],
     },
   } as unknown as ContentSliceDefinition;
@@ -344,6 +406,8 @@ describe('importCanarySlice', () => {
     expect(result.bundle.spells.map((spell) => spell.stableKey)).toEqual([
       'spell:tibia:berserk',
       'spell:tibia:brutal-strike',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
       'spell:tibia:wound-cleansing',
     ]);
     expect(result.bundle.characters).toEqual([
@@ -360,6 +424,8 @@ describe('importCanarySlice', () => {
           'spell:tibia:berserk',
           'spell:tibia:brutal-strike',
           'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
         ],
       },
     ]);
@@ -418,6 +484,10 @@ describe('importCanarySlice', () => {
     });
 
     expect(bundle.projectionAudits.map((audit) => audit.rawReference)).toEqual([
+      'knight',
+      'elite knight',
+      'knight',
+      'elite knight',
       'knight',
       'elite knight',
       'knight',

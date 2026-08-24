@@ -5,16 +5,23 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CharacterDefinitionSchema,
+  createEntityId,
+  createSeed,
+  createTickIndex,
+  type GridPosition,
+  type KernelScenario,
   RuntimeContentBundleSchema,
   SIMULATION_RULES_VERSION,
   type SimulationEvent,
   validateKernelScenario,
 } from '../../packages/contracts/src/index.ts';
 import {
+  createSimulationKernel,
   decodeCommandLog,
   encodeCanonicalJson,
 } from '../../packages/simulation/src/index.ts';
 import {
+  buildPb05HuntScenario,
   characterFromPb05Selection,
   composePb05CombatSession,
   PB05_COMBAT_SEED,
@@ -140,6 +147,151 @@ function parsedEvents(text: string): readonly SimulationEvent[] {
     .map((line) => JSON.parse(line) as SimulationEvent);
 }
 
+function castAbility(abilityIndex: number, targetEntityId: number | null) {
+  return {
+    tick: createTickIndex(0),
+    issuer: 'player' as const,
+    command: {
+      type: 'actor/cast-ability' as const,
+      entityId: createEntityId(1),
+      abilityIndex,
+      targetEntityId:
+        targetEntityId === null ? null : createEntityId(targetEntityId),
+    },
+  };
+}
+
+function targetPositionAtDistance(
+  scenario: KernelScenario,
+  distance: number,
+): GridPosition {
+  const player = scenario.initialActors.find(
+    (actor) => actor.blueprintId === 'player',
+  );
+  if (player === undefined) throw new Error('Scenario is missing its player');
+  const floor = scenario.floors.find((entry) => entry.z === player.position.z);
+  if (floor === undefined) throw new Error('Scenario is missing player floor');
+  const blocked = new Set(floor.blockedTiles.map(([x, y]) => `${x}:${y}`));
+  const candidates: GridPosition[] = [];
+  for (
+    let y = player.position.y - distance;
+    y <= player.position.y + distance;
+    y += 1
+  ) {
+    for (
+      let x = player.position.x - distance;
+      x <= player.position.x + distance;
+      x += 1
+    ) {
+      if (
+        Math.max(
+          Math.abs(x - player.position.x),
+          Math.abs(y - player.position.y),
+        ) === distance
+      ) {
+        candidates.push({ x, y });
+      }
+    }
+  }
+  const candidate = candidates.find(
+    ({ x, y }) =>
+      x >= 0 &&
+      x < scenario.width &&
+      y >= 0 &&
+      y < scenario.height &&
+      !blocked.has(`${x}:${y}`),
+  );
+  if (candidate === undefined) {
+    throw new Error(`No open target at distance ${distance}`);
+  }
+  return { ...candidate, z: player.position.z };
+}
+
+function scenarioWithInertTarget(
+  scenario: KernelScenario,
+  targetPosition: GridPosition,
+): KernelScenario {
+  const player = scenario.initialActors.find(
+    (actor) => actor.blueprintId === 'player',
+  );
+  if (player === undefined) throw new Error('Scenario is missing its player');
+  return {
+    ...scenario,
+    spawnGroups: [],
+    blueprints: scenario.blueprints.map((blueprint) =>
+      blueprint.blueprintId === 'rotworm'
+        ? { ...blueprint, behavior: 'inert' as const }
+        : blueprint,
+    ),
+    initialActors: [
+      player,
+      { blueprintId: 'rotworm', position: targetPosition, facing: 'w' },
+    ],
+  };
+}
+
+function targetDamaged(events: readonly SimulationEvent[]): boolean {
+  return events.some(
+    (event) =>
+      event.payload.type === 'combat/damaged' &&
+      event.payload.entityId === createEntityId(2),
+  );
+}
+
+describe('PB-08-04 Knight damage rotation', () => {
+  it('composes five active abilities with the two new damage spells', async () => {
+    const session = await composePb05CombatSession();
+
+    expect(
+      session.scenario.abilities.map((ability) => ability.abilityId),
+    ).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+    ]);
+    expect(
+      session.scenario.blueprints.find(
+        (blueprint) => blueprint.blueprintId === 'player',
+      )?.abilityIndices,
+    ).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('lets Groundshaker hit three tiles while Berserk stops at one', async () => {
+    const scenario = await buildPb05HuntScenario();
+    const target = targetPositionAtDistance(scenario, 3);
+    const testScenario = scenarioWithInertTarget(scenario, target);
+
+    const berserk = createSimulationKernel(
+      testScenario,
+      createSeed('b8080400000001aa'),
+    );
+    berserk.enqueue(castAbility(0, null));
+    expect(targetDamaged(berserk.advanceOne())).toBe(false);
+
+    const groundshaker = createSimulationKernel(
+      testScenario,
+      createSeed('b8080400000001bb'),
+    );
+    groundshaker.enqueue(castAbility(3, null));
+    expect(targetDamaged(groundshaker.advanceOne())).toBe(true);
+  });
+
+  it('lets Whirlwind Throw hit a target five tiles away', async () => {
+    const scenario = await buildPb05HuntScenario();
+    const target = targetPositionAtDistance(scenario, 5);
+    const kernel = createSimulationKernel(
+      scenarioWithInertTarget(scenario, target),
+      createSeed('b8080400000001cc'),
+    );
+
+    kernel.enqueue(castAbility(4, 2));
+
+    expect(targetDamaged(kernel.advanceOne())).toBe(true);
+  });
+});
+
 describe('PB-05 combat session coverage', () => {
   it('feeds the PB-05 character kit into the combat composer', async () => {
     const [catalogText, selectionText] = await Promise.all([
@@ -174,6 +326,8 @@ describe('PB-05 combat session coverage', () => {
           'spell:tibia:berserk',
           'spell:tibia:brutal-strike',
           'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
         ],
       },
     ]);

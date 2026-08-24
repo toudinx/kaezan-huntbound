@@ -24,6 +24,8 @@ function selectionFixture(): SelectionInput {
       'spell:tibia:berserk',
       'spell:tibia:brutal-strike',
       'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
@@ -54,6 +56,18 @@ function selectionFixture(): SelectionInput {
         consumer: 'spell tests',
         rationale: 'wound cleansing fixture',
       },
+      {
+        entityKey: 'spell:tibia:groundshaker',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'groundshaker fixture',
+      },
+      {
+        entityKey: 'spell:tibia:whirlwind-throw',
+        facets: ['identity', 'spell'],
+        consumer: 'spell tests',
+        rationale: 'whirlwind throw fixture',
+      },
       ...[
         'creature:tibia:rotworm',
         'creature:tibia:amazon',
@@ -81,6 +95,8 @@ function selectionFixture(): SelectionInput {
       'data/scripts/spells/attack/berserk.lua',
       'data/scripts/spells/attack/brutal_strike.lua',
       'data/scripts/spells/healing/wound_cleansing.lua',
+      'data/scripts/spells/attack/groundshaker.lua',
+      'data/scripts/spells/attack/whirlwind_throw.lua',
       'data-otservbr-global/monster/vermins/rotworm.lua',
       'data-otservbr-global/monster/humans/amazon.lua',
       'data-otservbr-global/monster/humanoids/orc_shaman.lua',
@@ -88,7 +104,7 @@ function selectionFixture(): SelectionInput {
     ],
     rootSourceIds: {
       vocation: ['4'],
-      spell: ['80', '61', '123'],
+      spell: ['80', '61', '123', '106', '107'],
       creature: ['26', '77', '6'],
     },
     projectionPolicy: {
@@ -120,6 +136,8 @@ function selectionFixture(): SelectionInput {
         'spell:tibia:berserk',
         'spell:tibia:brutal-strike',
         'spell:tibia:wound-cleansing',
+        'spell:tibia:groundshaker',
+        'spell:tibia:whirlwind-throw',
       ],
     },
   };

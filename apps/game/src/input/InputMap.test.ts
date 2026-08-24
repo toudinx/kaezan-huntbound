@@ -359,7 +359,7 @@ describe('InputMap', () => {
     expect(input.drain(20)).toEqual([]);
   });
 
-  it('maps the three ability keys to their stable indices', () => {
+  it('maps the five ability keys to their stable indices', () => {
     const input = createInputMap();
     const target = new TestInputTarget();
     input.attach(target as unknown as HTMLElement);
@@ -374,6 +374,22 @@ describe('InputMap', () => {
     target.keyUp('Digit2');
     target.keyDown('Digit3');
     expect(input.drain(3)).toEqual([{ kind: 'cast-ability', abilityIndex: 2 }]);
+
+    target.keyUp('Digit3');
+    target.keyDown('Digit4');
+    expect(input.drain(4)).toEqual([{ kind: 'cast-ability', abilityIndex: 3 }]);
+
+    target.keyUp('Digit4');
+    target.keyDown('Digit5');
+    expect(input.drain(5)).toEqual([{ kind: 'cast-ability', abilityIndex: 4 }]);
+
+    target.keyUp('Digit5');
+    target.keyDown('Numpad4');
+    expect(input.drain(6)).toEqual([{ kind: 'cast-ability', abilityIndex: 3 }]);
+
+    target.keyUp('Numpad4');
+    target.keyDown('Numpad5');
+    expect(input.drain(7)).toEqual([{ kind: 'cast-ability', abilityIndex: 4 }]);
   });
 
   it('emits exactly one combat action for a short touch', () => {

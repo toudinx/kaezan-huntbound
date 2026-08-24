@@ -46,6 +46,16 @@
       "purpose": "spell"
     },
     {
+      "relativePath": "data/scripts/spells/attack/groundshaker.lua",
+      "sha256": "779037e4a1a833cf533be5c0d52a3ced03bacb86b44d93d756fcaac1fcaa2e9e",
+      "purpose": "spell"
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/whirlwind_throw.lua",
+      "sha256": "a98632bf83f2828f29af86df80c36e07c682831778bbd90620537932a3e51769",
+      "purpose": "spell"
+    },
+    {
       "relativePath": "data/scripts/spells/healing/wound_cleansing.lua",
       "sha256": "e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b",
       "purpose": "spell"

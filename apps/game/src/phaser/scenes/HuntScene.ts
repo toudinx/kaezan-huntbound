@@ -1109,7 +1109,10 @@ export class HuntScene extends Phaser.Scene {
     }
 
     const sprite = object as Phaser.GameObjects.Sprite;
-    if (decoration.kind === 'autoloot-arc') {
+    if (
+      decoration.kind === 'autoloot-arc' ||
+      decoration.kind === 'projectile'
+    ) {
       const from = decoration.from;
       const to = decoration.to;
       if (from === undefined || to === undefined) return;
@@ -1126,7 +1129,11 @@ export class HuntScene extends Phaser.Scene {
           (from.x + (to.x - from.x) * progress + 0.5) * this.tileSize,
           (from.y + (to.y - from.y) * progress + 0.5) * this.tileSize,
         )
-        .setRotation(progress * Math.PI * 2)
+        .setRotation(
+          decoration.kind === 'projectile'
+            ? Math.atan2(to.y - from.y, to.x - from.x)
+            : progress * Math.PI * 2,
+        )
         .setAlpha(1 - progress * 0.25)
         .setDepth(
           actorDepth({
@@ -1147,7 +1154,7 @@ export class HuntScene extends Phaser.Scene {
         (position.y + 0.5) * this.tileSize,
       )
       .setRotation(0)
-      .setAlpha(1)
+      .setAlpha(renderTimeMs < decoration.createdAtMs ? 0 : 1)
       .setScale(decoration.stronger === true ? 1.35 : 1)
       .setDepth(
         actorDepth({
@@ -1170,7 +1177,10 @@ export class HuntScene extends Phaser.Scene {
     if (asset === undefined || animation === undefined) return;
     if (asset.atlasFrameCount <= 1) return;
     sprite.setFrame(
-      effectFrame(animation, renderTimeMs - decoration.createdAtMs),
+      effectFrame(
+        animation,
+        Math.max(renderTimeMs - decoration.createdAtMs, 0),
+      ),
       false,
       false,
     );

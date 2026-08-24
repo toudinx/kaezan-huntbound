@@ -7,6 +7,8 @@
     "spell:tibia:berserk",
     "spell:tibia:brutal-strike",
     "spell:tibia:wound-cleansing",
+    "spell:tibia:groundshaker",
+    "spell:tibia:whirlwind-throw",
     "creature:tibia:rotworm",
     "creature:tibia:amazon",
     "creature:tibia:orc-shaman"
@@ -36,6 +38,18 @@
       "facets": ["identity", "spell"],
       "consumer": "knight combat contract tests",
       "rationale": "The root covers the level-magic healing formula."
+    },
+    {
+      "entityKey": "spell:tibia:groundshaker",
+      "facets": ["identity", "spell"],
+      "consumer": "PB-08 Knight damage rotation",
+      "rationale": "The root covers the radius-three area translation and skill-attack formula."
+    },
+    {
+      "entityKey": "spell:tibia:whirlwind-throw",
+      "facets": ["identity", "spell"],
+      "consumer": "PB-08 Knight damage rotation",
+      "rationale": "The root covers the five-tile target range, weapon distance effect, and skill-attack formula."
     },
     {
       "entityKey": "creature:tibia:rotworm",
@@ -72,6 +86,8 @@
     "data/scripts/spells/attack/berserk.lua",
     "data/scripts/spells/attack/brutal_strike.lua",
     "data/scripts/spells/healing/wound_cleansing.lua",
+    "data/scripts/spells/attack/groundshaker.lua",
+    "data/scripts/spells/attack/whirlwind_throw.lua",
     "data-otservbr-global/monster/vermins/rotworm.lua",
     "data-otservbr-global/monster/humans/amazon.lua",
     "data-otservbr-global/monster/humanoids/orc_shaman.lua",
@@ -79,7 +95,7 @@
   ],
   "rootSourceIds": {
     "vocation": ["4"],
-    "spell": ["80", "61", "123"],
+    "spell": ["80", "61", "123", "106", "107"],
     "creature": ["26", "77", "6"]
   },
   "dependencySourceIds": {
@@ -112,7 +128,9 @@
     "spellKeys": [
       "spell:tibia:berserk",
       "spell:tibia:brutal-strike",
-      "spell:tibia:wound-cleansing"
+      "spell:tibia:wound-cleansing",
+      "spell:tibia:groundshaker",
+      "spell:tibia:whirlwind-throw"
     ]
   }
 }

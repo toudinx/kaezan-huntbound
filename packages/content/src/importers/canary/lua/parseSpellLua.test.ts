@@ -259,6 +259,7 @@ describe('parseCanarySpellLua', () => {
         mana: 30,
         cooldownMs: 6000,
         groupCooldownMs: 2000,
+        rangeTiles: 1,
         vocationNames: ['knight', 'elite knight'],
         damageType: 'physical',
         formula: {
@@ -307,6 +308,21 @@ describe('parseCanarySpellLua', () => {
       'local min = (level * 0.2 + magicLevel * 4) * 25',
     );
     const result = parseCanarySpellLua(unrecognized);
+
+    expect(result.ok).toBe(false);
+    expect(diagnosticsOf(result)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'lua.invalid-formula' }),
+      ]),
+    );
+  });
+
+  it('rejects an extra term after an implicit skill-attack sum', () => {
+    const invalid = fixture.replace(
+      'local min = (level / 6) + (skill + attack) * 0.4',
+      'local min = (level / 6) + ((skill + attack) + 2)',
+    );
+    const result = parseCanarySpellLua(invalid);
 
     expect(result.ok).toBe(false);
     expect(diagnosticsOf(result)).toEqual(

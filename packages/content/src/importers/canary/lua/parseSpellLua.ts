@@ -32,6 +32,7 @@ interface SpellState {
   readonly mana: number | undefined;
   readonly cooldownMs: number | undefined;
   readonly groupCooldownMs: number | undefined;
+  readonly rangeTiles: number | undefined;
   readonly vocationNames: readonly string[];
   readonly registered: boolean;
   readonly anchor: Statement | undefined;
@@ -190,17 +191,34 @@ function readSkillAttackTerm(expression: Expression | undefined):
       readonly maxSkillAttackFactor: number;
     }
   | undefined {
-  if (expression?.type !== 'BinaryExpression' || expression.operator !== '*')
-    return undefined;
   if (
-    expression.left.type !== 'BinaryExpression' ||
-    expression.left.operator !== '+' ||
-    !identifierIs(expression.left.left, 'skill') ||
-    !identifierIs(expression.left.right, 'attack')
+    expression?.type === 'BinaryExpression' &&
+    expression.operator === '+' &&
+    identifierIs(expression.left, 'skill') &&
+    identifierIs(expression.right, 'attack')
   ) {
+    return { minSkillAttackFactor: 1, maxSkillAttackFactor: 1 };
+  }
+
+  const skillAttack =
+    expression?.type === 'BinaryExpression' &&
+    (expression.operator === '*' || expression.operator === '/') &&
+    expression.left.type === 'BinaryExpression' &&
+    expression.left.operator === '+' &&
+    identifierIs(expression.left.left, 'skill') &&
+    identifierIs(expression.left.right, 'attack');
+  if (!skillAttack) {
     return undefined;
   }
-  const factor = numericLiteral(expression.right);
+  const divisorOrFactor = numericLiteral(expression.right);
+  const factor =
+    divisorOrFactor === undefined
+      ? undefined
+      : expression.operator === '/'
+        ? divisorOrFactor === 0
+          ? undefined
+          : 1 / divisorOrFactor
+        : divisorOrFactor;
   return factor === undefined
     ? undefined
     : { minSkillAttackFactor: factor, maxSkillAttackFactor: factor };
@@ -215,8 +233,22 @@ function readFormulaAssignment(
     return undefined;
   const levelFactor = readLevelTerm(expression.left);
   const skillAttack = readSkillAttackTerm(expression.right);
-  if (levelFactor === undefined || skillAttack === undefined) return undefined;
-  return { levelFactor, skillAttackFactor: skillAttack.minSkillAttackFactor };
+  if (levelFactor !== undefined && skillAttack !== undefined) {
+    return { levelFactor, skillAttackFactor: skillAttack.minSkillAttackFactor };
+  }
+
+  if (
+    expression.left.type !== 'BinaryExpression' ||
+    expression.left.operator !== '+' ||
+    !identifierIs(expression.left.right, 'skill') ||
+    !identifierIs(expression.right, 'attack')
+  ) {
+    return undefined;
+  }
+  const leftLevelFactor = readLevelTerm(expression.left.left);
+  return leftLevelFactor === undefined
+    ? undefined
+    : { levelFactor: leftLevelFactor, skillAttackFactor: 1 };
 }
 
 function readFormulaReturn(
@@ -683,6 +715,7 @@ function parseSpellCall(
     mana: number | undefined;
     cooldownMs: number | undefined;
     groupCooldownMs: number | undefined;
+    rangeTiles: number | undefined;
     vocationNames: string[];
     registered: boolean;
   },
@@ -785,16 +818,19 @@ function parseSpellCall(
         'combat area',
         diagnostics,
       );
-      if (area !== 'AREA_SQUARE1X1') {
+      if (area !== 'AREA_SQUARE1X1' && area !== 'AREA_CIRCLE3X3') {
         pushDiagnostic(
           diagnostics,
           areaCall,
           'lua.invalid-value',
-          'Only AREA_SQUARE1X1 is allowlisted',
+          'Only AREA_SQUARE1X1 and AREA_CIRCLE3X3 are allowlisted',
         );
         return;
       }
-      state.area = { shape: 'square', radius: 1 };
+      state.area = {
+        shape: 'square',
+        radius: area === 'AREA_CIRCLE3X3' ? 3 : 1,
+      };
       return;
     }
     if (base.identifier.name === 'setCallback') {
@@ -883,7 +919,7 @@ function parseSpellCall(
     }
     return;
   }
-  const ignoredStringMethods = new Set(['group', 'castSound']);
+  const ignoredStringMethods = new Set(['group', 'castSound', 'impactSound']);
   if (ignoredStringMethods.has(method)) {
     const args = readMethodArguments(call, 1, `spell:${method}`, diagnostics);
     if (args !== undefined) {
@@ -924,8 +960,10 @@ function parseSpellCall(
   }
   if (method === 'range') {
     const args = readMethodArguments(call, 1, 'spell:range', diagnostics);
-    if (args !== undefined)
-      readNonNegativeInteger(args[0], 'spell range', diagnostics);
+    if (args !== undefined) {
+      const range = readNonNegativeInteger(args[0], 'spell range', diagnostics);
+      if (range !== undefined) state.rangeTiles = range;
+    }
     return;
   }
   if (
@@ -985,6 +1023,7 @@ function collectSpell(
     mana: undefined as number | undefined,
     cooldownMs: undefined as number | undefined,
     groupCooldownMs: undefined as number | undefined,
+    rangeTiles: undefined as number | undefined,
     vocationNames: [] as string[],
     registered: false,
     formula: undefined as FormulaValues | undefined,
@@ -1119,6 +1158,7 @@ function collectSpell(
       mana: mutable.mana,
       cooldownMs: mutable.cooldownMs,
       groupCooldownMs: mutable.groupCooldownMs,
+      rangeTiles: mutable.rangeTiles,
       vocationNames: mutable.vocationNames,
       registered: mutable.registered,
       anchor,
@@ -1171,6 +1211,9 @@ export function parseCanarySpellLua(
       mana: state.mana as number,
       cooldownMs: state.cooldownMs as number,
       groupCooldownMs: state.groupCooldownMs as number,
+      ...(state.rangeTiles === undefined
+        ? {}
+        : { rangeTiles: state.rangeTiles }),
       vocationNames: state.vocationNames,
       damageType: state.damageType as string,
       ...(state.area === undefined ? {} : { area: state.area }),

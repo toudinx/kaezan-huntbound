@@ -293,6 +293,79 @@ describe('CombatDecorations', () => {
     );
   });
 
+  it('plans groundshaker on every tile in radius three', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(6, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 3,
+          targetEntityId: null,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, casterPosition]]),
+      playerPosition: casterPosition,
+    });
+
+    const impacts = decorations
+      .current()
+      .filter((decoration) => decoration.kind === 'impact');
+    expect(impacts).toHaveLength(49);
+    expect(impacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+          position: position(3, 2),
+        }),
+        expect.objectContaining({
+          key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+          position: position(9, 8),
+        }),
+      ]),
+    );
+  });
+
+  it('plans whirlwind-throw as a projectile from the caster to the target', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(5, 5);
+    const targetPosition = position(10, 5);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 4,
+          targetEntityId: 2 as EntityId,
+        }),
+      ],
+      actorPositions: new Map([
+        [1 as EntityId, casterPosition],
+        [2 as EntityId, targetPosition],
+      ]),
+      playerPosition: casterPosition,
+    });
+
+    expect(decorations.current()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'projectile',
+          key: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+          from: casterPosition,
+          to: targetPosition,
+        }),
+        expect.objectContaining({
+          kind: 'impact',
+          key: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+          position: targetPosition,
+        }),
+      ]),
+    );
+  });
+
   it('plans a stronger hit-area impact for brutal-strike on the target', () => {
     const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
     const targetPosition = position(7, 5);

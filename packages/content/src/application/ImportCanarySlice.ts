@@ -316,6 +316,7 @@ function spellDefinition(
     cooldownMs: dto.cooldownMs,
     groupCooldownMs: dto.groupCooldownMs,
     damageType: dto.damageType as CatalogSpellDefinition['damageType'],
+    ...(dto.rangeTiles === undefined ? {} : { rangeTiles: dto.rangeTiles }),
     ...(dto.area === undefined
       ? {}
       : { area: { shape: dto.area.shape, radiusTiles: dto.area.radius } }),

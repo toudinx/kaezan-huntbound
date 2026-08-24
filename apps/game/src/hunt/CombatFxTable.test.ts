@@ -64,6 +64,31 @@ describe('combatFxForAbility', () => {
     });
   });
 
+  it('maps groundshaker to a stronger staggered radius-three impact', () => {
+    expect(combatFxForAbility('groundshaker')).toEqual({
+      impactKey: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+      bloodKey: undefined,
+      placement: 'radius-3',
+      staggerByDistance: true,
+      stronger: true,
+      healNumber: false,
+      numberColor: '#ff7b9d',
+    });
+  });
+
+  it('maps whirlwind-throw to a travelling projectile and target impact', () => {
+    expect(combatFxForAbility('whirlwind-throw')).toEqual({
+      impactKey: createAssetKey(HUNT_PACK_HIT_AREA_EFFECT_KEY),
+      projectileKey: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+      bloodKey: undefined,
+      placement: 'projectile',
+      staggerByDistance: false,
+      stronger: false,
+      healNumber: false,
+      numberColor: '#ff7b9d',
+    });
+  });
+
   it('maps wound-cleansing to magic-blue on self with a heal number', () => {
     expect(combatFxForAbility('wound-cleansing')).toEqual({
       impactKey: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),

@@ -474,6 +474,9 @@ export class SqliteContentCatalog
           groupCooldownMs: spell.group_cooldown_ms as number,
           damageType:
             spell.damage_type as CatalogContentBundle['spells'][number]['damageType'],
+          ...(spell.range_tiles === null
+            ? {}
+            : { rangeTiles: spell.range_tiles as number }),
           ...(spell.area_shape === null
             ? {}
             : {
@@ -974,8 +977,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO spells
-           (slice_key, entity_guid, words, level, mana, cooldown_ms, group_cooldown_ms, damage_type, area_shape, area_radius_tiles, formula_kind, formula_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           (slice_key, entity_guid, words, level, mana, cooldown_ms, group_cooldown_ms, damage_type, range_tiles, area_shape, area_radius_tiles, formula_kind, formula_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           bundle.slice.key,
@@ -986,6 +989,7 @@ export class SqliteContentCatalog
           spell.cooldownMs,
           spell.groupCooldownMs,
           spell.damageType,
+          spell.rangeTiles ?? null,
           spell.area?.shape ?? null,
           spell.area?.radiusTiles ?? null,
           spell.formula.kind,

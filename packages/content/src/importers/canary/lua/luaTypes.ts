@@ -71,6 +71,7 @@ export interface CanarySpellDto {
   readonly mana: number;
   readonly cooldownMs: number;
   readonly groupCooldownMs: number;
+  readonly rangeTiles?: number;
   readonly vocationNames: readonly string[];
   readonly damageType: string;
   readonly area?: { readonly shape: 'square'; readonly radius: number };

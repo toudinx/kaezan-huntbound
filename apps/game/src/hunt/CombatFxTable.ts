@@ -7,10 +7,16 @@ import {
 } from '../../../../packages/assets/src/index.ts';
 import type { CombatCause } from '../../../../packages/contracts/src/index.ts';
 
-export type CombatFxPlacement = 'target' | 'self' | 'radius-1';
+export type CombatFxPlacement =
+  | 'target'
+  | 'self'
+  | 'radius-1'
+  | 'radius-3'
+  | 'projectile';
 
 export interface CombatFxRecipe {
   readonly impactKey: AssetKey | undefined;
+  readonly projectileKey?: AssetKey;
   readonly bloodKey: AssetKey | undefined;
   readonly placement: CombatFxPlacement;
   readonly staggerByDistance: boolean;
@@ -61,6 +67,27 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     bloodKey,
     placement: 'radius-1',
     staggerByDistance: true,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#ff7b9d',
+  },
+  groundshaker: {
+    // The personal hunt pack has no CONST_ME_GROUNDSHAKER frame yet; keep a
+    // dedicated recipe and use the closest physical ground-impact frame.
+    impactKey: hitAreaKey,
+    bloodKey: undefined,
+    placement: 'radius-3',
+    staggerByDistance: true,
+    stronger: true,
+    healNumber: false,
+    numberColor: '#ff7b9d',
+  },
+  'whirlwind-throw': {
+    impactKey: hitAreaKey,
+    projectileKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'projectile',
+    staggerByDistance: false,
     stronger: false,
     healNumber: false,
     numberColor: '#ff7b9d',

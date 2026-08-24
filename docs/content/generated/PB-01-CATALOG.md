@@ -3,7 +3,7 @@
 - Slice: fixture:pb-01-contract-coverage
 - Content version: pb-01-contract-coverage-v1
 - Snapshot: 157e6f9e21318bd3033eea553fe9275b429faf72
-- Roots: creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, vocation:tibia:knight
+- Roots: creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
 - Dependencies: creature:tibia:snake, item:tibia:book, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:chain-armor, item:tibia:corncob, item:tibia:crystal-necklace, item:tibia:dagger, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:ham, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:lump-of-dirt, item:tibia:mace, item:tibia:meat, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:protective-charm, item:tibia:sabre, item:tibia:shamanic-hood, item:tibia:skull, item:tibia:small-ruby, item:tibia:spear, item:tibia:sword, item:tibia:torch, item:tibia:wand-of-decay, item:tibia:worm
 
 ## Entities
@@ -371,6 +371,28 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/attack/brutal_strike.lua / 61 / 08e00c322d9b0d8805f3f9b40776205d579c1481bd72667efbc85a99efbc62c3
 - Relations: vocation-family:huntbound:knight
 
+### spell:tibia:groundshaker
+
+- Kind: spell
+- GUID: e7171c40-91ff-5882-9b23-5fcfa380b475
+- Display name: Groundshaker
+- Facets: identity, spell
+- Consumer: PB-08 Knight damage rotation
+- Rationale: The root covers the radius-three area translation and skill-attack formula.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/attack/groundshaker.lua / 106 / 779037e4a1a833cf533be5c0d52a3ced03bacb86b44d93d756fcaac1fcaa2e9e
+- Relations: vocation-family:huntbound:knight
+
+### spell:tibia:whirlwind-throw
+
+- Kind: spell
+- GUID: 57eda811-dec9-5b5e-b870-b99083671958
+- Display name: Whirlwind Throw
+- Facets: identity, spell
+- Consumer: PB-08 Knight damage rotation
+- Rationale: The root covers the five-tile target range, weapon distance effect, and skill-attack formula.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/scripts/spells/attack/whirlwind_throw.lua / 107 / a98632bf83f2828f29af86df80c36e07c682831778bbd90620537932a3e51769
+- Relations: vocation-family:huntbound:knight
+
 ### spell:tibia:wound-cleansing
 
 - Kind: spell
@@ -402,4 +424,4 @@
 - Skills: magic 0, sword 60
 - Weapon: item:tibia:sword attack 14
 - Vitals: health 590, mana 185
-- Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing
+- Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw

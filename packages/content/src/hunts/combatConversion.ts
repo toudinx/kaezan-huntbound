@@ -209,7 +209,11 @@ export function abilityShapeFromSpell(spell: SpellDefinition): {
   if (spell.damageType === 'healing') {
     return { shape: 'self', radius: 0, rangeTiles: 0 };
   }
-  return { shape: 'target', radius: 0, rangeTiles: MELEE_RANGE_TILES };
+  return {
+    shape: 'target',
+    radius: 0,
+    rangeTiles: spell.rangeTiles ?? MELEE_RANGE_TILES,
+  };
 }
 
 export function compareContentKeys(left: string, right: string): number {
