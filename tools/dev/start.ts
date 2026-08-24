@@ -6,10 +6,20 @@ export type DevProfile = 'test' | 'personal';
 
 type DevEnvironment = Readonly<Record<string, string | undefined>>;
 
+/**
+ * A step the launcher runs. `recovery` rebuilds a derived artefact the step
+ * only inspects, so drift reports a diff and repairs itself instead of
+ * stranding the dev server.
+ */
+export type DevStep = {
+  readonly command: string;
+  readonly recovery?: string;
+};
+
 type DevPlan =
   | {
       readonly ok: true;
-      readonly commands: readonly string[];
+      readonly commands: readonly DevStep[];
       readonly environment: DevEnvironment;
       readonly message?: string;
     }
@@ -84,14 +94,23 @@ export function createDevPlan(
     commands:
       profile === 'test'
         ? [
-            'corepack pnpm assets:stage:test',
-            'corepack pnpm --filter @huntbound/game exec vite --mode test',
+            { command: 'corepack pnpm assets:stage:test' },
+            {
+              command:
+                'corepack pnpm --filter @huntbound/game exec vite --mode test',
+            },
           ]
         : [
             options.personalProfileExists
-              ? 'corepack pnpm assets:pb04:personal:check'
-              : 'corepack pnpm assets:pb04:personal:generate',
-            'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+              ? {
+                  command: 'corepack pnpm assets:pb04:personal:check',
+                  recovery: 'corepack pnpm assets:pb04:personal:generate',
+                }
+              : { command: 'corepack pnpm assets:pb04:personal:generate' },
+            {
+              command:
+                'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+            },
           ],
     environment,
   };
@@ -197,8 +216,16 @@ export async function runDevLauncher(
     console.log(plan.message);
   }
 
-  for (const command of plan.commands) {
-    const exitCode = await runCommand(command, root, plan.environment);
+  for (const step of plan.commands) {
+    let exitCode = await runCommand(step.command, root, plan.environment);
+
+    if (exitCode !== 0 && step.recovery !== undefined) {
+      console.log(
+        '\nThe staged profile no longer matches its inputs. Rebuilding it from the current selection.',
+      );
+      exitCode = await runCommand(step.recovery, root, plan.environment);
+    }
+
     if (exitCode !== 0) return exitCode;
   }
 

@@ -19,8 +19,11 @@ describe('dev launcher', () => {
     expect(createDevPlan('test', {})).toEqual({
       ok: true,
       commands: [
-        'corepack pnpm assets:stage:test',
-        'corepack pnpm --filter @huntbound/game exec vite --mode test',
+        { command: 'corepack pnpm assets:stage:test' },
+        {
+          command:
+            'corepack pnpm --filter @huntbound/game exec vite --mode test',
+        },
       ],
       environment: {},
     });
@@ -43,14 +46,17 @@ describe('dev launcher', () => {
     expect(createDevPlan('personal', environment)).toEqual({
       ok: true,
       commands: [
-        'corepack pnpm assets:pb04:personal:generate',
-        'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+        { command: 'corepack pnpm assets:pb04:personal:generate' },
+        {
+          command:
+            'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+        },
       ],
       environment,
     });
   });
 
-  test('validates an existing personal profile instead of replacing it', () => {
+  test('rebuilds an existing personal profile only when it drifted', () => {
     const environment = {
       HUNTBOUND_PERSONAL_ASSET_SOURCE: 'C:\\Kaezan\\private-assets',
     };
@@ -62,8 +68,14 @@ describe('dev launcher', () => {
     ).toEqual({
       ok: true,
       commands: [
-        'corepack pnpm assets:pb04:personal:check',
-        'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+        {
+          command: 'corepack pnpm assets:pb04:personal:check',
+          recovery: 'corepack pnpm assets:pb04:personal:generate',
+        },
+        {
+          command:
+            'corepack pnpm --filter @huntbound/game exec vite --mode personal',
+        },
       ],
       environment,
     });
