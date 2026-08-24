@@ -89,8 +89,19 @@ Estas não se redesenham dentro de uma task. Mudá-las é decisão de produto, f
 8. **Um único campo novo no kernel: `armor`.** Aditivo, default `0`, mitigação **determinística**
    (sem novo draw de RNG, para não deslocar os streams). Bump `SIMULATION_SCHEMA_VERSION` 5→6 com
    defaults que reproduzem v5.
-9. **Golden regenerado uma única vez**, na task do `armor`, com prova escrita de que a mudança é
-   intencional. Regenerar golden em qualquer outra task é defeito, não conveniência.
+9. **Golden se regenera só com prova escrita de intencionalidade.** A redação original previa **uma
+   única vez**, na task do `armor`. A PB-08-01 mostrou que a previsão estava errada por um motivo
+   estrutural, não por descuido: **o snapshot de save referencia spawn por `(índice de grupo, índice
+   de slot)`**, então qualquer mudança de conteúdo na hunt invalida o golden de save — e isso vai
+   acontecer de novo a cada task de conteúdo. Regeneradas em PB-08-01, com prova:
+   `packages/test-fixtures/hunt/pb05` e `packages/test-fixtures/save/pb06`, que deriva dela. O
+   golden do **PB-04 não** foi tocado.
+
+   Duas lições que valem mais que a exceção. Primeira: `hunt:check`, `combat:check` e `save:check`
+   conferem que os bytes batem com os hashes publicados, **não** que o golden está fresco em relação
+   à hunt; só o e2e pega isso, e por isso a fixture PB-05 carregou `rotworm.aggroRadius` 1 por
+   várias tasks enquanto o jogo compunha 11. Segunda: o acoplamento por índice é frágil e merece
+   task própria — endereçar spawn por identidade estável tiraria essa classe inteira de quebra.
 10. **Bestiary e charms ficam para o PB-09.** Este playbook não entrega contador de criatura nem
     bônus por espécie.
 

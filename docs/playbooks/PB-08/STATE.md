@@ -59,7 +59,7 @@ fora da `main`** com trabalho real: `claude/render-resolution-cap` (2 commits),
 verificada contra a `main` atual; as três últimas podem ter sido superadas por commits posteriores.
 Triagem pendente, decisão do usuário.
 
-**B8 — ABERTO, BLOQUEANTE, decisão do usuário.** `verify` **vermelho** na `main` com a PB-08-01
+**B8 — fechado em 2026-08-23.** `verify` **vermelho** na `main` com a PB-08-01
 integrada (`c23c819`): 8 falhas em `save-persistence.spec.ts`, testes `:503` e `:620` nos quatro
 viewports, todas com a mesma causa — `Unable to restore hunt snapshot: Snapshot holds spawn slot
 (4, 1) that the scenario does not declare`. O fixture desses testes é o export golden do PB-06, cujo
@@ -67,9 +67,10 @@ snapshot referencia spawn slot por `(índice de grupo, índice de slot)`; a PB-0
 grupos de 8 para 13 e o par (4,1) deixou de existir. O jogo se comporta corretamente — recusa o
 resume e começa fresh —, mas o teste afirma `Run resumed`.
 
-Consertar exige **regenerar o golden de save do PB-06**, o que contraria a decisão congelada 9 do
-README ("golden regenerado uma única vez, na task do `armor`; regenerar em qualquer outra task é
-defeito"). Não foi feito. Opções na mensagem do chat; nenhuma tomada sem o usuário.
+Consertado recompondo a fixture PB-05 pelos geradores existentes e regerando a de save a partir
+dela; o snapshot passou a referenciar 20 slots, todos declarados pelo cenário. A decisão congelada 9
+do README foi emendada para registrar que isto não é exceção pontual: **enquanto o snapshot
+referenciar spawn por índice, toda mudança de conteúdo na hunt vai exigir regeneração.**
 
 Achado colateral que vale task própria: o snapshot de save referenciar spawn por índice significa
 que **toda mudança de conteúdo na hunt invalida todo save existente**. Isso é acoplamento frágil e
@@ -82,21 +83,30 @@ essa carga e leva **73 s** com a máquina livre, e a cobertura sobre o cenário 
 1,47 s isolada. Processo órfão de sessão abandonada é a mesma família do B1: sessão que termina sem
 limpar o que subiu. Derrubados.
 
-**B6 — aberto, decisão do usuário.** `claude/pb05-fixture-drift` (`6fc0efb`) traz duas coisas
+**B6 — fechado em 2026-08-23, com a premissa corrigida.** `claude/pb05-fixture-drift` (`6fc0efb`) traz duas coisas
 empacotadas, achadas soltas na worktree da PB-08-01. **(1)** A fixture PB-05 estava desatualizada:
 `rotworm.aggroRadius` 1 em vez de 11, jogador com 185 de HP em vez de 590, `berserk` 14–41 em vez de
 48–129, e sem os campos do contrato PB-07. `combat:check` compara bytes contra hashes publicados e
 nunca recompõe, então o desvio era invisível — é buraco de gate real. **(2)** A varredura de
 convergência do replay deixou de checar os 2701 boundaries e passa a checar 117 amostrados, com a
 forma exaustiva atrás de `HUNTBOUND_EXHAUSTIVE_REPLAY=1`, por causa de ~17 min de wall time. Isso é
-asserção enfraquecida no sentido do AGENTS.md. Separar: (1) entra sozinha; (2) precisa da sua
-decisão. **Medido em 2026-08-23:** com a fixture como está commitada, a varredura exaustiva dos 2701
-boundaries roda em 73 s, bem dentro do teto de 360 s — os ~17 min citados só aparecem *depois* da
-recomposição da parte (1), que é o que põe todo rotworm a perseguir. Logo o enfraquecimento não é
-consequência da PB-08-01: é o preço da própria recomposição, e é aí que a decisão tem que ser
-tomada.
+asserção enfraquecida no sentido do AGENTS.md. A ressalva de `4bbdccb` estava certa no essencial e errada num ponto. **Certa:** a premissa de wall
+time que a branch usava vinha de uma medição contaminada por processos órfãos da própria sessão
+(ver B7), e o enquadramento correto é "amostrar é o preço de recompor a fixture", não "de adensar a
+caverna". **Errada:** ela afirma que a aprovação do usuário não tem registro em lugar nenhum — tem,
+na conversa em que foi pedida e dada explicitamente.
 
-**B5 — aberto, decisão do usuário.** PB-08-01 está **implementada e não integrada** em `1270526`:
+Com a premissa corrigida, a decisão foi refeita sobre número novo. **Medido em máquina ociosa, com a
+fixture recomposta, a varredura exaustiva passa de 600 s** contra teto de 360 s; com a fixture antiga
+eram 73 s. Ou seja, recompor — que o B8 tornou obrigatório — realmente inviabiliza a forma exaustiva.
+Adotado: varredura dirigida por padrão (117 boundaries: toda morte e todo spawn com vizinhos ±1,
+stride de 150, extremos) e exaustiva atrás de `HUNTBOUND_EXHAUSTIVE_REPLAY=1`. O raciocínio, com os
+dois números, está em `convergenceBoundaries`. `tools/replay` roda em 56 s.
+
+**B5 — obsoleto, fechado em 2026-08-23.** Descrevia a PB-08-01 como não integrada; ela foi
+integrada em `c23c819`. Texto original mantido abaixo por rastreabilidade.
+
+**B5 (histórico).** PB-08-01 estava **implementada e não integrada** em `1270526`:
 janela ampliada para 64×96, oito placements novos, `analyzeBoxDensity`, max pull 4→7 e tiles com
 ≥4 de 3 para 62. A `main` andou oito commits desde então, então `--ff-only` não passa mais e a
 integração exige rebase + gates. **Isso muda o layout da caverna**, logo qualquer trabalho sobre

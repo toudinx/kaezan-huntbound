@@ -79,6 +79,9 @@ Os playbooks de produto seguem a ordem e a Definition of Ready de
 - [`Map Editor local`](projects/map-editor/PLAN.md) — projeto independente dos playbooks do jogo. A
   materialização inicial a partir do Canary é feita por agente de IA; os retoques acontecem numa
   aplicação local que não entra no bundle publicado.
+- [`Borderizer`](projects/map-editor/BORDERIZER.md) — trilha MB, que precede o editor. Fecha por
+  algoritmo os buracos que a colagem de retângulos do Canary deixa, usando uma tabela de bordas
+  medida no mapa original em vez de escrita à mão.
 
 ## Decisão vigente em uma linha
 

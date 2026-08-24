@@ -25,6 +25,78 @@ const fixtureRoot = resolve(
   '../../packages/test-fixtures/hunt/pb05',
 );
 
+/** Ticks between sampled resume points when the sweep is not exhaustive. */
+const CONVERGENCE_STRIDE_TICKS = 150;
+
+/**
+ * Resume points the convergence sweep checks.
+ *
+ * The sweep is quadratic: every boundary replays the whole session. That was
+ * affordable while the fixture was stale — on `c23c819`, with the fixture as
+ * committed, the entire `tools/replay` suite including the exhaustive sweep
+ * ran in 73 s against a 360 s ceiling.
+ *
+ * Recomposing the fixture is what changed the arithmetic, and recomposing was
+ * not optional: the PB-06 save golden derives its session snapshot from this
+ * scenario, and it was referencing spawn slot `(4, 1)`, which the denser cave
+ * no longer declares, so every resume test failed. Recomposition also picks up
+ * `rotworm.aggroRadius` 11, the value the game has composed since `db04d9d`,
+ * so every rotworm now chases. Measured on an idle machine, the exhaustive
+ * sweep then runs past 600 s and blows the ceiling.
+ *
+ * So the trade is not "sample the sweep to afford a denser cave" — the denser
+ * cave alone left the sweep comfortably green. It is "sample the sweep as the
+ * price of a fixture that matches the game", which is the honest framing and
+ * the worse-sounding one.
+ *
+ * What the sweep proves is that a snapshot round-trip loses nothing, and the
+ * boundaries that can expose a loss sit next to state transitions: a death, a
+ * spawn, the ends of the run. Those are checked exhaustively with their
+ * neighbours, plus a fixed stride so long quiet stretches are not skipped.
+ * That is 117 boundaries, and it found the same zero divergences a partial
+ * exhaustive run had found before it was cut short.
+ *
+ * Set `HUNTBOUND_EXHAUSTIVE_REPLAY=1` to restore the every-tick sweep before
+ * closing a playbook, when the wall time is affordable.
+ */
+function convergenceBoundaries(
+  events: readonly SimulationEvent[],
+): readonly number[] {
+  if (process.env.HUNTBOUND_EXHAUSTIVE_REPLAY === '1') {
+    return Array.from({ length: PB05_COMBAT_TICK_COUNT + 1 }, (_, i) => i);
+  }
+
+  const boundaries = new Set<number>([
+    0,
+    1,
+    PB05_COMBAT_TICK_COUNT - 1,
+    PB05_COMBAT_TICK_COUNT,
+  ]);
+
+  for (const event of events) {
+    if (
+      event.payload.type !== 'actor/died' &&
+      event.payload.type !== 'actor/spawned'
+    ) {
+      continue;
+    }
+    for (const offset of [-1, 0, 1]) {
+      const tick = event.tick + offset;
+      if (tick >= 0 && tick <= PB05_COMBAT_TICK_COUNT) boundaries.add(tick);
+    }
+  }
+
+  for (
+    let tick = 0;
+    tick <= PB05_COMBAT_TICK_COUNT;
+    tick += CONVERGENCE_STRIDE_TICKS
+  ) {
+    boundaries.add(tick);
+  }
+
+  return [...boundaries].sort((left, right) => left - right);
+}
+
 const REQUIRED_COVERAGE = {
   attacked: true,
   damagedAttack: true,
@@ -114,11 +186,16 @@ describe('PB-05 combat replay fixture', () => {
     expect(
       log.value.commands.every((command) => command.issuer === 'player'),
     ).toBe(true);
+    // `CANARY_VIEW_RANGE_TILES`, which is what `composeCreature` gives any
+    // creature that has an attack. This asserted `1` until 2026-08-23, frozen
+    // from before `db04d9d` raised acquisition to Canary's view range; the
+    // committed fixture kept the stale `1` because `combat:check` compares
+    // bytes to published hashes and never recomposes.
     expect(
       scenario.value.blueprints.find(
         (blueprint) => blueprint.blueprintId === 'rotworm',
       )?.aggroRadius,
-    ).toBe(1);
+    ).toBe(11);
   });
 
   it('proves combat coverage on the committed journal before trusting the golden', async () => {
@@ -151,7 +228,9 @@ describe('PB-05 combat replay fixture', () => {
     expect(straight.value.eventsText).toBe(fixture.eventsText);
 
     const divergent: number[] = [];
-    for (let boundary = 0; boundary <= PB05_COMBAT_TICK_COUNT; boundary += 1) {
+    for (const boundary of convergenceBoundaries(
+      parsedEvents(straight.value.eventsText),
+    )) {
       const split = buildReplayArtifacts(
         fixture.scenarioText,
         fixture.logText,

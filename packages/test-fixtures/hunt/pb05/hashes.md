@@ -6,10 +6,10 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `91f4e1144457253c6b21654fb19c92dd7e32535b24afd41787c072e0c17195a4` |
-| `commands.jsonl` | `f8ec4cf67d01124eb25714c3d107f7c41be33be50fbe844ae6e5fc4ce47fa3bd` |
-| `snapshot.golden.json` | `ed485307f2d2011b5b3c8bc4cd2194f46e0f2e238bb200bf1b0b942febc1cf1f` |
-| `events.golden.jsonl` | `d4521f09d1186c45ed2932e0c057725553037fda36533f61b889b913086e7c26` |
+| `scenario.json` | `15559942481dd4ff9b4b75b063e2585f9a963846886df49679a124d3b2b3d472` |
+| `commands.jsonl` | `689cc3a8d44e46c6f25b609496dd7094e7f86304f1054a553014078b9bb734d3` |
+| `snapshot.golden.json` | `3c3fdefcd997b16f8b242a66c709638baacbaea1bcc5893cc7f51417eada8d0f` |
+| `events.golden.jsonl` | `75bd96c37a7a0c097532c8a5e201e15bbc405c677d39aca00fa327dea816ac72` |
 
 The frozen session runs for `2700` ticks and emits `2246` events. Tick count is
 `2700` so a creature death plus every slot's `respawnTicks` `1800` still fits

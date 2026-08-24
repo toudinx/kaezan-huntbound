@@ -9,7 +9,11 @@ import {
 } from '@playwright/test';
 
 import type { HuntboundHuntGlobal } from '../../apps/game/src/hunt/HuntProbe.ts';
-import type { GameSave, Seed } from '../../packages/contracts/src/index.ts';
+import type {
+  GameSave,
+  RunBagEntry,
+  Seed,
+} from '../../packages/contracts/src/index.ts';
 import { type CombatViewport, runCombatSession } from './support/combatDriver';
 import { readHuntState } from './support/huntDriver';
 
@@ -310,6 +314,35 @@ function loadExportGolden(): string {
   return readFileSync(exportGoldenPath, 'utf8');
 }
 
+/**
+ * The stash the PB-06 export golden consolidates to, sorted by item key.
+ *
+ * It is the whole run bag, because the golden's stash starts empty. The value
+ * moved from a bare `gold-coin × 17` on 2026-08-23: PB-08-01 made the cave
+ * dense enough to box, so the frozen session now kills far more and the loot
+ * table actually fires. Re-derive it from `export.golden.txt` whenever that
+ * fixture is regenerated rather than copying a failure message.
+ */
+const FIXTURE_STASH_TEXT =
+  'gold-coin × 80 | ham × 5 | legion-helmet × 1 | lump-of-dirt × 2 | meat × 2 | sword × 1';
+
+/**
+ * Renders entries the way `InventoryPanel` does: item key tail, ` × `, count,
+ * joined by ` | ` in item-key order.
+ */
+function formatStash(entries: readonly RunBagEntry[]): string {
+  return [...entries]
+    .sort((left, right) =>
+      left.itemKey === right.itemKey
+        ? 0
+        : left.itemKey < right.itemKey
+          ? -1
+          : 1,
+    )
+    .map((entry) => `${entry.itemKey.split(':').at(-1)} × ${entry.count}`)
+    .join(' | ');
+}
+
 function loadActiveFixture(): GameSave {
   const document = JSON.parse(loadExportGolden()) as GameSave;
   if (document.session === null) {
@@ -480,7 +513,7 @@ for (const viewport of VIEWPORTS) {
       /^(New run started|Run resumed)$/,
     );
     await expect(page.locator('[data-testid="save-stash"]')).toHaveText(
-      'gold-coin × 17',
+      FIXTURE_STASH_TEXT,
     );
     const first = await waitForStash(page, false);
     await captureInventoryScreenshot(page, viewport);
@@ -495,7 +528,7 @@ for (const viewport of VIEWPORTS) {
     expect(second.stash).toEqual(first.stash);
     expect(second.completedRuns).toBe(first.completedRuns);
     await expect(page.locator('[data-testid="save-stash"]')).toHaveText(
-      'gold-coin × 17',
+      FIXTURE_STASH_TEXT,
     );
     expectQuiet(watch);
   });
@@ -538,8 +571,14 @@ for (const viewport of VIEWPORTS) {
     const afterReload = await waitForStash(page);
     expect(afterReload.session).toBeNull();
     expect(afterReload.stash).toEqual(afterAbandon.stash);
+    // Not `FIXTURE_STASH_TEXT`: the run keeps playing between resume and the
+    // restart click, and since PB-08-01 made the cave dense that window
+    // actually earns loot, so the count is wall-clock dependent. What must
+    // hold is that the panel renders exactly the stash the save kept, and that
+    // the stash is not empty.
+    expect(afterReload.stash.length).toBeGreaterThan(0);
     await expect(page.locator('[data-testid="save-stash"]')).toHaveText(
-      'gold-coin × 17',
+      formatStash(afterReload.stash),
     );
     expectQuiet(watch);
   });
@@ -651,9 +690,11 @@ for (const viewport of VIEWPORTS) {
     await page.waitForTimeout(250);
     expect((await readHuntState(page)).tick).toBeGreaterThan(beforeTick);
     expect(await readSaveDocument(page)).toEqual(persistedAtFailure);
-    await expect(page.locator('[data-testid="combat-run-bag"]')).toContainText(
-      'gold-coin × 17',
-    );
+    // The run is still live here, so its bag grows while this assertion runs.
+    // Pin the drops that cannot change count instead of the whole rendering.
+    const runBag = page.locator('[data-testid="combat-run-bag"]');
+    await expect(runBag).toContainText('gold-coin × ');
+    await expect(runBag).toContainText('sword × 1');
     await expect(page.locator('#game-root canvas')).toHaveCount(1);
     expectQuiet(watch);
   });

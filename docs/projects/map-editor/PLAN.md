@@ -1,6 +1,6 @@
 # Map Editor — Plano do projeto
 
-**Status:** pronto para ME-01 quando a `main` voltar a ter `corepack pnpm verify` verde
+**Status:** pronto para MB-01. A trilha MB precede a trilha ME — ver `BORDERIZER.md`.
 
 **Natureza:** projeto auxiliar independente dos playbooks numerados do jogo
 
@@ -132,20 +132,31 @@ Não haverá `map:new` automático. Uma task de agente cria a seed e entrega o p
 
 ## Roadmap
 
+Duas trilhas. **MB** conserta o mapa por algoritmo e vem primeiro, porque mede-se que os 125 pontos
+cinzas e pretos da caverna são costuras regulares entre os quatro `copy-rect`, não ruído — e costura
+regular se fecha com tabela, não com mouse. **ME** entrega o editor, que passa a servir ao que o
+algoritmo não decide: detalhe e gosto. A spec da trilha MB é `BORDERIZER.md`.
+
 | Task | Resultado | Modelo sugerido | Estado |
 |---|---|---|---|
+| MB-01 | minerador de bordas sobre o OTBM, tabela commitada e relatório de cobertura | GPT-5.6 Luna `xhigh` | card escrito |
+| MB-02 | `packages/map-authoring` com `borderize` puro e determinístico | GPT-5.6 Luna `xhigh` | card escrito |
+| MB-03 | camada `cells`, aplicação na Venore cave, regeneração e aceite jogando | GPT-5.6 Luna `xhigh` | card escrito |
 | ME-01 | contrato autoral v2, compilador determinístico e seed da hunt atual materializada por agente | GPT-5.6 Sol `xhigh` | card escrito |
 | ME-02 | editor local read-only, mapa real, andares e paleta de assets | GPT-5.6 Luna `max` | card escrito |
 | ME-03 | reducer de comandos, seleção, pintura, stack e undo/redo | GPT-5.6 Luna `max` | bullet |
 | ME-04 | drafts, validação, publish atômico e play no jogo | GPT-5.6 Luna `max` | bullet |
 | ME-05 | player start, spawns, transições e overlays de diagnóstico | GPT-5.6 Luna `max` | bullet |
-| ME-06 | cave brush, auto-wall, preenchimento e detector de borda/saída falsa | GPT-5.6 Luna `max` | bullet |
+| ME-06 | — | — | absorvida pela trilha MB |
 | ME-07 | template executável da task de IA e ensaio com uma segunda seed | GPT-5.6 Luna `max` | bullet |
 | ME-08 | retoque real da Venore Rotworm Cave e aceite jogando | GPT-5.6 Sol `xhigh` | bullet |
 | ME-09 | isolamento do bundle, QA do editor e fechamento | GPT-5.6 Luna `max` | bullet |
 
-Somente ME-01 e ME-02 têm task cards. A task seguinte é escrita quando a anterior revelar as
+MB-01 a MB-03, ME-01 e ME-02 têm task cards. A task seguinte é escrita quando a anterior revelar as
 interfaces reais, evitando documentação que envelhece antes do código.
+
+O ME-08 continua sendo o retoque manual da caverna, mas passa a começar de um mapa já sem buraco: a
+trilha MB entrega o preenchimento, e o que sobra para o editor é o que exige olho.
 
 ## Aceite do playbook
 
