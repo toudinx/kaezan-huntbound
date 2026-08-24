@@ -18,7 +18,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 |---|---|---|---|---|---|---|
 | PB-08-01 | done | `claude/pb08-01-cave-density` | — | — | `c23c819` | puxão máximo 4 → 11; tiles com ≥4 pulláveis 3 → 125; **20 slots de rotworm em 13 grupos** (ver B9); goldens PB-04 e PB-05 inalterados |
 | PB-08-02 | done | `claude/pb08-02-knight-map` | frontier `xhigh` | Claude Opus 5 `xhigh` | `5bc11ff` | `docs/content/KNIGHT_BANDS.md`: 9 células, 5 de dano; 36 pares conferidos por imagem; Berserk × Groundshaker resolvido por **medição** (8 × 36 tiles no snapshot, 8 × 48 sob o contrato); 3 divergências declaradas (raio Chebyshev, taunt raio 1, Challenge fora da promoção) |
-| PB-08-03 | pending | `<agente>/pb08-03-kit-table` | Luna `xhigh` | — | — | — |
+| PB-08-03 | done | `codex/pb08-03-kit-table` | Luna `xhigh` | GPT-5 Codex `xhigh` | `40251cc` | Character kit por faixas com resolução por nível; migração SQLite e round-trip cobertos; `qa:browser` 73/73; `qa:budgets`: boot 5502 ms e hunt 4 long tasks, informativo |
 | PB-08-04 | pending | `<agente>/pb08-04-damage-rotation` | Luna `xhigh` | — | — | — |
 | PB-08-05 | pending | `<agente>/pb08-05-stances` | Luna `xhigh` | — | — | — |
 | PB-08-06 | pending | `<agente>/pb08-06-taunt` | **frontier `xhigh`** | — | — | — |
