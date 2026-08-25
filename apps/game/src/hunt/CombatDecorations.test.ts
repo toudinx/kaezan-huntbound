@@ -293,6 +293,38 @@ describe('CombatDecorations', () => {
     );
   });
 
+  it('plans challenge as a simultaneous magic-blue flash on the eight neighbours', () => {
+    const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
+    const casterPosition = position(5, 4);
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'ability/cast',
+          entityId: 1 as EntityId,
+          abilityIndex: 7,
+          targetEntityId: null,
+        }),
+      ],
+      actorPositions: new Map([[1 as EntityId, casterPosition]]),
+      playerPosition: casterPosition,
+    });
+
+    const effects = decorations.current();
+    expect(effects).toHaveLength(9);
+    expect(effects.every((effect) => effect.createdAtMs === 10 * 50)).toBe(
+      true,
+    );
+    expect(effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+          position: casterPosition,
+        }),
+      ]),
+    );
+  });
+
   it('plans groundshaker on every tile in radius three', () => {
     const decorations = createCombatDecorations(DEFAULT_COMBAT_ABILITIES);
     const casterPosition = position(6, 5);

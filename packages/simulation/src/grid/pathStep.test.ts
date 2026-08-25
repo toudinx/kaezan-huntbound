@@ -40,6 +40,8 @@ function occupancyOf(
       lastDamageReceivedTick: 0,
       activeConditions: [],
       abilityCharges: [],
+      forcedTargetEntityId: null,
+      forcedTargetExpiresAtTick: 0,
     }),
   );
   return createOccupancyIndex(actors);

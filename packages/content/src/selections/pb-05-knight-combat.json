@@ -58,7 +58,8 @@
           "spell:tibia:brutal-strike",
           "spell:tibia:wound-cleansing",
           "spell:tibia:groundshaker",
-          "spell:tibia:whirlwind-throw"
+          "spell:tibia:whirlwind-throw",
+          "spell:tibia:challenge"
         ]
       }
     ],
@@ -169,6 +170,28 @@
       "huntboundAccess": "unrestricted",
       "minPower": 40,
       "maxPower": 103
+    },
+    {
+      "stableKey": "spell:tibia:challenge",
+      "sourceId": "93",
+      "words": "exeta res",
+      "displayName": "Challenge",
+      "sourceFile": "data/scripts/spells/support/challenge.lua",
+      "level": 20,
+      "mana": 30,
+      "cooldownMs": 2000,
+      "groupCooldownMs": 2000,
+      "vocationNames": ["elite knight"],
+      "effect": "CONST_ME_MAGIC_BLUE",
+      "formulaKind": "none",
+      "huntboundAccess": "unrestricted",
+      "minPower": 0,
+      "maxPower": 0,
+      "radius": 1,
+      "vocationDivergence": {
+        "sourceValue": "spell:vocation(\"elite knight;true\")",
+        "origin": "Canary gates Challenge behind elite knight promotion. Huntbound ships one vocation and decision 2 refuses level gating, so Challenge is on the base Knight from the start."
+      }
     }
   ],
   "postures": [
@@ -277,7 +300,7 @@
       "name": "CONST_ME_MAGIC_BLUE",
       "sourceId": 13,
       "sourceFile": "src/utils/utils_definitions.hpp",
-      "usedBy": ["spell:tibia:wound-cleansing"]
+      "usedBy": ["spell:tibia:wound-cleansing", "spell:tibia:challenge"]
     },
     {
       "kind": "effect",
@@ -328,6 +351,10 @@
     {
       "relativePath": "data/scripts/spells/healing/wound_cleansing.lua",
       "sha256": "e0a10fcce56a981a811fe18d687336cc1799cc76087b1d0bfd9a1b5f828e245b"
+    },
+    {
+      "relativePath": "data/scripts/spells/support/challenge.lua",
+      "sha256": "a0d65caab9d5e896a0fa8ed5cdc19118f6430f0f35966f4b17f4369353d7f489"
     },
     {
       "relativePath": "data-otservbr-global/monster/vermins/rotworm.lua",

@@ -65,6 +65,21 @@ function byGroupThenSlot(left: SpawnSlotState, right: SpawnSlotState): number {
   );
 }
 
+export function omitIdleForcedTarget(actor: ActorState): ActorState {
+  if (
+    actor.forcedTargetEntityId !== null ||
+    actor.forcedTargetExpiresAtTick !== 0
+  ) {
+    return actor;
+  }
+  const {
+    forcedTargetEntityId: _forcedTargetEntityId,
+    forcedTargetExpiresAtTick: _forcedTargetExpiresAtTick,
+    ...rest
+  } = actor;
+  return rest as ActorState;
+}
+
 /**
  * Serializable state of a live kernel, in the frozen field order-independent
  * shape. Terrain, occupancy and the scenario digest are deliberately absent:
@@ -84,7 +99,7 @@ export function snapshotKernel(kernel: SimulationKernel): SimulationSnapshot {
     nextEventSequence: state.nextEventSequence,
     nextCommandSequence: state.nextCommandSequence,
     randomStreams: [...state.randomStreams].sort(byLabel),
-    actors: [...state.actors].sort(byEntityId),
+    actors: [...state.actors].sort(byEntityId).map(omitIdleForcedTarget),
     pendingCommands: [...state.pendingCommands].sort(byTickThenSequence),
     pendingIntents: [...state.pendingInternalIntents].sort(byTickThenEntityId),
     spawnSlots: [...state.spawnSlots].sort(byGroupThenSlot),

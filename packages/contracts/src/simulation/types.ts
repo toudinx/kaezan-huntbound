@@ -119,6 +119,11 @@ export interface AbilityDefinition {
   readonly maxCharges: number | null;
   readonly rechargeKind: AbilityRechargeKind;
   readonly toggle: boolean;
+  /**
+   * Absolute-tick taunt lock applied to each valid area/target actor.
+   * `0` means the ability does not force a target (the v5 default).
+   */
+  readonly forcedTargetDurationTicks: number;
 }
 
 export interface LootTableDefinition {
@@ -394,6 +399,13 @@ export interface ActorState {
   readonly lastDamageReceivedTick: number;
   readonly activeConditions: readonly ActiveConditionState[];
   readonly abilityCharges: readonly AbilityChargeState[];
+  /**
+   * Forced-target lock. `null` / `0` means the hunter chooses freely.
+   * Expiry is an absolute tick: living while `tick < forcedTargetExpiresAtTick`.
+   * `forcedTargetExpiresAtTick === 0` means no lock, never "does not expire".
+   */
+  readonly forcedTargetEntityId: EntityId | null;
+  readonly forcedTargetExpiresAtTick: number;
 }
 
 /**

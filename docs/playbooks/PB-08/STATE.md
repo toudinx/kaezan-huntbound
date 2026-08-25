@@ -3,9 +3,9 @@
 **Playbook:** `docs/playbooks/PB-08/README.md`
 
 **Estado geral:** reescrito em 2026-08-24 como "O Knight completo".
-Próxima elegível: **PB-08-03**. O mapa da 02 está vigente e destrava 03 a 09.
+Próxima elegível: **PB-08-07**. O mapa da 02 está vigente e destrava 07 a 09.
 
-**Última atualização:** 2026-08-24
+**Última atualização:** 2026-08-25
 
 **Base:** PB-07 congelado na 05. A máquina de condições, toggle, cooldown secundário, leech e regen
 sensível a combate está integrada e **sem conteúdo que a use** — é o que a PB-08-04 a 07 consomem.
@@ -21,7 +21,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-03 | done | `codex/pb08-03-kit-table` | Luna `xhigh` | GPT-5 Codex `xhigh` | `40251cc` | Character kit por faixas com resolução por nível; migração SQLite e round-trip cobertos; `qa:browser` 73/73; `qa:budgets`: boot 5502 ms e hunt 4 long tasks, informativo |
 | PB-08-04 | done | `codex/pb08-04-damage-rotation` | Luna `xhigh` | GPT-5 Codex `xhigh` | `5b7664f` | 5 abilities; Groundshaker radius 3 / Whirlwind range 5; scenario diff limited to abilities and player indices; `verify`; browser 73/73 |
 | PB-08-05 | done | `codex/pb08-05-stances` | Luna `xhigh` | GPT-5 Codex `xhigh` | `86816a3` | `verify` verde; `qa:browser` 74/74; `qa:budgets` informativo vermelho: boot 15254.2 ms, hunt 4955.7 ms com 5 long tasks |
-| PB-08-06 | pending | `<agente>/pb08-06-taunt` | **frontier `xhigh`** | — | — | — |
+| PB-08-06 | done | `grok/pb08-06-taunt` | **frontier `xhigh`** | Grok 4.6 `xhigh` | — | Challenge raio 1, lock 40 ticks, grupo support 1; `simulation:check`/`hunt:check` inalterados; `scenario.json` `6abc77b2`; commands/snapshot/events iguais; `qa:browser` 77/77 |
 | PB-08-07 | pending | `<agente>/pb08-07-haste` | Luna `xhigh` | — | — | — |
 | PB-08-08 | pending | `<agente>/pb08-08-nine-action-hud` | Luna `xhigh` | — | — | — |
 | PB-08-09 | pending | `<agente>/pb08-09-weapon-axis` | **frontier `xhigh`** | — | — | — |

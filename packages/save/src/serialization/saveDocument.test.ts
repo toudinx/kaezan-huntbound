@@ -93,6 +93,51 @@ describe('save document serialization', () => {
     );
   });
 
+  it('omits idle forced-target fields from encoded actors', () => {
+    const parsed = parseGameSave({
+      schemaVersion: 1,
+      stash: [],
+      completedRuns: 0,
+      session: {
+        huntId: 'venore-rotworm-cave',
+        scenarioId: 'pb-06-save-export',
+        scenarioRevision: 1,
+        seed: '0f1e2d3c4b5a6978',
+        snapshot: {
+          ...createSnapshot(),
+          actors: [
+            {
+              entityId: 1,
+              blueprintId: 'walker',
+              position: { x: 0, y: 0, z: 7 },
+              facing: 'e',
+              readyAtTick: 0,
+              transitionGuard: null,
+              health: 10,
+              resource: 10,
+              targetEntityId: null,
+              attackReadyAtTick: 0,
+              abilityCooldowns: [],
+              nextHealthRegenTick: 0,
+              nextResourceRegenTick: 0,
+            },
+          ],
+        },
+        bag: [],
+      },
+    });
+    if (!parsed.ok) {
+      throw new Error('Expected actor save fixture to be valid');
+    }
+
+    expect(parsed.value.session?.snapshot.actors[0]?.forcedTargetEntityId).toBe(
+      null,
+    );
+    expect(encodeSaveDocument(parsed.value).includes('forcedTarget')).toBe(
+      false,
+    );
+  });
+
   it('round-trips a complete document without changing its export', () => {
     const serialized = encodeSaveDocument(createActiveSave());
 

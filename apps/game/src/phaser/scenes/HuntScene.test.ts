@@ -360,6 +360,8 @@ function snapshot(input: {
           }),
         ),
         abilityCharges: [],
+        forcedTargetEntityId: null,
+        forcedTargetExpiresAtTick: 0,
       },
     ],
     pendingCommands: [],
@@ -399,6 +401,7 @@ const postureAbilities: readonly AbilityDefinition[] = [
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
+    forcedTargetDurationTicks: 0,
   },
   {
     abilityId: 'protector',
@@ -419,6 +422,7 @@ const postureAbilities: readonly AbilityDefinition[] = [
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
+    forcedTargetDurationTicks: 0,
   },
 ];
 

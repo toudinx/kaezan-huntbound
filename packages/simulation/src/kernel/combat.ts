@@ -629,6 +629,37 @@ function validEffectTarget(
   );
 }
 
+function applyForcedTarget(
+  world: MutableWorld,
+  journal: EventJournal,
+  tick: TickIndex,
+  casterEntityId: EntityId,
+  targets: readonly ActorState[],
+  durationTicks: number,
+): void {
+  const expiresAtTick = tick + durationTicks;
+  for (const target of targets) {
+    const live = world.actor(target.entityId);
+    if (live === undefined) {
+      continue;
+    }
+    const previousTarget = live.targetEntityId;
+    world.update({
+      ...live,
+      targetEntityId: casterEntityId,
+      forcedTargetEntityId: casterEntityId,
+      forcedTargetExpiresAtTick: expiresAtTick,
+    });
+    if (previousTarget !== casterEntityId) {
+      journal.emit(tick, {
+        type: 'combat/target-changed',
+        entityId: live.entityId,
+        targetEntityId: casterEntityId,
+      });
+    }
+  }
+}
+
 function resolveCast(
   world: MutableWorld,
   journal: EventJournal,
@@ -844,6 +875,17 @@ function resolveCast(
     abilityIndex: intent.abilityIndex,
     targetEntityId: intent.targetEntityId,
   });
+
+  if (ability.forcedTargetDurationTicks > 0) {
+    applyForcedTarget(
+      world,
+      journal,
+      tick,
+      caster.entityId,
+      targets,
+      ability.forcedTargetDurationTicks,
+    );
+  }
 
   if (ability.minPower === 0 && ability.maxPower === 0) {
     return;

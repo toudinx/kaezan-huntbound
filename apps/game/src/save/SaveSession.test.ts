@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { parseGameSave } from '../../../../packages/contracts/src/index.ts';
 
 import {
   createMemorySaveDriver,
@@ -29,9 +30,13 @@ function createTestDriver(
 describe('createSaveSession', () => {
   it('resumes a compatible session by rebuilding the driver at its persisted tick', async () => {
     const session = makeSession();
-    const repository = createSaveRepository(
-      createMemorySaveDriver(saveWithSession(session)),
-    );
+    const stored = saveWithSession(session);
+    const parsed = parseGameSave(stored);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    const repository = createSaveRepository(createMemorySaveDriver(stored));
     const saveSession = createSaveSession(repository);
 
     const boot = await saveSession.boot({
@@ -39,7 +44,10 @@ describe('createSaveSession', () => {
       createDriver: createTestDriver,
     });
 
-    expect(boot.decision).toEqual({ kind: 'resume', session });
+    expect(boot.decision).toEqual({
+      kind: 'resume',
+      session: parsed.value.session,
+    });
     expect(boot.driver.tick).toBe(session.snapshot.tick);
     expect(boot.bag).toEqual(session.bag);
 

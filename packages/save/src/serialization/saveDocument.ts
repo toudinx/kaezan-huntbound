@@ -4,6 +4,7 @@ import {
   type SaveDiagnostic,
 } from '@huntbound/contracts';
 import { encodeCanonicalJson } from '@huntbound/simulation/src/state/canonicalJson.ts';
+import { omitIdleForcedTarget } from '@huntbound/simulation/src/state/snapshot.ts';
 
 import { SaveError } from '../errors/SaveError.ts';
 import { migrateSaveDocument } from '../migrations/migrateSaveDocument.ts';
@@ -19,8 +20,24 @@ function invalidDocument(
   });
 }
 
+function canonicalizeSaveDocument(document: GameSave): GameSave {
+  if (document.session === null) {
+    return document;
+  }
+  return {
+    ...document,
+    session: {
+      ...document.session,
+      snapshot: {
+        ...document.session.snapshot,
+        actors: document.session.snapshot.actors.map(omitIdleForcedTarget),
+      },
+    },
+  };
+}
+
 export function encodeSaveDocument(document: GameSave): string {
-  return `${encodeCanonicalJson(document)}\n`;
+  return `${encodeCanonicalJson(canonicalizeSaveDocument(document))}\n`;
 }
 
 export function decodeSaveDocument(serialized: string): GameSave {

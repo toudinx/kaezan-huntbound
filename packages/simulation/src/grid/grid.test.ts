@@ -96,6 +96,8 @@ function actor(
     lastDamageReceivedTick: 0,
     activeConditions: [],
     abilityCharges: [],
+    forcedTargetEntityId: null,
+    forcedTargetExpiresAtTick: 0,
   };
 }
 

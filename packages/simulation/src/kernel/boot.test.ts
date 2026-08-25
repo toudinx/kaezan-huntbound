@@ -41,6 +41,8 @@ describe('kernel boot', () => {
         lastDamageReceivedTick: 0,
         activeConditions: [],
         abilityCharges: [],
+        forcedTargetEntityId: null,
+        forcedTargetExpiresAtTick: 0,
       },
       {
         entityId: 2,
@@ -60,6 +62,8 @@ describe('kernel boot', () => {
         lastDamageReceivedTick: 0,
         activeConditions: [],
         abilityCharges: [],
+        forcedTargetEntityId: null,
+        forcedTargetExpiresAtTick: 0,
       },
       {
         entityId: 3,
@@ -79,6 +83,8 @@ describe('kernel boot', () => {
         lastDamageReceivedTick: 0,
         activeConditions: [],
         abilityCharges: [],
+        forcedTargetEntityId: null,
+        forcedTargetExpiresAtTick: 0,
       },
     ]);
   });

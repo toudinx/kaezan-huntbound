@@ -239,7 +239,7 @@ function targetDamaged(events: readonly SimulationEvent[]): boolean {
 }
 
 describe('PB-08-04 Knight damage rotation', () => {
-  it('composes the five spell abilities plus the two knight postures', async () => {
+  it('composes the five spell abilities plus the two knight postures and Challenge', async () => {
     const session = await composePb05CombatSession();
     const player = session.scenario.blueprints.find(
       (blueprint) => blueprint.blueprintId === 'player',
@@ -255,8 +255,9 @@ describe('PB-08-04 Knight damage rotation', () => {
       'whirlwind-throw',
       'blood-rage',
       'protector',
+      'challenge',
     ]);
-    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(player?.attackSkillIndex).toBe(2);
     expect(session.scenario.conditions).toEqual([
       {
@@ -364,6 +365,7 @@ describe('PB-05 combat session coverage', () => {
           'spell:tibia:wound-cleansing',
           'spell:tibia:groundshaker',
           'spell:tibia:whirlwind-throw',
+          'spell:tibia:challenge',
         ],
       },
     ]);
@@ -424,11 +426,12 @@ describe('PB-05 combat replay fixture', () => {
       'whirlwind-throw',
       'blood-rage',
       'protector',
+      'challenge',
     ]);
     const player = scenario.value.blueprints.find(
       (blueprint) => blueprint.blueprintId === 'player',
     );
-    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(player?.attackSkillIndex).toBe(2);
     expect(scenario.value.conditions).toEqual([
       {

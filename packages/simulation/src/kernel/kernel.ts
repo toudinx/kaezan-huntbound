@@ -684,23 +684,58 @@ export function createSimulationKernel(
           }
           const previousTarget = actor.targetEntityId;
           let targetId = previousTarget;
-          if (targetId !== null) {
-            const currentTarget = world.actor(targetId);
+          let forcedTargetEntityId = actor.forcedTargetEntityId;
+          let forcedTargetExpiresAtTick = actor.forcedTargetExpiresAtTick;
+          const lockId = forcedTargetEntityId;
+          const lockExpiresAtTick = forcedTargetExpiresAtTick;
+          const forcedLiving =
+            lockId !== null &&
+            lockExpiresAtTick !== 0 &&
+            currentTick < lockExpiresAtTick;
+
+          if (forcedLiving) {
+            const forced = world.actor(lockId);
             if (
-              currentTarget === undefined ||
-              !isAcquirableTarget(
+              forced !== undefined &&
+              isAcquirableTarget(
                 actor,
-                currentTarget,
+                forced,
                 blueprint.aggroRadius,
                 blueprint.factionId,
               )
             ) {
-              targetId = null;
+              targetId = lockId;
+            } else {
+              forcedTargetEntityId = null;
+              forcedTargetExpiresAtTick = 0;
+            }
+          } else if (lockExpiresAtTick !== 0) {
+            forcedTargetEntityId = null;
+            forcedTargetExpiresAtTick = 0;
+          }
+
+          if (
+            forcedTargetEntityId === null ||
+            targetId !== forcedTargetEntityId
+          ) {
+            if (targetId !== null) {
+              const currentTarget = world.actor(targetId);
+              if (
+                currentTarget === undefined ||
+                !isAcquirableTarget(
+                  actor,
+                  currentTarget,
+                  blueprint.aggroRadius,
+                  blueprint.factionId,
+                )
+              ) {
+                targetId = null;
+              }
             }
           }
 
           const canDecide = currentTick >= actor.readyAtTick;
-          if (targetId === null && canDecide) {
+          if (targetId === null && canDecide && forcedTargetEntityId === null) {
             targetId = acquireTarget(
               actor,
               blueprint.aggroRadius,
@@ -708,13 +743,23 @@ export function createSimulationKernel(
             );
           }
 
-          if (targetId !== previousTarget) {
-            world.update({ ...actor, targetEntityId: targetId });
-            journal.emit(currentTick, {
-              type: 'combat/target-changed',
-              entityId: actor.entityId,
+          const lockChanged =
+            forcedTargetEntityId !== actor.forcedTargetEntityId ||
+            forcedTargetExpiresAtTick !== actor.forcedTargetExpiresAtTick;
+          if (targetId !== previousTarget || lockChanged) {
+            world.update({
+              ...actor,
               targetEntityId: targetId,
+              forcedTargetEntityId,
+              forcedTargetExpiresAtTick,
             });
+            if (targetId !== previousTarget) {
+              journal.emit(currentTick, {
+                type: 'combat/target-changed',
+                entityId: actor.entityId,
+                targetEntityId: targetId,
+              });
+            }
           }
 
           if (!canDecide) {

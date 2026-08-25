@@ -28,6 +28,7 @@ const abilityV5Defaults = {
   maxCharges: null,
   rechargeKind: 'none' as const,
   toggle: false,
+  forcedTargetDurationTicks: 0,
 };
 
 const abilities: readonly AbilityDefinition[] = [
@@ -115,6 +116,7 @@ const abilities: readonly AbilityDefinition[] = [
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
+    forcedTargetDurationTicks: 0,
   },
   {
     abilityId: 'protector',
@@ -135,6 +137,7 @@ const abilities: readonly AbilityDefinition[] = [
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
+    forcedTargetDurationTicks: 0,
   },
 ];
 
@@ -204,6 +207,8 @@ const playerSnapshotActor = {
   lastDamageReceivedTick: 0,
   activeConditions: [],
   abilityCharges: [],
+  forcedTargetEntityId: null,
+  forcedTargetExpiresAtTick: 0,
 };
 
 const bloodRageAbility: AbilityDefinition = {
@@ -225,6 +230,7 @@ const bloodRageAbility: AbilityDefinition = {
   maxCharges: null,
   rechargeKind: 'none',
   toggle: true,
+  forcedTargetDurationTicks: 0,
 };
 
 function event(
@@ -329,7 +335,7 @@ function runtimeFixture(): RuntimeContentBundle {
 }
 
 describe('CombatViewModel', () => {
-  it('exposes seven active Knight abilities in the default combat model', () => {
+  it('exposes eight active Knight abilities in the default combat model', () => {
     const viewModel = createDefaultCombatViewModel();
 
     expect(
@@ -342,6 +348,7 @@ describe('CombatViewModel', () => {
       'whirlwind-throw',
       'blood-rage',
       'protector',
+      'challenge',
     ]);
   });
 
@@ -737,6 +744,7 @@ describe('CombatViewModel', () => {
           maxCharges: null,
           rechargeKind: 'none',
           toggle: false,
+          forcedTargetDurationTicks: 0,
         },
         {
           abilityId: 'support-wave',
@@ -757,6 +765,7 @@ describe('CombatViewModel', () => {
           maxCharges: null,
           rechargeKind: 'none',
           toggle: false,
+          forcedTargetDurationTicks: 0,
         },
         bloodRageAbility,
       ],

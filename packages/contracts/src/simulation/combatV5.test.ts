@@ -380,6 +380,7 @@ describe('AbilityDefinition v5 defaults and refusals', () => {
     expect(parsed.maxCharges).toBeNull();
     expect(parsed.rechargeKind).toBe('none');
     expect(parsed.toggle).toBe(false);
+    expect(parsed.forcedTargetDurationTicks).toBe(0);
   });
 
   it('accepts finite charges, a recharge rule, a toggle and an applied condition', () => {
@@ -516,6 +517,8 @@ describe('ActorState v5 defaults, collections and refusals', () => {
     expect(parsed.activeConditions).toEqual([]);
     expect(parsed.groupCooldowns).toEqual([]);
     expect(parsed.abilityCharges).toEqual([]);
+    expect(parsed.forcedTargetEntityId).toBeNull();
+    expect(parsed.forcedTargetExpiresAtTick).toBe(0);
     expect('groupReadyAtTick' in parsed).toBe(false);
   });
 

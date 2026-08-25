@@ -1132,6 +1132,59 @@ describe('buildHuntScenario abilities', () => {
     ]);
   });
 
+  it('appends Challenge after postures as a zero-damage support taunt', () => {
+    const nextCharacter: CharacterDefinition = {
+      ...knightRotationCharacter,
+      spellKeys: [
+        ...characterSpellKeysAtLevel(knightRotationCharacter),
+        'spell:tibia:challenge' as ContentKey,
+      ],
+    };
+    const { scenario, abilityKeys } = buildWithOptions(
+      { postures: rawKnightPostures },
+      syntheticHunt(),
+      nextCharacter,
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+
+    expect(abilityKeys).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+      'spell:tibia:challenge',
+    ]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(scenario.abilities.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+      'blood-rage',
+      'protector',
+      'challenge',
+    ]);
+    expect(scenario.abilities[7]).toMatchObject({
+      abilityId: 'challenge',
+      effect: 'damage',
+      shape: 'area',
+      radius: 1,
+      rangeTiles: 0,
+      resourceCost: 30,
+      cooldownTicks: 40,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: null,
+      forcedTargetDurationTicks: 40,
+    });
+  });
+
   it('rejects a spell that the knight family cannot cast', () => {
     const result = buildHuntScenario(
       syntheticHunt(),

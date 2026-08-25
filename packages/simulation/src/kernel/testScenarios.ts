@@ -259,6 +259,7 @@ function abilityV5Defaults(): Pick<
   | 'maxCharges'
   | 'rechargeKind'
   | 'toggle'
+  | 'forcedTargetDurationTicks'
 > {
   return {
     element: 'physical',
@@ -269,6 +270,28 @@ function abilityV5Defaults(): Pick<
     maxCharges: null,
     rechargeKind: 'none',
     toggle: false,
+    forcedTargetDurationTicks: 0,
+  };
+}
+
+export function challengeAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'challenge',
+    effect: 'damage',
+    shape: 'area',
+    radius: 1,
+    rangeTiles: 0,
+    resourceCost: 30,
+    cooldownTicks: 40,
+    groupCooldownTicks: 40,
+    minPower: 0,
+    maxPower: 0,
+    ...abilityV5Defaults(),
+    primaryCooldownGroup: 1,
+    forcedTargetDurationTicks: 40,
+    ...overrides,
   };
 }
 
@@ -387,6 +410,8 @@ export function actorCombatFields(
   | 'lastDamageReceivedTick'
   | 'activeConditions'
   | 'abilityCharges'
+  | 'forcedTargetEntityId'
+  | 'forcedTargetExpiresAtTick'
 > {
   return {
     health: blueprint.maxHealth,
@@ -406,5 +431,7 @@ export function actorCombatFields(
     lastDamageReceivedTick: 0,
     activeConditions: [],
     abilityCharges: [],
+    forcedTargetEntityId: null,
+    forcedTargetExpiresAtTick: 0,
   };
 }

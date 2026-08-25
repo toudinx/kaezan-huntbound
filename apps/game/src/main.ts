@@ -18,6 +18,8 @@ import {
 import knightCombatSelectionJson from '../../../packages/content/src/selections/pb-05-knight-combat.json?raw';
 import {
   type CatalogContentBundle,
+  type CharacterDefinition,
+  CharacterDefinitionSchema,
   createSeed,
   type EntityId,
   type HuntDefinition,
@@ -121,11 +123,32 @@ function readHuntDefinition(): HuntDefinition {
   );
 }
 
-function readKnightPostures() {
-  const selection = JSON.parse(knightCombatSelectionJson) as {
+function readKnightCombatSelection(): {
+  readonly character?: { readonly kit?: unknown };
+  readonly postures?: unknown;
+} {
+  return JSON.parse(knightCombatSelectionJson) as {
+    readonly character?: { readonly kit?: unknown };
     readonly postures?: unknown;
   };
-  return parseKnightPostures(selection.postures);
+}
+
+function readKnightPostures() {
+  return parseKnightPostures(readKnightCombatSelection().postures);
+}
+
+function readKnightCharacter(
+  catalogCharacter: CharacterDefinition,
+): CharacterDefinition {
+  const kit = readKnightCombatSelection().character?.kit;
+  if (kit === undefined) {
+    throw new Error('PB-05 selection character is missing its kit');
+  }
+  return CharacterDefinitionSchema.parse({
+    ...catalogCharacter,
+    spellKeys: undefined,
+    kit,
+  });
 }
 
 function createBrowserSaveSession(): SaveSessionController {
@@ -284,8 +307,8 @@ export async function bootstrapApp(
     return;
   }
 
-  const character = runtime.characters[0];
-  if (character === undefined) {
+  const catalogCharacter = runtime.characters[0];
+  if (catalogCharacter === undefined) {
     publishHuntBootstrapError(
       new Error('Generated catalog is missing the hunt character.'),
     );
@@ -296,6 +319,7 @@ export async function bootstrapApp(
   const registry = createContentRegistry(runtime);
   let scenarioResult: ReturnType<typeof buildHuntScenario>;
   try {
+    const character = readKnightCharacter(catalogCharacter);
     const postures = readKnightPostures();
     scenarioResult = buildHuntScenario(hunt, character, registry, huntSeed, {
       postures,

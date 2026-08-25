@@ -286,6 +286,7 @@ describe('main asset bootstrap', () => {
       'whirlwind-throw',
       'blood-rage',
       'protector',
+      'challenge',
     ]);
     expect(
       viewModelConditions?.map((condition) => condition.conditionId),

@@ -20,6 +20,7 @@ const abilityV5Defaults = {
   maxCharges: null,
   rechargeKind: 'none' as const,
   toggle: false,
+  forcedTargetDurationTicks: 0,
 };
 
 const abilities: readonly AbilityDefinition[] = [

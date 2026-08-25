@@ -65,6 +65,8 @@ export function cloneActor(actor: ActorState): ActorState {
       abilityIndex: entry.abilityIndex,
       remaining: entry.remaining,
     })),
+    forcedTargetEntityId: actor.forcedTargetEntityId,
+    forcedTargetExpiresAtTick: actor.forcedTargetExpiresAtTick,
   };
 }
 
@@ -100,6 +102,8 @@ export function createActorState(
     lastDamageReceivedTick: 0,
     activeConditions: [],
     abilityCharges: [],
+    forcedTargetEntityId: null,
+    forcedTargetExpiresAtTick: 0,
   };
 }
 

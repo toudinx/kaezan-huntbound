@@ -47,6 +47,13 @@ import {
 } from './combatConversion.ts';
 import type { KnightPostureDefinition } from './knightPostures.ts';
 
+const CHALLENGE_SPELL_KEY = 'spell:tibia:challenge' as ContentKey;
+const SUPPORT_COOLDOWN_GROUP = 1;
+const CHALLENGE_RESOURCE_COST = 30;
+const CHALLENGE_COOLDOWN_TICKS = 40;
+const CHALLENGE_RADIUS = 1;
+const CHALLENGE_DURATION_TICKS = 40;
+
 export interface HuntScenarioBuild {
   readonly scenario: KernelScenario;
   readonly itemKeys: readonly string[];
@@ -321,6 +328,9 @@ function composeAbilities(
       ? ['character', 'spellKeys']
       : ['character', 'kit', character.kit.indexOf(activeBand), 'spellKeys'];
   characterSpellKeysAtLevel(character).forEach((spellKey, spellIndex) => {
+    if (spellKey === CHALLENGE_SPELL_KEY) {
+      return;
+    }
     if (!registry.has(spellKey)) {
       diagnostics.push(
         diagnostic(
@@ -378,11 +388,36 @@ function composeAbilities(
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     });
     abilityKeys.push(spellKey);
   });
 
   return { abilities, abilityKeys };
+}
+
+function composeChallengeAbility(): AbilityDefinition {
+  return {
+    abilityId: 'challenge',
+    effect: 'damage',
+    shape: 'area',
+    radius: CHALLENGE_RADIUS,
+    rangeTiles: 0,
+    resourceCost: CHALLENGE_RESOURCE_COST,
+    cooldownTicks: CHALLENGE_COOLDOWN_TICKS,
+    groupCooldownTicks: CHALLENGE_COOLDOWN_TICKS,
+    minPower: 0,
+    maxPower: 0,
+    element: 'physical',
+    primaryCooldownGroup: SUPPORT_COOLDOWN_GROUP,
+    secondaryCooldownGroup: null,
+    secondaryGroupCooldownTicks: 0,
+    appliedConditionIndex: null,
+    maxCharges: null,
+    rechargeKind: 'none',
+    toggle: false,
+    forcedTargetDurationTicks: CHALLENGE_DURATION_TICKS,
+  };
 }
 
 function composePostureAbilities(
@@ -408,6 +443,7 @@ function composePostureAbilities(
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
+    forcedTargetDurationTicks: 0,
   }));
 }
 
@@ -468,7 +504,17 @@ export function buildHuntScenario(
     diagnostics,
   );
   const postureAbilities = composePostureAbilities(options?.postures ?? []);
-  const abilities = [...spellAbilities, ...postureAbilities];
+  const kitHasChallenge =
+    characterSpellKeysAtLevel(character).includes(CHALLENGE_SPELL_KEY);
+  const challengeAbilities = kitHasChallenge ? [composeChallengeAbility()] : [];
+  const abilities = [
+    ...spellAbilities,
+    ...postureAbilities,
+    ...challengeAbilities,
+  ];
+  const resolvedAbilityKeys = kitHasChallenge
+    ? [...abilityKeys, CHALLENGE_SPELL_KEY]
+    : abilityKeys;
   const conditions = composePostureConditions(options?.postures ?? []);
   const playerAbilityIndices = abilities.map((_, index) => index);
 
@@ -601,7 +647,7 @@ export function buildHuntScenario(
     value: {
       scenario: validatedScenario.value,
       itemKeys,
-      abilityKeys,
+      abilityKeys: resolvedAbilityKeys,
     },
   };
 }

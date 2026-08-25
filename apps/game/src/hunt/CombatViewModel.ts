@@ -549,6 +549,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'brutal-strike',
@@ -569,6 +570,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'wound-cleansing',
@@ -589,6 +591,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'groundshaker',
@@ -609,6 +612,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'whirlwind-throw',
@@ -629,6 +633,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: false,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'blood-rage',
@@ -649,6 +654,7 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: true,
+      forcedTargetDurationTicks: 0,
     },
     {
       abilityId: 'protector',
@@ -669,6 +675,28 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       maxCharges: null,
       rechargeKind: 'none',
       toggle: true,
+      forcedTargetDurationTicks: 0,
+    },
+    {
+      abilityId: 'challenge',
+      effect: 'damage',
+      shape: 'area',
+      radius: 1,
+      rangeTiles: 0,
+      resourceCost: 30,
+      cooldownTicks: 40,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      element: 'physical',
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: null,
+      secondaryGroupCooldownTicks: 0,
+      appliedConditionIndex: null,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: false,
+      forcedTargetDurationTicks: 40,
     },
   ]);
 

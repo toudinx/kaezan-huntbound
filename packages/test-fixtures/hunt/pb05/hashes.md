@@ -6,7 +6,7 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `44867deeba27b7fe2817c62e933c750fbaa9025d970ba9a3b0982803b214dfce` |
+| `scenario.json` | `6abc77b2bbe6df01d3d72ff3336909b6cd2339afcc183d3a91bd2f1797c5d526` |
 | `commands.jsonl` | `689cc3a8d44e46c6f25b609496dd7094e7f86304f1054a553014078b9bb734d3` |
 | `snapshot.golden.json` | `3c3fdefcd997b16f8b242a66c709638baacbaea1bcc5893cc7f51417eada8d0f` |
 | `events.golden.jsonl` | `75bd96c37a7a0c097532c8a5e201e15bbc405c677d39aca00fa327dea816ac72` |
@@ -23,3 +23,9 @@ seat respawn of entity `14` at tick `2003` on the death cell, and
 `combat/target-changed`. The player dies at tick `351`; the kernel does not
 respawn them. PB-07-04 added `combat/leeched` (4) and `combat/regenerated` (2);
 `commands.jsonl` is unchanged.
+
+PB-08-06 added Challenge at ability index 7 (`forcedTargetDurationTicks` 40,
+support `primaryCooldownGroup` 1). `commands.jsonl`, `snapshot.golden.json` and
+`events.golden.jsonl` stay the previous digests: the session never casts
+Challenge, idle forced-target fields are omitted from snapshots, and untaunted
+hunter acquisition is unchanged. `scenario.json` is the only moved artifact.

@@ -264,6 +264,7 @@ export const AbilityDefinitionSchema = z
     maxCharges: nonNegativeInteger.nullable().default(null),
     rechargeKind: AbilityRechargeKindSchema.default('none'),
     toggle: z.boolean().default(false),
+    forcedTargetDurationTicks: nonNegativeInteger.default(0),
   })
   .strict()
   .superRefine((ability, context) => {
@@ -1234,6 +1235,8 @@ const ActorStateObjectSchema = z
       )
       .readonly()
       .default([]),
+    forcedTargetEntityId: EntityIdSchema.nullable().default(null),
+    forcedTargetExpiresAtTick: nonNegativeInteger.default(0),
   })
   .strict()
   .superRefine((actor, context) => {

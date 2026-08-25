@@ -86,7 +86,7 @@ fora de `target`. `minPower` não pode exceder `maxPower`. Todo número é intei
 com default: `element` `'physical'`, `primaryCooldownGroup` `0` (`PRIMARY_COOLDOWN_GROUP`),
 `secondaryCooldownGroup` `null`, `secondaryGroupCooldownTicks` `0`, `appliedConditionIndex` `null`,
 `maxCharges` `null` com `rechargeKind` `'none'` (cargas ilimitadas, o comportamento v4), `toggle`
-`false`.
+`false`, `forcedTargetDurationTicks` `0`.
 
 ### Condições do cenário
 
@@ -197,12 +197,16 @@ As coleções têm ordem canônica parte do contrato:
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing`, `readyAtTick`,
 `transitionGuard`, e os campos de combate: `health`, `resource`, `targetEntityId`,
 `attackReadyAtTick`, `groupCooldowns`, `abilityCooldowns`, `nextHealthRegenTick`,
-`nextResourceRegenTick`, `lastDamageReceivedTick`, `activeConditions` e `abilityCharges`.
+`nextResourceRegenTick`, `lastDamageReceivedTick`, `activeConditions`, `abilityCharges`,
+`forcedTargetEntityId` e `forcedTargetExpiresAtTick`.
 `groupCooldowns` substitui o escalar `groupReadyAtTick` da v4: é `{ groupIndex, readyAtTick }[]`,
 ordenado estritamente por `groupIndex`, sem duplicata. A migração v4→v5 mapeia o escalar `N` para
 `[{ groupIndex: 0, readyAtTick: N }]`. `abilityCooldowns` é ordenada estritamente por
 `abilityIndex`; `activeConditions` por `conditionIndex`; `abilityCharges` por `abilityIndex`.
 Ordem errada é recusa com caminho localizado, não reordenação. `lastDamageReceivedTick` default `0`.
+`forcedTargetEntityId` default `null` e `forcedTargetExpiresAtTick` default `0` significam ausência
+de lock; um snapshot pode omitir os dois quando estão nesses defaults, e o parse os reconstitui.
+O encoder de snapshot omite o par ocioso para que goldens sem taunt permaneçam byte-idênticos.
 `health` e `resource` são inteiros não negativos. `targetEntityId` é `null` ou o `EntityId` de um
 ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a restrição de
 `abilityCooldowns` aos índices declarados no blueprint dependem do cenário e seguem o mesmo padrão
@@ -627,8 +631,16 @@ cobra mana e não aplica efeito de poder. Relançar a rival do mesmo `exclusivit
 cobrando a rival. `appliedConditionIndex` não nulo aplica ou renova a condição (tick de expiração
 absoluto `currentTick + durationTicks`, ou `0` quando a duração é `0`) e expulsa a ocupante do
 mesmo slot. Sem chave de slot, índices diferentes empilham; o mesmo índice renova. A lista fica
-ordenada por `conditionIndex`. Emite `ability/cast` e então um `combat/damaged` ou `combat/healed`
-por alvo, salvo poder `0`/`0` (cast só de condição). `self` cura o
+ordenada por `conditionIndex`. Emite `ability/cast` e então, se `forcedTargetDurationTicks > 0`,
+aplica o lock de alvo forçado a cada alvo já filtrado da forma, em ordem crescente de `EntityId`:
+`forcedTargetEntityId` vira o conjurador, `forcedTargetExpiresAtTick` vira `currentTick +
+forcedTargetDurationTicks`, `targetEntityId` também, e emite `combat/target-changed` quando o alvo
+mudou. O lock **não** é condição de stat e não usa `exclusivityGroup`. Sem poder (`minPower` e
+`maxPower` iguais a `0`) o cast termina aí — não há `combat/damaged` nem `combat/healed`, o
+stream `combat` não é consumido, e `lastDamageReceivedTick` de ninguém muda: Challenge
+(`isAggressive(false)` no snapshot) não marca o conjurador nem o alvo como em combate. Com poder,
+emite um `combat/damaged` ou `combat/healed`
+por alvo. `self` cura o
 conjurador; `target` exige alcance e, para dano, facção diferente; `area` atinge o quadrado de raio
 declarado centrado no conjurador, em ordem crescente de `EntityId`, com **um** sorteio por alvo.
 Cura só atinge a mesma facção; dano só atravessa facções diferentes. Ninguém fere a si mesmo.
@@ -670,15 +682,24 @@ exatamente como em PB-03.
 
 Ator `hunter` no mesmo laço:
 
-1. **manutenção de alvo:** descarta o alvo atual se ele morreu, mudou de andar, saiu do raio de
+1. **lock de alvo forçado:** se `forcedTargetExpiresAtTick > 0` e
+   `currentTick < forcedTargetExpiresAtTick` e o `forcedTargetEntityId` ainda é adquirível, o hunter
+   usa esse alvo e **não** corre `acquireTarget`. O tick `expiresAtTick` já é expirado (`tick <
+   expiresAtTick`, o mesmo exclusivo das condições). No tick de expiração o lock zera
+   (`forcedTargetEntityId` `null`, `forcedTargetExpiresAtTick` `0`) e a manutenção normal retoma —
+   o `targetEntityId` corrente permanece se ainda for válido. Relançar o taunt renova o tick
+   absoluto. Duração de Challenge: 40 ticks (2 000 ms), igual ao cooldown da magia: a opção mais
+   curta e mais fácil de reverter. Raio 1 (contato). Nenhum draw de RNG.
+2. **manutenção de alvo:** descarta o alvo atual se ele morreu, mudou de andar, saiu do raio de
    agressão Chebyshev ou se `aggroRadius` é `0`. Alvo morto é limpo mesmo com o hunter em cooldown,
    porque `targetEntityId` no snapshot só pode nomear ator vivo. Qualquer mudança emite
-   `combat/target-changed` (`targetEntityId` nulo quando o alvo cai).
-2. **aquisição:** fora de cooldown e sem alvo, escolhe o ator vivo de facção diferente, no mesmo
+   `combat/target-changed` (`targetEntityId` nulo quando o alvo cai). O lock expirado não emite
+   evento se o alvo corrente não mudou.
+3. **aquisição:** fora de cooldown e sem alvo, e **somente sem lock vivo**, escolhe o ator vivo de facção diferente, no mesmo
    andar, dentro do raio, com menor distância Chebyshev; empate resolve pelo menor `EntityId`.
    `aggroRadius = 0` nunca adquire. Hunter com `attackRangeTiles > 1` também exige `isSightClear`.
    A aquisição **não** consome aleatoriedade.
-3. **ação:** fora de cooldown, alvo a Chebyshev `<= attackRangeTiles` (mesmo andar) enfileira intent
+4. **ação:** fora de cooldown, alvo a Chebyshev `<= attackRangeTiles` (mesmo andar) enfileira intent
    interna de ataque para `currentTick + 1`, desde que o alcance melee (`<= 1`) ou `isSightClear`
    permita o golpe. Alvo mais distante enfileira o primeiro passo do caminho BFS 8-vizinhos até
    qualquer célula a Chebyshev `<= attackRangeTiles` do alvo; empate segue a ordem canônica de
@@ -687,7 +708,7 @@ Ator `hunter` no mesmo laço:
    o custo do passo é dobrado (`WALK_TARGET_NEARBY_EXTRA_COST`). O golpe interno resolve em `S4` no
    tick seguinte, respeitando `attackReadyAtTick`; alvo ausente na resolução não emite
    `command/rejected`. `isSightClear` é `true` incondicionalmente a Chebyshev `<= 1` no mesmo andar.
-4. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
+5. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
    `nextBelow(8)` do stream `ai`.
 
 Comandos internos gerados por `S6` usam uma fila interna própria, ordenada por `EntityId`. Eles não

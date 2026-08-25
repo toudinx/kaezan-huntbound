@@ -107,6 +107,18 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     healNumber: true,
     numberColor: '#73e6a5',
   },
+  // `data/scripts/spells/support/challenge.lua`: CONST_ME_MAGIC_BLUE over
+  // AREA_SQUARE1X1. No damage number; the tell is the eight neighbours flashing
+  // and the creatures turning.
+  challenge: {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'radius-1',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#7ecbff',
+  },
 };
 
 const BY_POSTURE_ABILITY_ID: Readonly<

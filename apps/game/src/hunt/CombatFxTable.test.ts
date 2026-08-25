@@ -102,6 +102,18 @@ describe('combatFxForAbility', () => {
     });
   });
 
+  it('maps challenge to magic-blue on the eight neighbours with no number', () => {
+    expect(combatFxForAbility('challenge')).toEqual({
+      impactKey: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+      bloodKey: undefined,
+      placement: 'radius-1',
+      staggerByDistance: false,
+      stronger: false,
+      healNumber: false,
+      numberColor: '#7ecbff',
+    });
+  });
+
   it('returns undefined for an unknown abilityId', () => {
     expect(combatFxForAbility('unknown-spell')).toBeUndefined();
   });

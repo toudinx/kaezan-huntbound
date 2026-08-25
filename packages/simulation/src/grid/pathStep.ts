@@ -42,6 +42,8 @@ function walkerStub(entityId: EntityId, position: GridPosition): ActorState {
     lastDamageReceivedTick: 0,
     activeConditions: [],
     abilityCharges: [],
+    forcedTargetEntityId: null,
+    forcedTargetExpiresAtTick: 0,
   };
 }
 
