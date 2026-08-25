@@ -45,6 +45,26 @@ export interface CombatAbilityView {
   readonly remainingCooldownTicks: number;
   readonly available: boolean;
   readonly active: boolean;
+  /** The shared cooldown this ability spends when it is cast. */
+  readonly primaryCooldownGroup: number;
+  /** A second shared cooldown it also spends, or `null` when it spends none. */
+  readonly secondaryCooldownGroup: number | null;
+  /**
+   * What its own groups still owe, with its personal cooldown left out.
+   *
+   * The HUD needs this separately from `remainingCooldownTicks` so a cell can
+   * darken for the reason the rules actually give. Challenge and Haste run in
+   * the support group and are untouched by the attack group; a HUD that dimmed
+   * them alongside the spells that *are* on the attack cooldown would be
+   * lying about the rule the player is trying to learn.
+   */
+  readonly remainingGroupCooldownTicks: number;
+}
+
+/** What one shared cooldown group still owes, in ticks. */
+export interface CombatCooldownGroupView {
+  readonly group: number;
+  readonly remainingTicks: number;
 }
 
 export interface CombatLootLogEntry {
@@ -59,6 +79,8 @@ export interface CombatViewState {
   readonly targetEntityId: EntityId | null;
   readonly target: CombatVitalsView | null;
   readonly abilities: readonly CombatAbilityView[];
+  /** Every group the ability catalog references, with what it still owes. */
+  readonly cooldownGroups: readonly CombatCooldownGroupView[];
   readonly playerPosture: {
     readonly abilityId: string;
     readonly label: string;
@@ -429,6 +451,33 @@ export function createCombatViewModel(
     return actor === undefined ? null : copyVitals(actor);
   };
 
+  /**
+   * Every group the catalog names, in ascending order, with what it still owes.
+   * Read from the catalog rather than from the groups that happen to have been
+   * cast, so a group nobody has spent yet is still reported -- at zero, which
+   * is the honest answer, instead of missing.
+   */
+  const cooldownGroupViews = (): CombatCooldownGroupView[] => {
+    const groups = new Set<number>();
+
+    for (const ability of options.abilities) {
+      groups.add(ability.primaryCooldownGroup);
+      if (ability.secondaryCooldownGroup !== null) {
+        groups.add(ability.secondaryCooldownGroup);
+      }
+    }
+
+    return [...groups]
+      .sort((left, right) => left - right)
+      .map((group) => ({
+        group,
+        remainingTicks: Math.max(
+          0,
+          (groupReadyAtTick.get(group) ?? 0) - currentTick,
+        ),
+      }));
+  };
+
   const snapshot = (): CombatViewState => {
     const selectedTargetId = targetSelection.targetId();
     const playerPosture = activePosture();
@@ -457,12 +506,15 @@ export function createCombatViewModel(
       target: vitalsFor(selectedTargetId),
       abilities: Object.freeze(
         options.abilities.map((ability, index) => {
-          const readyAtTick = Math.max(
-            abilityReadyAtTick.get(index) ?? 0,
+          const groupReadyAtTick_ = Math.max(
             groupReadyAtTick.get(ability.primaryCooldownGroup) ?? 0,
             ability.secondaryCooldownGroup === null
               ? 0
               : (groupReadyAtTick.get(ability.secondaryCooldownGroup) ?? 0),
+          );
+          const readyAtTick = Math.max(
+            abilityReadyAtTick.get(index) ?? 0,
+            groupReadyAtTick_,
           );
           const remainingCooldownTicks = Math.max(0, readyAtTick - currentTick);
           const player = actorFor(options.playerEntityId);
@@ -473,6 +525,12 @@ export function createCombatViewModel(
             resourceCost: ability.resourceCost,
             cooldownTicks: ability.cooldownTicks,
             remainingCooldownTicks,
+            primaryCooldownGroup: ability.primaryCooldownGroup,
+            secondaryCooldownGroup: ability.secondaryCooldownGroup,
+            remainingGroupCooldownTicks: Math.max(
+              0,
+              groupReadyAtTick_ - currentTick,
+            ),
             available:
               !playerDead &&
               remainingCooldownTicks === 0 &&
@@ -486,6 +544,7 @@ export function createCombatViewModel(
           };
         }),
       ),
+      cooldownGroups: Object.freeze(cooldownGroupViews()),
       playerPosture,
       playerHaste,
       lootLog: Object.freeze(lootLog.map((entry) => ({ ...entry }))),

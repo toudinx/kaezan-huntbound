@@ -62,40 +62,31 @@ body {
 
 [data-testid="app-shell"] header,
 [data-testid="app-shell"] aside {
-  position: absolute;
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   border: 1px solid rgb(123 161 216 / 35%);
   background: rgb(6 11 22 / 66%);
   box-shadow: 0 0 18px rgb(44 111 186 / 12%);
-}
-
-[data-testid="app-shell"] header {
-  top: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-top));
-  left: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-left));
-}
-
-[data-testid="app-shell"] aside {
-  right: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-right));
-  bottom: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-bottom));
+  pointer-events: auto;
 }
 
 [data-testid="shell-status"],
 [data-testid="shell-viewport"],
 [data-testid="shell-frame-rate"] {
   margin: 0;
-  padding: 0.55rem 0.7rem;
+  padding: 0.3rem 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-[data-testid="app-shell"] header,
 [data-testid="app-shell"] aside {
-  max-inline-size: min(15rem, calc(100% - 2rem));
-  pointer-events: auto;
+  display: flex;
+  gap: 0.4rem;
 }
 
 [data-testid="hunt-controls"] {
-  position: absolute;
-  left: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-left));
-  bottom: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-bottom));
   pointer-events: none;
 }
 
@@ -106,17 +97,30 @@ body {
 }
 
 [data-testid="save-inventory-root"] {
-  position: absolute;
-  top: max(5.25rem, calc(env(safe-area-inset-top) + 4rem));
-  left: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-left));
-  width: min(18rem, calc(100% - 2rem));
+  min-width: 0;
   pointer-events: none;
 }
 
+/*
+ * The empty notices sit over the box they belong to rather than after it. In
+ * the old stacked panel a negative block margin did that; in a row the box has
+ * to declare a width for the notice to pull back across.
+ */
+[data-testid="save-run-bag"],
+[data-testid="save-stash"] {
+  flex: 0 1 auto;
+  min-width: 5.4rem;
+}
+
 [data-testid="save-inventory-panel"] {
-  display: grid;
-  gap: 0.35rem;
-  padding: 0.55rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  height: 100%;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.6rem;
+  overflow: hidden;
   border: 1px solid rgb(123 161 216 / 42%);
   background: rgb(6 11 22 / 82%);
   box-shadow: 0 0 18px rgb(44 111 186 / 14%);
@@ -124,6 +128,7 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
   text-transform: none;
+  white-space: nowrap;
 }
 
 [data-testid="save-status"] {
@@ -153,8 +158,10 @@ body {
 
 [data-testid="save-run-bag-empty"],
 [data-testid="save-stash-empty"] {
-  margin: -1.55rem 0 0;
-  padding: 0.25rem 0.4rem;
+  width: 5.4rem;
+  margin: 0 0 0 -5.4rem;
+  padding: 0.2rem 0.35rem;
+  overflow: hidden;
   color: #8190a8;
   pointer-events: none;
 }
@@ -192,134 +199,348 @@ body {
 
 [data-testid="save-inventory-panel"] > [data-testid="save-export"],
 [data-testid="save-inventory-panel"] > [data-testid="save-import"] {
-  display: inline-block;
-  width: calc(50% - 0.2rem);
+  flex: 0 0 auto;
+  min-height: 1.5rem;
+  padding: 0 0.4rem;
 }
 
-[data-testid="combat-hud"] {
+/*
+ * The cockpit frame.
+ *
+ * Every band measure below comes from a `--cockpit-*` custom property that
+ * `CockpitLayout` writes out of `playfieldViewport`. Nothing here invents a
+ * number for an edge: a deck the stylesheet draws 108 px tall against a camera
+ * that assumed 100 puts the knight eight pixels behind his own hotbar, and no
+ * unit test of either half would catch it.
+ */
+.cockpit {
   position: absolute;
-  top: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-top));
-  right: max(clamp(0.75rem, 2vw, 1.5rem), env(safe-area-inset-right));
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+ * The free area, as geometry only. It paints nothing and takes no pointer, so
+ * it never counts as chrome over the playfield -- it is only there so the page
+ * can be asked where the play area is.
+ */
+.cockpit__playfield {
+  position: absolute;
+  top: var(--playfield-y);
+  left: var(--playfield-x);
+  width: var(--playfield-width);
+  height: var(--playfield-height);
+  pointer-events: none;
+}
+
+.cockpit__top {
+  position: absolute;
+  inset: 0 0 auto;
   display: grid;
-  grid-template-columns: minmax(11rem, 16rem);
-  gap: 0.45rem;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(
+      0,
+      1fr
+    );
+  align-items: center;
+  gap: 0.4rem;
+  height: var(--cockpit-top);
+  padding: 0.25rem 0.5rem;
+  pointer-events: none;
+}
+
+.cockpit__top > header {
+  grid-area: 1 / 1;
+}
+
+.cockpit__top > aside {
+  grid-area: 1 / 2;
+}
+
+.cockpit__top > [data-testid="save-inventory-root"] {
+  grid-area: 1 / 3;
+  justify-self: end;
+  height: 100%;
+}
+
+/*
+ * With a rail the top band is one row, so the readouts stack to give the save
+ * strip the width it needs beside them.
+ */
+.cockpit[data-cockpit-rail="on"] .cockpit__top {
+  font-size: 0.68rem;
+}
+
+.cockpit[data-cockpit-rail="on"] .cockpit__top > aside {
+  flex-direction: column;
+  gap: 0;
+}
+
+.cockpit[data-cockpit-rail="on"] .cockpit__top > aside > p {
+  padding: 0.1rem 0.4rem;
+}
+
+/*
+ * With no room for a rail the panels it holds fold into the top band, which
+ * then needs three rows: readouts, save strip, and the folded rail.
+ */
+.cockpit[data-cockpit-rail="off"] .cockpit__top {
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.cockpit[data-cockpit-rail="off"]
+  .cockpit__top
+  > [data-testid="save-inventory-root"] {
+  grid-area: 2 / 1 / 3 / 3;
+  justify-self: stretch;
+}
+
+/*
+ * The save strip is developer chrome, and on a phone it is the one thing in the
+ * frame that measure alone cannot make fit. It gives up its run counter, lets
+ * the status line ellipse, and only then scrolls inside its own row -- rather
+ * than pushing anything off screen or into the play area.
+ */
+.cockpit[data-cockpit-rail="off"] [data-testid="save-inventory-panel"] {
+  overflow-x: auto;
+}
+
+.cockpit[data-cockpit-rail="off"] [data-testid="save-status"] {
+  flex: 1 1 0;
+  min-width: 2.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * The run counter is the first thing to go when the top band gets tight. This
+ * is a width query rather than a cockpit measure on purpose: it is about how
+ * much text fits inside a band, not about where the band ends, and only the
+ * latter has to agree with the camera.
+ */
+@media (max-width: 1100px) {
+  [data-testid="save-completed-runs"] {
+    display: none;
+  }
+}
+
+.cockpit__movement {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: var(--cockpit-bottom);
+  padding-left: 0.5rem;
+  pointer-events: none;
+
+  /*
+   * Sized from the band rather than from the viewport, so the d-pad can never
+   * grow past the strip reserved for it and bite into the play area.
+   */
+  --dpad-cell: calc((var(--cockpit-bottom) - 1.1rem) / 3);
+}
+
+.cockpit[data-cockpit-rail="off"] .cockpit__movement {
+  height: calc(var(--cockpit-bottom) * 0.58);
+  --dpad-cell: calc((var(--cockpit-bottom) * 0.58 - 1.1rem) / 3);
+}
+
+.combat-hud {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
   letter-spacing: 0.04em;
   text-transform: none;
 }
 
-[data-testid="combat-player"],
-[data-testid="combat-target"],
-[data-testid="combat-actions"],
-[data-testid="combat-loot"],
-[data-testid="combat-death-overlay"] {
+/* Vitals -------------------------------------------------------------- */
+
+.cockpit__vitals {
+  position: absolute;
+  top: var(--cockpit-top);
+  bottom: var(--cockpit-bottom);
+  width: var(--cockpit-arc);
+  pointer-events: none;
+}
+
+.cockpit__vitals--left {
+  left: 0;
+}
+
+.cockpit__vitals--right {
+  right: var(--cockpit-rail);
+}
+
+.cockpit-arc {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cockpit-arc[data-side="right"] {
+  transform: scaleX(-1);
+}
+
+.cockpit-arc__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.cockpit-arc__track {
+  stroke: rgb(123 161 216 / 20%);
+  stroke-width: 7;
+}
+
+.cockpit-arc__fill {
+  stroke-width: 7;
+  transition: stroke-dashoffset 120ms linear;
+}
+
+.cockpit-arc--health .cockpit-arc__fill {
+  stroke: #ff6b6b;
+  filter: drop-shadow(0 0 6px rgb(255 107 107 / 45%));
+}
+
+.cockpit-arc--mana .cockpit-arc__fill {
+  stroke: #6ba8ff;
+  filter: drop-shadow(0 0 6px rgb(107 168 255 / 45%));
+}
+
+/*
+ * The number sits at the foot of its own arc. The right arc is mirrored as a
+ * whole so the two curves face each other; the readout is flipped back so it
+ * stays legible.
+ */
+.cockpit-arc__value {
+  position: absolute;
+  right: 0.1rem;
+  bottom: 0;
+  font-size: clamp(0.8rem, 1.6vw, 1.15rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.cockpit-arc[data-side="right"] .cockpit-arc__value {
+  transform: scaleX(-1);
+  transform-origin: right center;
+}
+
+.cockpit-arc--health .cockpit-arc__value {
+  color: #ff9e9e;
+}
+
+.cockpit-arc--mana .cockpit-arc__value {
+  color: #9ec4ff;
+}
+
+/* Rail ---------------------------------------------------------------- */
+
+.cockpit__rail {
+  position: absolute;
+  top: var(--cockpit-top);
+  right: 0;
+  bottom: var(--cockpit-bottom);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: var(--cockpit-rail);
+  padding: 0.4rem 0.5rem 0.4rem 0;
+  pointer-events: none;
+}
+
+.cockpit[data-cockpit-rail="off"] .cockpit__rail {
+  top: calc(var(--cockpit-top) * 2 / 3);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  flex-direction: row;
+  align-items: stretch;
+  width: auto;
+  height: calc(var(--cockpit-top) / 3);
+  padding: 0 0.5rem 0.25rem;
+}
+
+.cockpit-panel {
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  overflow: hidden;
   border: 1px solid rgb(123 161 216 / 42%);
   background: rgb(6 11 22 / 78%);
   box-shadow: 0 0 18px rgb(44 111 186 / 14%);
   pointer-events: auto;
 }
 
-[data-testid="combat-player"],
-[data-testid="combat-target"],
-[data-testid="combat-actions"],
-[data-testid="combat-loot"] {
-  padding: 0.55rem 0.65rem;
+.cockpit[data-cockpit-rail="off"] .cockpit-panel {
+  flex: 1 1 0;
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.15rem 0.3rem;
+  font-size: 0.6rem;
+  white-space: nowrap;
 }
 
-[data-testid="combat-player-health"],
-[data-testid="combat-player-mana"],
+[data-testid="combat-target-name"] {
+  margin: 0 0 0.2rem;
+  overflow: hidden;
+  color: #f4f7ff;
+  text-overflow: ellipsis;
+}
+
 [data-testid="combat-target-health"] {
-  margin: 0.2rem 0;
-  padding: 0.25rem 0.4rem;
+  padding: 0.2rem 0.35rem;
   border: 1px solid rgb(255 255 255 / 22%);
+  color: #ffcf66;
   background: rgb(20 30 47 / 86%);
   font-variant-numeric: tabular-nums;
 }
 
-[data-testid="combat-player-health"] {
-  color: #ff9e9e;
+.cockpit[data-cockpit-rail="off"] [data-testid="combat-target"] {
+  flex-grow: 1.3;
 }
 
-[data-testid="combat-player-mana"] {
-  color: #9ec4ff;
+.cockpit[data-cockpit-rail="off"] [data-testid="combat-target-name"] {
+  flex: 0 0 auto;
+  min-width: 3.2rem;
+  margin: 0;
 }
 
-[data-testid="combat-target-health"] {
-  color: #ffcf66;
-}
-
-[data-testid="combat-target-name"] {
-  margin: 0 0 0.25rem;
-  color: #f4f7ff;
+.cockpit[data-cockpit-rail="off"] [data-testid="combat-target-health"] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-testid="combat-posture"],
 [data-testid="combat-haste"] {
-  margin: 0.15rem 0 0;
+  margin: 0;
+  overflow: hidden;
   font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
 }
 
 [data-testid="combat-haste"][data-haste="active"] {
   color: #9eff6a;
 }
 
-[data-testid="combat-rejection"] {
-  margin: 0;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid rgb(255 158 158 / 44%);
-  color: #ffb5a8;
-  background: rgb(61 20 25 / 82%);
-  font-size: 0.78rem;
-}
-
-[data-testid="combat-rejection"][data-visible="false"] {
-  display: none;
-}
-
-[data-testid="combat-actions"] {
-  display: grid;
-  gap: 0.35rem;
-}
-
-[data-testid="combat-attack"],
-[data-testid^="combat-ability-"],
-[data-testid="combat-restart"] {
-  min-height: 2rem;
-  border: 1px solid rgb(123 161 216 / 58%);
-  border-radius: 0.35rem;
-  color: #dce6f8;
-  background: rgb(12 23 42 / 92%);
-  font: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-[data-testid="combat-attack"]:hover,
-[data-testid^="combat-ability-"]:hover,
-[data-testid="combat-restart"]:hover,
-[data-testid="combat-attack"]:focus-visible,
-[data-testid^="combat-ability-"]:focus-visible,
-[data-testid="combat-restart"]:focus-visible {
-  border-color: #9ec4ff;
-  background: rgb(45 102 170 / 78%);
-  outline: none;
-}
-
-[data-testid^="combat-ability-"] {
-  width: 100%;
-  margin-top: 0.25rem;
-}
-
-[data-testid^="combat-ability-"][aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
 [data-testid="combat-loot"] {
-  max-height: 7rem;
-  overflow: auto;
   color: #b9d9b0;
   font-variant-numeric: tabular-nums;
+}
+
+[data-testid="combat-loot-log"],
+[data-testid="combat-run-bag"] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-testid="combat-loot-log"]:empty::before {
@@ -328,9 +549,278 @@ body {
 }
 
 [data-testid="combat-run-bag"] {
-  margin-top: 0.35rem;
   color: #f1d78b;
 }
+
+/* Alerts -------------------------------------------------------------- */
+
+.cockpit__alerts {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  height: var(--cockpit-top);
+  padding-top: 0.15rem;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+[data-testid="combat-rejection"] {
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgb(255 158 158 / 44%);
+  color: #ffb5a8;
+  background: rgb(61 20 25 / 88%);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+[data-testid="combat-rejection"][data-visible="false"] {
+  display: none;
+}
+
+/* Deck ---------------------------------------------------------------- */
+
+.cockpit__deck {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--cockpit-bottom);
+
+  /*
+   * Both sides are padded by the width the d-pad claims, so the run of cells
+   * stays centred on screen and still cannot reach it. On a phone the d-pad
+   * has a row of its own and only the safe margin is left.
+   */
+  --dpad-cell: calc((var(--cockpit-bottom) - 1.1rem) / 3);
+  --deck-reserve: calc(var(--dpad-cell) * 3 + 1.1rem);
+
+  padding: 0 var(--deck-reserve);
+}
+
+.cockpit[data-cockpit-rail="off"] .cockpit__deck {
+  bottom: calc(var(--cockpit-bottom) * 0.58);
+  height: calc(var(--cockpit-bottom) * 0.42);
+  --deck-reserve: 0.75rem;
+}
+
+.cockpit-deck__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  /*
+   * Whichever runs out first: a ceiling so nine cells never sprawl on a wide
+   * monitor, the height of the band, or the width left over beside the d-pad.
+   * The width term is in viewport units on purpose -- a percentage would be a
+   * share of a box these very cells size, and the circle resolves to nothing.
+   */
+  --cell: min(
+    3.25rem,
+    calc(var(--cockpit-bottom) - 1.4rem),
+    calc((100vw - var(--deck-reserve) * 2 - 5.5rem) / 9)
+  );
+}
+
+.cockpit[data-cockpit-rail="off"] .cockpit-deck__inner {
+  --cell: min(
+    3.25rem,
+    calc(var(--cockpit-bottom) * 0.42 - 1rem),
+    calc((100vw - var(--deck-reserve) * 2 - 5rem) / 9)
+  );
+}
+
+.cockpit-deck__group {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+/*
+ * The gap is the whole separator. Group labels were refused at playtest and so
+ * was colouring button by button; this is what is left to say "these five are
+ * the rotation, these three you reach for".
+ */
+.cockpit-deck__gap {
+  width: 0.9rem;
+  flex: 0 0 auto;
+}
+
+.cockpit-deck__switch {
+  display: flex;
+  gap: 0.15rem;
+  align-items: center;
+  padding: 0.12rem;
+  border: 1px solid rgb(158 196 255 / 45%);
+  border-radius: 0.6rem;
+  background: rgb(12 23 42 / 92%);
+  pointer-events: auto;
+}
+
+.cockpit-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--cell);
+  height: var(--cell);
+  min-width: 1.5rem;
+  padding: 0;
+  border: 1px solid rgb(123 161 216 / 55%);
+  border-radius: 0.4rem;
+  color: #dce6f8;
+  background: rgb(12 23 42 / 92%);
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.cockpit-cell:hover,
+.cockpit-cell:focus-visible {
+  border-color: #9ec4ff;
+  outline: none;
+}
+
+.cockpit-cell[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/*
+ * Why a cell is dark is the game's answer, not the deck's. Challenge and Haste
+ * spend the support group and are never held by the attack group, so they carry
+ * `scope="none"` while the attack cells sit at `scope="group"` -- the two states
+ * look different on purpose, because they mean different things.
+ */
+.cockpit-cell[data-cooldown-scope="ability"] {
+  opacity: 0.62;
+}
+
+.cockpit-cell[data-cooldown-scope="group"] {
+  border-color: rgb(123 161 216 / 30%);
+  opacity: 0.45;
+}
+
+.cockpit-cell[data-cell-kind="posture"] {
+  border-color: rgb(158 196 255 / 30%);
+  border-radius: 0.5rem;
+  background: rgb(9 17 33 / 92%);
+}
+
+.cockpit-cell[data-cell-kind="posture"][aria-checked="true"] {
+  border-color: #ffd479;
+  background: rgb(48 38 16 / 92%);
+  box-shadow: inset 0 0 14px rgb(255 212 121 / 22%);
+}
+
+.cockpit-cell__key {
+  position: absolute;
+  top: 0.05rem;
+  left: 0.18rem;
+  color: #8fa6c8;
+  font-size: 0.58rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.cockpit-cell__cooldown {
+  position: absolute;
+  right: 0.18rem;
+  bottom: 0.05rem;
+  color: #f1d78b;
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Glyphs -------------------------------------------------------------- */
+
+/*
+ * The area of effect, drawn on a five-by-five grid with the knight in the
+ * middle. It is not a stand-in for the Tibia spell atlas: an icon says which
+ * spell, this says where it lands, which is the thing being chosen between.
+ */
+.cockpit-glyph {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 7%;
+  width: 68%;
+  aspect-ratio: 1;
+}
+
+.cockpit-glyph__cell {
+  border-radius: 12%;
+}
+
+.cockpit-glyph__cell[data-cell="hit"] {
+  background: #ff9c6b;
+}
+
+.cockpit-glyph__cell[data-cell="edge"] {
+  box-shadow: inset 0 0 0 1px #9ec4ff;
+}
+
+.cockpit-glyph__cell[data-cell="path"] {
+  background: rgb(158 196 255 / 45%);
+}
+
+.cockpit-glyph__cell[data-cell="origin"] {
+  background: #f4f7ff;
+}
+
+.cockpit-glyph[data-glyph-mark="cross"]
+  .cockpit-glyph__cell[data-cell="origin"] {
+  border-radius: 0;
+  background:
+    linear-gradient(#8ef0a8 0 0) center / 100% 34% no-repeat,
+    linear-gradient(#8ef0a8 0 0) center / 34% 100% no-repeat;
+}
+
+.cockpit-glyph[data-glyph-mark="taunt"]
+  .cockpit-glyph__cell[data-cell="origin"] {
+  background: #ffd479;
+}
+
+.cockpit-glyph[data-glyph-mark="stance-open"]
+  .cockpit-glyph__cell[data-cell="hit"],
+.cockpit-glyph[data-glyph-mark="stance-open"]
+  .cockpit-glyph__cell[data-cell="origin"] {
+  background: #ff8a8a;
+}
+
+.cockpit-glyph[data-glyph-mark="stance-closed"]
+  .cockpit-glyph__cell[data-cell="origin"] {
+  background: #9ec4ff;
+}
+
+.cockpit-glyph[data-glyph-mark="stance-closed"]
+  .cockpit-glyph__cell[data-cell="edge"] {
+  box-shadow: inset 0 0 0 1px #9ec4ff;
+  background: rgb(158 196 255 / 22%);
+}
+
+.cockpit-glyph[data-glyph-mark="trail"]
+  .cockpit-glyph__cell[data-cell="origin"] {
+  background: #9eff6a;
+}
+
+.cockpit-glyph[data-glyph-mark="quake"] .cockpit-glyph__cell[data-cell="hit"] {
+  background: rgb(255 156 107 / 55%);
+}
+
+.cockpit-glyph[data-glyph-mark="throw"] .cockpit-glyph__cell[data-cell="edge"] {
+  box-shadow: inset 0 0 0 1px #ff9c6b;
+}
+
+/* Death --------------------------------------------------------------- */
 
 [data-testid="combat-death-overlay"] {
   position: fixed;
@@ -360,75 +850,28 @@ body {
   text-transform: uppercase;
 }
 
-@media (max-width: 600px) {
-  [data-testid="combat-hud"] {
-    top: max(0.5rem, env(safe-area-inset-top));
-    right: max(0.5rem, env(safe-area-inset-right));
-    left: max(0.5rem, env(safe-area-inset-left));
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.25rem;
-  }
+[data-testid="combat-restart"] {
+  min-height: 2rem;
+  border: 1px solid rgb(123 161 216 / 58%);
+  border-radius: 0.35rem;
+  color: #dce6f8;
+  background: rgb(12 23 42 / 92%);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
 
-  [data-testid="combat-player"],
-  [data-testid="combat-target"],
-  [data-testid="combat-actions"],
-  [data-testid="combat-loot"] {
-    padding: 0.3rem 0.4rem;
-  }
-
-  [data-testid="combat-actions"],
-  [data-testid="combat-loot"] {
-    grid-column: 1 / -1;
-  }
-
-  [data-testid="combat-rejection"] {
-    grid-column: 1 / -1;
-    padding: 0.2rem 0.35rem;
-    font-size: 0.68rem;
-  }
-
-  [data-testid="combat-actions"] {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.25rem;
-  }
-
-  [data-testid="combat-abilities"] {
-    display: contents;
-  }
-
-  [data-testid="combat-attack"],
-  [data-testid^="combat-ability-"] {
-    min-width: 0;
-    min-height: 1.75rem;
-    margin-top: 0;
-    padding: 0.15rem 0.2rem;
-    overflow: hidden;
-    font-size: 0.68rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  [data-testid="combat-loot"] {
-    display: flex;
-    gap: 0.5rem;
-    max-height: 2rem;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  [data-testid="combat-loot-log"],
-  [data-testid="combat-run-bag"] {
-    min-width: 0;
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+[data-testid="combat-restart"]:hover,
+[data-testid="combat-restart"]:focus-visible {
+  border-color: #9ec4ff;
+  background: rgb(45 102 170 / 78%);
+  outline: none;
 }
 
 .hunt-dpad {
   display: grid;
-  grid-template-columns: repeat(3, clamp(2.35rem, 10vw, 3.25rem));
-  grid-template-rows: repeat(3, clamp(2.35rem, 10vw, 3.25rem));
+  grid-template-columns: repeat(3, var(--dpad-cell));
+  grid-template-rows: repeat(3, var(--dpad-cell));
   gap: 0.25rem;
   pointer-events: auto;
   touch-action: none;

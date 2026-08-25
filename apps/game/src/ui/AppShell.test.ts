@@ -11,7 +11,10 @@ class TestElement {
   readonly children: TestElement[] = [];
   readonly attributes = new Map<string, string>();
   readonly listeners = new Map<string, Set<() => void>>();
+  readonly style = { setProperty: (): void => undefined };
+  parent: TestElement | null = null;
   textContent = '';
+  className = '';
   disabled = false;
 
   constructor(
@@ -20,12 +23,21 @@ class TestElement {
   ) {}
 
   append(...children: TestElement[]) {
+    for (const child of children) child.parent = this;
     this.children.push(...children);
   }
 
   replaceChildren(...children: TestElement[]) {
+    for (const child of children) child.parent = this;
     this.children.length = 0;
     this.children.push(...children);
+  }
+
+  remove() {
+    const siblings = this.parent?.children;
+    const index = siblings?.indexOf(this) ?? -1;
+    if (siblings !== undefined && index >= 0) siblings.splice(index, 1);
+    this.parent = null;
   }
 
   setAttribute(name: string, value: string) {
@@ -55,6 +67,11 @@ class TestElement {
 
 class TestDocument {
   createElement(tagName: string) {
+    return new TestElement(tagName, this);
+  }
+
+  /** The vital arcs are SVG, which `createElement` cannot make. */
+  createElementNS(_namespace: string, tagName: string) {
     return new TestElement(tagName, this);
   }
 }

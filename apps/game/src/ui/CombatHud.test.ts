@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { EntityId } from '../../../../packages/contracts/src/index.ts';
-import type { CombatViewState } from '../hunt/CombatViewModel';
+import type {
+  CombatAbilityView,
+  CombatViewState,
+} from '../hunt/CombatViewModel';
 
 import { mountCombatHud } from './CombatHud';
 
 class FakeDocument {
   createElement(tagName: string): FakeElement {
+    return new FakeElement(this, tagName);
+  }
+
+  /** The vital arcs are SVG, which `createElement` cannot make. */
+  createElementNS(_namespace: string, tagName: string): FakeElement {
     return new FakeElement(this, tagName);
   }
 }
@@ -14,7 +22,10 @@ class FakeElement {
   readonly children: FakeElement[] = [];
   readonly attributes = new Map<string, string>();
   readonly listeners = new Map<string, Set<() => void>>();
+  readonly style = { setProperty: (): void => undefined };
+  parent: FakeElement | null = null;
   textContent = '';
+  className = '';
   disabled = false;
 
   constructor(
@@ -22,11 +33,20 @@ class FakeElement {
     readonly tagName: string,
   ) {}
 
+  remove(): void {
+    const siblings = this.parent?.children;
+    const index = siblings?.indexOf(this) ?? -1;
+    if (siblings !== undefined && index >= 0) siblings.splice(index, 1);
+    this.parent = null;
+  }
+
   append(...children: FakeElement[]): void {
+    for (const child of children) child.parent = this;
     this.children.push(...children);
   }
 
   replaceChildren(...children: FakeElement[]): void {
+    for (const child of children) child.parent = this;
     this.children.splice(0, this.children.length, ...children);
   }
 
@@ -76,6 +96,31 @@ class FakeElement {
   }
 }
 
+/**
+ * The catalog's own grouping: the five attack spells and Wound Cleansing spend
+ * group 0, the postures and the two support spells group 1, and the postures
+ * also spend group 2. The deck has to project this rather than guess it, so the
+ * fixture carries the real thing.
+ */
+function cooldownGroupsFor(
+  abilityId: string,
+  remainingGroupCooldownTicks = 0,
+): Pick<
+  CombatAbilityView,
+  | 'primaryCooldownGroup'
+  | 'secondaryCooldownGroup'
+  | 'remainingGroupCooldownTicks'
+> {
+  const support = ['blood-rage', 'protector', 'challenge', 'haste'];
+  const stance = ['blood-rage', 'protector'];
+
+  return {
+    primaryCooldownGroup: support.includes(abilityId) ? 1 : 0,
+    secondaryCooldownGroup: stance.includes(abilityId) ? 2 : null,
+    remainingGroupCooldownTicks,
+  };
+}
+
 function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
   return {
     tick: 9,
@@ -104,6 +149,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 2,
         available: false,
         active: false,
+        ...cooldownGroupsFor('berserk'),
       },
       {
         index: 1,
@@ -114,6 +160,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 0,
         available: true,
         active: false,
+        ...cooldownGroupsFor('brutal-strike'),
       },
       {
         index: 2,
@@ -124,6 +171,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 0,
         available: true,
         active: false,
+        ...cooldownGroupsFor('wound-cleansing'),
       },
       {
         index: 3,
@@ -134,6 +182,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 0,
         available: true,
         active: false,
+        ...cooldownGroupsFor('groundshaker'),
       },
       {
         index: 4,
@@ -144,6 +193,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 0,
         available: true,
         active: false,
+        ...cooldownGroupsFor('whirlwind-throw'),
       },
       {
         index: 5,
@@ -154,6 +204,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 0,
         available: true,
         active: true,
+        ...cooldownGroupsFor('blood-rage'),
       },
       {
         index: 6,
@@ -164,7 +215,13 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
         remainingCooldownTicks: 40,
         available: false,
         active: false,
+        ...cooldownGroupsFor('protector'),
       },
+    ],
+    cooldownGroups: [
+      { group: 0, remainingTicks: 2 },
+      { group: 1, remainingTicks: 0 },
+      { group: 2, remainingTicks: 0 },
     ],
     playerPosture: { abilityId: 'blood-rage', label: 'Blood Rage' },
     playerHaste: null,

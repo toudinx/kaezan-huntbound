@@ -1,9 +1,27 @@
 import { TICK_DURATION_MS } from '../../../../packages/contracts/src/index.ts';
-import type {
-  CombatAbilityView,
-  CombatViewState,
-} from '../hunt/CombatViewModel';
+import type { CombatViewState } from '../hunt/CombatViewModel';
+import { mountActionDeck } from './cockpit/ActionDeck';
+import { createVitalArc, type VitalArc } from './cockpit/VitalArcs';
 
+/**
+ * Orchestrates the cockpit's combat surfaces.
+ *
+ * This used to be the whole HUD: five panels stacked in a 16 rem column pinned
+ * to the top-right corner, with the nine actions as a flat list of full-width
+ * buttons in catalog order. The vitals are now curved gauges (`VitalArcs`), the
+ * actions a grouped deck (`ActionDeck`), and each surface sits in a band of the
+ * frame `CockpitLayout` measures. What is left here is wiring them to one view
+ * state.
+ *
+ * The bands are placed from the `--cockpit-*` custom properties the frame
+ * publishes, which reach this subtree by inheritance. Nothing here decides a
+ * measure of its own: two numbers for one edge is the defect this task exists
+ * to avoid.
+ *
+ * Target, loot and the death overlay keep their current shape. PB-08-09 turns
+ * the first two into real rail panels, once there is map and asset work to back
+ * them.
+ */
 export interface CombatHud {
   render(state: CombatViewState): void;
   destroy(): void;
@@ -20,6 +38,12 @@ function createElement(
 ): HTMLElement {
   const element = document.createElement(tagName);
   element.setAttribute('data-testid', testId);
+  return element;
+}
+
+function band(document: Document, className: string): HTMLElement {
+  const element = document.createElement('div');
+  element.className = className;
   return element;
 }
 
@@ -41,43 +65,6 @@ function updateBar(
   element.textContent = `${label}: ${value}/${maximum}`;
 }
 
-function createAbilityButton(
-  document: Document,
-  ability: CombatAbilityView,
-): HTMLButtonElement {
-  const button = createElement(
-    document,
-    'button',
-    `combat-ability-${ability.index}`,
-  ) as HTMLButtonElement;
-  button.type = 'button';
-  button.setAttribute('data-hunt-action', `ability:${ability.index}`);
-  return button;
-}
-
-function updateAbilityButton(
-  button: HTMLButtonElement,
-  ability: CombatAbilityView,
-): void {
-  button.setAttribute(
-    'aria-label',
-    `${ability.label} (${ability.resourceCost} mana)`,
-  );
-  button.setAttribute('aria-disabled', String(!ability.available));
-  button.setAttribute(
-    'data-cooldown-ticks',
-    String(ability.remainingCooldownTicks),
-  );
-  button.setAttribute('aria-pressed', String(ability.active));
-  button.setAttribute('data-active', String(ability.active));
-  button.disabled = !ability.available;
-  const text =
-    ability.remainingCooldownTicks > 0
-      ? `${ability.index + 1}. ${ability.label} · ${ability.remainingCooldownTicks}`
-      : `${ability.index + 1}. ${ability.label}`;
-  if (button.textContent !== text) button.textContent = text;
-}
-
 function postureDataValue(
   posture: CombatViewState['playerPosture'],
 ): 'blood-rage' | 'protector' | 'none' {
@@ -94,44 +81,56 @@ export function mountCombatHud(
   const document = root.ownerDocument;
   const hud = createElement(document, 'section', 'combat-hud');
   hud.setAttribute('aria-label', 'Combat HUD');
+  hud.className = 'combat-hud';
 
-  const playerPanel = createElement(document, 'section', 'combat-player');
-  playerPanel.setAttribute('aria-label', 'Player status');
-  const playerHealth = createElement(document, 'div', 'combat-player-health');
-  const playerMana = createElement(document, 'div', 'combat-player-mana');
-  playerPanel.append(playerHealth, playerMana);
+  const vitalsLeft = band(document, 'cockpit__vitals cockpit__vitals--left');
+  const vitalsRight = band(document, 'cockpit__vitals cockpit__vitals--right');
+  const rail = band(document, 'cockpit__rail');
+  const alerts = band(document, 'cockpit__alerts');
+  const deckBand = band(document, 'cockpit__deck');
+
+  const health: VitalArc = createVitalArc(document, {
+    testId: 'combat-player-health',
+    label: 'Health',
+    side: 'left',
+    tone: 'health',
+  });
+  const mana: VitalArc = createVitalArc(document, {
+    testId: 'combat-player-mana',
+    label: 'Mana',
+    side: 'right',
+    tone: 'mana',
+  });
+  vitalsLeft.append(health.element);
+  vitalsRight.append(mana.element);
 
   const targetPanel = createElement(document, 'section', 'combat-target');
+  targetPanel.className = 'cockpit-panel';
   targetPanel.setAttribute('aria-label', 'Target status');
   const targetName = createElement(document, 'p', 'combat-target-name');
   const targetHealth = createElement(document, 'div', 'combat-target-health');
   targetPanel.append(targetName, targetHealth);
-  const rejection = createElement(document, 'p', 'combat-rejection');
-  rejection.setAttribute('aria-live', 'polite');
 
-  const actions = createElement(document, 'section', 'combat-actions');
-  actions.setAttribute('aria-label', 'Combat actions');
-  const attack = createElement(
-    document,
-    'button',
-    'combat-attack',
-  ) as HTMLButtonElement;
-  attack.type = 'button';
-  attack.setAttribute('data-hunt-action', 'attack');
-  attack.setAttribute('aria-label', 'Attack selected target');
-  attack.textContent = 'Attack';
+  const modes = createElement(document, 'section', 'combat-modes');
+  modes.className = 'cockpit-panel';
+  modes.setAttribute('aria-label', 'Active modes');
   const posture = createElement(document, 'p', 'combat-posture');
   posture.setAttribute('aria-live', 'polite');
   const haste = createElement(document, 'p', 'combat-haste');
   haste.setAttribute('aria-live', 'polite');
-  const abilities = createElement(document, 'div', 'combat-abilities');
-  actions.append(attack, posture, haste, abilities);
+  modes.append(posture, haste);
 
   const lootPanel = createElement(document, 'section', 'combat-loot');
+  lootPanel.className = 'cockpit-panel';
   lootPanel.setAttribute('aria-label', 'Loot');
   const lootLog = createElement(document, 'div', 'combat-loot-log');
   const runBag = createElement(document, 'div', 'combat-run-bag');
   lootPanel.append(lootLog, runBag);
+  rail.append(targetPanel, modes, lootPanel);
+
+  const rejection = createElement(document, 'p', 'combat-rejection');
+  rejection.setAttribute('aria-live', 'polite');
+  alerts.append(rejection);
 
   const deathOverlay = createElement(
     document,
@@ -151,40 +150,23 @@ export function mountCombatHud(
   restart.textContent = 'Restart hunt';
   deathOverlay.append(deathMessage, restart);
 
-  hud.append(
-    playerPanel,
-    targetPanel,
-    rejection,
-    actions,
-    lootPanel,
-    deathOverlay,
-  );
+  hud.append(vitalsLeft, vitalsRight, rail, alerts, deckBand, deathOverlay);
   root.replaceChildren(hud);
+
+  const deck = mountActionDeck(deckBand);
 
   const onRestart = (): void => {
     options.onRestart?.();
   };
   restart.addEventListener('click', onRestart);
 
-  let abilityButtons: HTMLButtonElement[] = [];
-
   const render = (state: CombatViewState): void => {
     if (state.player === null) {
-      updateBar(playerHealth, 'Health', 0, 0);
-      updateBar(playerMana, 'Mana', 0, 0);
+      health.update(0, 0);
+      mana.update(0, 0);
     } else {
-      updateBar(
-        playerHealth,
-        'Health',
-        state.player.health,
-        state.player.maxHealth,
-      );
-      updateBar(
-        playerMana,
-        'Mana',
-        state.player.resource,
-        state.player.maxResource,
-      );
+      health.update(state.player.health, state.player.maxHealth);
+      mana.update(state.player.resource, state.player.maxResource);
     }
 
     targetName.textContent =
@@ -229,19 +211,7 @@ export function mountCombatHud(
         ? 'Haste: Off'
         : `Haste: ${String(Math.ceil((state.playerHaste.remainingTicks * TICK_DURATION_MS) / 1000))}s`;
 
-    // The scene publishes a tick every frame, so this runs ~60 times a second.
-    // Rebuilding the buttons here dropped frames and destroyed the very node
-    // the player was pressing; they are created once and updated in place.
-    if (abilityButtons.length !== state.abilities.length) {
-      abilityButtons = state.abilities.map((ability) =>
-        createAbilityButton(document, ability),
-      );
-      abilities.replaceChildren(...abilityButtons);
-    }
-    state.abilities.forEach((ability, index) => {
-      const button = abilityButtons[index];
-      if (button !== undefined) updateAbilityButton(button, ability);
-    });
+    deck.render(state);
 
     const lootText = state.lootLog
       .map(
@@ -264,6 +234,7 @@ export function mountCombatHud(
       if (destroyed) return;
       destroyed = true;
       restart.removeEventListener('click', onRestart);
+      deck.destroy();
       root.replaceChildren();
     },
   };

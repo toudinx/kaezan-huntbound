@@ -873,6 +873,81 @@ describe('CombatViewModel', () => {
     });
   });
 
+  it('keeps the support group out of the attack cooldown, and the reverse', () => {
+    // The one the HUD is most likely to get wrong. Challenge and Haste spend
+    // the support group; the five attack spells and Wound Cleansing spend the
+    // attack group. A deck that dimmed one run because the other was spent
+    // would be describing a rule the kernel does not have, so the view model
+    // has to say which group each ability owes and what that group still owes.
+    const spawnPlayer = event(0, {
+      type: 'actor/spawned',
+      entityId: 1 as EntityId,
+      blueprintId: 'player',
+      position: { x: 5, y: 5, z: 8 },
+      facing: 's',
+    });
+    const castAttack = createDefaultCombatViewModel();
+
+    castAttack.handle([
+      spawnPlayer,
+      event(10, {
+        type: 'ability/cast',
+        entityId: 1 as EntityId,
+        abilityIndex: 0,
+        targetEntityId: null,
+      }),
+    ]);
+    castAttack.setTick(11);
+    const afterAttack = castAttack.snapshot();
+
+    expect(afterAttack.abilities[1]).toMatchObject({
+      abilityId: 'brutal-strike',
+      primaryCooldownGroup: 0,
+      remainingGroupCooldownTicks: 39,
+      available: false,
+    });
+    for (const index of [7, 8]) {
+      expect(afterAttack.abilities[index]).toMatchObject({
+        primaryCooldownGroup: 1,
+        remainingGroupCooldownTicks: 0,
+        remainingCooldownTicks: 0,
+        available: true,
+      });
+    }
+    expect(afterAttack.cooldownGroups).toEqual([
+      { group: 0, remainingTicks: 39 },
+      { group: 1, remainingTicks: 0 },
+      { group: 2, remainingTicks: 0 },
+    ]);
+
+    const castSupport = createDefaultCombatViewModel();
+
+    castSupport.handle([
+      spawnPlayer,
+      event(10, {
+        type: 'ability/cast',
+        entityId: 1 as EntityId,
+        abilityIndex: 8,
+        targetEntityId: null,
+      }),
+    ]);
+    castSupport.setTick(11);
+    const afterSupport = castSupport.snapshot();
+
+    expect(afterSupport.abilities[7]).toMatchObject({
+      abilityId: 'challenge',
+      remainingGroupCooldownTicks: 39,
+      available: false,
+    });
+    for (const index of [0, 1, 2, 3, 4]) {
+      expect(afterSupport.abilities[index]).toMatchObject({
+        primaryCooldownGroup: 0,
+        remainingGroupCooldownTicks: 0,
+        remainingCooldownTicks: 0,
+      });
+    }
+  });
+
   it('uses explicit scenario conditions in the hunt combat model instead of the compatibility fallback', () => {
     const bloodRageFallback = DEFAULT_COMBAT_FALLBACK_CONDITIONS[0];
     const protectorFallback = DEFAULT_COMBAT_FALLBACK_CONDITIONS[1];

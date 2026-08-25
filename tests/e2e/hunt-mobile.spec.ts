@@ -13,6 +13,14 @@ import {
 
 const mobile = { width: 390, height: 844 };
 
+/**
+ * The play area the cockpit may never shrink past, on the tightest viewport
+ * ADR-001 makes mandatory. `apps/game/src/hunt/playfieldViewport.ts` declares
+ * the same two numbers and is the only place the frame reads them from.
+ */
+const MIN_FREE_WIDTH = 260;
+const MIN_FREE_HEIGHT = 320;
+
 interface Rect {
   readonly x: number;
   readonly y: number;
@@ -91,39 +99,45 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
     expect(byKeyboard).toEqual({ dx: 0, dy: 1, dz: 0 });
     expect(byDpad).toEqual(byKeyboard);
   });
-
-  test('keeps the centre and lower middle of the playfield clear', async ({
+  /**
+   * ADR-001: "Centro e lower-middle do playfield permanecem livres."
+   *
+   * This test used to read "playfield" as the whole canvas and check that two
+   * ninths of it stayed clear, with a 13 px budget for the d-pad and the
+   * viewport panel grazing the bottom-middle third. Under that reading no
+   * frame is possible at all, and what the shell had instead was five boxes
+   * pinned to five corners -- which is what the playtest refused.
+   *
+   * The user reinterpreted it on 2026-08-25: the playfield is the *visible*
+   * play area, and the frame is what says where it ends. So the contract is
+   * stronger now, not looser. It is no longer two ninths but the whole free
+   * rectangle; no longer a 13 px allowance but none at all; and the free
+   * rectangle has to clear a declared minimum, so the frame cannot buy itself
+   * room by shrinking the game.
+   */
+  test('keeps the whole play area clear of the cockpit frame', async ({
     page,
   }) => {
     await waitForHunt(page);
 
-    const playfield = await page.locator('#game-root canvas').boundingBox();
+    const canvas = await page.locator('#game-root canvas').boundingBox();
+    const free = await page
+      .locator('[data-testid="cockpit-playfield"]')
+      .boundingBox();
 
-    expect(playfield).not.toBeNull();
-    if (playfield === null) return;
+    expect(canvas).not.toBeNull();
+    expect(free).not.toBeNull();
+    if (canvas === null || free === null) return;
 
-    // ADR-001: "Centro e lower-middle do playfield permanecem livres." The ADR
-    // names the two regions but not their geometry, so this reads them as the
-    // middle and bottom-middle cells of the playfield's three-by-three grid.
-    const third = { width: playfield.width / 3, height: playfield.height / 3 };
-    const centre: Rect = {
-      x: playfield.x + third.width,
-      y: playfield.y + third.height,
-      ...third,
-    };
-    const lowerMiddle: Rect = {
-      x: playfield.x + third.width,
-      y: playfield.y + third.height * 2,
-      ...third,
-    };
-    // The centered camera keeps the player in the middle of the playfield, so
-    // the strip the player and the tiles below it occupy is the middle fifth.
-    const lowerMiddleCore: Rect = {
-      x: playfield.x + playfield.width * 0.4,
-      y: lowerMiddle.y,
-      width: playfield.width * 0.2,
-      height: lowerMiddle.height,
-    };
+    // Declared here rather than imported, so the frame cannot widen a band and
+    // move the goalposts in the same commit. `playfieldViewport.ts` holds the
+    // same two numbers and this is what holds it to them.
+    expect(free.width).toBeGreaterThanOrEqual(MIN_FREE_WIDTH);
+    expect(free.height).toBeGreaterThanOrEqual(MIN_FREE_HEIGHT);
+    expect(free.x).toBeGreaterThanOrEqual(canvas.x);
+    expect(free.y).toBeGreaterThanOrEqual(canvas.y);
+    expect(free.x + free.width).toBeLessThanOrEqual(canvas.x + canvas.width);
+    expect(free.y + free.height).toBeLessThanOrEqual(canvas.y + canvas.height);
 
     // Only chrome that actually paints or captures pointers can obstruct the
     // playfield; the transparent, pointer-events:none layout containers cannot.
@@ -166,32 +180,10 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
     });
 
     expect(overlays.length).toBeGreaterThan(0);
-    expect(overlays.filter((box) => intersects(box, centre))).toEqual([]);
-    expect(overlays.filter((box) => intersects(box, lowerMiddleCore))).toEqual(
-      [],
-    );
-
-    // The bottom-middle third is not fully clear at 390 x 844: the bottom-left
-    // d-pad and the bottom-right viewport panel graze its outer edges. Measured
-    // worst case is 12.3 px of horizontal bite; every wider viewport is clear.
-    // Closing it means shrinking both HUD corners, which is a layout decision
-    // this task does not own, so it is reported and budgeted instead of tuned
-    // away. See docs/playbooks/PB-04/artifacts/browser-qa.md, finding W9.
-    const bite = Math.max(
-      0,
-      ...overlays
-        .filter((box) => intersects(box, lowerMiddle))
-        .map(
-          (box) =>
-            Math.min(box.x + box.width, lowerMiddle.x + lowerMiddle.width) -
-            Math.max(box.x, lowerMiddle.x),
-        ),
-    );
-
-    expect(bite).toBeLessThanOrEqual(13);
+    expect(overlays.filter((box) => intersects(box, free))).toEqual([]);
   });
 
-  test('keeps the player centered while the hunt moves on a phone viewport', async ({
+  test('centres the player in the play area while the hunt moves', async ({
     page,
   }) => {
     let state = await waitForHunt(page);
@@ -211,8 +203,24 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
     ).toBeGreaterThanOrEqual(2);
 
     const canvas = await page.locator('#game-root canvas').boundingBox();
+    const free = await page
+      .locator('[data-testid="cockpit-playfield"]')
+      .boundingBox();
     expect(canvas).not.toBeNull();
-    if (canvas === null) return;
+    expect(free).not.toBeNull();
+    if (canvas === null || free === null) return;
+
+    const freeCentreX = free.x + free.width / 2;
+    const freeCentreY = free.y + free.height / 2;
+
+    // The deck band is always taller than the telemetry band, so the free area
+    // never shares the canvas centre vertically. Asserting that first is what
+    // makes the rest a real check: without it, "the player is near the middle
+    // of the free area" would still pass on a camera that never moved.
+    expect(
+      Math.abs(freeCentreY - (canvas.y + canvas.height / 2)),
+      'the free area has to sit off the canvas centre for this to prove anything',
+    ).toBeGreaterThan(1);
 
     for (const sample of samples) {
       const player = requirePlayer(sample);
@@ -224,22 +232,31 @@ test.describe('the first hunt is playable by touch on a phone viewport', () => {
       expect(sample.camera.zoom).toBeGreaterThan(1);
 
       // Phaser zooms around the camera midpoint, so `scroll` is in unzoomed
-      // viewport units and the world point under the centre is
-      // `scroll + viewport / 2`. Converting with `(world - scroll) * zoom`
-      // assumes the scroll is the top-left of the zoomed view and hides a
-      // camera that is off by `viewport/2 - viewport/(2*zoom)`.
+      // renderer units and the world point under the centre is
+      // `scroll + viewport / 2`. The renderer's backing store is capped, so
+      // those units are not the CSS box the frame is measured in either --
+      // hence the second conversion. Skipping it hides a camera that is off by
+      // exactly the cap ratio.
       const worldCentreX = sample.camera.scrollX + sample.camera.width / 2;
       const worldCentreY = sample.camera.scrollY + sample.camera.height / 2;
-      const centreX = canvas.x + canvas.width / 2;
-      const centreY = canvas.y + canvas.height / 2;
+      const cssPerRender = {
+        x: canvas.width / sample.camera.width,
+        y: canvas.height / sample.camera.height,
+      };
       const screenX =
-        centreX + (player.sprite.x - worldCentreX) * sample.camera.zoom;
+        canvas.x +
+        (sample.camera.width / 2 +
+          (player.sprite.x - worldCentreX) * sample.camera.zoom) *
+          cssPerRender.x;
       const screenY =
-        centreY + (player.sprite.y - worldCentreY) * sample.camera.zoom;
-      const screenTile = sample.camera.height / sample.camera.visibleRows;
+        canvas.y +
+        (sample.camera.height / 2 +
+          (player.sprite.y - worldCentreY) * sample.camera.zoom) *
+          cssPerRender.y;
+      const screenTile = canvas.height / sample.camera.visibleRows;
 
-      expect(Math.abs(screenX - centreX)).toBeLessThanOrEqual(screenTile);
-      expect(Math.abs(screenY - centreY)).toBeLessThanOrEqual(screenTile);
+      expect(Math.abs(screenX - freeCentreX)).toBeLessThanOrEqual(screenTile);
+      expect(Math.abs(screenY - freeCentreY)).toBeLessThanOrEqual(screenTile);
     }
   });
 });

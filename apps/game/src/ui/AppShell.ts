@@ -7,6 +7,7 @@ import type { InputMap } from '../input/InputMap';
 import type { ShellPhase, ShellSnapshot } from '../runtime/ShellSnapshot';
 import type { SaveStateSource } from '../save/SaveState';
 import { type CombatHud, mountCombatHud } from './CombatHud';
+import { type Cockpit, mountCockpit } from './cockpit/CockpitLayout';
 import { mountDpad } from './Dpad';
 import {
   type InventoryPanel,
@@ -99,8 +100,19 @@ export function mountAppShell(
 
   header.append(status);
   viewportPanel.append(viewport, frameRate);
-  shell.append(header, viewportPanel, controls, combatRoot, inventoryRoot);
   root.replaceChildren(shell);
+
+  /**
+   * The five panels used to be absolutely positioned siblings, each pinned to a
+   * corner it had picked for itself. They are bands of one frame now: the top
+   * band carries the readouts and the save strip, the bottom-left corner of the
+   * deck band carries the d-pad, and `combatRoot` overlays the whole frame so
+   * the combat surfaces can inherit its measures.
+   */
+  const cockpit: Cockpit = mountCockpit(shell);
+  cockpit.top.append(header, viewportPanel, inventoryRoot);
+  cockpit.movement.append(controls);
+  cockpit.element.append(combatRoot);
 
   const dpad = options.input ? mountDpad(controls, options.input) : undefined;
   const combatViewModel =
@@ -230,6 +242,7 @@ export function mountAppShell(
       unsubscribeTickRate();
       unsubscribe();
       dpad?.destroy();
+      cockpit.destroy();
       unsubscribeCombatEvents?.();
       unsubscribeCombatTick?.();
       unsubscribeTargetSelection?.();

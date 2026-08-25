@@ -82,6 +82,7 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { huntFloorSync } from '../../hunt/huntFloorSync';
+import { playfieldCameraOffset } from '../../hunt/playfieldViewport';
 import { presentationStepCooldownTicks } from '../../hunt/presentationStepCooldown';
 import {
   resolveTargetRing,
@@ -1616,9 +1617,16 @@ export class HuntScene extends Phaser.Scene {
           y: this.options.hunt.playerStart.y + 0.5,
         };
 
+    // ADR-001 keeps the centre and lower middle of the *playfield* clear, and
+    // the playfield is the visible play area, not the canvas: the cockpit frame
+    // is what says where it ends. Centring on the canvas would leave the knight
+    // behind the deck. The offset moves the followed point instead of the
+    // scroll so the ground-box clamp still runs on the view that is actually
+    // shown.
+    const framing = this.playfieldOffset();
     controller.follow({
-      x: position.x * this.tileSize,
-      y: position.y * this.tileSize,
+      x: position.x * this.tileSize - framing.x,
+      y: position.y * this.tileSize - framing.y,
     });
     // The shake is added before the clamp, not after it: an impulse that
     // nudged the camera past the edge would expose the void for exactly the
@@ -1630,6 +1638,32 @@ export class HuntScene extends Phaser.Scene {
       controller.scrollY + shake.y,
     );
     this.cameras.main.setScroll(scroll.scrollX, scroll.scrollY);
+  }
+
+  /**
+   * World pixels between the canvas centre and the centre of the free area.
+   *
+   * The frame is measured in CSS pixels while the camera scrolls in the
+   * renderer's own, which the resolution cap can make smaller, so the offset is
+   * converted rather than copied. A zero-sized canvas -- the first frames
+   * before layout -- has no free area to speak of and gets no offset.
+   */
+  private playfieldOffset(): { readonly x: number; readonly y: number } {
+    const zoom = this.cameras.main.zoom;
+    const render = { width: this.scale.width, height: this.scale.height };
+    const viewport = canvasViewportBox(this.game.canvas, render);
+
+    if (
+      !(zoom > 0) ||
+      !(viewport.width > 0) ||
+      !(viewport.height > 0) ||
+      !(render.width > 0) ||
+      !(render.height > 0)
+    ) {
+      return { x: 0, y: 0 };
+    }
+
+    return playfieldCameraOffset({ viewport, render, zoom });
   }
 
   private framedScroll(
