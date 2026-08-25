@@ -53,7 +53,7 @@ referências:
 
 ## Bloqueios
 
-Bloqueios abertos: B5 e B6.
+Bloqueios abertos: B5, B6 e B7.
 
 - ~~**B3 — aberto em PB-06-02.**~~ **Recuperado nesta sessão:** `qa:browser` passou 34/34,
   incluindo `hunt-play.spec.ts:366`; nenhuma alteração foi feita em `apps/game`.
@@ -66,6 +66,16 @@ Bloqueios abertos: B5 e B6.
 
 - **B6 — aberto em PB-06-09.** Reload em `1920x1080` passou 9/10 sem retry; uma execução falhou em
   `tests/e2e/support/combatDriver.ts:373` com `Target cycling did not select a living combat target`.
+
+- **B7 — aberto em 2026-08-25.** A fixture de save do PB-06 é uma run morta: o log de comandos do
+  PB-05 mata o jogador no tick 351 e `CHECKPOINT_TICK` está em 1400, então o snapshot persistido não
+  contém o jogador. A `main` mitiga o sintoma — `CombatViewModel` levanta o overlay de morte numa run
+  retomada sem o jogador no roster, então o restart continua alcançável. Recusar a retomada na
+  origem (`decideResume` descartando sessão cujo snapshot não tem o blueprint do jogador) fica
+  pendente: derruba 8 specs de save-persistence que hoje afirmam `Run resumed` sobre essa fixture.
+  Fechar exige mover `CHECKPOINT_TICK` para antes de 351 e regenerar o golden do PB-05 — decisão do
+  dono, adiada por ele em 2026-08-25. Implementação e justificativa completas em `c97a22c`
+  (recuperável pelo reflog; branch removida a pedido).
 
 - ~~**B1:** PB-05 não fechou pela auditoria PB-05-12.~~ **Removido em 2026-08-18.** A auditoria
   deixou de ser gate bloqueante (`docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, "Fechamento de
