@@ -225,6 +225,44 @@ CONST_ANI_WEAPONTYPE = 0xFE,
         sourceFile: 'data/items/items.xml',
       },
     ],
+    postures: [
+      {
+        abilityId: 'blood-rage',
+        conditionId: 'blood-rage',
+        displayName: 'Blood Rage',
+        level: 20,
+        mana: 20,
+        skillIndex: 2,
+        skillModifierPermille: 250,
+        damageReceivedPermille: 150,
+        damageDealtPermille: 0,
+        shieldingPermille: 0,
+        source: {
+          provider: 'TibiaWiki',
+          version: '15.25.3a4a52',
+          divergence:
+            'Uses the 2026 stance values because the Canary snapshot predates toggle stances.',
+        },
+      },
+      {
+        abilityId: 'protector',
+        conditionId: 'protector',
+        displayName: 'Protector',
+        level: 20,
+        mana: 20,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageReceivedPermille: -150,
+        damageDealtPermille: -150,
+        shieldingPermille: 300,
+        source: {
+          provider: 'TibiaWiki',
+          version: '15.25.3a4a52',
+          divergence:
+            'Shielding stays declarative until PB-11 adds armor and shielding resolution.',
+        },
+      },
+    ],
     sourceFiles: Object.entries(snapshotFiles).map(
       ([relativePath, contents]) => ({
         relativePath,
