@@ -75,6 +75,78 @@ async function writeSaveDocument(
   }, document);
 }
 
+async function writeSaveDocumentAndObserveComplete(
+  page: Page,
+  document: Record<string, unknown>,
+): Promise<boolean> {
+  return page.evaluate(async (nextDocument) => {
+    const target = globalThis as typeof globalThis & {
+      __huntboundSaveProbe?: SaveProbe;
+    };
+    const probe = target.__huntboundSaveProbe;
+    if (probe === undefined) {
+      throw new Error('Save probe is not installed in the test browser.');
+    }
+
+    const originalTransaction = IDBDatabase.prototype
+      .transaction as unknown as (
+      this: IDBDatabase,
+      storeNames: string | string[],
+      mode?: IDBTransactionMode,
+      options?: IDBTransactionOptions,
+    ) => IDBTransaction;
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      IDBDatabase.prototype,
+      'transaction',
+    );
+    let complete = false;
+    const wrappedTransaction = function (
+      this: IDBDatabase,
+      storeNames: string | string[],
+      mode?: IDBTransactionMode,
+      options?: IDBTransactionOptions,
+    ): IDBTransaction {
+      const transaction = Reflect.apply(originalTransaction, this, [
+        storeNames,
+        mode,
+        options,
+      ]) as IDBTransaction;
+      if (mode === 'readwrite') {
+        transaction.addEventListener(
+          'complete',
+          () => {
+            complete = true;
+          },
+          { once: true },
+        );
+      }
+      return transaction;
+    };
+
+    Object.defineProperty(IDBDatabase.prototype, 'transaction', {
+      ...originalDescriptor,
+      value: wrappedTransaction,
+    });
+    try {
+      await probe.runTransaction(() => ({
+        document: nextDocument,
+        result: undefined,
+      }));
+      return complete;
+    } finally {
+      if (originalDescriptor === undefined) {
+        Reflect.deleteProperty(IDBDatabase.prototype, 'transaction');
+      } else {
+        Object.defineProperty(
+          IDBDatabase.prototype,
+          'transaction',
+          originalDescriptor,
+        );
+      }
+    }
+  }, document);
+}
+
 async function readSaveDocument(page: Page): Promise<unknown> {
   return page.evaluate(() => {
     const target = globalThis as typeof globalThis & {
@@ -155,7 +227,9 @@ test('resolves after the transaction is durable to a fresh connection', async ({
 }) => {
   const document = { checkpoint: 1400, durable: true };
 
-  await writeSaveDocument(savePage, document);
+  await expect(
+    writeSaveDocumentAndObserveComplete(savePage, document),
+  ).resolves.toBe(true);
 
   await expect(readFromFreshConnection(savePage)).resolves.toEqual(document);
 });
@@ -185,6 +259,187 @@ test('aborts and does not commit when the transaction operation throws', async (
   ).rejects.toThrow('operation failed');
 
   await expect(readSaveDocument(savePage)).resolves.toEqual(initial);
+});
+
+test('maps native transaction failures to their save error codes', async ({
+  savePage,
+}) => {
+  const transactionFailureCode = await savePage.evaluate(async () => {
+    const target = globalThis as typeof globalThis & {
+      __huntboundSaveProbe?: SaveProbe;
+    };
+    const probe = target.__huntboundSaveProbe;
+    if (probe === undefined) {
+      throw new Error('Save probe is not installed in the test browser.');
+    }
+
+    try {
+      await probe.runTransaction(() => ({
+        document: { invalid: () => undefined },
+        result: undefined,
+      }));
+      return null;
+    } catch (error) {
+      return typeof error === 'object' && error !== null && 'code' in error
+        ? ((error as { readonly code?: unknown }).code ?? null)
+        : null;
+    }
+  });
+  expect(transactionFailureCode).toBe('SAVE_TRANSACTION_FAILED');
+
+  const quotaCode = await savePage.evaluate(async () => {
+    const target = globalThis as typeof globalThis & {
+      __huntboundSaveProbe?: SaveProbe;
+    };
+    const probe = target.__huntboundSaveProbe;
+    if (probe === undefined) {
+      throw new Error('Save probe is not installed in the test browser.');
+    }
+
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      IDBObjectStore.prototype,
+      'put',
+    );
+    Object.defineProperty(IDBObjectStore.prototype, 'put', {
+      ...originalDescriptor,
+      value: () => {
+        throw new DOMException(
+          'IndexedDB save quota was exceeded.',
+          'QuotaExceededError',
+        );
+      },
+    });
+    try {
+      await probe.runTransaction(() => ({
+        document: { quota: true },
+        result: undefined,
+      }));
+      return null;
+    } catch (error) {
+      return typeof error === 'object' && error !== null && 'code' in error
+        ? ((error as { readonly code?: unknown }).code ?? null)
+        : null;
+    } finally {
+      if (originalDescriptor === undefined) {
+        Reflect.deleteProperty(IDBObjectStore.prototype, 'put');
+      } else {
+        Object.defineProperty(
+          IDBObjectStore.prototype,
+          'put',
+          originalDescriptor,
+        );
+      }
+    }
+  });
+  expect(quotaCode).toBe('SAVE_QUOTA_EXCEEDED');
+});
+
+test('maps a blocked database upgrade to SAVE_UPGRADE_BLOCKED', async ({
+  savePage,
+}) => {
+  const blockedCode = await savePage.evaluate(
+    async ({ blockedDatabaseName, databaseName, storeName }) => {
+      const target = globalThis as typeof globalThis & {
+        __huntboundSaveProbe?: SaveProbe;
+      };
+      const probe = target.__huntboundSaveProbe;
+      if (probe === undefined) {
+        throw new Error('Save probe is not installed in the test browser.');
+      }
+
+      const blocker = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open(blockedDatabaseName, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(storeName)) {
+            request.result.createObjectStore(storeName);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () =>
+          reject(
+            request.error ?? new Error('Unable to open the blocker database.'),
+          );
+      });
+
+      const factory = indexedDB;
+      const originalOpen = factory.open;
+      const originalDescriptor = Object.getOwnPropertyDescriptor(
+        factory,
+        'open',
+      );
+      let interceptedRequest: IDBOpenDBRequest | undefined;
+      const callOpen = (name: string, version?: number): IDBOpenDBRequest =>
+        Reflect.apply(originalOpen, factory, [
+          name,
+          version,
+        ]) as IDBOpenDBRequest;
+      Object.defineProperty(factory, 'open', {
+        ...(originalDescriptor ?? {
+          configurable: true,
+          enumerable: false,
+          writable: true,
+        }),
+        value: (name: string, version?: number) => {
+          if (name === databaseName && version === 1) {
+            interceptedRequest = callOpen(blockedDatabaseName, 2);
+            return interceptedRequest;
+          }
+          return callOpen(name, version);
+        },
+      });
+
+      try {
+        await probe.read();
+        return null;
+      } catch (error) {
+        return typeof error === 'object' && error !== null && 'code' in error
+          ? ((error as { readonly code?: unknown }).code ?? null)
+          : null;
+      } finally {
+        if (originalDescriptor === undefined) {
+          Reflect.deleteProperty(factory, 'open');
+        } else {
+          Object.defineProperty(factory, 'open', originalDescriptor);
+        }
+        if (interceptedRequest === undefined) {
+          blocker.close();
+        } else {
+          const requestSettled = new Promise<void>((resolve) => {
+            if (interceptedRequest?.readyState === 'done') {
+              resolve();
+              return;
+            }
+            interceptedRequest?.addEventListener('success', () => resolve(), {
+              once: true,
+            });
+            interceptedRequest?.addEventListener('error', () => resolve(), {
+              once: true,
+            });
+          });
+          blocker.close();
+          await requestSettled;
+        }
+        await new Promise<void>((resolve, reject) => {
+          const request = indexedDB.deleteDatabase(blockedDatabaseName);
+          request.onsuccess = () => resolve();
+          request.onerror = () =>
+            reject(
+              request.error ??
+                new Error('Unable to clean up the blocked database.'),
+            );
+          request.onblocked = () =>
+            reject(new Error('Blocked database cleanup was blocked.'));
+        });
+      }
+    },
+    {
+      blockedDatabaseName: 'huntbound-save-blocked-test',
+      databaseName: DATABASE_NAME,
+      storeName: STORE_NAME,
+    },
+  );
+
+  expect(blockedCode).toBe('SAVE_UPGRADE_BLOCKED');
 });
 
 test('serializes concurrent transactions without losing a write', async ({
