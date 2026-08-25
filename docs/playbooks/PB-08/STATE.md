@@ -20,7 +20,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-02 | done | `claude/pb08-02-knight-map` | frontier `xhigh` | Claude Opus 5 `xhigh` | `5bc11ff` | `docs/content/KNIGHT_BANDS.md`: 9 células, 5 de dano; 36 pares conferidos por imagem; Berserk × Groundshaker resolvido por **medição** (8 × 36 tiles no snapshot, 8 × 48 sob o contrato); 3 divergências declaradas (raio Chebyshev, taunt raio 1, Challenge fora da promoção) |
 | PB-08-03 | done | `codex/pb08-03-kit-table` | Luna `xhigh` | GPT-5 Codex `xhigh` | `40251cc` | Character kit por faixas com resolução por nível; migração SQLite e round-trip cobertos; `qa:browser` 73/73; `qa:budgets`: boot 5502 ms e hunt 4 long tasks, informativo |
 | PB-08-04 | done | `codex/pb08-04-damage-rotation` | Luna `xhigh` | GPT-5 Codex `xhigh` | `5b7664f` | 5 abilities; Groundshaker radius 3 / Whirlwind range 5; scenario diff limited to abilities and player indices; `verify`; browser 73/73 |
-| PB-08-05 | done | `codex/pb08-05-stances` | Luna `xhigh` | GPT-5 Codex `xhigh` | `59299c5` | `verify` verde; `qa:browser` 74/74; `qa:budgets` informativo vermelho: boot 5124.2 ms, hunt 4873.4 ms com 2 long tasks |
+| PB-08-05 | done | `codex/pb08-05-stances` | Luna `xhigh` | GPT-5 Codex `xhigh` | `86816a3` | `verify` verde; `qa:browser` 74/74; `qa:budgets` informativo vermelho: boot 15254.2 ms, hunt 4955.7 ms com 5 long tasks |
 | PB-08-06 | pending | `<agente>/pb08-06-taunt` | **frontier `xhigh`** | — | — | — |
 | PB-08-07 | pending | `<agente>/pb08-07-haste` | Luna `xhigh` | — | — | — |
 | PB-08-08 | pending | `<agente>/pb08-08-nine-action-hud` | Luna `xhigh` | — | — | — |
