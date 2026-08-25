@@ -63,6 +63,9 @@ export interface CombatViewState {
     readonly abilityId: string;
     readonly label: string;
   } | null;
+  readonly playerHaste: {
+    readonly remainingTicks: number;
+  } | null;
   readonly lootLog: readonly CombatLootLogEntry[];
   readonly bag: readonly RunBagEntry[];
   readonly playerDead: boolean;
@@ -190,6 +193,9 @@ export function createCombatViewModel(
     readonly label: string;
   } | null => {
     for (const ability of options.abilities) {
+      if (!ability.toggle) {
+        continue;
+      }
       if (ability.appliedConditionIndex === null) {
         continue;
       }
@@ -426,6 +432,24 @@ export function createCombatViewModel(
   const snapshot = (): CombatViewState => {
     const selectedTargetId = targetSelection.targetId();
     const playerPosture = activePosture();
+    const hasteConditionIndex = conditions.findIndex(
+      (condition) => condition.conditionId === 'haste',
+    );
+    const hasteEntry =
+      hasteConditionIndex === -1
+        ? undefined
+        : activeConditions.find(
+            (entry) => entry.conditionIndex === hasteConditionIndex,
+          );
+    const playerHaste =
+      hasteEntry === undefined
+        ? null
+        : {
+            remainingTicks:
+              hasteEntry.expiresAtTick === 0
+                ? 0
+                : Math.max(0, hasteEntry.expiresAtTick - currentTick),
+          };
     return {
       tick: currentTick,
       player: vitalsFor(options.playerEntityId),
@@ -463,6 +487,7 @@ export function createCombatViewModel(
         }),
       ),
       playerPosture,
+      playerHaste,
       lootLog: Object.freeze(lootLog.map((entry) => ({ ...entry }))),
       bag: Object.freeze(bag.map((entry) => ({ ...entry }))),
       // A run resumed from a save written after the player died never replays
@@ -698,6 +723,27 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       toggle: false,
       forcedTargetDurationTicks: 40,
     },
+    {
+      abilityId: 'haste',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 60,
+      cooldownTicks: 40,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      element: 'physical',
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: null,
+      secondaryGroupCooldownTicks: 0,
+      appliedConditionIndex: 2,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: false,
+      forcedTargetDurationTicks: 0,
+    },
   ]);
 
 /**
@@ -733,6 +779,22 @@ export const DEFAULT_COMBAT_FALLBACK_CONDITIONS: readonly ScenarioConditionDefin
       damageDealtPermille: -150,
       damageReceivedPermille: -150,
       speedPermille: 0,
+      manaShield: false,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    },
+    {
+      conditionId: 'haste',
+      exclusivityGroup: null,
+      durationTicks: 600,
+      skillIndex: null,
+      skillModifierPermille: 0,
+      damageDealtPermille: 0,
+      damageReceivedPermille: 0,
+      speedPermille: 191,
       manaShield: false,
       tickDamageAmount: 0,
       tickDamageIntervalTicks: 0,

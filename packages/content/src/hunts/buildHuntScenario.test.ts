@@ -1185,6 +1185,84 @@ describe('buildHuntScenario abilities', () => {
     });
   });
 
+  it('appends Haste after Challenge with the converted speedPermille and 600-tick duration', () => {
+    const nextCharacter: CharacterDefinition = {
+      ...knightRotationCharacter,
+      spellKeys: [
+        ...characterSpellKeysAtLevel(knightRotationCharacter),
+        'spell:tibia:challenge' as ContentKey,
+        'spell:tibia:haste' as ContentKey,
+      ],
+    };
+    const { scenario, abilityKeys } = buildWithOptions(
+      { postures: rawKnightPostures },
+      syntheticHunt(),
+      nextCharacter,
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+
+    expect(abilityKeys).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+      'spell:tibia:challenge',
+      'spell:tibia:haste',
+    ]);
+    expect(abilityKeys).not.toContain('spell:tibia:charge');
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(scenario.abilities.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+      'blood-rage',
+      'protector',
+      'challenge',
+      'haste',
+    ]);
+    expect(
+      scenario.abilities.map((ability) => ability.abilityId),
+    ).not.toContain('charge');
+    expect(scenario.abilities[8]).toMatchObject({
+      abilityId: 'haste',
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 60,
+      cooldownTicks: 40,
+      groupCooldownTicks: 40,
+      minPower: 0,
+      maxPower: 0,
+      primaryCooldownGroup: 1,
+      secondaryCooldownGroup: null,
+      appliedConditionIndex: 2,
+      toggle: false,
+      forcedTargetDurationTicks: 0,
+    });
+    expect(scenario.conditions[2]).toEqual({
+      conditionId: 'haste',
+      exclusivityGroup: null,
+      durationTicks: 600,
+      skillIndex: null,
+      skillModifierPermille: 0,
+      damageDealtPermille: 0,
+      damageReceivedPermille: 0,
+      speedPermille: 191,
+      manaShield: false,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    });
+  });
+
   it('rejects a spell that the knight family cannot cast', () => {
     const result = buildHuntScenario(
       syntheticHunt(),

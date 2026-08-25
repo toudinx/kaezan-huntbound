@@ -167,6 +167,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
       },
     ],
     playerPosture: { abilityId: 'blood-rage', label: 'Blood Rage' },
+    playerHaste: null,
     lootLog: [{ itemKey: 'item:tibia:dead-rotworm', count: 2, tick: 8 }],
     bag: [{ itemKey: 'item:tibia:dead-rotworm', count: 2 }],
     playerDead: true,
@@ -297,12 +298,38 @@ describe('CombatHud', () => {
     expect(byTestId(root, 'combat-posture').getAttribute('data-posture')).toBe(
       'none',
     );
+    expect(byTestId(root, 'combat-haste').textContent).toBe('Haste: Off');
+    expect(byTestId(root, 'combat-haste').getAttribute('data-haste')).toBe(
+      'off',
+    );
     expect(
       byTestId(root, 'combat-ability-5').getAttribute('aria-pressed'),
     ).toBe('false');
     expect(byTestId(root, 'combat-ability-5').getAttribute('data-active')).toBe(
       'false',
     );
+
+    hud.destroy();
+  });
+
+  it('shows the haste clock while the condition lasts', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement);
+
+    hud.render(
+      state({
+        playerHaste: { remainingTicks: 600 },
+      }),
+    );
+
+    expect(byTestId(root, 'combat-haste').textContent).toBe('Haste: 30s');
+    expect(byTestId(root, 'combat-haste').getAttribute('data-haste')).toBe(
+      'active',
+    );
+    expect(
+      byTestId(root, 'combat-haste').getAttribute('data-remaining-ticks'),
+    ).toBe('600');
 
     hud.destroy();
   });

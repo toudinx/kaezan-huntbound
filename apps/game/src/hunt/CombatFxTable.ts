@@ -119,6 +119,18 @@ const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
     healNumber: false,
     numberColor: '#7ecbff',
   },
+  // `data/scripts/spells/support/haste.lua`: CONST_ME_MAGIC_GREEN on self.
+  // The hunt pack has no green magic frame yet; keep a dedicated recipe and
+  // use magic-blue without a heal number so the cast is not Wound Cleansing.
+  haste: {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'self',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#73e6a5',
+  },
 };
 
 const BY_POSTURE_ABILITY_ID: Readonly<

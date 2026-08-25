@@ -48,11 +48,22 @@ import {
 import type { KnightPostureDefinition } from './knightPostures.ts';
 
 const CHALLENGE_SPELL_KEY = 'spell:tibia:challenge' as ContentKey;
+const HASTE_SPELL_KEY = 'spell:tibia:haste' as ContentKey;
 const SUPPORT_COOLDOWN_GROUP = 1;
 const CHALLENGE_RESOURCE_COST = 30;
 const CHALLENGE_COOLDOWN_TICKS = 40;
 const CHALLENGE_RADIUS = 1;
 const CHALLENGE_DURATION_TICKS = 40;
+const HASTE_RESOURCE_COST = 60;
+const HASTE_COOLDOWN_TICKS = 40;
+const HASTE_DURATION_TICKS = 600;
+/**
+ * Canary `ConditionSpeed::getFormulaValues`: `min = 1.3 * (baseSpeed - 40) + 40`.
+ * Knight `baseSpeed` 110 → formula speed 131 → `round((131/110 - 1) * 1000) = 191`.
+ * Linear step `11 * 110/131 = 9.237` rounds toward the faster integer; the kernel
+ * then yields `effectiveStepCooldownTicks(11, 191) = 9`.
+ */
+const HASTE_SPEED_PERMILLE = 191;
 
 export interface HuntScenarioBuild {
   readonly scenario: KernelScenario;
@@ -328,7 +339,7 @@ function composeAbilities(
       ? ['character', 'spellKeys']
       : ['character', 'kit', character.kit.indexOf(activeBand), 'spellKeys'];
   characterSpellKeysAtLevel(character).forEach((spellKey, spellIndex) => {
-    if (spellKey === CHALLENGE_SPELL_KEY) {
+    if (spellKey === CHALLENGE_SPELL_KEY || spellKey === HASTE_SPELL_KEY) {
       return;
     }
     if (!registry.has(spellKey)) {
@@ -420,6 +431,49 @@ function composeChallengeAbility(): AbilityDefinition {
   };
 }
 
+function composeHasteAbility(appliedConditionIndex: number): AbilityDefinition {
+  return {
+    abilityId: 'haste',
+    effect: 'heal',
+    shape: 'self',
+    radius: 0,
+    rangeTiles: 0,
+    resourceCost: HASTE_RESOURCE_COST,
+    cooldownTicks: HASTE_COOLDOWN_TICKS,
+    groupCooldownTicks: HASTE_COOLDOWN_TICKS,
+    minPower: 0,
+    maxPower: 0,
+    element: 'physical',
+    primaryCooldownGroup: SUPPORT_COOLDOWN_GROUP,
+    secondaryCooldownGroup: null,
+    secondaryGroupCooldownTicks: 0,
+    appliedConditionIndex,
+    maxCharges: null,
+    rechargeKind: 'none',
+    toggle: false,
+    forcedTargetDurationTicks: 0,
+  };
+}
+
+function composeHasteCondition(): ScenarioConditionDefinition {
+  return {
+    conditionId: 'haste',
+    exclusivityGroup: null,
+    durationTicks: HASTE_DURATION_TICKS,
+    skillIndex: null,
+    skillModifierPermille: 0,
+    damageDealtPermille: 0,
+    damageReceivedPermille: 0,
+    speedPermille: HASTE_SPEED_PERMILLE,
+    manaShield: false,
+    tickDamageAmount: 0,
+    tickDamageIntervalTicks: 0,
+    elementBonusPermille: 0,
+    convertNextAbilityElement: false,
+    bonusElement: null,
+  };
+}
+
 function composePostureAbilities(
   postures: readonly KnightPostureDefinition[],
 ): readonly AbilityDefinition[] {
@@ -506,16 +560,28 @@ export function buildHuntScenario(
   const postureAbilities = composePostureAbilities(options?.postures ?? []);
   const kitHasChallenge =
     characterSpellKeysAtLevel(character).includes(CHALLENGE_SPELL_KEY);
+  const kitHasHaste =
+    characterSpellKeysAtLevel(character).includes(HASTE_SPELL_KEY);
   const challengeAbilities = kitHasChallenge ? [composeChallengeAbility()] : [];
+  const postureConditions = composePostureConditions(options?.postures ?? []);
+  const hasteAbilities = kitHasHaste
+    ? [composeHasteAbility(postureConditions.length)]
+    : [];
   const abilities = [
     ...spellAbilities,
     ...postureAbilities,
     ...challengeAbilities,
+    ...hasteAbilities,
   ];
-  const resolvedAbilityKeys = kitHasChallenge
-    ? [...abilityKeys, CHALLENGE_SPELL_KEY]
-    : abilityKeys;
-  const conditions = composePostureConditions(options?.postures ?? []);
+  const resolvedAbilityKeys = [
+    ...abilityKeys,
+    ...(kitHasChallenge ? [CHALLENGE_SPELL_KEY] : []),
+    ...(kitHasHaste ? [HASTE_SPELL_KEY] : []),
+  ];
+  const conditions = [
+    ...postureConditions,
+    ...(kitHasHaste ? [composeHasteCondition()] : []),
+  ];
   const playerAbilityIndices = abilities.map((_, index) => index);
 
   const creaturesByBlueprint = new Map<string, CreatureDefinition>();

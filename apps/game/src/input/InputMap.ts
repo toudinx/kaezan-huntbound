@@ -58,6 +58,7 @@ const combatKeyBindings: Readonly<Record<string, CombatInputAction>> = {
   Digit6: { kind: 'cast-ability', abilityIndex: 5 },
   Digit7: { kind: 'cast-ability', abilityIndex: 6 },
   Digit8: { kind: 'cast-ability', abilityIndex: 7 },
+  Digit9: { kind: 'cast-ability', abilityIndex: 8 },
   Numpad1: { kind: 'cast-ability', abilityIndex: 0 },
   Numpad2: { kind: 'cast-ability', abilityIndex: 1 },
   Numpad3: { kind: 'cast-ability', abilityIndex: 2 },
@@ -66,6 +67,7 @@ const combatKeyBindings: Readonly<Record<string, CombatInputAction>> = {
   Numpad6: { kind: 'cast-ability', abilityIndex: 5 },
   Numpad7: { kind: 'cast-ability', abilityIndex: 6 },
   Numpad8: { kind: 'cast-ability', abilityIndex: 7 },
+  Numpad9: { kind: 'cast-ability', abilityIndex: 8 },
   Tab: { kind: 'cycle-target' },
   // Tibia stops the fight with Escape. Without it a persistent target could
   // only be swapped, never dropped.

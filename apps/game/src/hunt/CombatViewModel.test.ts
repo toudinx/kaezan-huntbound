@@ -335,7 +335,7 @@ function runtimeFixture(): RuntimeContentBundle {
 }
 
 describe('CombatViewModel', () => {
-  it('exposes eight active Knight abilities in the default combat model', () => {
+  it('exposes nine active Knight abilities in the default combat model', () => {
     const viewModel = createDefaultCombatViewModel();
 
     expect(
@@ -349,6 +349,7 @@ describe('CombatViewModel', () => {
       'blood-rage',
       'protector',
       'challenge',
+      'haste',
     ]);
   });
 
@@ -379,6 +380,22 @@ describe('CombatViewModel', () => {
         damageDealtPermille: -150,
         damageReceivedPermille: -150,
         speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'haste',
+        exclusivityGroup: null,
+        durationTicks: 600,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 0,
+        speedPermille: 191,
         manaShield: false,
         tickDamageAmount: 0,
         tickDamageIntervalTicks: 0,
@@ -646,6 +663,38 @@ describe('CombatViewModel', () => {
     expect(state.abilities[6]).toMatchObject({
       active: false,
       remainingCooldownTicks: 40,
+    });
+  });
+
+  it('projects Haste remaining ticks without reporting it as a posture', () => {
+    const viewModel = createDefaultCombatViewModel();
+
+    viewModel.restoreSnapshot(
+      snapshot({
+        tick: 100 as TickIndex,
+        actors: [
+          {
+            ...playerSnapshotActor,
+            resource: 125,
+            activeConditions: [
+              {
+                conditionIndex: 2,
+                expiresAtTick: 600,
+                exclusivityGroup: null,
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    viewModel.setTick(100);
+
+    const state = viewModel.snapshot();
+    expect(state.playerPosture).toBeNull();
+    expect(state.playerHaste).toEqual({ remainingTicks: 500 });
+    expect(state.abilities[8]).toMatchObject({
+      abilityId: 'haste',
+      active: true,
     });
   });
 

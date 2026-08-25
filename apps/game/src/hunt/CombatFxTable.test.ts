@@ -114,6 +114,18 @@ describe('combatFxForAbility', () => {
     });
   });
 
+  it('maps haste to magic-blue on self with no number, distinct from Wound Cleansing', () => {
+    expect(combatFxForAbility('haste')).toEqual({
+      impactKey: createAssetKey(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY),
+      bloodKey: undefined,
+      placement: 'self',
+      staggerByDistance: false,
+      stronger: false,
+      healNumber: false,
+      numberColor: '#73e6a5',
+    });
+  });
+
   it('returns undefined for an unknown abilityId', () => {
     expect(combatFxForAbility('unknown-spell')).toBeUndefined();
   });

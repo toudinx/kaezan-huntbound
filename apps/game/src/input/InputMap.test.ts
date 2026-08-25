@@ -396,31 +396,43 @@ describe('InputMap', () => {
     expect(input.drain(8)).toEqual([{ kind: 'cast-ability', abilityIndex: 7 }]);
 
     target.keyUp('Digit8');
+    target.keyDown('Digit9');
+    expect(input.drain(9)).toEqual([{ kind: 'cast-ability', abilityIndex: 8 }]);
+
+    target.keyUp('Digit9');
     target.keyDown('Numpad4');
-    expect(input.drain(9)).toEqual([{ kind: 'cast-ability', abilityIndex: 3 }]);
+    expect(input.drain(10)).toEqual([
+      { kind: 'cast-ability', abilityIndex: 3 },
+    ]);
 
     target.keyUp('Numpad4');
     target.keyDown('Numpad5');
-    expect(input.drain(10)).toEqual([
+    expect(input.drain(11)).toEqual([
       { kind: 'cast-ability', abilityIndex: 4 },
     ]);
 
     target.keyUp('Numpad5');
     target.keyDown('Numpad6');
-    expect(input.drain(11)).toEqual([
+    expect(input.drain(12)).toEqual([
       { kind: 'cast-ability', abilityIndex: 5 },
     ]);
 
     target.keyUp('Numpad6');
     target.keyDown('Numpad7');
-    expect(input.drain(12)).toEqual([
+    expect(input.drain(13)).toEqual([
       { kind: 'cast-ability', abilityIndex: 6 },
     ]);
 
     target.keyUp('Numpad7');
     target.keyDown('Numpad8');
-    expect(input.drain(13)).toEqual([
+    expect(input.drain(14)).toEqual([
       { kind: 'cast-ability', abilityIndex: 7 },
+    ]);
+
+    target.keyUp('Numpad8');
+    target.keyDown('Numpad9');
+    expect(input.drain(15)).toEqual([
+      { kind: 'cast-ability', abilityIndex: 8 },
     ]);
   });
 

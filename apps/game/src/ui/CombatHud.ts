@@ -1,3 +1,4 @@
+import { TICK_DURATION_MS } from '../../../../packages/contracts/src/index.ts';
 import type {
   CombatAbilityView,
   CombatViewState,
@@ -121,8 +122,10 @@ export function mountCombatHud(
   attack.textContent = 'Attack';
   const posture = createElement(document, 'p', 'combat-posture');
   posture.setAttribute('aria-live', 'polite');
+  const haste = createElement(document, 'p', 'combat-haste');
+  haste.setAttribute('aria-live', 'polite');
   const abilities = createElement(document, 'div', 'combat-abilities');
-  actions.append(attack, posture, abilities);
+  actions.append(attack, posture, haste, abilities);
 
   const lootPanel = createElement(document, 'section', 'combat-loot');
   lootPanel.setAttribute('aria-label', 'Loot');
@@ -213,6 +216,18 @@ export function mountCombatHud(
       state.playerPosture === null
         ? 'Posture: None'
         : `Posture: ${state.playerPosture.label}`;
+    haste.setAttribute(
+      'data-haste',
+      state.playerHaste === null ? 'off' : 'active',
+    );
+    haste.setAttribute(
+      'data-remaining-ticks',
+      String(state.playerHaste?.remainingTicks ?? 0),
+    );
+    haste.textContent =
+      state.playerHaste === null
+        ? 'Haste: Off'
+        : `Haste: ${String(Math.ceil((state.playerHaste.remainingTicks * TICK_DURATION_MS) / 1000))}s`;
 
     // The scene publishes a tick every frame, so this runs ~60 times a second.
     // Rebuilding the buttons here dropped frames and destroyed the very node

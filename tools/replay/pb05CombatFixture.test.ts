@@ -8,6 +8,7 @@ import {
   createEntityId,
   createSeed,
   createTickIndex,
+  type Direction,
   type GridPosition,
   type KernelScenario,
   RuntimeContentBundleSchema,
@@ -230,6 +231,75 @@ function scenarioWithInertTarget(
   };
 }
 
+function solitaryPlayer(scenario: KernelScenario): KernelScenario {
+  const player = scenario.initialActors.find(
+    (actor) => actor.blueprintId === 'player',
+  );
+  if (player === undefined) throw new Error('Scenario is missing its player');
+  return {
+    ...scenario,
+    spawnGroups: [],
+    initialActors: [player],
+  };
+}
+
+function playerOf(kernel: ReturnType<typeof createSimulationKernel>) {
+  const player = kernel
+    .state()
+    .actors.find((actor) => actor.blueprintId === 'player');
+  if (player === undefined) throw new Error('Player actor missing');
+  return player;
+}
+
+function openStepDirection(
+  scenario: KernelScenario,
+  kernel: ReturnType<typeof createSimulationKernel>,
+): Direction {
+  const player = playerOf(kernel);
+  const floor = scenario.floors.find((entry) => entry.z === player.position.z);
+  if (floor === undefined) throw new Error('Scenario is missing player floor');
+  const blocked = new Set(floor.blockedTiles.map(([x, y]) => `${x}:${y}`));
+  const occupied = new Set(
+    kernel
+      .state()
+      .actors.map((actor) => `${actor.position.x}:${actor.position.y}`),
+  );
+  const candidates: readonly (readonly [Direction, number, number])[] = [
+    ['e', 1, 0],
+    ['w', -1, 0],
+    ['s', 0, 1],
+    ['n', 0, -1],
+  ];
+  const open = candidates.find(([_, dx, dy]) => {
+    const x = player.position.x + dx;
+    const y = player.position.y + dy;
+    return (
+      x >= 0 &&
+      x < scenario.width &&
+      y >= 0 &&
+      y < scenario.height &&
+      !blocked.has(`${x}:${y}`) &&
+      !occupied.has(`${x}:${y}`)
+    );
+  });
+  if (open === undefined) {
+    throw new Error('No open cardinal step from the player');
+  }
+  return open[0];
+}
+
+function movePlayer(direction: Direction, tick = 0) {
+  return {
+    tick: createTickIndex(tick),
+    issuer: 'player' as const,
+    command: {
+      type: 'actor/move-step' as const,
+      entityId: createEntityId(1),
+      direction,
+    },
+  };
+}
+
 function targetDamaged(events: readonly SimulationEvent[]): boolean {
   return events.some(
     (event) =>
@@ -256,8 +326,9 @@ describe('PB-08-04 Knight damage rotation', () => {
       'blood-rage',
       'protector',
       'challenge',
+      'haste',
     ]);
-    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
     expect(player?.attackSkillIndex).toBe(2);
     expect(session.scenario.conditions).toEqual([
       {
@@ -285,6 +356,22 @@ describe('PB-08-04 Knight damage rotation', () => {
         damageDealtPermille: -150,
         damageReceivedPermille: -150,
         speedPermille: 0,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
+      {
+        conditionId: 'haste',
+        exclusivityGroup: null,
+        durationTicks: 600,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 0,
+        speedPermille: 191,
         manaShield: false,
         tickDamageAmount: 0,
         tickDamageIntervalTicks: 0,
@@ -329,6 +416,99 @@ describe('PB-08-04 Knight damage rotation', () => {
   });
 });
 
+describe('PB-08-07 Haste', () => {
+  const HASTE_DURATION_TICKS = 600;
+  const HASTE_STEP_TICKS = 9;
+  const BASE_STEP_TICKS = 11;
+
+  async function solitaryHasteKernel() {
+    const scenario = solitaryPlayer(await buildPb05HuntScenario());
+    const hasteIndex = scenario.abilities.findIndex(
+      (ability) => ability.abilityId === 'haste',
+    );
+    const hasteConditionIndex = scenario.conditions.findIndex(
+      (condition) => condition.conditionId === 'haste',
+    );
+    const kernel = createSimulationKernel(
+      scenario,
+      createSeed('b8080700000001aa'),
+    );
+    return { scenario, kernel, hasteIndex, hasteConditionIndex };
+  }
+
+  it('shortens the player step cooldown while Haste is active', async () => {
+    const { scenario, kernel, hasteIndex, hasteConditionIndex } =
+      await solitaryHasteKernel();
+    expect(hasteIndex).toBe(8);
+    expect(hasteConditionIndex).toBe(2);
+    expect(
+      scenario.blueprints.find(
+        (blueprint) => blueprint.blueprintId === 'player',
+      )?.stepCooldownTicks,
+    ).toBe(BASE_STEP_TICKS);
+
+    kernel.enqueue(castAbility(hasteIndex, null));
+    kernel.advanceOne();
+    expect(playerOf(kernel).activeConditions).toEqual([
+      {
+        conditionIndex: hasteConditionIndex,
+        expiresAtTick: HASTE_DURATION_TICKS,
+        exclusivityGroup: null,
+      },
+    ]);
+
+    const direction = openStepDirection(scenario, kernel);
+    kernel.enqueue(movePlayer(direction, kernel.tick));
+    const events = kernel.advanceOne();
+    const moved = events.find((event) => event.payload.type === 'actor/moved');
+    expect(moved).toBeDefined();
+    expect(playerOf(kernel).readyAtTick).toBe(
+      (moved?.tick ?? 0) + HASTE_STEP_TICKS,
+    );
+  });
+
+  it('expires Haste on the absolute tick, living on the tick before and gone on it', async () => {
+    const { kernel, hasteIndex, hasteConditionIndex } =
+      await solitaryHasteKernel();
+    expect(hasteIndex).not.toBe(-1);
+
+    kernel.enqueue(castAbility(hasteIndex, null));
+    kernel.advanceOne();
+    expect(playerOf(kernel).activeConditions).toEqual([
+      {
+        conditionIndex: hasteConditionIndex,
+        expiresAtTick: HASTE_DURATION_TICKS,
+        exclusivityGroup: null,
+      },
+    ]);
+
+    kernel.advance(HASTE_DURATION_TICKS - 1);
+    expect(playerOf(kernel).activeConditions).toHaveLength(1);
+
+    kernel.advanceOne();
+    expect(playerOf(kernel).activeConditions).toEqual([]);
+  });
+
+  it('keeps the original step for an actor that never received Haste', async () => {
+    const { scenario, kernel } = await solitaryHasteKernel();
+    expect(
+      scenario.blueprints.find(
+        (blueprint) => blueprint.blueprintId === 'rotworm',
+      )?.stepCooldownTicks,
+    ).toBe(21);
+
+    const direction = openStepDirection(scenario, kernel);
+    kernel.enqueue(movePlayer(direction));
+    const events = kernel.advanceOne();
+    const moved = events.find((event) => event.payload.type === 'actor/moved');
+    expect(moved).toBeDefined();
+    expect(playerOf(kernel).readyAtTick).toBe(
+      (moved?.tick ?? 0) + BASE_STEP_TICKS,
+    );
+    expect(playerOf(kernel).activeConditions).toEqual([]);
+  });
+});
+
 describe('PB-05 combat session coverage', () => {
   it('feeds the PB-05 character kit into the combat composer', async () => {
     const [catalogText, selectionText] = await Promise.all([
@@ -366,6 +546,7 @@ describe('PB-05 combat session coverage', () => {
           'spell:tibia:groundshaker',
           'spell:tibia:whirlwind-throw',
           'spell:tibia:challenge',
+          'spell:tibia:haste',
         ],
       },
     ]);
@@ -427,11 +608,12 @@ describe('PB-05 combat replay fixture', () => {
       'blood-rage',
       'protector',
       'challenge',
+      'haste',
     ]);
     const player = scenario.value.blueprints.find(
       (blueprint) => blueprint.blueprintId === 'player',
     );
-    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(player?.abilityIndices).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
     expect(player?.attackSkillIndex).toBe(2);
     expect(scenario.value.conditions).toEqual([
       {
@@ -466,6 +648,22 @@ describe('PB-05 combat replay fixture', () => {
         convertNextAbilityElement: false,
         bonusElement: null,
       },
+      {
+        conditionId: 'haste',
+        exclusivityGroup: null,
+        durationTicks: 600,
+        skillIndex: null,
+        skillModifierPermille: 0,
+        damageDealtPermille: 0,
+        damageReceivedPermille: 0,
+        speedPermille: 191,
+        manaShield: false,
+        tickDamageAmount: 0,
+        tickDamageIntervalTicks: 0,
+        elementBonusPermille: 0,
+        convertNextAbilityElement: false,
+        bonusElement: null,
+      },
     ]);
     expect(
       log.value.commands.every((command) => command.issuer === 'player'),
@@ -480,6 +678,11 @@ describe('PB-05 combat replay fixture', () => {
         .filter((command) => command.command.type === 'actor/cast-ability')
         .map((command) => command.command.abilityIndex),
     ).not.toContain(6);
+    expect(
+      log.value.commands
+        .filter((command) => command.command.type === 'actor/cast-ability')
+        .map((command) => command.command.abilityIndex),
+    ).not.toContain(8);
     // `CANARY_VIEW_RANGE_TILES`, which is what `composeCreature` gives any
     // creature that has an attack. This asserted `1` until 2026-08-23, frozen
     // from before `db04d9d` raised acquisition to Canary's view range; the

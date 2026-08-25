@@ -30,8 +30,12 @@ export interface CombatDomState {
   readonly targetName: string;
   readonly postureText: string;
   readonly playerPosture: string;
+  readonly hasteText: string;
+  readonly playerHaste: string;
+  readonly hasteRemainingTicks: number;
   readonly bloodRagePressed: boolean;
   readonly protectorPressed: boolean;
+  readonly hastePressed: boolean;
   readonly lootLog: string;
   readonly runBag: string;
   readonly deathOverlayVisible: boolean;
@@ -368,11 +372,17 @@ export async function readCombatState(page: Page): Promise<CombatDomState> {
       const postureElement = document.querySelector<HTMLElement>(
         '[data-testid="combat-posture"]',
       );
+      const hasteElement = document.querySelector<HTMLElement>(
+        '[data-testid="combat-haste"]',
+      );
       const bloodRage = document.querySelector<HTMLButtonElement>(
         '[data-testid="combat-ability-5"]',
       );
       const protector = document.querySelector<HTMLButtonElement>(
         '[data-testid="combat-ability-6"]',
+      );
+      const hasteButton = document.querySelector<HTMLButtonElement>(
+        '[data-testid="combat-ability-8"]',
       );
 
       if (
@@ -397,8 +407,14 @@ export async function readCombatState(page: Page): Promise<CombatDomState> {
         targetName,
         postureText: postureElement?.textContent?.trim() ?? '',
         playerPosture: postureElement?.getAttribute('data-posture') ?? '',
+        hasteText: hasteElement?.textContent?.trim() ?? '',
+        playerHaste: hasteElement?.getAttribute('data-haste') ?? '',
+        hasteRemainingTicks: Number(
+          hasteElement?.getAttribute('data-remaining-ticks') ?? '0',
+        ),
         bloodRagePressed: bloodRage?.getAttribute('aria-pressed') === 'true',
         protectorPressed: protector?.getAttribute('aria-pressed') === 'true',
+        hastePressed: hasteButton?.getAttribute('aria-pressed') === 'true',
         lootLog:
           document.querySelector<HTMLElement>('[data-testid="combat-loot-log"]')
             ?.textContent ?? '',

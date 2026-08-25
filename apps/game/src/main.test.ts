@@ -287,10 +287,11 @@ describe('main asset bootstrap', () => {
       'blood-rage',
       'protector',
       'challenge',
+      'haste',
     ]);
     expect(
       viewModelConditions?.map((condition) => condition.conditionId),
-    ).toEqual(['blood-rage', 'protector']);
+    ).toEqual(['blood-rage', 'protector', 'haste']);
     expect(gameOptions?.abilities).toBe(viewModelAbilities);
     expect(gameOptions?.conditions).toBe(viewModelConditions);
     expect(harness.restoredSnapshots).toHaveLength(1);
