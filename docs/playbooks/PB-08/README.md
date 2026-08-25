@@ -203,13 +203,31 @@ Não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do
 | PB-08-05 | **card escrita** | Postura | Blood Rage e Protector: `toggle` + condição exclusiva, com ganho **e** perda explícitos | não |
 | PB-08-06 | **card escrita** | Taunt — Challenge | `exeta res`, raio 1. Alvo forçado não existe no kernel. **Único kernel novo do playbook** | **sim** |
 | PB-08-07 | **card escrita** | Mobilidade — Haste | `utani hur`. Charge é corte declarado | não |
-| PB-08-08 | **card escrita** | Nove ações no HUD e no input | Hoje `Digit1..3` e três botões. Rotação de dano agrupada e separada das situacionais; toggle visível; cooldown por grupo legível | não |
-| PB-08-09 | **card escrita** | Arma como eixo de build | Skill por sword/axe/club e passiva por tipo. Fecha no PB-11 | não |
-| PB-08-10 | **card escrita** | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e o que olhar | — |
+| PB-08-08 | **reescrita em 2026-08-25** | O chassi do cockpit | Arcos de vida e mana, deck centrado com vão entre dano e situacional, switch de postura, cooldown por grupo, câmera centrada na área livre | não |
+| PB-08-09 | **reescrita em 2026-08-25** | A rail de janelas | Mapa quadrado, janela de alvo e bag da hunt — três painéis sobre dado que já existe. Sprites de loot no extractor | não |
+| PB-08-10 | **reescrita em 2026-08-25** | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e um roteiro que julga **leitura antes de mecânica** | — |
 
-**As dez cards estão escritas.** Isso **desvia** da regra do `AGENTS.md` de congelar só duas à
-frente, e o desvio é deliberado, pedido pelo dono em 2026-08-24 para que o trabalho possa ser
-distribuído entre Codex, Claude e Cursor sem esperar a escrita de cada uma.
+### A reescrita de 08 a 10
+
+O playtest de 2026-08-25 fechou o kit e mostrou que o que faltava não era mecânica: as nove ações
+existem e funcionam desde a PB-08-07, mas saem numa lista plana onde postura parece magia e uma ação
+de `support` parece travada pelo cooldown de ataque.
+
+A spec do redesenho é `docs/superpowers/specs/2026-08-25-pb-08-cockpit-hud-design.md`, e ela carrega
+o layout aprovado e as quatro propostas recusadas antes dele. Duas mudanças de escopo vieram junto:
+
+- **`Arma como eixo de build` saiu do PB-08** para `docs/playbooks/PB-11/`. O card já se declarava
+  meia-task — *"fecha no PB-11, quando o equipamento existir"* — e o equipamento também foi para lá.
+- **O equipamento saiu do HUD do PB-08.** Vira janela no PB-11, onde existe stat de item para
+  mostrar. Com isso os três painéis da rail leem dado que já existe, e não sobra placeholder na tela.
+
+**As cards de 01 a 07 continuam como estavam** — estão integradas e viraram histórico.
+
+**As dez cards estavam escritas de uma vez.** Isso **desviava** da regra do `AGENTS.md` de congelar só
+duas à frente, e o desvio foi deliberado, pedido pelo dono em 2026-08-24 para distribuir trabalho
+entre Codex, Claude e Cursor sem esperar a escrita de cada uma. **A reescrita de 08 a 10 é o preço
+desse desvio**: card escrita antecipadamente envelheceu contra o código — a 08 original mandava ligar
+nove teclas que já estavam ligadas desde a 04.
 
 O risco que a regra existe para evitar é real e continua: **card escrita antecipadamente envelhece
 contra o código**. A mitigação é que 04 a 10 consomem o `KNIGHT_BANDS.md`, que já está congelado —
@@ -237,13 +255,15 @@ do usuário no momento da execução. Implementação bem especificada = **GPT-5
 | **05** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | `toggle` e condição exclusiva estão prontos; os números de Blood Rage e Protector têm proveniência declarada na ADR-05 |
 | **06** | **implementação complexa** | **frontier, `xhigh`** | frontier **diferente** do implementador | Alvo forçado **não existe**: muda a política de aquisição de alvo da IA em `isAcquirableTarget`, atravessa kernel e conteúdo e **regenera golden**. Único kernel novo do playbook |
 | **07** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | A mais mecânica das dez. `speedPermille` já é aplicado em `conditions.ts:37` |
-| **08** | implementação geral bem especificada | **Luna, `xhigh`** | **marco de revisão frontier** | Sem kernel, com Playwright como juiz. Ganha revisão frontier por ser a superfície que o usuário julga no aceite, e porque agrupar dano e situacional é decisão de leitura |
-| **09** | **implementação complexa** | **frontier, `xhigh`** | frontier **diferente** do implementador | Exige julgamento para definir o resultado correto — qual passiva por tipo de arma — e é a semente das subclasses reservadas pela decisão congelada 5. Errar aqui custa a promessa da decisão congelada 1 |
+| **08** | **implementação complexa** | **frontier, `xhigh`** | **o usuário jogando** | Subiu de Luna na reescrita de 2026-08-25. É a superfície que o usuário julga no aceite, e deixou de ser só DOM e CSS: arrasta deslocamento de câmera e a **reescrita** de `hunt-mobile.spec.ts:95`, um teste derivado de ADR |
+| **09** | implementação geral bem especificada | **Luna, `xhigh`** | gates + screenshot do perfil `personal` | Três painéis sobre dado que já existe, mais ids novos numa lista que já existe. Nenhuma decisão de contrato. O juiz do painel de bag **não** é gate verde: o perfil `test` fabrica placeholder 1×1 |
 | **10** | gate final / aceite | **frontier, `xhigh`** | **o usuário jogando** | A política manda camada frontier para gate final. E o aceite de produto não é veredito de agente |
 
-**Diversidade de revisão.** 02, 06 e 09 são frontier implementando; cada uma é revisada por um
+**Diversidade de revisão.** 02, 06 e 08 são frontier implementando; cada uma é revisada por um
 frontier **diferente** — Sol prefere Opus 5 ou Grok 4.6; Opus 5 prefere Sol ou Grok 4.6; Grok 4.6
-prefere Opus 5 ou Sol. Mesmo modelo revisando só quando a plataforma não oferecer alternativa, e o
+prefere Opus 5 ou Sol. A 08 é o caso especial: o revisor formal é frontier, mas **quem decide é o
+usuário jogando** — leitura de HUD não se audita por texto, e foi um playtest que reprovou o desenho
+anterior, não uma revisão. Mesmo modelo revisando só quando a plataforma não oferecer alternativa, e o
 desvio vai para o `STATE.md` com modelo, effort e motivo.
 
 **Luna-first e escalonamento.** As tasks Luna começam em Luna e **só** trocam para frontier por um

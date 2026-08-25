@@ -1,4 +1,10 @@
-# PB-08-09 — Arma como eixo de build
+# PB-11 — Arma como eixo de build
+
+> **Movido do PB-08 em 2026-08-25.** Nasceu como `PB-08-09` e o próprio card já se declarava
+> meia-task: *"fecha no PB-11, quando o equipamento existir"*. O usuário recusou meia-task na
+> reescrita do PB-08, e o equipamento também veio para cá. Aqui o eixo de arma fecha inteiro, junto
+> com os slots equipáveis e o stat de item. O corpo abaixo é o original; a numeração das
+> dependências ainda fala em PB-08 e continua válida, porque aquelas tasks estão integradas.
 
 **Status inicial:** pending
 
@@ -12,8 +18,8 @@ e é a semente de uma decisão de produto reservada
 **Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
 Skills operacionais: `playbook-task`, `run-gates`, `worktree-cycle`.
 
-**Paralelismo:** depende de **PB-08-03 integrada**. Independente de 04 a 08 — pode ser puxada para
-frente. **Fecha no PB-11**, quando o equipamento existir.
+**Paralelismo:** depende de **PB-08-03 integrada**, o que já é o caso. Fecha junto com os slots
+equipáveis deste playbook — sem equipamento, a passiva por tipo de arma não tem onde encostar.
 
 ## Objetivo
 
