@@ -259,6 +259,18 @@ export async function bootstrapApp(
     unsubscribeSaveTick?.();
     saveSession.destroy();
   };
+  const publishHuntBootstrapError = (error: unknown): void => {
+    inputMap.detach();
+    disposeSave();
+    setAssetReadiness(shellRoot, false, 0);
+    appShellMount(uiRoot, bridge);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(error),
+    });
+  };
   // The catalog is a compile-time import, so the HUD can know the real health
   // and mana ceilings before a single asset has loaded.
   const runtime = projectRuntimeBundle(
@@ -268,31 +280,15 @@ export async function bootstrapApp(
   try {
     hunt = readHuntDefinition();
   } catch (error) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(error),
-    });
+    publishHuntBootstrapError(error);
     return;
   }
 
   const character = runtime.characters[0];
   if (character === undefined) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(
-        new Error('Generated catalog is missing the hunt character.'),
-      ),
-    });
+    publishHuntBootstrapError(
+      new Error('Generated catalog is missing the hunt character.'),
+    );
     return;
   }
 
@@ -305,33 +301,17 @@ export async function bootstrapApp(
       postures,
     });
   } catch (error) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(error),
-    });
+    publishHuntBootstrapError(error);
     return;
   }
 
   if (!scenarioResult.ok) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(
-        new Error(
-          scenarioResult.diagnostics[0]?.message ??
-            'Generated hunt scenario is invalid.',
-        ),
+    publishHuntBootstrapError(
+      new Error(
+        scenarioResult.diagnostics[0]?.message ??
+          'Generated hunt scenario is invalid.',
       ),
-    });
+    );
     return;
   }
 

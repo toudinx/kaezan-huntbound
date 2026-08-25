@@ -5,9 +5,13 @@ const harness = vi.hoisted(() => ({
   gameOptions: [] as unknown[],
   viewModelCalls: [] as unknown[][],
   restoredSnapshots: [] as unknown[],
+  shellSnapshots: [] as { phase: string; message: string }[],
   bridge: undefined as
     | {
         getSnapshot(): { phase: string; message: string };
+        subscribe(
+          listener: (next: { phase: string; message: string }) => void,
+        ): () => void;
       }
     | undefined,
 }));
@@ -58,10 +62,16 @@ vi.mock('./bridge/SceneBridge', () => ({
 }));
 
 vi.mock('./ui/AppShell', () => ({
-  mountAppShell: (_root: unknown, bridge: typeof harness.bridge) => {
+  mountAppShell: (
+    _root: unknown,
+    bridge: NonNullable<typeof harness.bridge>,
+  ) => {
     harness.events.push('shell');
     harness.bridge = bridge;
-    return { destroy: () => undefined };
+    const unsubscribe = bridge.subscribe((snapshot) => {
+      harness.shellSnapshots.push(snapshot);
+    });
+    return { destroy: unsubscribe };
   },
 }));
 
@@ -179,10 +189,12 @@ describe('main asset bootstrap', () => {
     harness.gameOptions.length = 0;
     harness.viewModelCalls.length = 0;
     harness.restoredSnapshots.length = 0;
+    harness.shellSnapshots.length = 0;
     harness.bridge = undefined;
   });
 
   afterEach(() => {
+    vi.doUnmock('../../../packages/content/src/index.ts');
     vi.unstubAllGlobals();
   });
 
@@ -284,6 +296,51 @@ describe('main asset bootstrap', () => {
     expect(harness.events.indexOf('restoreSnapshot')).toBeLessThan(
       harness.events.indexOf('shell'),
     );
+  });
+
+  it('mounts the shell before reporting an invalid hunt bootstrap', async () => {
+    vi.doMock(
+      '../../../packages/content/src/index.ts',
+      async (importOriginal) => {
+        const actual =
+          await importOriginal<
+            typeof import('../../../packages/content/src/index.ts')
+          >();
+        return {
+          ...actual,
+          loadHuntDefinition: () => ({
+            ok: false as const,
+            diagnostics: [
+              {
+                code: 'SIM_SCHEMA_INVALID' as const,
+                message: 'Synthetic invalid hunt definition',
+                path: [],
+              },
+            ],
+          }),
+        };
+      },
+    );
+    const roots = createRoots();
+    const main = await loadBootstrapApp();
+    vi.stubGlobal('document', roots.document);
+    vi.stubGlobal('window', roots.window);
+    const bootstrapApp = main.bootstrapApp as unknown as (
+      overrides: Record<string, unknown>,
+    ) => Promise<void>;
+
+    await bootstrapApp({
+      document: roots.document,
+      window: roots.window,
+      createAssetRuntime: () => createRuntime(harness.events, 'root'),
+    });
+
+    expect(harness.events).toContain('shell');
+    expect(harness.shellSnapshots.at(-1)).toMatchObject({
+      phase: 'error',
+      message: 'Hunt bootstrap failed: Synthetic invalid hunt definition',
+    });
+    expect(harness.events).not.toContain('game');
   });
 
   it('keeps the shell blocked and does not create Phaser on preload failure', async () => {
