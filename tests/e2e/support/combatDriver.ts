@@ -1,5 +1,10 @@
 import { expect, type Page } from '@playwright/test';
-
+import { SHAKE_TTL_MS } from '../../../apps/game/src/hunt/CombatImpulses.ts';
+import type {
+  HuntboundHuntGlobal,
+  HuntProbeCommand,
+  HuntProbeState,
+} from '../../../apps/game/src/hunt/HuntProbe.ts';
 import type {
   Direction,
   GridPosition,
@@ -35,6 +40,7 @@ export interface CombatDomState {
 export interface CombatHealthProgress {
   readonly targetHealthBefore: number;
   readonly targetHealthAfter: number;
+  readonly probe?: CombatProbeSnapshot;
 }
 
 export interface CombatEngagement extends CombatHealthProgress {
@@ -48,6 +54,41 @@ export interface CombatHealingProgress {
   readonly playerManaAfter: number;
 }
 
+export interface CombatProbeDecoration {
+  readonly id: number;
+  readonly kind: string;
+  readonly key: string | null;
+  readonly position: GridPosition | null;
+  readonly from: GridPosition | null;
+  readonly to: GridPosition | null;
+  readonly amount: number | null;
+  readonly stronger: boolean;
+  readonly createdAtMs: number;
+  readonly expiresAtMs: number;
+  readonly frame: number | string | null;
+  readonly visible: boolean;
+}
+
+export interface CombatProbeImpulse {
+  readonly id: number;
+  readonly type: string;
+  readonly entityId: number;
+  readonly remainingMs: number;
+}
+
+export interface CombatProbeSnapshot {
+  readonly state: HuntProbeState;
+  readonly commands: readonly HuntProbeCommand[];
+  readonly decorations: readonly CombatProbeDecoration[];
+  readonly impulses: readonly CombatProbeImpulse[];
+  readonly unresolvedCombatAssetKeys: readonly string[];
+}
+
+export interface CombatCueEvidence {
+  readonly active: CombatProbeSnapshot;
+  readonly after?: CombatProbeSnapshot;
+}
+
 export interface CombatPlayEvidence {
   readonly bootDurationMs: number;
   readonly attack: CombatHealthProgress;
@@ -58,7 +99,14 @@ export interface CombatPlayEvidence {
   readonly killedTargetId: number;
   readonly lootLog: string;
   readonly runBag: string;
-  readonly deathOverlayVisible: boolean;
+  /** Present only when the session was asked for cues; see `captureCues`. */
+  readonly cues?: {
+    readonly attack: CombatCueEvidence;
+    readonly berserk: CombatCueEvidence;
+    readonly brutalStrike: CombatCueEvidence;
+    readonly woundCleansing: CombatCueEvidence;
+    readonly death: CombatCueEvidence;
+  };
 }
 
 export interface CombatViewport {
@@ -69,12 +117,45 @@ export interface CombatViewport {
 
 export interface CombatSessionOptions {
   readonly onCombatVisible?: () => Promise<void>;
+  /**
+   * Collect the cue evidence in `CombatPlayEvidence.cues`.
+   *
+   * Off by default, and deliberately so: proving a cue means holding still long
+   * enough to watch an impulse expire and a frame advance, which is roughly
+   * half a second of standing in a room full of rotworms. The specs that only
+   * need the combat outcome must not pay that — the knight has been killed by
+   * added waiting on the narrow viewports before.
+   */
+  readonly captureCues?: boolean;
 }
 
 const combatHudSelector = '[data-testid="combat-hud"]';
 const targetNameSelector = '[data-testid="combat-target-name"]';
 const attackSelector = '[data-testid="combat-attack"]';
 const PLAYER_ATTACK_COOLDOWN_TICKS = 40;
+
+export async function readCombatProbe(
+  page: Page,
+): Promise<CombatProbeSnapshot> {
+  return page.evaluate(() => {
+    const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
+    if (probe === undefined) {
+      throw new Error('Hunt probe is not installed in the test browser.');
+    }
+
+    return {
+      state: probe.state(),
+      commands: probe.commands?.() ?? [],
+      decorations: (probe.visibleDecorations?.() ?? []) as unknown as
+        | readonly CombatProbeDecoration[]
+        | undefined,
+      impulses: (probe.activeImpulses?.() ?? []) as unknown as
+        | readonly CombatProbeImpulse[]
+        | undefined,
+      unresolvedCombatAssetKeys: probe.unresolvedCombatAssetKeys?.() ?? [],
+    } satisfies CombatProbeSnapshot;
+  });
+}
 
 function isRotworm(blueprintId: string): boolean {
   return blueprintId === 'rotworm';
@@ -603,6 +684,69 @@ async function waitForTargetProgress(
 }
 
 /**
+ * Reads the probe at a moment a matching impulse is still alive.
+ *
+ * Impulses are deliberately short — `FLASH_TTL_MS` is 100 ms, six frames — so
+ * this cannot be an await-then-read: by the time a sequential read ran, the
+ * impulse it was meant to observe would be gone. It polls on rAF and returns
+ * the whole snapshot from inside the same frame that saw the impulse.
+ *
+ * Every entry in `match` has to be alive in the same frame, and `entityId`
+ * matters as much as the type. Both fighters are hitting each other, and
+ * `flash` marks whoever was struck, so an unqualified wait would just as
+ * happily catch the rotworm biting the player. Pairing it with the shorter
+ * `hit-stop` — 50 ms against 100 ms — also pins the frame to the swing itself
+ * rather than to the tail of one that landed a moment ago.
+ */
+async function readCombatProbeWhenImpulseActive(
+  page: Page,
+  match: readonly { readonly type: string; readonly entityId?: number }[],
+  timeoutMs = 15_000,
+): Promise<CombatProbeSnapshot> {
+  const handle = await page.waitForFunction(
+    (
+      wanted: readonly { readonly type: string; readonly entityId?: number }[],
+    ) => {
+      const probe = (
+        globalThis as typeof globalThis & {
+          __huntboundHuntProbe?: {
+            state: () => HuntProbeState;
+            commands?: () => readonly HuntProbeCommand[];
+            visibleDecorations?: () => readonly unknown[];
+            activeImpulses?: () => readonly {
+              readonly type: string;
+              readonly entityId: number;
+            }[];
+            unresolvedCombatAssetKeys?: () => readonly string[];
+          };
+        }
+      ).__huntboundHuntProbe;
+      const impulses = probe?.activeImpulses?.() ?? [];
+      const matched = wanted.every((want) =>
+        impulses.some(
+          (impulse) =>
+            impulse.type === want.type &&
+            (want.entityId === undefined || impulse.entityId === want.entityId),
+        ),
+      );
+      if (!matched) return false;
+      return {
+        state: probe?.state(),
+        commands: probe?.commands?.() ?? [],
+        decorations: probe?.visibleDecorations?.() ?? [],
+        impulses,
+        unresolvedCombatAssetKeys: probe?.unresolvedCombatAssetKeys?.() ?? [],
+      };
+    },
+    match,
+    { polling: 'raf', timeout: timeoutMs },
+  );
+  const snapshot = await handle.jsonValue<CombatProbeSnapshot>();
+  await handle.dispose();
+  return snapshot;
+}
+
+/**
  * Presses attack and waits for the engaged creature to lose health.
  *
  * The button no longer swings once, it engages: pressing it with nothing
@@ -613,6 +757,7 @@ async function waitForTargetProgress(
 async function attackUntilProgress(
   page: Page,
   onCombatVisible?: () => Promise<void>,
+  captureCues = false,
 ): Promise<CombatEngagement> {
   let lastError: unknown;
 
@@ -647,6 +792,24 @@ async function attackUntilProgress(
       continue;
     }
 
+    // Started before the wait, not after it: `hit-stop` lives at most
+    // `HIT_STOP_MAX_MS`, so a read issued once the health drop has already been
+    // observed would always be too late. Failing to catch it is not failing the
+    // attack — the caller falls back to a plain read — so it never rejects.
+    const probing = captureCues
+      ? readCombatProbeWhenImpulseActive(
+          page,
+          [
+            { type: 'hit-stop', entityId: before.targetEntityId },
+            { type: 'flash', entityId: before.targetEntityId },
+          ],
+          PLAYER_ATTACK_COOLDOWN_TICKS * TICK_DURATION_MS + 1_000,
+        ).then(
+          (snapshot) => snapshot,
+          () => undefined,
+        )
+      : Promise.resolve(undefined);
+
     try {
       // One full attack cooldown, not an arbitrary wait: the knight swings
       // every `PLAYER_ATTACK_COOLDOWN_TICKS`, so a shorter window can expire
@@ -661,8 +824,12 @@ async function attackUntilProgress(
         targetEntityId: before.targetEntityId,
         targetHealthBefore: before.targetHealth,
         targetHealthAfter: after.targetHealth,
+        probe: await probing,
       };
     } catch (error) {
+      // Not awaited: a swing that missed has to be retried now, not after the
+      // capture's own timeout has run down.
+      void probing;
       lastError = error;
       await page.waitForTimeout(TICK_DURATION_MS);
     }
@@ -956,10 +1123,35 @@ export async function runCombatSession(
   // Stay put: one step south of playerStart pulls the southern rotworm into
   // view range, and then Berserk empties the floor before Brutal Strike.
   await waitForAdjacentRotworm(page, hunt);
-  const attack = await attackUntilProgress(page, options.onCombatVisible);
+  const capture = options.captureCues === true;
+  const attack = await attackUntilProgress(
+    page,
+    options.onCombatVisible,
+    capture,
+  );
+
+  // Each cue is read where it happens, because impulses and decorations both
+  // expire: waiting until the end of the session and reading once would see
+  // none of them. All of it is skipped unless the caller asked for cues — the
+  // waits below are dead time the knight spends being bitten.
+  const probe = async (): Promise<CombatProbeSnapshot | undefined> =>
+    capture ? readCombatProbe(page) : undefined;
+  const settle = async (ms: number): Promise<void> => {
+    if (capture) await page.waitForTimeout(ms);
+  };
+
+  const attackProbe = attack.probe ?? (await probe());
+  await settle(SHAKE_TTL_MS + TICK_DURATION_MS);
+  const attackAfterTtlProbe = await probe();
 
   const killedTargetId = attack.targetEntityId;
   await waitForTargetCleared(page, 25_000);
+  // The creature dies here, under the auto-attack loop, well before the
+  // abilities are cast — so the corpse, its blood and the autoloot arc are read
+  // now rather than at the end of the session.
+  const deathProbe = await probe();
+  await settle(TICK_DURATION_MS * 2);
+  const deathAfterFrameProbe = await probe();
 
   // Floor 8 of the cave only seats four rotworms. Stay near spawn so the
   // southern one stays out of view. Dump Berserk on the pile while health is
@@ -968,8 +1160,11 @@ export async function runCombatSession(
   await ensureEngagedTarget(page, hunt);
   await waitForPlayerDamage(page, initial.playerHealthMaximum);
   const berserk = await castDamageAbility(page, hunt, 0);
+  const berserkProbe = await probe();
   const woundCleansing = await castHealingAbility(page);
+  const woundCleansingProbe = await probe();
   const brutalStrike = await castDamageAbility(page, hunt, 1);
+  const brutalStrikeProbe = await probe();
   const withLoot = await waitForLoot(page);
 
   return {
@@ -981,5 +1176,19 @@ export async function runCombatSession(
     killedTargetId,
     lootLog: withLoot.lootLog,
     runBag: withLoot.runBag,
+    cues:
+      attackProbe === undefined ||
+      berserkProbe === undefined ||
+      brutalStrikeProbe === undefined ||
+      woundCleansingProbe === undefined ||
+      deathProbe === undefined
+        ? undefined
+        : {
+            attack: { active: attackProbe, after: attackAfterTtlProbe },
+            berserk: { active: berserkProbe },
+            brutalStrike: { active: brutalStrikeProbe },
+            woundCleansing: { active: woundCleansingProbe },
+            death: { active: deathProbe, after: deathAfterFrameProbe },
+          },
   };
 }

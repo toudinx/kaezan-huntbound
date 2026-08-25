@@ -129,6 +129,14 @@ export interface HuntProbeRecorder {
 export interface HuntProbeDecoration {
   readonly id: number;
   readonly kind: string;
+  readonly key: string | null;
+  readonly position: GridPosition | null;
+  readonly from: GridPosition | null;
+  readonly to: GridPosition | null;
+  readonly amount: number | null;
+  readonly stronger: boolean;
+  readonly createdAtMs: number | null;
+  readonly expiresAtMs: number | null;
   readonly frame: number | string | null;
   readonly visible: boolean;
   readonly x: number;

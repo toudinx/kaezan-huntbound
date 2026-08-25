@@ -326,13 +326,37 @@ describe('installHuntProbe', () => {
     );
   });
 
-  it('exposes the current frame of each visible decoration', () => {
+  it('exposes metadata and the current frame of each visible decoration', () => {
     vi.stubEnv('MODE', 'test');
     const decorations = Object.freeze([
-      { id: 1, kind: 'blood', frame: 3, visible: true, x: 10, y: 20, alpha: 1 },
+      {
+        id: 1,
+        kind: 'blood',
+        key: 'effect:tibia:draw-blood',
+        position: at(24, 14, 8),
+        from: null,
+        to: null,
+        amount: null,
+        stronger: false,
+        createdAtMs: 500,
+        expiresAtMs: 1_400,
+        frame: 3,
+        visible: true,
+        x: 10,
+        y: 20,
+        alpha: 1,
+      },
       {
         id: 2,
         kind: 'corpse',
+        key: 'item:tibia:dead-rotworm',
+        position: at(24, 14, 8),
+        from: null,
+        to: null,
+        amount: null,
+        stronger: false,
+        createdAtMs: 500,
+        expiresAtMs: 1_400,
         frame: 0,
         visible: true,
         x: 30,

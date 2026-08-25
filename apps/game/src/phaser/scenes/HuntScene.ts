@@ -549,8 +549,21 @@ export class HuntScene extends Phaser.Scene {
   }
 
   huntProbeVisibleDecorations(): readonly HuntProbeDecoration[] {
+    // Two views of the same decoration. The Phaser object carries where it was
+    // actually drawn; the domain record carries what it means — which cue, at
+    // which tile, for how much. A spec proving a cue needs the second, and the
+    // damage-number sampler in combat-play.spec.ts needs the first, so both are
+    // reported. The domain half is null for an object the model no longer
+    // holds, rather than dropping the entry and hiding it from that sampler.
+    const decorations = new Map(
+      this.combatDecorations
+        .current()
+        .map((decoration) => [decoration.id, decoration] as const),
+    );
+
     return Object.freeze(
       [...this.decorationObjects.entries()].map(([id, object]) => {
+        const decoration = decorations.get(id);
         const kind = object.getData('hunt-decoration');
         const frame =
           object instanceof Phaser.GameObjects.Sprite
@@ -558,7 +571,19 @@ export class HuntScene extends Phaser.Scene {
             : null;
         return {
           id,
-          kind: typeof kind === 'string' ? kind : 'unknown',
+          kind:
+            decoration?.kind ?? (typeof kind === 'string' ? kind : 'unknown'),
+          key: decoration?.key ?? null,
+          position:
+            decoration?.position === undefined
+              ? null
+              : { ...decoration.position },
+          from: decoration?.from === undefined ? null : { ...decoration.from },
+          to: decoration?.to === undefined ? null : { ...decoration.to },
+          amount: decoration?.amount ?? null,
+          stronger: decoration?.stronger === true,
+          createdAtMs: decoration?.createdAtMs ?? null,
+          expiresAtMs: decoration?.expiresAtMs ?? null,
           frame,
           visible: object.visible,
           x: object.x,
