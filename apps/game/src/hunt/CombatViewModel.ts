@@ -724,8 +724,20 @@ export function createHuntCombatViewModel(
   runtime: RuntimeContentBundle,
   playerEntityId: EntityId = 1 as EntityId,
   playerBlueprintId = 'player',
+  abilitiesOrConditions:
+    | readonly AbilityDefinition[]
+    | readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_ABILITIES,
   conditions: readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_FALLBACK_CONDITIONS,
 ): CombatViewModel {
+  const receivedConditions =
+    abilitiesOrConditions[0] !== undefined &&
+    'conditionId' in abilitiesOrConditions[0];
+  const abilities = receivedConditions
+    ? DEFAULT_COMBAT_ABILITIES
+    : (abilitiesOrConditions as readonly AbilityDefinition[]);
+  const scenarioConditions = receivedConditions
+    ? (abilitiesOrConditions as readonly ScenarioConditionDefinition[])
+    : conditions;
   const character = runtime.characters[0];
   const maxHealthByBlueprint = new Map<string, number>();
   const maxResourceByBlueprint = new Map<string, number>();
@@ -745,8 +757,8 @@ export function createHuntCombatViewModel(
   return createCombatViewModel({
     playerEntityId,
     playerBlueprintId,
-    abilities: DEFAULT_COMBAT_ABILITIES,
-    conditions,
+    abilities,
+    conditions: scenarioConditions,
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint,
     maxResourceByBlueprint,

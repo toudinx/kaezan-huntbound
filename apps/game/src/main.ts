@@ -12,11 +12,14 @@ import {
   buildHuntScenario,
   createContentRegistry,
   loadHuntDefinition,
+  parseKnightPostures,
   projectRuntimeBundle,
 } from '../../../packages/content/src/index.ts';
+import knightCombatSelectionJson from '../../../packages/content/src/selections/pb-05-knight-combat.json?raw';
 import {
   type CatalogContentBundle,
   createSeed,
+  type EntityId,
   type HuntDefinition,
 } from '../../../packages/contracts/src/index.ts';
 import {
@@ -116,6 +119,13 @@ function readHuntDefinition(): HuntDefinition {
   throw new Error(
     diagnostic?.message ?? 'Generated hunt definition is invalid.',
   );
+}
+
+function readKnightPostures() {
+  const selection = JSON.parse(knightCombatSelectionJson) as {
+    readonly postures?: unknown;
+  };
+  return parseKnightPostures(selection.postures);
 }
 
 function createBrowserSaveSession(): SaveSessionController {
@@ -223,12 +233,6 @@ export async function bootstrapApp(
   const inputTarget =
     (browserDocument.body as HTMLElement | null | undefined) ?? uiRoot;
   inputMap.attach(inputTarget);
-  // The catalog is a compile-time import, so the HUD can know the real health
-  // and mana ceilings before a single asset has loaded.
-  const runtime = projectRuntimeBundle(
-    JSON.parse(catalogBundleJson) as CatalogContentBundle,
-  );
-  const combatViewModel = createHuntCombatViewModel(runtime);
   let driver: ReturnType<typeof createRestartableHuntDriver> | undefined;
   let runIdentity:
     | {
@@ -244,6 +248,117 @@ export async function bootstrapApp(
   const onSaveError = (error: unknown): void => {
     publishSaveError(bridge, error);
   };
+  const onPageHide = (): void => {
+    void saveSession.pagehide();
+  };
+  browserWindow.addEventListener('pagehide', onPageHide);
+  const disposeSave = (): void => {
+    browserWindow.removeEventListener('pagehide', onPageHide);
+    unsubscribeSaveState?.();
+    unsubscribeSaveEvents?.();
+    unsubscribeSaveTick?.();
+    saveSession.destroy();
+  };
+  // The catalog is a compile-time import, so the HUD can know the real health
+  // and mana ceilings before a single asset has loaded.
+  const runtime = projectRuntimeBundle(
+    JSON.parse(catalogBundleJson) as CatalogContentBundle,
+  );
+  let hunt: HuntDefinition;
+  try {
+    hunt = readHuntDefinition();
+  } catch (error) {
+    inputMap.detach();
+    disposeSave();
+    setAssetReadiness(shellRoot, false, 0);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(error),
+    });
+    return;
+  }
+
+  const character = runtime.characters[0];
+  if (character === undefined) {
+    inputMap.detach();
+    disposeSave();
+    setAssetReadiness(shellRoot, false, 0);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(
+        new Error('Generated catalog is missing the hunt character.'),
+      ),
+    });
+    return;
+  }
+
+  const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
+  const registry = createContentRegistry(runtime);
+  let scenarioResult: ReturnType<typeof buildHuntScenario>;
+  try {
+    const postures = readKnightPostures();
+    scenarioResult = buildHuntScenario(hunt, character, registry, huntSeed, {
+      postures,
+    });
+  } catch (error) {
+    inputMap.detach();
+    disposeSave();
+    setAssetReadiness(shellRoot, false, 0);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(error),
+    });
+    return;
+  }
+
+  if (!scenarioResult.ok) {
+    inputMap.detach();
+    disposeSave();
+    setAssetReadiness(shellRoot, false, 0);
+    bridge.publish({
+      ...bridge.getSnapshot(),
+      phase: 'error',
+      renderer: 'unavailable',
+      message: formatHuntBootError(
+        new Error(
+          scenarioResult.diagnostics[0]?.message ??
+            'Generated hunt scenario is invalid.',
+        ),
+      ),
+    });
+    return;
+  }
+
+  const scenario = scenarioResult.value.scenario;
+  const combatViewModel = createHuntCombatViewModel(
+    runtime,
+    1 as EntityId,
+    'player',
+    scenario.abilities,
+    scenario.conditions,
+  );
+  const identity = {
+    huntId: hunt.huntId,
+    scenarioId: scenario.scenarioId,
+    scenarioRevision: scenario.scenarioRevision,
+    seed: huntSeed,
+  } as const;
+  const saveBoot = await saveSession.boot({
+    identity,
+    createDriver: (snapshot) =>
+      createRestartableHuntDriver(scenario, huntSeed, 0, snapshot),
+  });
+  const activeDriver = saveBoot.driver;
+  driver = activeDriver;
+  runIdentity = identity;
+  combatViewModel.restoreSnapshot(activeDriver.snapshot());
+  combatViewModel.restoreBag(saveBoot.bag);
   const appShell = appShellMount(uiRoot, bridge, {
     input: inputMap,
     combat: {
@@ -292,17 +407,6 @@ export async function bootstrapApp(
   unsubscribeSaveTick = bridge.subscribeTick((tick) => {
     saveSession.onTick(tick);
   });
-  const onPageHide = (): void => {
-    void saveSession.pagehide();
-  };
-  browserWindow.addEventListener('pagehide', onPageHide);
-  const disposeSave = (): void => {
-    browserWindow.removeEventListener('pagehide', onPageHide);
-    unsubscribeSaveState?.();
-    unsubscribeSaveEvents?.();
-    unsubscribeSaveTick?.();
-    saveSession.destroy();
-  };
   let huntAssets: readonly ResolvedAsset[] = [];
 
   try {
@@ -328,79 +432,6 @@ export async function bootstrapApp(
     return;
   }
 
-  let hunt: HuntDefinition;
-  try {
-    hunt = readHuntDefinition();
-  } catch (error) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(error),
-    });
-    return;
-  }
-
-  const character = runtime.characters[0];
-  if (character === undefined) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(
-        new Error('Generated catalog is missing the hunt character.'),
-      ),
-    });
-    return;
-  }
-
-  const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
-  const scenarioResult = buildHuntScenario(
-    hunt,
-    character,
-    createContentRegistry(runtime),
-    huntSeed,
-  );
-  if (!scenarioResult.ok) {
-    inputMap.detach();
-    disposeSave();
-    setAssetReadiness(shellRoot, false, 0);
-    bridge.publish({
-      ...bridge.getSnapshot(),
-      phase: 'error',
-      renderer: 'unavailable',
-      message: formatHuntBootError(
-        new Error(
-          scenarioResult.diagnostics[0]?.message ??
-            'Generated hunt scenario is invalid.',
-        ),
-      ),
-    });
-    return;
-  }
-
-  const scenario = scenarioResult.value.scenario;
-  const identity = {
-    huntId: hunt.huntId,
-    scenarioId: scenario.scenarioId,
-    scenarioRevision: scenario.scenarioRevision,
-    seed: huntSeed,
-  } as const;
-  const saveBoot = await saveSession.boot({
-    identity,
-    createDriver: (snapshot) =>
-      createRestartableHuntDriver(scenario, huntSeed, 0, snapshot),
-  });
-  const activeDriver = saveBoot.driver;
-  driver = activeDriver;
-  runIdentity = identity;
-  combatViewModel.restoreBag(saveBoot.bag);
   saveSession.attachRun({
     identity,
     driver: activeDriver,
@@ -412,6 +443,8 @@ export async function bootstrapApp(
     assets: huntAssets,
     input: inputMap,
     driver: activeDriver,
+    abilities: scenario.abilities,
+    conditions: scenario.conditions,
   });
   const viewportFactory =
     overrides.createViewportController ?? createViewportController;

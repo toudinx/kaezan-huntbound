@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const harness = vi.hoisted(() => ({
   events: [] as string[],
+  gameOptions: [] as unknown[],
+  viewModelCalls: [] as unknown[][],
+  restoredSnapshots: [] as unknown[],
   bridge: undefined as
     | {
         getSnapshot(): { phase: string; message: string };
@@ -63,9 +66,29 @@ vi.mock('./ui/AppShell', () => ({
 }));
 
 vi.mock('./phaser/createGame', () => ({
-  createGame: () => {
+  createGame: (_parent: unknown, _bridge: unknown, options: unknown) => {
     harness.events.push('game');
+    harness.gameOptions.push(options);
     return { game: {}, lifecycle: {} };
+  },
+}));
+
+vi.mock('./hunt/CombatViewModel', () => ({
+  createHuntCombatViewModel: (...args: readonly unknown[]) => {
+    harness.viewModelCalls.push([...args]);
+    return {
+      handle: () => undefined,
+      restoreBag: () => undefined,
+      restoreSnapshot: (snapshot: unknown) => {
+        harness.events.push('restoreSnapshot');
+        harness.restoredSnapshots.push(snapshot);
+      },
+      setTick: () => undefined,
+      setTarget: () => undefined,
+      selectTarget: () => undefined,
+      snapshot: () => ({ bag: [] }),
+      reset: () => undefined,
+    };
   },
 }));
 
@@ -153,6 +176,9 @@ async function loadBootstrapApp() {
 describe('main asset bootstrap', () => {
   beforeEach(() => {
     harness.events.length = 0;
+    harness.gameOptions.length = 0;
+    harness.viewModelCalls.length = 0;
+    harness.restoredSnapshots.length = 0;
     harness.bridge = undefined;
   });
 
@@ -193,6 +219,7 @@ describe('main asset bootstrap', () => {
     expect(harness.events).toEqual([
       'runtime:root',
       'runtime:hunt',
+      'restoreSnapshot',
       'shell',
       'preload:root:start',
       'preload:root:end',
@@ -205,6 +232,58 @@ describe('main asset bootstrap', () => {
     expect(huntRuntime).toBeDefined();
     expect(roots.shellRoot.getAttribute('data-assets-ready')).toBe('true');
     expect(roots.shellRoot.getAttribute('data-assets-count')).toBe('5');
+  });
+
+  it('boots combat from the scenario posture tables before the first shell render', async () => {
+    const roots = createRoots();
+    const main = await loadBootstrapApp();
+    vi.stubGlobal('document', roots.document);
+    vi.stubGlobal('window', roots.window);
+    const bootstrapApp = main.bootstrapApp as unknown as (
+      overrides: Record<string, unknown>,
+    ) => Promise<void>;
+
+    await bootstrapApp({
+      document: roots.document,
+      window: roots.window,
+      createAssetRuntime: () => createRuntime(harness.events, 'root'),
+    });
+
+    const viewModelCall = harness.viewModelCalls[0];
+    if (viewModelCall === undefined) {
+      throw new Error('Expected the hunt combat view model to be created.');
+    }
+    const viewModelAbilities = viewModelCall[3] as
+      | readonly { readonly abilityId: string }[]
+      | undefined;
+    const viewModelConditions = viewModelCall[4] as
+      | readonly { readonly conditionId: string }[]
+      | undefined;
+    const gameOptions = harness.gameOptions[0] as
+      | {
+          readonly abilities?: readonly { readonly abilityId: string }[];
+          readonly conditions?: readonly { readonly conditionId: string }[];
+        }
+      | undefined;
+
+    expect(viewModelAbilities?.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'groundshaker',
+      'whirlwind-throw',
+      'blood-rage',
+      'protector',
+    ]);
+    expect(
+      viewModelConditions?.map((condition) => condition.conditionId),
+    ).toEqual(['blood-rage', 'protector']);
+    expect(gameOptions?.abilities).toBe(viewModelAbilities);
+    expect(gameOptions?.conditions).toBe(viewModelConditions);
+    expect(harness.restoredSnapshots).toHaveLength(1);
+    expect(harness.events.indexOf('restoreSnapshot')).toBeLessThan(
+      harness.events.indexOf('shell'),
+    );
   });
 
   it('keeps the shell blocked and does not create Phaser on preload failure', async () => {

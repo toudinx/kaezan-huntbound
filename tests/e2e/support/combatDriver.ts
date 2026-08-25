@@ -23,6 +23,10 @@ export interface CombatDomState {
   readonly targetHealth: number;
   readonly targetHealthMaximum: number;
   readonly targetName: string;
+  readonly postureText: string;
+  readonly playerPosture: string;
+  readonly bloodRagePressed: boolean;
+  readonly protectorPressed: boolean;
   readonly lootLog: string;
   readonly runBag: string;
   readonly deathOverlayVisible: boolean;
@@ -280,6 +284,15 @@ export async function readCombatState(page: Page): Promise<CombatDomState> {
           .querySelector<HTMLElement>('[data-testid="combat-player-mana"]')
           ?.getAttribute('aria-valuenow'),
       );
+      const postureElement = document.querySelector<HTMLElement>(
+        '[data-testid="combat-posture"]',
+      );
+      const bloodRage = document.querySelector<HTMLButtonElement>(
+        '[data-testid="combat-ability-5"]',
+      );
+      const protector = document.querySelector<HTMLButtonElement>(
+        '[data-testid="combat-ability-6"]',
+      );
 
       if (
         !Number.isSafeInteger(playerHealth) ||
@@ -301,6 +314,10 @@ export async function readCombatState(page: Page): Promise<CombatDomState> {
         targetHealth,
         targetHealthMaximum,
         targetName,
+        postureText: postureElement?.textContent?.trim() ?? '',
+        playerPosture: postureElement?.getAttribute('data-posture') ?? '',
+        bloodRagePressed: bloodRage?.getAttribute('aria-pressed') === 'true',
+        protectorPressed: protector?.getAttribute('aria-pressed') === 'true',
         lootLog:
           document.querySelector<HTMLElement>('[data-testid="combat-loot-log"]')
             ?.textContent ?? '',
@@ -675,6 +692,14 @@ async function waitForAbilityReady(
   await page.waitForTimeout(TICK_DURATION_MS * 3);
 }
 
+export async function castCombatAbility(
+  page: Page,
+  abilityIndex: number,
+): Promise<void> {
+  await waitForAbilityReady(page, abilityIndex);
+  await tapCombatAction(page, `[data-testid="combat-ability-${abilityIndex}"]`);
+}
+
 async function tapCombatAction(page: Page, selector: string): Promise<void> {
   if (selector === attackSelector) {
     await page.keyboard.press('Space');
@@ -720,6 +745,13 @@ async function ensureEngagedTarget(
   const targetId = await selectNearestTarget(page);
   await moveToAdjacentTarget(page, hunt, targetId);
   return targetId;
+}
+
+export async function engageNearestRotworm(
+  page: Page,
+  hunt: HuntDefinition,
+): Promise<number> {
+  return ensureEngagedTarget(page, hunt);
 }
 
 async function castDamageAbility(
