@@ -1,4 +1,9 @@
-import { playfieldInsets, playfieldRect } from '../../hunt/playfieldViewport';
+import {
+  playfieldArcBand,
+  playfieldInsets,
+  playfieldRailBand,
+  playfieldRect,
+} from '../../hunt/playfieldViewport';
 
 /**
  * The frame the rest of the HUD hangs on.
@@ -80,12 +85,13 @@ export function mountCockpit(
 
     const insets = playfieldInsets(size);
     const rect = playfieldRect(size);
-    // The right band carries the arc and the rail, so the rail is what is left
-    // once the arc has taken its share. Both side bands shrink by the same
-    // factor when the free area is at its minimum, so the left inset stays the
-    // arc width rather than drifting away from it on a cramped viewport.
-    const arc = insets.left;
-    const rail = Math.max(0, insets.right - arc);
+    // The side bands are wider than the arcs now that the play window is capped
+    // and centred, so the arc and rail widths are asked for rather than
+    // inferred from the insets. The stylesheet hangs each arc off the play
+    // window's own edge, which is what keeps the two curves beside the knight
+    // instead of out at the corners of a wide monitor.
+    const arc = playfieldArcBand(size);
+    const rail = playfieldRailBand(size);
     const style = element.style;
 
     style.setProperty('--cockpit-top', `${insets.top}px`);

@@ -1,3 +1,5 @@
+import { TARGET_VISIBLE_ROWS } from './CameraFraming';
+
 /**
  * The one place that knows where the play area ends.
  *
@@ -52,11 +54,30 @@ const COMPACT_WIDTH = 700;
 const COMPACT_TOP_BAND = 112;
 const WIDE_TOP_BAND = 56;
 const COMPACT_BOTTOM_BAND = 236;
-const WIDE_BOTTOM_BAND = 128;
+const MIN_WIDE_BOTTOM_BAND = 128;
+const MAX_WIDE_BOTTOM_BAND = 176;
+const WIDE_BOTTOM_BAND_RATIO = 0.13;
 const MIN_ARC_BAND = 44;
 const MAX_ARC_BAND = 92;
 const ARC_BAND_RATIO = 0.11;
 const RAIL_BAND = 208;
+
+/**
+ * How wide the play window is allowed to get, in tiles.
+ *
+ * The camera frames `TARGET_VISIBLE_ROWS` rows however tall the window is, but
+ * nothing was capping the *width*, so on a 2560 px monitor the free area ran
+ * the whole way across and the arcs ended up a thousand pixels from where the
+ * player is looking. Reported at playtest on 2026-08-25: "os arcos deveriam
+ * estar mais centralizados, a ideia e o jogador olhar sempre o centro da tela".
+ *
+ * Capping costs no view. The canvas is full-bleed and the frame floats over it,
+ * so the world still draws behind the arcs and past them -- the cap moves the
+ * arcs inward, it does not crop the game. Nine against eleven rows makes the
+ * window a little taller than it is wide, which is the shape a top-down grid
+ * reads best in.
+ */
+const PLAYFIELD_MAX_COLUMNS = 9;
 
 function assertPositiveFinite(name: string, value: number): void {
   if (!Number.isFinite(value) || value <= 0) {
@@ -96,6 +117,46 @@ function fitBands(
   return { near: near * factor, far: far * factor };
 }
 
+/**
+ * Splits the width between the two side bands.
+ *
+ * Preferred shape: the play window sits on the middle of the canvas, with the
+ * rail's width mirrored on the left so that centring is real rather than
+ * nominal. The mirror is dead space, and it is worth it -- the player watches
+ * the middle of the screen, so that is where his knight and his two gauges have
+ * to be.
+ *
+ * When mirroring would push the window under its minimum, the mirror is what
+ * gets dropped: the window hugs the left band and takes whatever the rail
+ * leaves. A narrow laptop keeps a playable window and loses only the symmetry.
+ */
+function horizontalBands(
+  size: PlayfieldViewportSize,
+  arc: number,
+  rail: number,
+): { readonly left: number; readonly right: number } {
+  const tile = size.height / TARGET_VISIBLE_ROWS;
+  const maximumWidth = PLAYFIELD_MAX_COLUMNS * tile;
+  const mirrored = Math.min(maximumWidth, size.width - 2 * (arc + rail));
+
+  if (mirrored >= MIN_PLAYFIELD_WIDTH) {
+    const side = (size.width - mirrored) / 2;
+    return { left: side, right: side };
+  }
+
+  const bands = fitBands(size.width, MIN_PLAYFIELD_WIDTH, arc, arc + rail);
+  const available = size.width - bands.near - bands.far;
+  // The cap never takes the window below the minimum: on a viewport too small
+  // to hold both, the chrome is what gives way, not the game.
+  const width = Math.max(
+    Math.min(maximumWidth, available),
+    Math.min(available, MIN_PLAYFIELD_WIDTH),
+  );
+  const slack = (available - width) / 2;
+
+  return { left: bands.near + slack, right: bands.far + slack };
+}
+
 export function playfieldInsets(size: PlayfieldViewportSize): PlayfieldInsets {
   assertViewport(size);
 
@@ -105,25 +166,44 @@ export function playfieldInsets(size: PlayfieldViewportSize): PlayfieldInsets {
     MIN_ARC_BAND,
     MAX_ARC_BAND,
   );
-  const horizontal = fitBands(
-    size.width,
-    MIN_PLAYFIELD_WIDTH,
-    arc,
-    arc + (compact ? 0 : RAIL_BAND),
-  );
+  const horizontal = horizontalBands(size, arc, compact ? 0 : RAIL_BAND);
   const vertical = fitBands(
     size.height,
     MIN_PLAYFIELD_HEIGHT,
     compact ? COMPACT_TOP_BAND : WIDE_TOP_BAND,
-    compact ? COMPACT_BOTTOM_BAND : WIDE_BOTTOM_BAND,
+    compact
+      ? COMPACT_BOTTOM_BAND
+      : clamp(
+          Math.round(size.height * WIDE_BOTTOM_BAND_RATIO),
+          MIN_WIDE_BOTTOM_BAND,
+          MAX_WIDE_BOTTOM_BAND,
+        ),
   );
 
   return {
     top: vertical.near,
-    right: horizontal.far,
+    right: horizontal.right,
     bottom: vertical.far,
-    left: horizontal.near,
+    left: horizontal.left,
   };
+}
+
+/** The arc band width, which both side bands reserve next to the play window. */
+export function playfieldArcBand(size: PlayfieldViewportSize): number {
+  assertViewport(size);
+
+  return clamp(
+    Math.round(size.width * ARC_BAND_RATIO),
+    MIN_ARC_BAND,
+    MAX_ARC_BAND,
+  );
+}
+
+/** The rail band width, zero on a viewport with no room for one. */
+export function playfieldRailBand(size: PlayfieldViewportSize): number {
+  assertViewport(size);
+
+  return size.width < COMPACT_WIDTH ? 0 : RAIL_BAND;
 }
 
 export function playfieldRect(size: PlayfieldViewportSize): PlayfieldRect {

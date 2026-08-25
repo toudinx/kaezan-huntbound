@@ -34,8 +34,13 @@ function svg(document: Document, tagName: string): Element {
 /**
  * Bulges away from the play area and hugs it on the inner edge, so the free
  * rectangle stays a rectangle and the curve is spent on the outside.
+ *
+ * A quadratic curve rather than a circular arc: the element is stretched to
+ * whatever height the band gives it, and a circle's bulge flattens out of sight
+ * as it stretches. The control point fixes the bulge as a share of the width,
+ * so the gauge still reads as a curve on a tall monitor instead of as a line.
  */
-const ARC_PATH = 'M 96 16 A 128 192 0 0 0 96 384';
+const ARC_PATH = 'M 102 10 Q 2 200 102 390';
 
 export function createVitalArc(
   document: Document,

@@ -66,6 +66,7 @@ interface DeckCell {
   readonly button: HTMLButtonElement;
   readonly slot: DeckSlot;
   readonly cooldown: HTMLElement;
+  readonly cost: HTMLElement;
 }
 
 function cooldownSeconds(ticks: number): string {
@@ -123,10 +124,16 @@ function createCell(
   const cooldown = document.createElement('span');
   cooldown.className = 'cockpit-cell__cooldown';
   cooldown.setAttribute('aria-hidden', 'true');
+  // The mana price was only in the `aria-label`, so the one number that decides
+  // whether a spell is worth casting right now was the one thing a sighted
+  // player could not read off the deck.
+  const cost = document.createElement('span');
+  cost.className = 'cockpit-cell__cost';
+  cost.setAttribute('aria-hidden', 'true');
 
-  button.append(glyph, hotkey, cooldown);
+  button.append(glyph, hotkey, cost, cooldown);
 
-  return { button, slot, cooldown };
+  return { button, slot, cooldown, cost };
 }
 
 function group(document: Document, name: string): HTMLElement {
@@ -292,6 +299,8 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
 
       const text = cooldownSeconds(ability.remainingCooldownTicks);
       if (cell.cooldown.textContent !== text) cell.cooldown.textContent = text;
+      const cost = ability.resourceCost > 0 ? String(ability.resourceCost) : '';
+      if (cell.cost.textContent !== cost) cell.cost.textContent = cost;
     }
 
     posture.setAttribute(

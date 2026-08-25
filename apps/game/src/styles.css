@@ -357,27 +357,40 @@ body {
 
 /* Vitals -------------------------------------------------------------- */
 
+/*
+ * Each arc hangs off the edge of the play window rather than off the edge of
+ * the screen. On a 2560 px monitor the second one puts the gauges a thousand
+ * pixels from where the player is looking, which is what the playtest called
+ * out; this way they stay beside the knight at every width.
+ */
 .cockpit__vitals {
   position: absolute;
-  top: var(--cockpit-top);
-  bottom: var(--cockpit-bottom);
+  top: var(--playfield-y);
+  display: flex;
+  align-items: center;
   width: var(--cockpit-arc);
+  height: var(--playfield-height);
   pointer-events: none;
 }
 
 .cockpit__vitals--left {
-  left: 0;
+  left: calc(var(--playfield-x) - var(--cockpit-arc));
 }
 
 .cockpit__vitals--right {
-  right: var(--cockpit-rail);
+  left: calc(var(--playfield-x) + var(--playfield-width));
 }
 
+/*
+ * Capped and centred on the play window rather than run edge to edge. Stretched
+ * over a 1300 px monitor the curve flattens into a straight line and the gauge
+ * stops reading as a gauge.
+ */
 .cockpit-arc {
   position: relative;
   display: block;
   width: 100%;
-  height: 100%;
+  height: min(calc(100% - 1.9rem), 24rem);
 }
 
 .cockpit-arc[data-side="right"] {
@@ -394,12 +407,12 @@ body {
 }
 
 .cockpit-arc__track {
-  stroke: rgb(123 161 216 / 20%);
-  stroke-width: 7;
+  stroke: rgb(123 161 216 / 22%);
+  stroke-width: 12;
 }
 
 .cockpit-arc__fill {
-  stroke-width: 7;
+  stroke-width: 12;
   transition: stroke-dashoffset 120ms linear;
 }
 
@@ -420,16 +433,18 @@ body {
  */
 .cockpit-arc__value {
   position: absolute;
-  right: 0.1rem;
-  bottom: 0;
-  font-size: clamp(0.8rem, 1.6vw, 1.15rem);
+  right: 0;
+  bottom: -1.5rem;
+  left: 0;
+  font-size: clamp(0.85rem, 1.6vw, 1.25rem);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 
+/* The right arc is mirrored as a whole; its readout is flipped back. */
 .cockpit-arc[data-side="right"] .cockpit-arc__value {
   transform: scaleX(-1);
-  transform-origin: right center;
 }
 
 .cockpit-arc--health .cockpit-arc__value {
@@ -624,7 +639,7 @@ body {
    * share of a box these very cells size, and the circle resolves to nothing.
    */
   --cell: min(
-    3.25rem,
+    5.5rem,
     calc(var(--cockpit-bottom) - 1.4rem),
     calc((100vw - var(--deck-reserve) * 2 - 5.5rem) / 9)
   );
@@ -632,7 +647,7 @@ body {
 
 .cockpit[data-cockpit-rail="off"] .cockpit-deck__inner {
   --cell: min(
-    3.25rem,
+    5.5rem,
     calc(var(--cockpit-bottom) * 0.42 - 1rem),
     calc((100vw - var(--deck-reserve) * 2 - 5rem) / 9)
   );
@@ -678,6 +693,7 @@ body {
   color: #dce6f8;
   background: rgb(12 23 42 / 92%);
   font: inherit;
+  font-size: max(0.55rem, calc(var(--cell) * 0.19));
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
@@ -722,20 +738,28 @@ body {
 
 .cockpit-cell__key {
   position: absolute;
-  top: 0.05rem;
-  left: 0.18rem;
+  top: 0.1rem;
+  left: 0.22rem;
   color: #8fa6c8;
-  font-size: 0.58rem;
   line-height: 1;
   letter-spacing: 0;
 }
 
+/* The mana price, in the colour of the gauge it comes out of. */
+.cockpit-cell__cost {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 0.22rem;
+  color: #9ec4ff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
 .cockpit-cell__cooldown {
   position: absolute;
-  right: 0.18rem;
-  bottom: 0.05rem;
+  right: 0.22rem;
+  bottom: 0.1rem;
   color: #f1d78b;
-  font-size: 0.58rem;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -751,8 +775,9 @@ body {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(5, 1fr);
-  gap: 7%;
-  width: 68%;
+  gap: 6%;
+  width: 62%;
+  margin-top: -6%;
   aspect-ratio: 1;
 }
 

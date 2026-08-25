@@ -45,10 +45,39 @@ describe('playfieldViewport', () => {
     expect(rect.height).toBeGreaterThanOrEqual(MIN_PLAYFIELD_HEIGHT);
   });
 
-  it('reserves a wider right band than left, for the rail, once there is room', () => {
-    const insets = playfieldInsets({ width: 1366, height: 768 });
+  it('mirrors the rail on the left so the play window keeps the middle', () => {
+    // The player watches the centre of the screen, so that is where his knight
+    // and his two gauges have to be. The mirror is dead space and it is worth
+    // it -- reported at playtest on 2026-08-25, when the arcs on a 2560 px
+    // monitor sat a thousand pixels from where he was looking.
+    for (const viewport of [
+      { width: 1366, height: 768 },
+      { width: 1920, height: 1080 },
+      { width: 2560, height: 1305 },
+    ]) {
+      const insets = playfieldInsets(viewport);
+
+      expect(insets.left).toBeCloseTo(insets.right, 6);
+    }
+  });
+
+  it('caps the play window well short of a wide monitor', () => {
+    const wide = { width: 2560, height: 1305 };
+    const rect = playfieldRect(wide);
+
+    // Capping costs no view: the canvas is full-bleed and the frame floats over
+    // it, so the world still draws past the arcs. It only moves them inward.
+    expect(rect.width).toBeLessThan(wide.width / 2);
+    expect(rect.width).toBeGreaterThanOrEqual(MIN_PLAYFIELD_WIDTH);
+  });
+
+  it('gives up the mirror rather than the minimum on a narrow viewport', () => {
+    const tablet = { width: 768, height: 1024 };
+    const insets = playfieldInsets(tablet);
+    const rect = playfieldRect(tablet);
 
     expect(insets.right).toBeGreaterThan(insets.left);
+    expect(rect.width).toBeGreaterThanOrEqual(MIN_PLAYFIELD_WIDTH);
   });
 
   it('gives the deck a taller band than the telemetry row', () => {
@@ -88,10 +117,16 @@ describe('playfieldViewport', () => {
       rect.y + rect.height / 2 - viewport.height / 2,
       6,
     );
-    // The rail is on the right and the deck at the bottom, so the free area
-    // sits left of and above the canvas centre.
-    expect(offset.x).toBeLessThan(0);
+    // The mirror puts the window on the canvas centre horizontally; the deck
+    // band is taller than the telemetry band, so it always sits above it.
+    expect(offset.x).toBeCloseTo(0, 6);
     expect(offset.y).toBeLessThan(0);
+
+    // Where the mirror had to be given up, the window is off centre and the
+    // camera has to follow it there.
+    expect(playfieldCentreOffset({ width: 768, height: 1024 }).x).toBeLessThan(
+      0,
+    );
   });
 
   it('converts the centre offset into world pixels the camera can subtract', () => {
