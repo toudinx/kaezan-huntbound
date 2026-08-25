@@ -13,14 +13,19 @@ export interface ViewportBox {
  * `scale.width` nor `scale.displaySize` is the CSS box any more: `resize()`
  * sets `displaySize` from the requested game size. The element's own rect
  * cannot drift from what the page shows.
+ *
+ * `game.canvas` is absent until the renderer attaches one, and the headless
+ * renderer never does, so a scene can publish `ready` before there is any box
+ * to measure. That is the same situation as a canvas whose rect is still
+ * degenerate, and it takes the same answer: the caller's fallback.
  */
 export function canvasViewportBox(
-  canvas: HTMLCanvasElement,
+  canvas: HTMLCanvasElement | null | undefined,
   fallback: ViewportBox,
 ): ViewportBox {
-  const rect = canvas.getBoundingClientRect();
+  const rect = canvas?.getBoundingClientRect();
 
-  if (rect.width <= 0 || rect.height <= 0) {
+  if (rect === undefined || rect.width <= 0 || rect.height <= 0) {
     return fallback;
   }
 
