@@ -371,7 +371,7 @@ describe('PB-08-04 Knight damage rotation', () => {
         skillModifierPermille: 0,
         damageDealtPermille: 0,
         damageReceivedPermille: 0,
-        speedPermille: 191,
+        speedPermille: 600,
         manaShield: false,
         tickDamageAmount: 0,
         tickDamageIntervalTicks: 0,
@@ -418,7 +418,7 @@ describe('PB-08-04 Knight damage rotation', () => {
 
 describe('PB-08-07 Haste', () => {
   const HASTE_DURATION_TICKS = 600;
-  const HASTE_STEP_TICKS = 9;
+  const HASTE_STEP_TICKS = 6;
   const BASE_STEP_TICKS = 11;
 
   async function solitaryHasteKernel() {
@@ -656,7 +656,7 @@ describe('PB-05 combat replay fixture', () => {
         skillModifierPermille: 0,
         damageDealtPermille: 0,
         damageReceivedPermille: 0,
-        speedPermille: 191,
+        speedPermille: 600,
         manaShield: false,
         tickDamageAmount: 0,
         tickDamageIntervalTicks: 0,

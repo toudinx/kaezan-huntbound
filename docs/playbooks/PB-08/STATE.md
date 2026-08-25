@@ -22,7 +22,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-04 | done | `codex/pb08-04-damage-rotation` | Luna `xhigh` | GPT-5 Codex `xhigh` | `5b7664f` | 5 abilities; Groundshaker radius 3 / Whirlwind range 5; scenario diff limited to abilities and player indices; `verify`; browser 73/73 |
 | PB-08-05 | done | `codex/pb08-05-stances` | Luna `xhigh` | GPT-5 Codex `xhigh` | `86816a3` | `verify` verde; `qa:browser` 74/74; `qa:budgets` informativo vermelho: boot 15254.2 ms, hunt 4955.7 ms com 5 long tasks |
 | PB-08-06 | done | `grok/pb08-06-taunt` | **frontier `xhigh`** | Grok 4.6 `xhigh` | `d88d512` | Challenge raio 1, lock 40 ticks, grupo support 1; `simulation:check`/`hunt:check` inalterados; `scenario.json` `6abc77b2`; commands/snapshot/events iguais; `qa:browser` 77/77 |
-| PB-08-07 | done | `grok/pb08-07-haste` | Luna `xhigh` | Grok 4.6 `xhigh` | `b951193` | Haste `speedPermille` 191 → passo 11→9 / 600 t; Charge fora; `simulation:check`/`hunt:check` inalterados; `scenario.json` `d0c5ddc1`; commands/snapshot/events iguais; `qa:browser` 78/78 |
+| PB-08-07 | done | `grok/pb08-07-haste-feel` | Luna `xhigh` | Grok 4.6 `xhigh` | `b951193` | Haste `speedPermille` 600 → passo 11→6 / 600 t; sprite interpola no cooldown efetivo; Charge fora; `scenario.json` `24d4ad2b`; commands/snapshot/events iguais; aceite no play |
 | PB-08-08 | pending | `<agente>/pb08-08-nine-action-hud` | Luna `xhigh` | — | — | — |
 | PB-08-09 | pending | `<agente>/pb08-09-weapon-axis` | **frontier `xhigh`** | — | — | — |
 | PB-08-10 | pending | `<agente>/pb08-10-acceptance` | frontier `xhigh` | — | — | — |

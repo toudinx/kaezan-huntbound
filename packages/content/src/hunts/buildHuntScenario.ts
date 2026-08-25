@@ -58,12 +58,14 @@ const HASTE_RESOURCE_COST = 60;
 const HASTE_COOLDOWN_TICKS = 40;
 const HASTE_DURATION_TICKS = 600;
 /**
- * Canary `ConditionSpeed::getFormulaValues`: `min = 1.3 * (baseSpeed - 40) + 40`.
- * Knight `baseSpeed` 110 → formula speed 131 → `round((131/110 - 1) * 1000) = 191`.
- * Linear step `11 * 110/131 = 9.237` rounds toward the faster integer; the kernel
- * then yields `effectiveStepCooldownTicks(11, 191) = 9`.
+ * Playtest retune of Canary `ConditionSpeed::getFormulaValues`.
+ * `setFormula(1.3, 40)` on Knight `baseSpeed` 110 yields formula speed 131 and
+ * `speedPermille` 191, which the kernel turns into `effectiveStepCooldownTicks(11, 191) = 9`.
+ * 11→9 (550 ms → 450 ms) failed the visible-acceleration criterion: the sprite
+ * interpolated on the vocation base of 11, and even the logical 9-tick step is
+ * only 18% faster. `600` yields 6 ticks (300 ms), Charge-class on this vocation.
  */
-const HASTE_SPEED_PERMILLE = 191;
+const HASTE_SPEED_PERMILLE = 600;
 
 export interface HuntScenarioBuild {
   readonly scenario: KernelScenario;

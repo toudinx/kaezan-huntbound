@@ -226,7 +226,7 @@
         "sourceFile": "src/creatures/combat/condition.cpp",
         "sourceValue": "getFormulaValues: min = mina * (var - 40) + minb; startCondition: speedDelta = min - baseSpeed",
         "formula": "setFormula(1.3, 40, 1.3, 40)",
-        "arithmetic": "baseSpeed 110; difference = 110 - 40 = 70; formulaSpeed = 1.3 * 70 + 40 = 131; speedPermille = round((131/110 - 1) * 1000) = 191; linear step 11 * 110/131 = 9.237 rounds toward the faster integer 9; effectiveStepCooldownTicks(11, 191) = 9"
+        "arithmetic": "Canary ConditionSpeed on Knight baseSpeed 110: difference = 70; formulaSpeed = 1.3 * 70 + 40 = 131; speedPermille = round((131/110 - 1) * 1000) = 191; effectiveStepCooldownTicks(11, 191) = 9. Playtest: 11→9 failed visible acceleration (sprite interpolated on vocation base 11). Chosen: speedPermille 600; effectiveStepCooldownTicks(11, 600) = 6 (550 ms → 300 ms). Presentation uses the effective cooldown, not the vocation base."
       }
     }
   ],
@@ -290,9 +290,9 @@
         "rationale": "Faithful derivation from vocation.baseSpeed 110 and creature.speed 58 on default groundSpeed 150. One tick away from the PB-04-FIX-01 playable values; not a silent retune."
       },
       "haste": {
-        "playerWithHaste": 9,
-        "speedPermille": 191,
-        "rationale": "Preserves Canary ConditionSpeed ratio on the Knight step. formulaSpeed 131 / baseSpeed 110 mapped through speedPermille; 11→9 is the first integer drop that stays visible."
+        "playerWithHaste": 6,
+        "speedPermille": 600,
+        "rationale": "Playtest overrode Canary 191/9. 11→9 was not readable even after rounding toward the faster integer; the sprite interpolated on vocation base 11. 600 permille yields 6 ticks (550 ms → 300 ms), Charge-class on this vocation, and presentation now uses the effective cooldown."
       }
     },
     "attackCooldownTicks": {

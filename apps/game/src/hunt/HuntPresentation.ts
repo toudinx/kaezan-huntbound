@@ -88,6 +88,10 @@ export interface HuntPresentationOptions {
   readonly playerBlueprintId?: string;
   readonly initialFloor?: number;
   readonly stepCooldownTicksByBlueprint?: ReadonlyMap<string, number>;
+  readonly stepCooldownTicksFor?: (actor: {
+    readonly entityId: EntityId;
+    readonly blueprintId: string;
+  }) => number;
   readonly onDiagnostic?: (message: string) => void;
 }
 
@@ -315,7 +319,9 @@ export function createHuntPresentation(
             event: payload,
             eventTick: event.tick,
             baseStepTicks:
-              options.stepCooldownTicksByBlueprint?.get(actor.blueprintId) ?? 1,
+              options.stepCooldownTicksFor?.(actor) ??
+              options.stepCooldownTicksByBlueprint?.get(actor.blueprintId) ??
+              1,
           });
           break;
         }

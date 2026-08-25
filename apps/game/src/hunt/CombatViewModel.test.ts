@@ -395,7 +395,7 @@ describe('CombatViewModel', () => {
         skillModifierPermille: 0,
         damageDealtPermille: 0,
         damageReceivedPermille: 0,
-        speedPermille: 191,
+        speedPermille: 600,
         manaShield: false,
         tickDamageAmount: 0,
         tickDamageIntervalTicks: 0,

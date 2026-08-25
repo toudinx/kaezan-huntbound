@@ -208,8 +208,8 @@ test('shows the haste clock and shortens the knight step', async ({
 
   const hastedInterval = await measureStepInterval(page);
   expect(hastedInterval).toBeLessThan(idleInterval);
-  expect(hastedInterval).toBeGreaterThanOrEqual(9);
-  expect(hastedInterval).toBeLessThanOrEqual(10);
+  expect(hastedInterval).toBeGreaterThanOrEqual(6);
+  expect(hastedInterval).toBeLessThanOrEqual(7);
 
   expectQuiet(watch);
 });

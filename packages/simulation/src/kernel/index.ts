@@ -1,3 +1,7 @@
+export {
+  effectiveStepCooldownTicks,
+  queryConditionModifiers,
+} from './conditions.ts';
 export { KernelInvariantError } from './errors.ts';
 export {
   createSimulationKernel,

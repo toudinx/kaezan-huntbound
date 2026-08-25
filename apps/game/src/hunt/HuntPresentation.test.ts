@@ -268,6 +268,35 @@ describe('HuntPresentation', () => {
     });
   });
 
+  it('interpolates a move with the live step ticks, not the vocation base', () => {
+    const presentation = createHuntPresentation({
+      region: syntheticRegion(),
+      playerBlueprintId: 'player',
+      actorKeys: new Map([['player', createAssetKey('outfit:tibia:knight')]]),
+      stepCooldownTicksByBlueprint: new Map([['player', 11]]),
+      stepCooldownTicksFor: (actor) =>
+        actor.blueprintId === 'player' ? 6 : 11,
+    });
+    presentation.handle([
+      event(1, {
+        type: 'actor/spawned',
+        entityId: 1 as EntityId,
+        blueprintId: 'player',
+        position: { x: 0, y: 0, z: 7 },
+        facing: 's',
+      }),
+      event(2, {
+        type: 'actor/moved',
+        entityId: 1 as EntityId,
+        from: { x: 0, y: 0, z: 7 },
+        to: { x: 1, y: 0, z: 7 },
+        facing: 'e',
+      }),
+    ]);
+
+    expect(presentation.actors()[0]?.motion?.durationTicks).toBe(6);
+  });
+
   it('reports unknown actor events without throwing', () => {
     const diagnostics: string[] = [];
     const presentation = createHuntPresentation({

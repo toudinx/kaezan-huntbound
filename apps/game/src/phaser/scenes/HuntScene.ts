@@ -82,6 +82,7 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { huntFloorSync } from '../../hunt/huntFloorSync';
+import { presentationStepCooldownTicks } from '../../hunt/presentationStepCooldown';
 import {
   resolveTargetRing,
   TARGET_RING_COLOR,
@@ -260,16 +261,28 @@ export class HuntScene extends Phaser.Scene {
   }
 
   create() {
+    const stepCooldownTicksByBlueprint = new Map(
+      this.options.hunt.blueprints.map((blueprint) => [
+        blueprint.blueprintId,
+        blueprint.stepCooldownTicks,
+      ]),
+    );
     this.presentation = createHuntPresentation({
       region: this.options.hunt.region,
       actorKeys: actorKeyMap(this.options.hunt),
       playerBlueprintId: this.options.hunt.playerBlueprintId,
-      stepCooldownTicksByBlueprint: new Map(
-        this.options.hunt.blueprints.map((blueprint) => [
-          blueprint.blueprintId,
-          blueprint.stepCooldownTicks,
-        ]),
-      ),
+      stepCooldownTicksByBlueprint,
+      stepCooldownTicksFor: (actor) => {
+        const snapshot = this.currentDriverSnapshot();
+        return presentationStepCooldownTicks({
+          baseTicks: stepCooldownTicksByBlueprint.get(actor.blueprintId) ?? 1,
+          actor: snapshot.actors.find(
+            (entry) => entry.entityId === actor.entityId,
+          ),
+          conditions: this.options.conditions ?? [],
+          tick: snapshot.tick,
+        });
+      },
       onDiagnostic: (message) => {
         console.warn(message);
       },
