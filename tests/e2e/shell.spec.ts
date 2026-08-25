@@ -31,6 +31,13 @@ async function hideLivePlayfield(page: import('@playwright/test').Page) {
   await page.locator('#game-root').evaluate((element) => {
     (element as HTMLElement).style.visibility = 'hidden';
   });
+  // The frame-rate readout changes every 250 ms by design, so it can never sit
+  // inside a compared screenshot.
+  await page.locator('[data-testid="shell-frame-rate"]').evaluate((element) => {
+    // `display: none` rather than `visibility: hidden`: the readout has to
+    // surrender its layout box too, or the panel around it changes size.
+    (element as HTMLElement).style.display = 'none';
+  });
   const combatRoot = page.locator('[data-testid="combat-root"]');
   if ((await combatRoot.count()) === 0) {
     return;

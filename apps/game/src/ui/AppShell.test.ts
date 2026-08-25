@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { createSceneBridge, type SceneBridge } from '../bridge/SceneBridge';
 import { createDefaultCombatViewModel } from '../hunt/CombatViewModel';
-import { createInputMap, type InputMap } from '../input/InputMap';
+import { createInputMap } from '../input/InputMap';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
+import type { AppShellOptions } from './AppShell';
 import * as AppShellModule from './AppShell';
 
 class TestElement {
@@ -105,14 +106,7 @@ interface TestSaveSource {
 function mountShell(
   root: TestElement,
   bridge: SceneBridge,
-  options: {
-    readonly input?: InputMap;
-    readonly save?: { readonly source: TestSaveSource };
-    readonly combat?: {
-      readonly viewModel: ReturnType<typeof createDefaultCombatViewModel>;
-      readonly onRestart?: () => void;
-    };
-  } = {},
+  options: AppShellOptions = {},
 ) {
   const mount = (AppShellModule as Record<string, unknown>).mountAppShell;
   expect(mount).toBeTypeOf('function');
@@ -121,16 +115,54 @@ function mountShell(
     mount as (
       root: HTMLElement,
       sceneBridge: SceneBridge,
-      options?: {
-        readonly input?: InputMap;
-        readonly save?: { readonly source: TestSaveSource };
-        readonly combat?: {
-          readonly viewModel: ReturnType<typeof createDefaultCombatViewModel>;
-          readonly onRestart?: () => void;
-        };
-      },
+      options?: AppShellOptions,
     ) => { destroy(): void }
   )(root as unknown as HTMLElement, bridge, options);
+}
+
+function createFrameClock() {
+  let nowMs = 0;
+  let pending: (() => void) | undefined;
+  let cancelledHandles = 0;
+
+  return {
+    api: {
+      now: () => nowMs,
+      scheduleFrame: (callback: () => void) => {
+        pending = callback;
+        return 1;
+      },
+      cancelFrame: () => {
+        cancelledHandles += 1;
+        pending = undefined;
+      },
+    },
+    advance(ms: number) {
+      nowMs += ms;
+      const callback = pending;
+      pending = undefined;
+      callback?.();
+    },
+    get cancelledHandles() {
+      return cancelledHandles;
+    },
+    get scheduled() {
+      return pending !== undefined;
+    },
+  };
+}
+
+function readRates(text: string): {
+  readonly fps: string;
+  readonly tps: string;
+} {
+  const match = /^(?<fps>[\d-]+) fps · (?<tps>[\d-]+) tps$/u.exec(text);
+
+  if (!match?.groups) {
+    throw new Error(`unreadable frame-rate readout: ${text}`);
+  }
+
+  return { fps: match.groups.fps ?? '', tps: match.groups.tps ?? '' };
 }
 
 function snapshot(phase: ShellSnapshot['phase']): ShellSnapshot {
@@ -285,6 +317,19 @@ describe('AppShell', () => {
     shell.destroy();
   });
 
+  it('shows no frame-rate reading before it has samples', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('ready'));
+    const clock = createFrameClock();
+    const shell = mountShell(root, bridge, { frameRate: clock.api });
+
+    expect(findByTestId(root, 'shell-frame-rate').textContent).toBe(
+      '-- fps · -- tps',
+    );
+
+    shell.destroy();
+  });
+
   it('lets the save callback capture the bag before restart clears the view model', () => {
     const root = createRoot();
     const bridge = createSceneBridge(snapshot('booting'));
@@ -306,5 +351,64 @@ describe('AppShell', () => {
     expect(capturedBag).toEqual([{ itemKey: 'item:tibia:meat', count: 3 }]);
     expect(viewModel.snapshot().bag).toEqual([]);
     shell.destroy();
+  });
+
+  it('reads the render clock apart from the simulation clock', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('ready'));
+    const clock = createFrameClock();
+    const shell = mountShell(root, bridge, { frameRate: clock.api });
+
+    // 60 frames in a second, with a tick every third frame: 20 per second.
+    for (let frame = 1; frame <= 60; frame += 1) {
+      clock.advance(1000 / 60);
+
+      if (frame % 3 === 0) {
+        bridge.publishTick(frame / 3);
+      }
+    }
+
+    const rates = readRates(findByTestId(root, 'shell-frame-rate').textContent);
+
+    expect(Number(rates.fps)).toBeCloseTo(60, 0);
+    expect(Number(rates.tps)).toBeCloseTo(20, 0);
+
+    shell.destroy();
+  });
+
+  it('counts a tick only when its value changes', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('ready'));
+    const clock = createFrameClock();
+    const shell = mountShell(root, bridge, { frameRate: clock.api });
+
+    // The scene calls publishTick every frame carrying the current tick. A
+    // repeated value is not a simulation step and must not register as one.
+    for (let frame = 1; frame <= 60; frame += 1) {
+      clock.advance(1000 / 60);
+      bridge.publishTick(7);
+    }
+
+    const rates = readRates(findByTestId(root, 'shell-frame-rate').textContent);
+
+    expect(Number(rates.fps)).toBeCloseTo(60, 0);
+    expect(rates.tps).toBe('--');
+
+    shell.destroy();
+  });
+
+  it('stops sampling frames once destroyed', () => {
+    const root = createRoot();
+    const bridge = createSceneBridge(snapshot('ready'));
+    const clock = createFrameClock();
+    const shell = mountShell(root, bridge, { frameRate: clock.api });
+
+    clock.advance(1000 / 60);
+    expect(clock.scheduled).toBe(true);
+
+    shell.destroy();
+
+    expect(clock.cancelledHandles).toBe(1);
+    expect(clock.scheduled).toBe(false);
   });
 });

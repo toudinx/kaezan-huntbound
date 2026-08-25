@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import type { SceneBridge } from '../../bridge/SceneBridge';
 import type { RendererKind } from '../../runtime/ShellSnapshot';
+import { canvasViewportBox } from '../ViewportBox';
 
 function rendererKind(rendererType: number): RendererKind {
   if (rendererType === Phaser.WEBGL) {
@@ -49,7 +50,10 @@ export class ShellScene extends Phaser.Scene {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.redrawGrid);
     });
 
-    const { width, height } = this.scale;
+    const { width, height } = canvasViewportBox(this.game.canvas, {
+      width: this.scale.width,
+      height: this.scale.height,
+    });
 
     this.bridge.publish({
       phase: 'ready',
