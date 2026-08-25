@@ -67,6 +67,23 @@ interface DeckCell {
   readonly slot: DeckSlot;
   readonly cooldown: HTMLElement;
   readonly cost: HTMLElement;
+  /** What was last written, so a still frame writes nothing at all. */
+  readonly written: Map<string, string>;
+}
+
+/**
+ * The scene publishes a tick every frame, so the deck is asked to render about
+ * sixty times a second while almost nothing about it changes. Writing an
+ * attribute that already holds its value still invalidates style for that
+ * element, and nine cells by ten attributes is six hundred pointless
+ * invalidations a second on top of whatever the playfield is doing. Every
+ * per-frame write goes through here.
+ */
+function write(cell: DeckCell, name: string, value: string): void {
+  if (cell.written.get(name) === value) return;
+
+  cell.written.set(name, value);
+  cell.button.setAttribute(name, value);
 }
 
 function cooldownSeconds(ticks: number): string {
@@ -133,7 +150,7 @@ function createCell(
 
   button.append(glyph, hotkey, cost, cooldown);
 
-  return { button, slot, cooldown, cost };
+  return { button, slot, cooldown, cost, written: new Map() };
 }
 
 function group(document: Document, name: string): HTMLElement {
@@ -240,6 +257,9 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
     cells = [...damageCells, ...situationalCells, ...postureCells];
   };
 
+  /** Reused across frames rather than allocated sixty times a second. */
+  const frameIndex = new Map<number, CombatAbilityView>();
+
   const render = (state: CombatViewState): void => {
     const next = state.abilities
       .map((ability) => `${ability.index}:${ability.abilityId}`)
@@ -250,9 +270,10 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       rebuild(state);
     }
 
-    const byIndex = new Map(
-      state.abilities.map((ability) => [ability.index, ability]),
-    );
+    frameIndex.clear();
+    for (const ability of state.abilities) {
+      frameIndex.set(ability.index, ability);
+    }
 
     for (const cell of cells) {
       const { button, slot } = cell;
@@ -260,42 +281,45 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       if (slot.abilityIndex === null) {
         // The attack cell has no cooldown of its own to project: the kernel
         // paces swings. It only goes dark when there is nobody to swing at.
-        button.setAttribute(
+        write(
+          cell,
           'aria-disabled',
           String(state.playerDead || state.targetEntityId === null),
         );
-        button.setAttribute('data-cooldown-scope', 'none');
+        write(cell, 'data-cooldown-scope', 'none');
         continue;
       }
 
-      const ability = byIndex.get(slot.abilityIndex);
+      const ability = frameIndex.get(slot.abilityIndex);
       if (ability === undefined) continue;
 
-      button.setAttribute(
+      write(
+        cell,
         'aria-label',
         `${ability.label} (${ability.resourceCost} mana)`,
       );
-      button.setAttribute('title', ability.label);
-      button.setAttribute('aria-disabled', String(!ability.available));
-      button.setAttribute(
+      write(cell, 'title', ability.label);
+      write(cell, 'aria-disabled', String(!ability.available));
+      write(
+        cell,
         'data-cooldown-ticks',
         String(ability.remainingCooldownTicks),
       );
-      button.setAttribute(
+      write(
+        cell,
         'data-group-cooldown-ticks',
         String(ability.remainingGroupCooldownTicks),
       );
-      button.setAttribute(
-        'data-cooldown-group',
-        String(ability.primaryCooldownGroup),
-      );
-      button.setAttribute('data-cooldown-scope', cooldownScope(ability));
-      button.setAttribute('aria-pressed', String(ability.active));
-      button.setAttribute('data-active', String(ability.active));
+      write(cell, 'data-cooldown-group', String(ability.primaryCooldownGroup));
+      write(cell, 'data-cooldown-scope', cooldownScope(ability));
+      write(cell, 'aria-pressed', String(ability.active));
+      write(cell, 'data-active', String(ability.active));
       if (slot.kind === 'posture') {
-        button.setAttribute('aria-checked', String(ability.active));
+        write(cell, 'aria-checked', String(ability.active));
       }
-      button.disabled = !ability.available;
+      if (button.disabled !== !ability.available) {
+        button.disabled = !ability.available;
+      }
 
       const text = cooldownSeconds(ability.remainingCooldownTicks);
       if (cell.cooldown.textContent !== text) cell.cooldown.textContent = text;
@@ -303,10 +327,10 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       if (cell.cost.textContent !== cost) cell.cost.textContent = cost;
     }
 
-    posture.setAttribute(
-      'data-posture',
-      state.playerPosture?.abilityId ?? 'none',
-    );
+    const stance = state.playerPosture?.abilityId ?? 'none';
+    if (posture.getAttribute('data-posture') !== stance) {
+      posture.setAttribute('data-posture', stance);
+    }
   };
 
   let destroyed = false;

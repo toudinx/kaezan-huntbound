@@ -58,6 +58,12 @@ command") é sensível a carga: reprovou no `verify` pós-integração da PB-08-
 era uma linha de markdown. Passa 14/14 isolada. Vale a regra do AGENTS.md: não mascarar com `retries`
 nem timeout inflado; a correção é tornar o tap determinístico. Vira task quando alguém tocar em input.
 
+**B14 — aberto, mesma família do B11.** `combat-fx.spec.ts:101` reprovou **duas vezes dentro de
+`corepack pnpm verify`** em 2026-08-25 e passou 5/5 isolada e em `playwright test` da suíte inteira.
+Ele amostra decorações transitórias por fase, então um frame perdido sob carga apaga a pista antes
+da sonda. A escrita por frame do deck foi reduzida (atributo só quando muda) e a rodada seguinte
+ficou verde — uma rodada não prova conserto. Vira task quando alguém tocar em decoração ou sonda.
+
 **B1–B3, B5–B8, B10 e B12 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 
 ## Decisões congeladas
