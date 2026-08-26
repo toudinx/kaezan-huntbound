@@ -62,18 +62,19 @@ nem timeout inflado; a correção é tornar o tap determinístico. Vira task qua
 **B14 — aberto, mesma família do B11.** Sondas que dependem de **amostrar frame** reprovam de forma
 intermitente **só dentro da suíte cheia**, em teste diferente a cada vez: `combat-fx.spec.ts:101`
 (5×), `combat-play.spec.ts:195` (1×) e `haste-play.spec.ts:167` (1×, "never accepted two consecutive
-cardinal steps"). Isoladas passam sempre — 12/12 medidas.
+cardinal steps"). Isoladas passam sempre — 12/12 medidas em 2026-08-25.
 
-**Correlação medida em 2026-08-25:** com o `vite --mode personal` da máquina de pé, a suíte cheia
-reprovou em 3 de 4 rodadas; com ele derrubado, 4 de 4 verdes. Uma afirmação anterior deste bloqueio
-dizia que o servidor estava descartado — estava errada, e vinha de ter testado **só o teste isolado**
-com ele de pé, o que não reproduz a carga da suíte. Também foi descartado por medição que a mudança
-da moldura seja causa: o `haste-play` reprovou uma vez com ela e passou 2/2 logo em seguida, com o
-mesmo código.
+Duas causas foram **testadas e descartadas**, ambas depois de eu as ter afirmado cedo demais:
 
-**Como conviver até virar task:** derrube o dev server antes de `verify` e suba de volta no fim.
-A correção de verdade é tornar a amostragem independente de frame; `retries` e timeout inflado são
-proibidos pelo `AGENTS.md`.
+- **Não é a moldura do cockpit.** O `haste-play` reprovou uma vez com a mudança e passou 2/2 logo
+  depois, com o mesmo código; e a suíte fechou 78/78 no mesmo commit.
+- **Não é o `vite --mode personal` da máquina.** Ele *correlaciona* — reprova mais com o servidor de
+  pé — mas **não determina**: houve reprovação com ele derrubado e aprovação com ele de pé. Uma
+  versão anterior deste bloqueio afirmava "4 de 4 verdes com ele derrubado". Era falso.
+
+Sobra carga total da máquina, e a natureza da sonda: uma decoração transitória some antes de ser
+amostrada. A correção é tornar a amostragem independente de frame. `retries` e timeout inflado são
+proibidos pelo `AGENTS.md`. Na prática, rode `verify` de novo antes de teorizar.
 
 **B1–B3, B5–B8, B10 e B12 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 
