@@ -2,6 +2,12 @@
 
 **Status:** **esqueleto**. Não elegível. **Começa por design doc, não por task card.**
 
+**Ordem, 2026-08-26:** o **PB-10 roda primeiro**. Ele foi reescrito como "Catálogo de hunts" e
+entrega as faixas de nível como conteúdo — que é justamente onde o level deste playbook vai
+desembocar. Enquanto o PB-09 não existe, a hunt escolhida resolve o personagem; ver decisão congelada
+2 em `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Essa resolução é
+temporária e **é este playbook que a revoga**.
+
 **Goal:** decidir o que progressão significa em Huntbound, e só então implementá-la.
 
 ## Por que este playbook não tem tasks
@@ -60,7 +66,8 @@ Bullets, não tasks. Nada aqui está congelado.
 - Skill de sword por uso, projetada de `combat/attacked`.
 - `CharacterDefinition` derivada de conteúdo base + progressão. **A tabela de faixas da PB-08-03 já
   existe**; este playbook alimenta o level que ela recebe.
-- Save 1→2 com migração.
+- Migração de save. **A versão 2 é da PB-10-01**, que troca o endereço de spawn; este playbook parte
+  do que estiver vigente quando chegar a vez.
 - **Códex** — para de descartar `monster.Bestiary`, que hoje é lido e jogado fora em
   `packages/content/src/importers/canary/lua/parseMonsterLua.ts:70`. O snapshot já traz `toKill`,
   `Stars`, `CharmsPoints`, `class` e `race` por criatura. Crédito **no fim da run** (P1), o que

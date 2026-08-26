@@ -56,9 +56,9 @@ contagem de arquivos, linhas ou minutos.
 |   [PB-05](playbooks/PB-05/README.md) | Vocação e combate Canary           | Knight, ataque, spells selecionadas, morte e loot — **integrado** em `d4490e9`, aguardando aceite do usuário                            |
 |   [PB-06](playbooks/PB-06/README.md) | Save local e inventário            | IndexedDB versionado, transações e import/export — **integrado**; PB-06-09 segue bloqueada e não bloqueia o próximo                     |
 |   [PB-07](playbooks/PB-07/README.md) | Profundidade de combate e vocações | sustentação por leech e regen, condições e stances — **CONGELADO na 05**; 09 e 10 absorvidas por PB-10 e PB-11; o resto retoma depois do PB-12 |
-|   [PB-08](playbooks/PB-08/README.md) | O Knight completo                  | nove ações que se distinguem olhando, cinco delas de dano; mapa da classe congelado — **reescrito em 2026-08-24 e elegível**, PB-08-02 é a próxima |
-|   [PB-09](playbooks/PB-09/README.md) | Progressão                         | **começa por design doc**: o que level, XP, skill e Códex significam num jogo que não é MMORPG                                          |
-|   [PB-10](playbooks/PB-10/README.md) | Novas criaturas                    | snake, orc, orc spearman (ranged) e orc shaman (caster); IA que conjura; spawn por identidade estável                                   |
+|   [PB-08](playbooks/PB-08/README.md) | O Knight completo                  | nove ações que se distinguem olhando, cinco delas de dano; mapa da classe congelado — **integrado**; PB-08-09 fechou em `80be90b` e a PB-08-10 foi cancelada |
+|   [PB-09](playbooks/PB-09/README.md) | Progressão                         | **começa por design doc**: o que level, XP, skill e Códex significam num jogo que não é MMORPG — **roda depois do PB-10** |
+|   [PB-10](playbooks/PB-10/README.md) | Catálogo de hunts                  | uma hunt deixa de ser compilada: índice gerado, tela de hunting places no boot, cinco faixas e a escada declarada — **reescrito em 2026-08-26 e elegível**, PB-10-01 é a próxima |
 |   [PB-11](playbooks/PB-11/README.md) | O loot vira poder                  | fim da run, stats de item, três slots equipáveis, `armor` no kernel, elemento e resistência, loot equipável                             |
 |   [PB-12](playbooks/PB-12/README.md) | Hunts moduladas e level sync       | conteúdo de faixa antiga continua relevante — **exige emenda à ADR-05**                                                                |
 |                                PB-13 | Catálogo e compositor de outfits   | famílias, `lookType`, addons, cores e troca visual                                                                                      |
@@ -72,6 +72,17 @@ viraram PB-09 a PB-12. Outfits, gacha, helper e playtest deslocam para PB-13 a P
 charms deixaram de ser playbook próprio: o Códex entra no PB-09 e os charms ficam para depois do
 PB-12. O motivo está em `docs/playbooks/PB-08/README.md`, seção "Por que este playbook foi
 reescrito".
+
+**Reescrita do PB-10, 2026-08-26.** "Novas criaturas" virou **"Catálogo de hunts"**, a pedido do
+usuário, com o *Hunting Places* do TibiaRoute como referência de forma. O diagnóstico antigo não se
+perde: orc, orc spearman e orc shaman não são um remendo na caverna de rotworm — **são o conteúdo da
+segunda hunt**, e viraram a faixa 2. **Sem renumeração**: o PB-10 já era o playbook que mexe em
+conteúdo de hunt, e já carregava o bloqueio B9.
+
+O PB-10 passa a rodar **antes do PB-09**, que é esqueleto e começa por design doc. Isso não é
+exceção: a regra deste documento é que nenhum playbook espera o fechamento formal de outro, e o que
+se exige do anterior é código integrado na `main` e verde. O motivo está em
+`docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`.
 
 PB-00R foi fechado em 2026-08-11 como `APPROVED_WITH_WARNINGS` pela auditoria integrada PB-00R-05, e
 **deixa de bloquear PB-01**. A PB-00R-FIX-01 foi integrada no commit `91fd968`; `format:check` e

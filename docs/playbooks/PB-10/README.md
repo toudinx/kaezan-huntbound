@@ -1,92 +1,168 @@
-# PB-10 — Novas criaturas
+# PB-10 — Catálogo de hunts
 
-**Status:** **esqueleto**. Não elegível. Depende do PB-08 integrado.
+> **Para agentes executores:** **nenhuma skill externa é obrigatória.** Teste primeiro e nada
+> afirmado sem saída fresca são regra do `AGENTS.md` e de cada card, não de um plugin. Procedimento
+> operacional nas skills do repositório: `playbook-task`, `run-gates`, `worktree-cycle` e
+> `hunt-content-pipeline`. Execute uma task card por chat. O formato, o handoff e o ciclo automático
+> de integração e limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Goal:** a caverna deixa de ter uma espécie. Ganha um trash de massa, um inimigo **ranged** e um
-**caster**, e com isso o taunt, a postura e a mobilidade do PB-08 passam a ter contra o que existir.
+**Status:** reescrito em 2026-08-26 e **elegível**. A primeira task é **PB-10-01**.
 
-## O defeito, medido
+**Goal:** o jogo deixa de ter *uma* hunt compilada e passa a ter um **catálogo navegável**: você abre
+o jogo, olha as hunts disponíveis com faixa de nível, criaturas, exp e loot, escolhe uma e entra.
+Cinco faixas no fim do playbook, e uma escada declarada que vai até os selos de Ferumbras.
 
-`packages/content/src/generated/hunts/venore-rotworm-cave/spawns.json` em 2026-08-24: **20 slots,
-100% `creature:tibia:rotworm`**. Uma espécie, melee, que corre para o jogador. Contra isso, metade do
-kit do Knight é botão morto.
+**Architecture:** metade da máquina já é genérica e não deve ser reescrita — a extração já roda sobre
+o diretório inteiro de selections, e a seleção de asset já é derivada da região. O que falta é
+metadado de apresentação, um índice gerado, e o jogo saber que existe mais de uma hunt.
 
-E **cinco espécies têm spawn real na própria região** e foram excluídas por motivos baratos e
-declarados em `packages/content/src/selections/hunts/venore-rotworm-cave.json`:
+**Tech Stack:** TypeScript 7.0.2 strict, Zod 4.4.3 (somente em `@huntbound/contracts`),
+Vitest 4.1.10, Vite 8.2.1, Phaser 4, Playwright 1.62.1, Node 24.14.0. **Nenhuma biblioteca nova.**
 
-| Espécie | Spawns reais | Motivo declarado | Pipeline que resolve |
+**Spec congelada:** `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`.
+
+## Por que este playbook foi reescrito
+
+O PB-10 era "Novas criaturas": dar à caverna de rotworm um trash de massa, um ranged e um caster. O
+diagnóstico continua certo — `spawns.json` tem **20 slots, 100% rotworm**, e contra uma espécie melee
+metade do kit do Knight é botão morto.
+
+O que mudou é o enquadramento, pedido pelo usuário em 2026-08-26 com o *Hunting Places* do TibiaRoute
+na mão: o problema não é a caverna ter uma espécie, é **o jogo ter uma caverna**. E as criaturas que
+o PB-10 antigo queria importar — orc, orc spearman, orc shaman — não são um remendo na rotworm: são
+**o conteúdo da segunda hunt**, Orc Fortress.
+
+Nada do diagnóstico antigo se perde. Ele virou a faixa 2.
+
+## Fontes normativas
+
+Em caso de conflito, ler nesta ordem:
+
+1. `AGENTS.md`;
+2. `docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`;
+3. `docs/03_ADR_PHASER4_BROWSER_FIRST.md`;
+4. `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`;
+5. `docs/08_POLITICA_MODELOS_AGENTES.md`;
+6. `docs/06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md`;
+7. `docs/architecture/PACKAGE_BOUNDARIES.md`;
+8. `docs/simulation/KERNEL_CONTRACT.md` e `docs/simulation/REPLAY_CONTRACT.md`;
+9. `docs/content/MAP_REGION_CONTRACT.md` e `docs/content/IDENTITY_POLICY.md`;
+10. **a spec congelada** deste playbook;
+11. `docs/content/HUNT_BANDS.md` — **entregue pela PB-10-02**; a partir dali é a fonte da escada de
+    hunts, e vence a tabela "As cinco faixas do MVP" abaixo, que é a proposta e não o resultado;
+12. este README;
+13. a task card em execução;
+14. `STATE.md` apenas para estado operacional.
+
+## As cinco faixas do MVP
+
+Proposta de 2026-08-26. **Congelada pela PB-10-02, contra o snapshot — não antes.**
+
+| Faixa | Nível | Hunt | O que ela acrescenta que nenhuma anterior tem |
 |---|---|---|---|
-| Snake | 17 | "no catálogo, ausente do asset pack; precisa de sprite" | asset-packer |
-| Orc Spearman | 11 | ausente da seleção PB-01 | importer de catálogo |
-| Orc | 10 | idem | idem |
-| Bat | 2 | idem | idem |
-| Bonelord | 1 | idem | idem |
+| 1 | 8 | Venore Rotworm Cave | já existe |
+| 2 | ~25 | Orc Fortress | **ranged** (orc spearman, 0-30 de dano a 7 tiles) e **caster** (orc shaman, com autocura) |
+| 3 | ~45 | Cyclopolis | melee que **não morre em dois golpes**; obriga postura e cura a existirem |
+| 4 | ~70 | Dragon Lair | ataque **de longe com área**, e fogo |
+| 5 | ~130 | Hero Cave | o teto do que o kit atual aguenta |
 
-## Por que isto é barato — o ranged já roda
+Cada faixa entra porque acrescenta um **comportamento** que nenhuma anterior tem. Uma hunt que seja
+"a anterior com números maiores" não entra — é o princípio de design do PB-08 aplicado a hunt.
 
-`references/canary/data-otservbr-global/monster/humanoids/orc_spearman.lua`:
+## A escada completa
 
-```lua
-{ name = "combat", interval = 2000, chance = 20, minDamage = 0, maxDamage = -30,
-  range = 7, shootEffect = CONST_ANI_SPEAR, target = false }
-```
+Vai inteira para o `HUNT_BANDS.md` na PB-10-02, com o **portão** de cada degrau escrito ao lado. Da
+faixa 6 em diante o portão quase nunca é arte: é kernel que ainda não existe.
 
-105 HP, exp 38, **0–30 de dano a 7 tiles**. E o kernel **já sabe executar isso**:
-`ActorBlueprint.attackRangeTiles` existe, com linha de visão e pathing que para no alcance, em
-`packages/simulation/src/kernel/kernel.ts:249` e `:732`. Está implementado e **nenhuma criatura
-usa** — rotworm é melee 1.
+| Degrau | Hunts | Portão |
+|---|---|---|
+| 1-5 | rotworm, orc fortress, cyclopolis, dragon lair, hero cave | **este playbook** |
+| 6-7 | começo de Oramond, Asura Palace | mitigação elemental — **PB-11** |
+| 8-9 | Medusa Tower, Deeper Banuta | condição que trava o jogador, e onda de área com forma |
+| 10-11 | Roshamuul, livrarias | criatura que invoca criatura |
+| 12-14 | War Zones 1 a 3, Cobra Bastion, Falcon | boss com fase, e fim de run — **PB-11** |
+| 15 | selos de Ferumbras | tudo acima junto |
 
-Orc: 70 HP, exp 25, melee. Snake: 15 HP, exp 10, `Stars` 1 — trash de massa que morre em bloco no
-`exori`.
+Nenhum desses degraus é escrito antes do portão abrir. Escrever a hunt antes da peça produz conteúdo
+que o jogo não sabe rodar.
 
-## O caster — e o que ele custa de verdade
+## Decisões congeladas
 
-`monster/humanoids/orc_shaman.lua`: 115 HP, exp 110, energia 20–31 a 7 tiles, **fogo 5–43 a 7 tiles
-com `radius = 1`**, e **autocura 27–43 com chance 60%**. Atira de longe, tem ataque em área e se
-cura sozinho — a autocura obriga burst e torna `exori` insuficiente.
+Detalhe e justificativa na spec. Aqui só o que uma task não pode redecidir sozinha:
 
-**Ele não é conteúdo.** Duas coisas faltam no kernel, e ambas eram as PB-07-09 e PB-07-10 congeladas:
+1. **Os números do card são derivados do snapshot Canary**, num artefato gerado com `--check`.
+   TibiaRoute escolhe *qual* hunt; ele não é fonte de dado.
+2. **A hunt resolve o personagem**, até o PB-09 existir. Escolher a hunt escolhe a faixa. É
+   temporário e está escrito para ser revogado.
+3. **Um pack de asset por hunt**, carregado depois da escolha.
+4. **A tela vive no boot.** O cockpit da PB-08 não é tocado, e não há troca de hunt no meio da run.
+5. **Nenhum spawn é inventado.** Toda criatura sai do catálogo; todo spawn tem origem real em
+   `otservbr-monster.xml`, declarada em `spawnPlacements`.
+6. **Dano elemental entra cheio, mitigação não.** Fogo de dragão e de hero é registrado e aplicado;
+   resistência liga no PB-11, junto do equipamento que responde a ela.
+7. **Espécie e hunt não são escada.** Cada uma entra por um comportamento visível que nenhuma outra
+   tem.
 
-1. **A IA nunca conjura.** `buildHuntScenario.ts:284` dá `abilityIndices: []` a toda criatura, e o
-   laço do hunter em `kernel.ts:720-760` só enfileira ataque, wander e movimento.
-2. **Elemento é contrato vazio.** `resistances`, `immunities` e `attackElement` estão em
-   `ActorBlueprint` e **não são lidos em nenhum arquivo** de `packages/simulation/src/kernel`.
+## Ordem das tasks
 
-**Decisão de 2026-08-24: conjuração entra, matemática de elemento não.** O Knight não tem dano nem
-defesa elemental hoje, então resistência só deixaria o shaman mais duro de um jeito sem resposta. O
-shaman registra `element`, o dano entra cheio, e a mitigação liga no PB-11 junto do equipamento que
-resiste a ela.
+Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 
-Ele também é o único que precisa de **realocação**: não tem spawn nesta região. Decisão congelada 5
-do PB-08 original permite — o layout cola pedaços do mapa real e realoca spawns reais —, desde que a
-origem seja declarada em `spawnPlacements`.
+| # | Task | Fronteira |
+|---|---|---|
+| 01 | Spawn por identidade estável | contrato e kernel — **o B9** |
+| 02 | A escada de hunts | curadoria, com evidência local |
+| 03 | O pipeline deixa de ser de uma hunt só | tools e scripts, sem conteúdo novo |
+| 04 | Índice de hunts como artefato gerado | contrato e gerador |
+| 05 | A tela de hunting places | `apps/game`, DOM fora do canvas |
+| 06 | Criatura conjura | kernel e IA |
+| 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo |
 
-## Escopo previsto
+**Só a 01 e a 02 estão escritas.** O resto são bullets até chegar a vez — é a regra do `AGENTS.md`,
+e existe porque playbook escrito inteiro antecipado envelhece contra o código real.
 
-Bullets, não tasks. Decomposto por **fronteira de pipeline**.
+### Por que a 01 vem primeiro
 
-- **Spawn por identidade estável** — o B9 do PB-08. O snapshot de save referencia spawn por
-  `(índice de grupo, índice de slot)`, então toda mudança de conteúdo na hunt invalida todo save;
-  custou 8 testes vermelhos e um ciclo de conserto na PB-08-01. Este playbook mexe em conteúdo de
-  hunt **três vezes**. **Vem antes de tudo.**
-- Catálogo ganha Orc e Orc Spearman — estende a seleção PB-01, que hoje tem 7 roots.
-- Asset pack ganha os sprites: Snake `lookType 28`, Orc `5`, Orc Spearman `50`, Orc Shaman `6`.
-- A caverna ganha as espécies — `creatures` e `spawnPlacements` da selection da hunt.
-- **Criatura conjura** — IA que decide lançar, simétrica ao `queueInternalAttack` existente, e Orc
-  Shaman ativo. Regenera golden.
+O bloqueio B9: o snapshot de save referencia spawn por `(groupIndex, slotIndex)`
+(`SpawnSlotStateSchema` em `packages/contracts/src/simulation/schemas.ts:1268`), então **toda mudança
+de conteúdo de hunt invalida todo save existente**. Custou 8 testes vermelhos e um ciclo de conserto
+na PB-08-01, com **uma** mudança de conteúdo.
 
-## Invariantes herdados
+Este playbook mexe em conteúdo de hunt **cinco vezes**. É a única task que fica mais cara a cada hunt
+adicionada, então é a única que não pode esperar.
 
-- **Nenhum spawn é inventado.** Toda criatura sai do catálogo e todo spawn tem origem real em
-  `otservbr-monster.xml`, declarada em `spawnPlacements`.
-- **O princípio de design do PB-08 vale para criatura.** Espécies não são escada: snake, orc, orc
-  spearman e rotworm coexistem porque cada uma se comporta de um jeito visível — massa frágil, melee
-  duro, atirador, conjurador. Uma espécie que seja "rotworm com mais HP" não entra.
-- `tibia/01` R2: raça dominante + variantes. Rotworm continua dominante.
-- `tibia/01` R4, currículo de inimigos: **pack → ranged → caster**. Este playbook cobre os três
-  primeiros passos e não deve pular para adiante.
+### Por que a 02 vem em segundo
+
+Porque ela impede as duas descobertas caras: **faltar sprite na quarta hunt**, e **escrever uma hunt
+cujo comportamento o kernel não sabe executar**. As duas custam um ciclo inteiro se aparecerem no
+meio de uma task de conteúdo, e nenhuma delas aparece se a escada for levantada antes.
+
+## Modelo e effort por task
+
+`docs/08_POLITICA_MODELOS_AGENTES.md` é normativo. Alocação prevista:
+
+| Task | Classe | Modelo previsto |
+|---|---|---|
+| PB-10-01 | implementação complexa — contrato integrado, kernel, migração de save, regenera golden | frontier `xhigh` |
+| PB-10-02 | especificação e curadoria | frontier `xhigh` |
+| PB-10-03 | implementação bem especificada — refactor sem conteúdo novo | econômico `xhigh` |
+| PB-10-04 | implementação bem especificada — gerador com `--check` | econômico `xhigh` |
+| PB-10-05 | apresentação em `apps/game` | econômico `xhigh`, **validado pelo usuário jogando** |
+| PB-10-06 | implementação complexa — IA e kernel, regenera golden | frontier `xhigh` |
+| PB-10-07+ | conteúdo, uma hunt por task | econômico `xhigh` |
+
+Revisão prefere modelo **diferente** do implementador. Modelo e effort efetivamente usados vão para o
+`STATE.md`.
+
+## O aceite
+
+O playbook não fecha por veredito de auditoria. Fecha quando o usuário abre o jogo, vê o catálogo,
+escolhe uma hunt de cada faixa e joga. O que cada task entrega para isso: `corepack pnpm verify`
+verde, `corepack pnpm dev` de pé, e uma frase dizendo **o que olhar** e **como reproduzir**.
 
 ## Dependências
 
-**PB-08 integrado.** O taunt da PB-08-06 só tem valor aqui: contra rotworms, que correm para o
-jogador de qualquer jeito, ele não faz nada; contra onze lanceiros atirando a 7 tiles, é a resposta.
+**PB-08 integrado** — está, em `80be90b`. A 08-10 foi cancelada.
+
+Este playbook **roda antes do PB-09**, que hoje é esqueleto e começa por design doc. A regra do
+`06_ROTEIRO` permite: nenhum playbook espera o fechamento formal de outro; o que se exige do anterior
+é código integrado na `main` e verde, verificável por `git log` e `verify`.
