@@ -11,8 +11,11 @@ já existe, mais uma extensão de lista de ids no extractor.
 **Validador sugerido:** **o usuário jogando**, com screenshot do perfil `personal`. Veja "A armadilha
 que faz esta task mentir".
 
-**Rota:** `superpowers:test-driven-development` + `superpowers:verification-before-completion`.
-Skills operacionais: `playbook-task`, `run-gates`, `worktree-cycle`, `hunt-content-pipeline`.
+**Rota:** **sem skill externa.** As duas disciplinas que importam estão escritas nesta própria
+task e no `AGENTS.md`, e valem como regra: **teste primeiro** ("Passos", item 1 — quatro vermelhos
+antes de qualquer implementação) e **nada afirmado sem saída fresca** ("Verificações exigidas").
+Skills operacionais do repositório: `playbook-task`, `run-gates`, `worktree-cycle`,
+`hunt-content-pipeline`.
 
 **Paralelismo:** depende de **PB-08-08 integrada** — a rail é uma das regiões que o chassi cria.
 
@@ -182,8 +185,10 @@ Evidência fresca, colada no relatório:
 
 ```text
 Trabalhe em C:\Kaezan\kaezan-huntbound com GPT-5.6 Luna em xhigh.
-Use obrigatoriamente superpowers:test-driven-development e
-superpowers:verification-before-completion.
+Nao invoque skill externa nenhuma. As duas regras que valem estao escritas na task e no
+AGENTS.md: TESTE PRIMEIRO (os quatro vermelhos rodam e falham ANTES da implementacao, com a
+saida do RED colada no relatorio) e NENHUM RESULTADO AFIRMADO SEM A SAIDA FRESCA do comando
+que o produziu.
 
 Execute integralmente e somente:
 C:\Kaezan\kaezan-huntbound\docs\playbooks\PB-08\tasks\PB-08-09-a-rail-de-janelas.md
