@@ -166,12 +166,15 @@ export function mountCombatHud(
   hud.append(vitalsLeft, vitalsRight, rail, alerts, deckBand, deathOverlay);
   root.replaceChildren(hud);
 
+  // The deck band reads buffs, spells, pools from top to bottom, and it is
+  // built in that order. The bars are down here rather than over the head of
+  // the play window because the player is already watching this strip for
+  // cooldowns -- "o jogador ja vai ficar olhando o cooldown das habilidades,
+  // ai ele pode olhar la mesmo a vida e mana" -- and the buffs get a row above
+  // the spells so that nothing ever shares a line with the bars and resizes
+  // them mid-hunt.
+  deckBand.append(banner.status);
   const deck = mountActionDeck(deckBand);
-  // Under the spells, in the deck band, rather than over the head of the play
-  // window. The player is already watching this strip for cooldowns, so the two
-  // numbers he acts on are on the glance he is making anyway -- reported at
-  // playtest: "o jogador ja vai ficar olhando o cooldown das habilidades, ai
-  // ele pode olhar la mesmo a vida e mana".
   deckBand.append(banner.element);
 
   const onRestart = (): void => {

@@ -463,21 +463,14 @@ body {
 }
 
 /*
- * Under 30% the arc stops reporting and starts warning. The colour ramp alone
- * was missed at playtest, so the last stretch also lifts its glow and pulses --
- * slow enough to notice without pulling the eye off the fight. The global
- * `prefers-reduced-motion` reset at the foot of this file stops the pulse for
- * anyone who has asked it to.
+ * Under 30% the arc stops reporting and starts warning: it lifts its glow, and
+ * that is all it does. A pulse was tried here and refused at playtest -- "me
+ * parece que a barra de hp esta piscando, remova esse efeito". A gauge that
+ * blinks is one more moving thing on a screen the player is already reading
+ * under pressure.
  */
 .cockpit-arc[data-critical="true"] .cockpit-arc__fill {
-  filter: drop-shadow(0 0 6px var(--arc-colour, #ff4d4d));
-  animation: cockpit-vital-critical 1.2s ease-in-out infinite;
-}
-
-@keyframes cockpit-vital-critical {
-  50% {
-    opacity: 0.55;
-  }
+  filter: drop-shadow(0 0 7px var(--arc-colour, #ff4d4d));
 }
 
 /* Banner ------------------------------------------------------------- */
@@ -494,11 +487,14 @@ body {
  * A child of the deck band rather than a floating strip, so it inherits the
  * band's padding -- the reserve that keeps the deck clear of the d-pad -- and
  * can never end up over the thumb control.
+ *
+ * Nothing shares this line. The buffs did for one round and the bars ended up
+ * a different width every time one came up or ran out, which is a gauge whose
+ * scale keeps changing under the player. Half each, always.
  */
 .cockpit__banner {
   display: flex;
   gap: 0.4rem;
-  align-items: center;
   width: 100%;
   /*
    * The ceiling the deck's own row hits once its cells reach their 5.5rem cap.
@@ -509,24 +505,11 @@ body {
   pointer-events: none;
 }
 
-/*
- * The numbers keep at least three fifths of the strip. On a phone the buffs and
- * the bars are fighting over 350 px, and of the two it is the buffs that can be
- * clipped: a health readout that has lost its digits is the one thing on this
- * strip the player cannot do without.
- */
-.cockpit-banner__gauges {
-  display: flex;
-  flex: 1 1 auto;
-  gap: 0.4rem;
-  min-width: 60%;
-}
-
 .cockpit-gauge {
   position: relative;
   flex: 1 1 0;
-  height: 1.15rem;
   min-width: 0;
+  height: 1.15rem;
   overflow: hidden;
   border: 1px solid rgb(6 10 16 / 85%);
   border-radius: 0.2rem;
@@ -570,12 +553,12 @@ body {
   white-space: nowrap;
 }
 
+/* Lit, not blinking: the pulse was refused at playtest along with the arc's. */
 .cockpit-gauge[data-critical="true"] {
   border-color: rgb(255 77 77 / 85%);
   box-shadow:
     0 1px 3px rgb(0 0 0 / 45%),
-    0 0 8px rgb(255 77 77 / 55%);
-  animation: cockpit-vital-critical 1.2s ease-in-out infinite;
+    0 0 9px rgb(255 77 77 / 60%);
 }
 
 /*
@@ -586,17 +569,24 @@ body {
  * and to a screen reader.
  */
 /*
- * On the same line as the bars, to their right. A row of its own would have
- * meant a taller band every frame of the hunt to hold buffs that are up for a
- * few seconds of it; here the bars give back the width instead, and only while
- * something is actually running.
+ * Above the spells, on a line of its own.
+ *
+ * The height is reserved whether or not anything is up. An empty row that
+ * collapses would shove the whole deck down a notch the moment a buff lands,
+ * and the icons the player is aiming at would move under his thumb. Reserved
+ * space shows up as nothing at all -- no border, no background, no pointer --
+ * so it is not a placeholder, just room already made.
  */
 .cockpit-banner__status {
   display: flex;
-  flex: 0 1 auto;
   gap: 0.3rem;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 59rem;
+  min-height: 1.3rem;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .cockpit-banner__chip {

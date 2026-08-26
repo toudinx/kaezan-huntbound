@@ -26,7 +26,10 @@ export interface VitalBannerVitals {
 }
 
 export interface VitalBanner {
+  /** The two bars. Goes under the deck, where it has the row to itself. */
   readonly element: HTMLElement;
+  /** The buff strip. Goes above the deck, for the same reason. */
+  readonly status: HTMLElement;
   /** Owned by the HUD, which keeps writing their text and data attributes. */
   readonly posture: HTMLElement;
   readonly haste: HTMLElement;
@@ -92,24 +95,28 @@ export function mountVitalBanner(document: Document): VitalBanner {
   element.className = 'cockpit__banner';
   element.setAttribute('data-testid', 'cockpit-banner');
 
-  const gauges = document.createElement('div');
-  gauges.className = 'cockpit-banner__gauges';
-
   const health = createGauge(document, 'health', 'combat-player-health-bar');
   const mana = createGauge(document, 'mana', 'combat-player-mana-bar');
-  gauges.append(health.element, mana.element);
+  element.append(health.element, mana.element);
 
   /**
    * The buff strip, and it is a strip of what is actually on.
    *
-   * An always-present "Posture: None / Haste: Off" pair would be two thirds of
-   * this row spent telling the player nothing -- the placeholder the spec
-   * refuses. The chips keep their text so the state stays readable to a test
-   * and to a screen reader, and the stylesheet drops the ones whose data
-   * attribute says they are off, so the row is empty until a buff is up.
+   * An always-present "Posture: None / Haste: Off" pair would be two chips
+   * spent telling the player nothing -- the placeholder the spec refuses. The
+   * chips keep their text so the state stays readable to a test and to a
+   * screen reader, and the stylesheet drops the ones whose data attribute says
+   * they are off, so the row is empty until a buff is up.
+   *
+   * It rides above the deck rather than beside the bars. Sharing the bars' line
+   * made the bars resize every time a buff came up or ran out -- reported at
+   * playtest, "o tamanho das barras ... estao variaveis a depender dos buffs
+   * que o personagem tem, nao faz sentido isso". A row of its own means the
+   * bars never move and the chips never have to be clipped.
    */
   const status = document.createElement('div');
   status.className = 'cockpit-banner__status';
+  status.setAttribute('data-testid', 'cockpit-banner-status');
 
   const posture = document.createElement('p');
   posture.className = 'cockpit-banner__chip';
@@ -122,7 +129,6 @@ export function mountVitalBanner(document: Document): VitalBanner {
   haste.setAttribute('aria-live', 'polite');
 
   status.append(posture, haste);
-  element.append(gauges, status);
 
   let writtenColour = '';
   let writtenCritical = '';
@@ -158,5 +164,5 @@ export function mountVitalBanner(document: Document): VitalBanner {
 
   update(null);
 
-  return { element, posture, haste, update };
+  return { element, status, posture, haste, update };
 }
