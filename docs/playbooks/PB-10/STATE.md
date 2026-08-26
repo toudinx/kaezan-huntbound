@@ -4,8 +4,9 @@
 
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
-`docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Próxima elegível:
-**PB-10-02**. Só as tasks 01 e 02 estão escritas; o resto é bullet no `README.md`.
+`docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
+`docs/content/HUNT_BANDS.md`. Tasks 01 e 02 fechadas; **PB-10-03 é a próxima e ainda não está
+escrita** — escrever 03 e 04 antes de executar.
 
 **Última atualização:** 2026-08-26
 
@@ -19,7 +20,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | ID | Status | Branch prevista | Modelo previsto | Modelo usado | Commit | Evidência principal |
 |---|---|---|---|---|---|---|
 | PB-10-01 | done | `cursor/pb10-01-spawn-identity` | frontier `xhigh` | Grok 4.6 `xhigh` | `6089d58` | `slotId` Canary; S7 inalterado; save 1→2 descarta `spawnSlots`; pb03 intacto |
-| PB-10-02 | pending | `<agente>/pb10-02-escada-de-hunts` | frontier `xhigh` | — | — | — |
+| PB-10-02 | done | `cursor/pb10-02-escada-de-hunts` | frontier `xhigh` | Grok 4.6 `xhigh` | — | `docs/content/HUNT_BANDS.md` |
 | PB-10-03 | não escrita | — | econômico `xhigh` | — | — | — |
 | PB-10-04 | não escrita | — | econômico `xhigh` | — | — | — |
 | PB-10-05 | não escrita | — | econômico `xhigh` | — | — | — |
@@ -31,13 +32,12 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 **B9 — fechado pela PB-10-01.** Spawn vivo endereça por `slotId` de origem Canary, não por
 `(groupIndex, slotIndex)`.
 
-**B15 — aberto, resolvido pela PB-10-02.** Nenhuma hunt além da rotworm teve `lookType` conferido
-contra o export pessoal (`HUNTBOUND_PERSONAL_ASSET_SOURCE`). Falta de sprite é o único item que
-bloqueia uma hunt por arte, e descobrir isso no meio de uma task de conteúdo custa o ciclo inteiro.
+**B15 — fechado pela PB-10-02.** Sete espécies congeladas das faixas 1–5 com `lookType` aberto em
+`outfits/<id>.png`; nenhuma falta. Hashes em `docs/content/HUNT_BANDS.md` §3.
 
-**B11 e B14 — abertos, herdados do PB-08 e independentes deste playbook.** Sondas sensíveis a carga
-da máquina. Passam isoladas; rode `verify` de novo antes de teorizar. `retries` e timeout inflado
-seguem proibidos.
+**B11 e B14 — abertos, herdados do PB-08.** Sondas de frame. Nesta task
+`haste-play.spec.ts:167` falhou 3× isolado; `hunt-play.spec.ts:405` passou. `retries` proibidos.
+Integração da PB-10-02 espera `verify` verde.
 
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 

@@ -56,6 +56,10 @@ alterem os IDs de conteúdo importado:
 - dash, caso o playtest demonstre que melhora o combate;
 - instrumentação, replay, debug e ferramentas de importação;
 - UI/UX para browser, touch e acessibilidade;
+- personagem resolvido pela hunt escolhida, **temporário até o PB-09**: escolher a hunt escolhe a
+  faixa e o personagem recomendado. A tela de seleção já cabe em UI/UX; esta resolução de personagem
+  não. Enquanto não houver progressão, quatro das cinco faixas seriam triviais ou letais com um
+  único Knight de nível fixo;
 - leech de vida e mana: fração do dano efetivamente aplicado devolve vida e mana à fonte, depois do
   clamp, sem ultrapassar o máximo. O snapshot já conhece life leech e mana leech como skills de
   criatura e como imbuement da espada id 3264; sem imbuing e sem item usável, o Huntbound promove
