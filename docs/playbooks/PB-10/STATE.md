@@ -18,7 +18,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 
 | ID | Status | Branch prevista | Modelo previsto | Modelo usado | Commit | Evidência principal |
 |---|---|---|---|---|---|---|
-| PB-10-01 | done | `cursor/pb10-01-spawn-identity` | frontier `xhigh` | Grok 4.6 `xhigh` | (este commit) | `slotId` Canary; S7 inalterado; save 1→2 descarta `spawnSlots`; pb03 intacto |
+| PB-10-01 | done | `cursor/pb10-01-spawn-identity` | frontier `xhigh` | Grok 4.6 `xhigh` | `6089d58` | `slotId` Canary; S7 inalterado; save 1→2 descarta `spawnSlots`; pb03 intacto |
 | PB-10-02 | pending | `<agente>/pb10-02-escada-de-hunts` | frontier `xhigh` | — | — | — |
 | PB-10-03 | não escrita | — | econômico `xhigh` | — | — | — |
 | PB-10-04 | não escrita | — | econômico `xhigh` | — | — | — |
