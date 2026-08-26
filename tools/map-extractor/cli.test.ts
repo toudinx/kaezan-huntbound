@@ -337,6 +337,24 @@ describe('runMapExtractorCli', () => {
     expect(captured.err.join(' ')).toContain('spawns');
   });
 
+  it('verifies a root index sidecar alongside generated hunt directories', () => {
+    runMapExtractorCli(buildArgs(), io(captured));
+    const index = '{"schemaVersion":1,"hunts":[]}\n';
+    writeFileSync(join(output, 'index.json'), index);
+    writeFileSync(join(output, 'index.sha256'), `${sha256Text(index)}\n`);
+
+    expect(
+      runMapExtractorCli(['sidecar-check', '--output', output], io(captured)),
+    ).toBe(0);
+
+    writeFileSync(join(output, 'index.sha256'), `${'0'.repeat(64)}\n`);
+    captured = { out: [], err: [], usage: 0 };
+    expect(
+      runMapExtractorCli(['sidecar-check', '--output', output], io(captured)),
+    ).toBe(1);
+    expect(captured.err.join(' ')).toContain('index.sha256');
+  });
+
   it('checks every hunt directory in hunt id order', () => {
     runMapExtractorCli(buildArgs(), io(captured));
 

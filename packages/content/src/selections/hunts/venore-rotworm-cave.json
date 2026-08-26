@@ -9,6 +9,7 @@
   "layout": "../../layouts/hunts/venore-rotworm-cave.json",
   "recommendedLevel": 8,
   "soloVocation": "vocation:tibia:knight",
+  "band": 1,
   "region": {
     "minX": 33002,
     "minY": 31995,

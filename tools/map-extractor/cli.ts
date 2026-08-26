@@ -606,6 +606,12 @@ function huntOutputDirectories(outputRoot: string): readonly {
   if (directories.length === 0 && existsSync(jsonPath(resolvedRoot, 'hunt'))) {
     return [{ directory: resolvedRoot, huntId: readHuntId(resolvedRoot) }];
   }
+  if (
+    directories.length === 0 &&
+    existsSync(join(resolvedRoot, 'index.json'))
+  ) {
+    return [];
+  }
 
   const outputs = directories
     .map((directory) => ({ directory, huntId: readHuntId(directory) }))
@@ -622,8 +628,26 @@ function huntOutputDirectories(outputRoot: string): readonly {
 }
 
 function runSidecarCheck(output: string, io: MapExtractorCliIo): number {
+  const resolvedOutput = resolve(output);
   const digests: Record<string, Record<string, string>> = {};
-  for (const { directory, huntId } of huntOutputDirectories(output)) {
+  const indexJsonPath = join(resolvedOutput, 'index.json');
+  if (existsSync(indexJsonPath)) {
+    const expected = sha256Hex(readFileSync(indexJsonPath, 'utf8'));
+    const indexSidecarPath = join(resolvedOutput, 'index.sha256');
+    const actual = readFileSync(indexSidecarPath, 'utf8').trim();
+    if (expected !== actual) {
+      io.stderr({
+        command: 'sidecar-check',
+        expected,
+        actual,
+        file: 'index.sha256',
+        reason: 'sidecar-divergent',
+      });
+      return 1;
+    }
+    digests.index = { index: expected };
+  }
+  for (const { directory, huntId } of huntOutputDirectories(resolvedOutput)) {
     if (digests[huntId] !== undefined) {
       throw new Error(`Duplicate generated hunt id: ${huntId}`);
     }

@@ -7,11 +7,19 @@ import {
 import { formatSpawnSlotId } from '../simulation/spawnIdentity.ts';
 import type {
   HuntDefinition,
+  HuntIndex,
+  HuntIndexCreature,
+  HuntIndexEntry,
+  HuntIndexLootEntry,
   MapRegion,
   SpawnTable,
   TransitionTable,
 } from './types.ts';
-import { HUNT_SCHEMA_VERSION } from './types.ts';
+import {
+  HUNT_INDEX_SCHEMA_VERSION,
+  HUNT_INDEX_TICKS_PER_HOUR,
+  HUNT_SCHEMA_VERSION,
+} from './types.ts';
 
 const safeInteger = z.number().safe();
 const nonNegativeInteger = safeInteger.nonnegative();
@@ -557,4 +565,210 @@ export const HuntDefinitionSchema: z.ZodType<HuntDefinition> = z
         );
       }
     });
+  });
+
+const huntIndexChancePerHundredThousand = safeInteger.min(0).max(100_000);
+
+const HuntIndexLootEntrySchema: z.ZodType<HuntIndexLootEntry> = z
+  .object({
+    itemKey: NonEmptyStringSchema,
+    chancePerHundredThousand: huntIndexChancePerHundredThousand,
+    minCount: positiveInteger,
+    maxCount: positiveInteger,
+  })
+  .strict()
+  .refine((entry) => entry.minCount <= entry.maxCount, {
+    path: ['maxCount'],
+    message: 'Loot minCount must be less than or equal to maxCount',
+  });
+
+const HuntIndexCreatureSchema: z.ZodType<HuntIndexCreature> = z
+  .object({
+    creatureKey: NonEmptyStringSchema,
+    displayName: NonEmptyStringSchema,
+    slotCount: positiveInteger,
+    health: nonNegativeInteger,
+    experience: nonNegativeInteger,
+    lookType: nonNegativeInteger,
+    respawnTicks: positiveInteger,
+    experiencePerHour: nonNegativeInteger,
+    loot: z.array(HuntIndexLootEntrySchema).readonly(),
+  })
+  .strict()
+  .superRefine((creature, context) => {
+    for (let index = 1; index < creature.loot.length; index += 1) {
+      const previous = creature.loot[index - 1];
+      const current = creature.loot[index];
+      if (previous === undefined || current === undefined) continue;
+      if (
+        previous.chancePerHundredThousand < current.chancePerHundredThousand
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['loot', index, 'chancePerHundredThousand'],
+          message:
+            'Loot must be ordered by chancePerHundredThousand descending',
+        });
+      } else if (
+        previous.chancePerHundredThousand ===
+          current.chancePerHundredThousand &&
+        previous.itemKey >= current.itemKey
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['loot', index, 'itemKey'],
+          message: 'Loot ties must be ordered by itemKey ascending',
+        });
+      }
+    }
+  });
+
+const HuntIndexEntrySchema: z.ZodType<HuntIndexEntry> = z
+  .object({
+    huntId: HuntIdSchema,
+    displayName: NonEmptyStringSchema,
+    band: safeInteger.min(1).max(5),
+    recommendedLevel: positiveInteger,
+    soloVocation: NonEmptyStringSchema,
+    sourceUrl: NonEmptyStringSchema,
+    maxLiveActors: positiveInteger.max(64),
+    experiencePerHour: nonNegativeInteger,
+    creatures: z.array(HuntIndexCreatureSchema).min(1).readonly(),
+  })
+  .strict();
+
+function derivedHuntExperiencePerHour(
+  creature: HuntIndexCreature,
+  totalSlotCount: number,
+  activeSlotCount: number,
+): number {
+  return Number(
+    (BigInt(creature.slotCount) *
+      BigInt(creature.experience) *
+      BigInt(HUNT_INDEX_TICKS_PER_HOUR) *
+      BigInt(activeSlotCount)) /
+      (BigInt(creature.respawnTicks) * BigInt(totalSlotCount)),
+  );
+}
+
+export const HuntIndexSchema: z.ZodType<HuntIndex> = z
+  .object({
+    schemaVersion: z.literal(HUNT_INDEX_SCHEMA_VERSION),
+    hunts: z.array(HuntIndexEntrySchema).min(1).readonly(),
+  })
+  .strict()
+  .superRefine((index, context) => {
+    for (let huntIndex = 1; huntIndex < index.hunts.length; huntIndex += 1) {
+      const previous = index.hunts[huntIndex - 1];
+      const current = index.hunts[huntIndex];
+      if (
+        previous !== undefined &&
+        current !== undefined &&
+        previous.huntId >= current.huntId
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['hunts', huntIndex, 'huntId'],
+          message: 'Hunts must be strictly ordered by huntId',
+        });
+      }
+    }
+
+    index.hunts.forEach((hunt, huntIndex) => {
+      const totalSlotCount = hunt.creatures.reduce(
+        (total, creature) => total + creature.slotCount,
+        0,
+      );
+      const activeSlotCount = Math.min(totalSlotCount, hunt.maxLiveActors);
+      let totalExperiencePerHour = 0;
+      for (
+        let creatureIndex = 1;
+        creatureIndex < hunt.creatures.length;
+        creatureIndex += 1
+      ) {
+        const previousCreature = hunt.creatures[creatureIndex - 1];
+        const creature = hunt.creatures[creatureIndex];
+        if (
+          previousCreature !== undefined &&
+          creature !== undefined &&
+          previousCreature.creatureKey >= creature.creatureKey
+        ) {
+          context.addIssue({
+            code: 'custom',
+            path: [
+              'hunts',
+              huntIndex,
+              'creatures',
+              creatureIndex,
+              'creatureKey',
+            ],
+            message: 'Creatures must be strictly ordered by creatureKey',
+          });
+        }
+      }
+      hunt.creatures.forEach((creature, creatureIndex) => {
+        const expected = derivedHuntExperiencePerHour(
+          creature,
+          totalSlotCount,
+          activeSlotCount,
+        );
+        totalExperiencePerHour += creature.experiencePerHour;
+        if (creature.experiencePerHour !== expected) {
+          context.addIssue({
+            code: 'custom',
+            path: [
+              'hunts',
+              huntIndex,
+              'creatures',
+              creatureIndex,
+              'experiencePerHour',
+            ],
+            message: `experiencePerHour must be ${expected} for the declared slots and respawnTicks`,
+          });
+        }
+      });
+      if (hunt.experiencePerHour !== totalExperiencePerHour) {
+        context.addIssue({
+          code: 'custom',
+          path: ['hunts', huntIndex, 'experiencePerHour'],
+          message: `experiencePerHour must equal the sum of creature contributions (${totalExperiencePerHour})`,
+        });
+      }
+    });
+
+    const byBand = [...index.hunts].sort((left, right) =>
+      left.band === right.band
+        ? left.huntId < right.huntId
+          ? -1
+          : left.huntId > right.huntId
+            ? 1
+            : 0
+        : left.band - right.band,
+    );
+    let highestBand = 0;
+    let highestRecommendedLevel = 0;
+    for (let position = 0; position < byBand.length; position += 1) {
+      const current = byBand[position];
+      if (
+        current !== undefined &&
+        current.band > highestBand &&
+        current.recommendedLevel < highestRecommendedLevel
+      ) {
+        const currentIndex = index.hunts.indexOf(current);
+        context.addIssue({
+          code: 'custom',
+          path: ['hunts', currentIndex, 'recommendedLevel'],
+          message: 'A higher band cannot have a lower recommendedLevel',
+        });
+      }
+      if (current !== undefined && current.band > highestBand) {
+        highestBand = current.band;
+      }
+      if (current !== undefined) {
+        highestRecommendedLevel = Math.max(
+          highestRecommendedLevel,
+          current.recommendedLevel,
+        );
+      }
+    }
   });

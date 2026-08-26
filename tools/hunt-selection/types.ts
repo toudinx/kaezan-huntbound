@@ -33,6 +33,7 @@ export interface HuntSelection {
   readonly layout: string;
   readonly recommendedLevel: number;
   readonly soloVocation: string;
+  readonly band: number;
   readonly region: HuntSelectionRegion;
   readonly creatures: readonly string[];
   readonly excludedCreatures: readonly HuntSelectionExcludedCreature[];

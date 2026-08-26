@@ -13,6 +13,11 @@ export type HuntId = string & { readonly __brand: 'HuntId' };
 
 export const HUNT_SCHEMA_VERSION = 1;
 
+export const HUNT_INDEX_SCHEMA_VERSION = 1;
+
+/** A fixed 50 ms simulation tick expressed as the number of ticks in one hour. */
+export const HUNT_INDEX_TICKS_PER_HOUR = 72_000;
+
 export interface MapRegionFloor {
   readonly z: number;
   readonly ground: readonly number[];
@@ -82,6 +87,47 @@ export interface HuntDefinition {
   readonly blueprints: readonly KernelBlueprint[];
   readonly playerStart: GridPosition;
   readonly playerBlueprintId: string;
+}
+
+export interface HuntIndexLootEntry {
+  readonly itemKey: string;
+  readonly chancePerHundredThousand: number;
+  readonly minCount: number;
+  readonly maxCount: number;
+}
+
+export interface HuntIndexCreature {
+  readonly creatureKey: string;
+  readonly displayName: string;
+  readonly slotCount: number;
+  readonly health: number;
+  readonly experience: number;
+  readonly lookType: number;
+  readonly respawnTicks: number;
+  /**
+   * Integer exp/h = floor(slotCount × experience × 72,000 ×
+   * min(totalSlotCount, maxLiveActors) / (respawnTicks × totalSlotCount)).
+   */
+  readonly experiencePerHour: number;
+  readonly loot: readonly HuntIndexLootEntry[];
+}
+
+export interface HuntIndexEntry {
+  readonly huntId: HuntId;
+  readonly displayName: string;
+  readonly band: number;
+  readonly recommendedLevel: number;
+  readonly soloVocation: string;
+  /** Curated origin of the hunt choice; it is not a numeric data source. */
+  readonly sourceUrl: string;
+  readonly maxLiveActors: number;
+  readonly experiencePerHour: number;
+  readonly creatures: readonly HuntIndexCreature[];
+}
+
+export interface HuntIndex {
+  readonly schemaVersion: number;
+  readonly hunts: readonly HuntIndexEntry[];
 }
 
 export type HuntDiagnosticCode =

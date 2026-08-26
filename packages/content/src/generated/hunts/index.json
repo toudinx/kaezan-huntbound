@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "hunts": [
+    {
+      "huntId": "hunt:tibia:venore-rotworm-cave",
+      "displayName": "Venore Rotworm Cave",
+      "band": 1,
+      "recommendedLevel": 8,
+      "soloVocation": "vocation:tibia:knight",
+      "sourceUrl": "https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave",
+      "maxLiveActors": 20,
+      "experiencePerHour": 32000,
+      "creatures": [
+        {
+          "creatureKey": "creature:tibia:rotworm",
+          "displayName": "Rotworm",
+          "slotCount": 20,
+          "health": 65,
+          "experience": 40,
+          "lookType": 26,
+          "respawnTicks": 1800,
+          "experiencePerHour": 32000,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 71760,
+              "minCount": 1,
+              "maxCount": 17
+            },
+            {
+              "itemKey": "item:tibia:ham",
+              "chancePerHundredThousand": 20120,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:meat",
+              "chancePerHundredThousand": 20000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:lump-of-dirt",
+              "chancePerHundredThousand": 10000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:mace",
+              "chancePerHundredThousand": 4500,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:sword",
+              "chancePerHundredThousand": 3000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:worm",
+              "chancePerHundredThousand": 3000,
+              "minCount": 1,
+              "maxCount": 3
+            },
+            {
+              "itemKey": "item:tibia:legion-helmet",
+              "chancePerHundredThousand": 1890,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

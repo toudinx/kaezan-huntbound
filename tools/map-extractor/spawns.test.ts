@@ -39,6 +39,7 @@ const selection: HuntSelection = {
   layout: 'layouts/hunts/venore-rotworm-cave.json',
   recommendedLevel: 8,
   soloVocation: 'vocation:tibia:knight',
+  band: 1,
   region: {
     minX: MIN_X,
     minY: MIN_Y,
