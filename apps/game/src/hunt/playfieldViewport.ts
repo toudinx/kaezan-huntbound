@@ -53,13 +53,20 @@ const COMPACT_WIDTH = 700;
 
 const COMPACT_TOP_BAND = 112;
 const WIDE_TOP_BAND = 56;
-const COMPACT_BOTTOM_BAND = 236;
-const MIN_WIDE_BOTTOM_BAND = 128;
-const MAX_WIDE_BOTTOM_BAND = 176;
-const WIDE_BOTTOM_BAND_RATIO = 0.13;
-const MIN_ARC_BAND = 44;
-const MAX_ARC_BAND = 92;
-const ARC_BAND_RATIO = 0.11;
+/*
+ * The bottom band carries a second row since the vitals strip moved under the
+ * spells, so it is a strip taller than it was. The band measure is the only
+ * honest place to pay for it: the stylesheet is forbidden a measure of its own,
+ * and a strip that overflowed a band sized for one row would run off the foot
+ * of the screen -- which is exactly what it did before these numbers moved.
+ */
+const COMPACT_BOTTOM_BAND = 268;
+const MIN_WIDE_BOTTOM_BAND = 156;
+const MAX_WIDE_BOTTOM_BAND = 204;
+const WIDE_BOTTOM_BAND_RATIO = 0.15;
+const MIN_ARC_BAND = 40;
+const MAX_ARC_BAND = 76;
+const ARC_BAND_RATIO = 0.09;
 const RAIL_BAND = 208;
 
 /**
@@ -73,11 +80,14 @@ const RAIL_BAND = 208;
  *
  * Capping costs no view. The canvas is full-bleed and the frame floats over it,
  * so the world still draws behind the arcs and past them -- the cap moves the
- * arcs inward, it does not crop the game. Nine against eleven rows makes the
- * window a little taller than it is wide, which is the shape a top-down grid
- * reads best in.
+ * arcs inward, it does not crop the game. Six against eleven rows makes the
+ * window clearly taller than it is wide, which is the shape a top-down grid
+ * reads best in, and it is what pulls the two gauges in beside the knight:
+ * seven columns still left them further out than the follow-up playtest wanted
+ * ("eles poderiam estar mais proximos"). This constant is the whole lever --
+ * lower it again if they should sit closer still.
  */
-const PLAYFIELD_MAX_COLUMNS = 7;
+const PLAYFIELD_MAX_COLUMNS = 6;
 
 function assertPositiveFinite(name: string, value: number): void {
   if (!Number.isFinite(value) || value <= 0) {

@@ -2,6 +2,7 @@ import { TICK_DURATION_MS } from '../../../../packages/contracts/src/index.ts';
 import type { CombatViewState } from '../hunt/CombatViewModel';
 import { mountActionDeck } from './cockpit/ActionDeck';
 import { createVitalArc, type VitalArc } from './cockpit/VitalArcs';
+import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
 
 /**
  * Orchestrates the cockpit's combat surfaces.
@@ -104,6 +105,8 @@ export function mountCombatHud(
   vitalsLeft.append(health.element);
   vitalsRight.append(mana.element);
 
+  const banner: VitalBanner = mountVitalBanner(document);
+
   /**
    * The rail's first slot, held open for the minimap PB-08-09 puts here.
    *
@@ -123,14 +126,12 @@ export function mountCombatHud(
   const targetHealth = createElement(document, 'div', 'combat-target-health');
   targetPanel.append(targetName, targetHealth);
 
-  const modes = createElement(document, 'section', 'combat-modes');
-  modes.className = 'cockpit-panel';
-  modes.setAttribute('aria-label', 'Active modes');
-  const posture = createElement(document, 'p', 'combat-posture');
-  posture.setAttribute('aria-live', 'polite');
-  const haste = createElement(document, 'p', 'combat-haste');
-  haste.setAttribute('aria-live', 'polite');
-  modes.append(posture, haste);
+  // Posture and haste used to be two lines of prose in a rail panel, on the
+  // far side of the screen from the pools they modify. They belong beside the
+  // numbers they change, so the banner holds them and the rail lost its modes
+  // panel; the HUD still writes their text, because the wording is what the
+  // hunt specs read.
+  const { posture, haste } = banner;
 
   const lootPanel = createElement(document, 'section', 'combat-loot');
   lootPanel.className = 'cockpit-panel';
@@ -138,7 +139,7 @@ export function mountCombatHud(
   const lootLog = createElement(document, 'div', 'combat-loot-log');
   const runBag = createElement(document, 'div', 'combat-run-bag');
   lootPanel.append(lootLog, runBag);
-  rail.append(mapSlot, targetPanel, modes, lootPanel);
+  rail.append(mapSlot, targetPanel, lootPanel);
 
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
@@ -166,6 +167,12 @@ export function mountCombatHud(
   root.replaceChildren(hud);
 
   const deck = mountActionDeck(deckBand);
+  // Under the spells, in the deck band, rather than over the head of the play
+  // window. The player is already watching this strip for cooldowns, so the two
+  // numbers he acts on are on the glance he is making anyway -- reported at
+  // playtest: "o jogador ja vai ficar olhando o cooldown das habilidades, ai
+  // ele pode olhar la mesmo a vida e mana".
+  deckBand.append(banner.element);
 
   const onRestart = (): void => {
     options.onRestart?.();
@@ -180,6 +187,7 @@ export function mountCombatHud(
       health.update(state.player.health, state.player.maxHealth);
       mana.update(state.player.resource, state.player.maxResource);
     }
+    banner.update(state.player);
 
     targetName.textContent =
       state.targetEntityId === null

@@ -343,8 +343,8 @@ body {
 }
 
 .cockpit[data-cockpit-rail="off"] .cockpit__movement {
-  height: calc(var(--cockpit-bottom) * 0.58);
-  --dpad-cell: calc((var(--cockpit-bottom) * 0.58 - 1.1rem) / 3);
+  height: calc(var(--cockpit-bottom) * 0.55);
+  --dpad-cell: calc((var(--cockpit-bottom) * 0.55 - 1.1rem) / 3);
 }
 
 .combat-hud {
@@ -390,7 +390,12 @@ body {
   position: relative;
   display: block;
   width: 100%;
-  height: min(calc(100% - 1.9rem), 24rem);
+  /*
+   * The readout used to hang below the foot, so the arc gave up a line of
+   * height to make room for it. It rides the curve now, and the arc gets that
+   * height back.
+   */
+  height: min(100%, 24rem);
 }
 
 .cockpit-arc[data-side="right"] {
@@ -406,13 +411,33 @@ body {
   stroke-linecap: round;
 }
 
+/*
+ * The strokes are measured in screen pixels, not in the viewBox.
+ *
+ * `preserveAspectRatio: none` stretches a 120x400 box into a band roughly 76 px
+ * wide and 384 px tall, which is nowhere near the same scale on both axes. A
+ * plain stroke rides that stretch: the gauge came out about 11 px thick where
+ * the curve runs vertical and about 17 px where it runs flat, so it tapered
+ * along its own length and read as soft rather than as drawn. Stroking after
+ * the transform gives one honest width the whole way round -- the "mais
+ * nitidos" the playtest asked for.
+ */
+.cockpit-arc__canvas path {
+  vector-effect: non-scaling-stroke;
+}
+
+.cockpit-arc__casing {
+  stroke: rgb(6 10 16 / 78%);
+  stroke-width: 17;
+}
+
 .cockpit-arc__track {
-  stroke: rgb(123 161 216 / 22%);
-  stroke-width: 18;
+  stroke: rgb(126 160 208 / 30%);
+  stroke-width: 11;
 }
 
 .cockpit-arc__fill {
-  stroke-width: 18;
+  stroke-width: 11;
   transition:
     stroke-dashoffset 120ms linear,
     stroke 200ms linear;
@@ -421,45 +446,192 @@ body {
 /*
  * Health carries its own colour: green while it is healthy, amber around half,
  * red as it runs out. `VitalArcs` publishes the mix as `--arc-colour` so the
- * stroke and its glow can never disagree.
+ * stroke, its glow and the readout can never disagree.
+ *
+ * The glow is tight on purpose. A wide halo is the other half of what made the
+ * gauges look blurry: it spread the colour over the terrain around the stroke
+ * and cost the stroke its edge.
  */
 .cockpit-arc--health .cockpit-arc__fill {
   stroke: var(--arc-colour, #ff6b6b);
-  filter: drop-shadow(0 0 5px var(--arc-colour, #ff6b6b));
+  filter: drop-shadow(0 0 3px var(--arc-colour, #ff6b6b));
 }
 
 .cockpit-arc--mana .cockpit-arc__fill {
   stroke: #6ba8ff;
-  filter: drop-shadow(0 0 6px rgb(107 168 255 / 45%));
+  filter: drop-shadow(0 0 3px rgb(107 168 255 / 60%));
 }
 
 /*
- * The number sits at the foot of its own arc. The right arc is mirrored as a
- * whole so the two curves face each other; the readout is flipped back so it
- * stays legible.
+ * Under 30% the arc stops reporting and starts warning. The colour ramp alone
+ * was missed at playtest, so the last stretch also lifts its glow and pulses --
+ * slow enough to notice without pulling the eye off the fight. The global
+ * `prefers-reduced-motion` reset at the foot of this file stops the pulse for
+ * anyone who has asked it to.
  */
-.cockpit-arc__value {
+.cockpit-arc[data-critical="true"] .cockpit-arc__fill {
+  filter: drop-shadow(0 0 6px var(--arc-colour, #ff4d4d));
+  animation: cockpit-vital-critical 1.2s ease-in-out infinite;
+}
+
+@keyframes cockpit-vital-critical {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Banner ------------------------------------------------------------- */
+
+/*
+ * The numeric strip, directly under the spell row.
+ *
+ * It started over the head of the play window, where Tibia puts it. Playtest
+ * moved it here and gave the reason: the player is already watching the deck
+ * for cooldowns, so putting health and mana on that same glance costs him no
+ * second look. It also stops the strip covering a row of the world, which the
+ * old placement did.
+ *
+ * A child of the deck band rather than a floating strip, so it inherits the
+ * band's padding -- the reserve that keeps the deck clear of the d-pad -- and
+ * can never end up over the thumb control.
+ */
+.cockpit__banner {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  width: 100%;
+  /*
+   * The ceiling the deck's own row hits once its cells reach their 5.5rem cap.
+   * The strip lands the same width as the row above it, so the two read as one
+   * instrument instead of as a bar that happens to be nearby.
+   */
+  max-width: 59rem;
+  pointer-events: none;
+}
+
+/*
+ * The numbers keep at least three fifths of the strip. On a phone the buffs and
+ * the bars are fighting over 350 px, and of the two it is the buffs that can be
+ * clipped: a health readout that has lost its digits is the one thing on this
+ * strip the player cannot do without.
+ */
+.cockpit-banner__gauges {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.4rem;
+  min-width: 60%;
+}
+
+.cockpit-gauge {
+  position: relative;
+  flex: 1 1 0;
+  height: 1.15rem;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(6 10 16 / 85%);
+  border-radius: 0.2rem;
+  background: rgb(8 12 19 / 82%);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+}
+
+.cockpit-gauge__fill {
   position: absolute;
-  right: 0;
-  bottom: -1.5rem;
-  left: 0;
-  font-size: clamp(0.85rem, 1.6vw, 1.25rem);
+  inset: 0 auto 0 0;
+  width: var(--gauge-fill, 0%);
+  transition: width 120ms linear;
+}
+
+.cockpit-gauge--health .cockpit-gauge__fill {
+  background: var(--gauge-colour, #ff6b6b);
+}
+
+.cockpit-gauge--mana .cockpit-gauge__fill {
+  background: #4f86e8;
+}
+
+/*
+ * White on the fill, with a hard shadow. The digits cross their own bar from
+ * filled to empty as the pool drains, so they need a colour that holds against
+ * the fill and against the dark trough behind it -- one colour, both grounds.
+ */
+.cockpit-gauge__value {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  font-size: clamp(0.62rem, 0.95vw, 0.78rem);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  line-height: 1.15rem;
+  color: #f4f7ff;
+  letter-spacing: 0.03em;
   text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  white-space: nowrap;
 }
 
-/* The right arc is mirrored as a whole; its readout is flipped back. */
-.cockpit-arc[data-side="right"] .cockpit-arc__value {
-  transform: scaleX(-1);
+.cockpit-gauge[data-critical="true"] {
+  border-color: rgb(255 77 77 / 85%);
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 45%),
+    0 0 8px rgb(255 77 77 / 55%);
+  animation: cockpit-vital-critical 1.2s ease-in-out infinite;
 }
 
-.cockpit-arc--health .cockpit-arc__value {
-  color: #ff9e9e;
+/*
+ * Buffs, beside the numbers they change. The row is empty until something is
+ * up: an always-present "Posture: None / Haste: Off" pair is two chips spent
+ * saying nothing, which is the placeholder the spec refuses. The chips stay in
+ * the document with their text intact so the state is still readable to a test
+ * and to a screen reader.
+ */
+/*
+ * On the same line as the bars, to their right. A row of its own would have
+ * meant a taller band every frame of the hunt to hold buffs that are up for a
+ * few seconds of it; here the bars give back the width instead, and only while
+ * something is actually running.
+ */
+.cockpit-banner__status {
+  display: flex;
+  flex: 0 1 auto;
+  gap: 0.3rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.cockpit-arc--mana .cockpit-arc__value {
-  color: #9ec4ff;
+.cockpit-banner__chip {
+  margin: 0;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgb(126 160 208 / 45%);
+  border-radius: 999px;
+  background: rgb(8 12 19 / 85%);
+  font-size: clamp(0.6rem, 0.9vw, 0.72rem);
+  font-weight: 600;
+  color: #cfe0ff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 80%);
+  white-space: nowrap;
+}
+
+.cockpit-banner__chip[data-posture="none"],
+.cockpit-banner__chip[data-haste="off"] {
+  display: none;
+}
+
+.cockpit-banner__chip[data-posture="blood-rage"] {
+  border-color: rgb(255 122 122 / 70%);
+  color: #ffb3b3;
+}
+
+.cockpit-banner__chip[data-posture="protector"] {
+  border-color: rgb(122 200 255 / 70%);
+  color: #b3e0ff;
+}
+
+.cockpit-banner__chip[data-haste="active"] {
+  border-color: rgb(245 197 66 / 70%);
+  color: #ffe08a;
 }
 
 /* Rail ---------------------------------------------------------------- */
@@ -558,18 +730,6 @@ body {
   text-overflow: ellipsis;
 }
 
-[data-testid="combat-posture"],
-[data-testid="combat-haste"] {
-  margin: 0;
-  overflow: hidden;
-  font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-}
-
-[data-testid="combat-haste"][data-haste="active"] {
-  color: #9eff6a;
-}
-
 [data-testid="combat-loot"] {
   color: #b9d9b0;
   font-variant-numeric: tabular-nums;
@@ -628,6 +788,8 @@ body {
   bottom: 0;
   left: 0;
   display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   align-items: center;
   justify-content: center;
   height: var(--cockpit-bottom);
@@ -640,12 +802,17 @@ body {
   --dpad-cell: calc((var(--cockpit-bottom) - 1.1rem) / 3);
   --deck-reserve: calc(var(--dpad-cell) * 3 + 1.1rem);
 
-  padding: 0 var(--deck-reserve);
+  /*
+   * The foot of the band is padded now that the vitals strip sits under the
+   * spells: without it the bars end flush with the bottom of the screen, which
+   * reads as cut off rather than as placed.
+   */
+  padding: 0 var(--deck-reserve) 0.35rem;
 }
 
 .cockpit[data-cockpit-rail="off"] .cockpit__deck {
-  bottom: calc(var(--cockpit-bottom) * 0.58);
-  height: calc(var(--cockpit-bottom) * 0.42);
+  bottom: calc(var(--cockpit-bottom) * 0.55);
+  height: calc(var(--cockpit-bottom) * 0.45);
   --deck-reserve: 0.75rem;
 }
 
@@ -673,7 +840,7 @@ body {
 .cockpit[data-cockpit-rail="off"] .cockpit-deck__inner {
   --cell: min(
     5.5rem,
-    calc(var(--cockpit-bottom) * 0.42 - 1rem),
+    calc(var(--cockpit-bottom) * 0.45 - 2.6rem),
     calc((100vw - var(--deck-reserve) * 2 - 5rem) / 9)
   );
 }
