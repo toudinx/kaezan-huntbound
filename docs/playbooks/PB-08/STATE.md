@@ -27,7 +27,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-06 | done | `grok/pb08-06-taunt` | **frontier `xhigh`** | Grok 4.6 `xhigh` | `d88d512` | Challenge raio 1, lock 40 ticks, grupo support 1; `simulation:check`/`hunt:check` inalterados; `scenario.json` `6abc77b2`; commands/snapshot/events iguais; `qa:browser` 77/77 |
 | PB-08-07 | done | `grok/pb08-07-haste-feel` | Luna `xhigh` | Grok 4.6 `xhigh` | `fa39c5e` | Haste `speedPermille` 600 → passo 11→6 / 600 t; sprite interpola no cooldown efetivo; Charge fora; `scenario.json` `24d4ad2b`; commands/snapshot/events iguais; `verify` pós-ff `qa:browser` 78/78 |
 | PB-08-08 | done | `claude/pb08-08-cockpit-chassis` | **frontier `xhigh`** | Claude Opus 5 `xhigh` | `891410c` | área livre única em `playfieldViewport.ts` (mín. 260×320); câmera centra nela; `hunt-mobile.spec.ts` reescrito — moldura inteira em vez de 2/9, orçamento de 13 px removido; `verify` verde, `qa:browser` 78/78; goldens `pb03`/`pb04`/`pb05` inalterados (`24d4ad2b`); screenshots dos 4 viewports regeradas |
-| PB-08-09 | pending | `<agente>/pb08-09-window-rail` | Luna `xhigh` | — | — | — |
+| PB-08-09 | done | `codex/pb08-09-window-rail` | Luna `xhigh` | GPT-5.6 Luna `xhigh` | `cb9db8b` | rail com minimapa/alvo/bag; 12 slots visíveis; budgets: boot `4958,2 ms` vs `15254,2 ms`, hunt `4581,8 ms` vs `4955,7 ms` (informativo: 6 long tasks); personal 147 entradas |
 | ~~PB-08-10~~ | **cancelada** | — | — | — | — | cancelada pelo usuário em 2026-08-26; aceite é o usuário jogando. `qa:budgets`, `dev` de pé e a nota do que olhar passaram para a PB-08-09 |
 
 ## Bloqueios
