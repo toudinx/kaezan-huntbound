@@ -59,6 +59,7 @@ import {
   queryConditionModifiers,
 } from './conditions.ts';
 import { KernelInvariantError } from './errors.ts';
+import { ABILITY_CHANCE_BASIS_POINTS, chooseHunterCast } from './hunterCast.ts';
 import {
   createSpawnTable,
   restoreSpawnTable,
@@ -103,7 +104,16 @@ interface AttackIntent {
   readonly order: number;
 }
 
-type InternalIntent = MoveIntent | AttackIntent;
+interface CastIntent {
+  readonly kind: 'cast';
+  readonly entityId: EntityId;
+  readonly abilityIndex: number;
+  readonly targetEntityId: EntityId | null;
+  readonly sourceRank: number;
+  readonly order: number;
+}
+
+type InternalIntent = MoveIntent | AttackIntent | CastIntent;
 
 function tileKey(position: GridPosition): string {
   return `${position.x}:${position.y}:${position.z}`;
@@ -341,6 +351,25 @@ export function createSimulationKernel(
     internalIntents.set(tick, queued);
   };
 
+  const queueInternalCast = (
+    tick: number,
+    entityId: EntityId,
+    abilityIndex: number,
+    targetEntityId: EntityId | null,
+  ): void => {
+    const queued = internalIntents.get(tick) ?? [];
+    queued.push({
+      kind: 'cast',
+      entityId,
+      abilityIndex,
+      targetEntityId,
+      sourceRank: 1,
+      order: internalOrder,
+    });
+    internalOrder += 1;
+    internalIntents.set(tick, queued);
+  };
+
   const queueWander = (entityId: EntityId, tick: number): void => {
     const direction = DIRECTIONS[streams.ai.nextBelow(DIRECTIONS.length)];
     if (direction === undefined) {
@@ -352,6 +381,13 @@ export function createSimulationKernel(
   for (const intent of restore?.pendingIntents ?? []) {
     if (intent.kind === 'move') {
       queueInternalIntent(intent.tick, intent.entityId, intent.direction);
+    } else if (intent.kind === 'cast') {
+      queueInternalCast(
+        intent.tick,
+        intent.entityId,
+        intent.abilityIndex,
+        intent.targetEntityId,
+      );
     } else {
       queueInternalAttack(intent.tick, intent.entityId, intent.targetEntityId);
     }
@@ -381,16 +417,29 @@ export function createSimulationKernel(
     const intents: MoveIntent[] = queuedInternal.filter(
       (intent): intent is MoveIntent => intent.kind === 'move',
     );
-    const combatIntents: CombatIntent[] = queuedInternal
-      .filter((intent): intent is AttackIntent => intent.kind === 'attack')
-      .map((intent) => ({
-        kind: 'attack' as const,
-        entityId: intent.entityId,
-        targetEntityId: intent.targetEntityId,
-        sourceRank: intent.sourceRank,
-        order: intent.order,
-        sequence: null,
-      }));
+    const combatIntents: CombatIntent[] = [];
+    for (const intent of queuedInternal) {
+      if (intent.kind === 'attack') {
+        combatIntents.push({
+          kind: 'attack',
+          entityId: intent.entityId,
+          targetEntityId: intent.targetEntityId,
+          sourceRank: intent.sourceRank,
+          order: intent.order,
+          sequence: null,
+        });
+      } else if (intent.kind === 'cast') {
+        combatIntents.push({
+          kind: 'cast',
+          entityId: intent.entityId,
+          abilityIndex: intent.abilityIndex,
+          targetEntityId: intent.targetEntityId,
+          sourceRank: intent.sourceRank,
+          order: intent.order,
+          sequence: null,
+        });
+      }
+    }
     const despawning = new Set<number>();
     const reservedTiles = new Set<string>();
 
@@ -765,6 +814,28 @@ export function createSimulationKernel(
           if (!canDecide) {
             continue;
           }
+
+          const liveActor = world.actor(actor.entityId) ?? actor;
+          const chosenCast = chooseHunterCast(
+            liveActor,
+            blueprint,
+            scenario.abilities,
+            world.actors(),
+            (blueprintId) => blueprints.get(blueprintId),
+            targetId,
+            currentTick,
+            () => streams.ai.nextBelow(ABILITY_CHANCE_BASIS_POINTS),
+          );
+          if (chosenCast !== null) {
+            queueInternalCast(
+              nextTick,
+              actor.entityId,
+              chosenCast.abilityIndex,
+              chosenCast.targetEntityId,
+            );
+            continue;
+          }
+
           if (targetId === null) {
             queueWander(actor.entityId, nextTick);
             continue;
@@ -998,6 +1069,15 @@ export function createSimulationKernel(
                 kind: 'attack',
                 tick: tick as TickIndex,
                 entityId: intent.entityId,
+                targetEntityId: intent.targetEntityId,
+              };
+            }
+            if (intent.kind === 'cast') {
+              return {
+                kind: 'cast',
+                tick: tick as TickIndex,
+                entityId: intent.entityId,
+                abilityIndex: intent.abilityIndex,
                 targetEntityId: intent.targetEntityId,
               };
             }

@@ -319,6 +319,12 @@ describe('ActorBlueprint v5 defaults and refusals', () => {
 });
 
 describe('AbilityDefinition v5 defaults and refusals', () => {
+  it('defaults omitted chanceBasisPoints to 10000', () => {
+    expect(
+      AbilityDefinitionSchema.parse(combatAbility()).chanceBasisPoints,
+    ).toBe(10_000);
+  });
+
   it('defaults omitted element to physical', () => {
     expect(AbilityDefinitionSchema.parse(combatAbility()).element).toBe(
       'physical',

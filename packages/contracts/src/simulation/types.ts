@@ -124,6 +124,11 @@ export interface AbilityDefinition {
    * `0` means the ability does not force a target (the v5 default).
    */
   readonly forcedTargetDurationTicks: number;
+  /**
+   * Chance to fire when the AI evaluates this ability, in basis points
+   * (0–10000). Omitted or 10000 means always. Player commands ignore it.
+   */
+  readonly chanceBasisPoints?: number;
 }
 
 export interface LootTableDefinition {
@@ -423,7 +428,7 @@ export interface SpawnSlotState {
 }
 
 /**
- * A move or attack intent already decided for a tick that has not run yet.
+ * A move, attack or cast intent already decided for a tick that has not run yet.
  * `tick` is the tick the intent is applied on, never earlier than the snapshot
  * tick. Uniqueness remains `(tick, entityId)`: one action per actor per tick.
  */
@@ -439,6 +444,13 @@ export type PendingIntentState =
       readonly tick: TickIndex;
       readonly entityId: EntityId;
       readonly targetEntityId: EntityId;
+    }
+  | {
+      readonly kind: 'cast';
+      readonly tick: TickIndex;
+      readonly entityId: EntityId;
+      readonly abilityIndex: number;
+      readonly targetEntityId: EntityId | null;
     };
 
 export interface SimulationSnapshot {

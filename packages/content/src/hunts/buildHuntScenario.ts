@@ -26,6 +26,7 @@ import {
   abilityShapeFromSpell,
   CANARY_VIEW_RANGE_TILES,
   CREATURE_FACTION_ID,
+  combatElementFromDamageType,
   compareContentKeys,
   KNIGHT_COMBAT_WINDOW_MS,
   KNIGHT_HEALTH_REGEN_AMOUNT,
@@ -258,6 +259,7 @@ function composeCreature(
   source: ActorBlueprint,
   creature: CreatureDefinition,
   lootTableIndex: number | null,
+  abilityIndices: readonly number[],
   diagnostics: HuntDiagnostic[],
   blueprintIndex: number,
 ): ActorBlueprint | null {
@@ -312,7 +314,7 @@ function composeCreature(
     // literal 1 confused `flags.targetDistance` (melee stand-off) with agro.
     aggroRadius: creature.attacks.length > 0 ? CANARY_VIEW_RANGE_TILES : 0,
     lootTableIndex,
-    abilityIndices: [],
+    abilityIndices,
     outOfCombatHealthRegenTicks: 0,
     outOfCombatHealthRegenAmount: 0,
     outOfCombatResourceRegenTicks: 0,
@@ -324,6 +326,128 @@ function composeCreature(
     resistances: [],
     immunities: [],
   };
+}
+
+function uniqueAbilityId(
+  blueprintId: string,
+  kind: string,
+  used: Set<string>,
+): string {
+  const base = `${blueprintId}-${kind}`;
+  if (!used.has(base)) {
+    used.add(base);
+    return base;
+  }
+  let suffix = 2;
+  let candidate = `${base}-${suffix}`;
+  while (used.has(candidate)) {
+    suffix += 1;
+    candidate = `${base}-${suffix}`;
+  }
+  used.add(candidate);
+  return candidate;
+}
+
+function composeCreatureAbilities(
+  creature: CreatureDefinition,
+  blueprintId: string,
+  diagnostics: HuntDiagnostic[],
+  blueprintIndex: number,
+): AbilityDefinition[] | null {
+  const abilities: AbilityDefinition[] = [];
+  const usedIds = new Set<string>();
+
+  for (const attack of creature.attacks) {
+    if (attack.kind === 'melee') {
+      continue;
+    }
+    const cooldownTicks = ticksFromIntervalMs(attack.intervalMs);
+    if (cooldownTicks === null) {
+      diagnostics.push(
+        diagnostic(
+          'HUNT_INTERVAL_NOT_DIVISIBLE',
+          `intervalMs ${attack.intervalMs} is not divisible by 50`,
+          ['blueprints', blueprintIndex, 'abilityIndices'],
+        ),
+      );
+      return null;
+    }
+    const shape =
+      attack.kind === 'ranged'
+        ? {
+            shape: 'target' as const,
+            radius: 0,
+            rangeTiles: attack.rangeTiles,
+          }
+        : {
+            shape: 'area' as const,
+            radius: attack.radiusTiles,
+            rangeTiles: 0,
+          };
+    abilities.push({
+      abilityId: uniqueAbilityId(blueprintId, attack.kind, usedIds),
+      effect: 'damage',
+      shape: shape.shape,
+      radius: shape.radius,
+      rangeTiles: shape.rangeTiles,
+      resourceCost: 0,
+      cooldownTicks,
+      groupCooldownTicks: 0,
+      minPower: luaToInt32(attack.minDamage),
+      maxPower: luaToInt32(attack.maxDamage),
+      element: combatElementFromDamageType(attack.damageType),
+      primaryCooldownGroup: 0,
+      secondaryCooldownGroup: null,
+      secondaryGroupCooldownTicks: 0,
+      appliedConditionIndex: null,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: false,
+      forcedTargetDurationTicks: 0,
+      chanceBasisPoints: attack.chanceBasisPoints,
+    });
+  }
+
+  for (const defense of creature.defenses) {
+    if (defense.kind !== 'heal') {
+      continue;
+    }
+    const cooldownTicks = ticksFromIntervalMs(defense.intervalMs);
+    if (cooldownTicks === null) {
+      diagnostics.push(
+        diagnostic(
+          'HUNT_INTERVAL_NOT_DIVISIBLE',
+          `intervalMs ${defense.intervalMs} is not divisible by 50`,
+          ['blueprints', blueprintIndex, 'abilityIndices'],
+        ),
+      );
+      return null;
+    }
+    abilities.push({
+      abilityId: uniqueAbilityId(blueprintId, 'heal', usedIds),
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 0,
+      cooldownTicks,
+      groupCooldownTicks: 0,
+      minPower: luaToInt32(defense.minAmount),
+      maxPower: luaToInt32(defense.maxAmount),
+      element: 'physical',
+      primaryCooldownGroup: 0,
+      secondaryCooldownGroup: null,
+      secondaryGroupCooldownTicks: 0,
+      appliedConditionIndex: null,
+      maxCharges: null,
+      rechargeKind: 'none',
+      toggle: false,
+      forcedTargetDurationTicks: 0,
+      chanceBasisPoints: defense.chanceBasisPoints,
+    });
+  }
+
+  return abilities;
 }
 
 function composeAbilities(
@@ -683,10 +807,24 @@ export function buildHuntScenario(
     } else {
       lootTableIndexByBlueprint.set(source.blueprintId, null);
     }
+    const creatureAbilities = composeCreatureAbilities(
+      creature,
+      source.blueprintId,
+      diagnostics,
+      blueprintIndex,
+    );
+    if (creatureAbilities === null) {
+      return;
+    }
+    const abilityIndices = creatureAbilities.map(
+      (_, index) => abilities.length + index,
+    );
+    abilities.push(...creatureAbilities);
     const composed = composeCreature(
       source,
       creature,
       lootTableIndex,
+      abilityIndices,
       diagnostics,
       blueprintIndex,
     );

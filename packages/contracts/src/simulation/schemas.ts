@@ -270,6 +270,7 @@ export const AbilityDefinitionSchema = z
     rechargeKind: AbilityRechargeKindSchema.default('none'),
     toggle: z.boolean().default(false),
     forcedTargetDurationTicks: nonNegativeInteger.default(0),
+    chanceBasisPoints: nonNegativeInteger.max(10_000).default(10_000),
   })
   .strict()
   .superRefine((ability, context) => {
@@ -1317,9 +1318,20 @@ const PendingAttackIntentStateSchema = z
   })
   .strict();
 
+const PendingCastIntentStateSchema = z
+  .object({
+    kind: z.literal('cast'),
+    tick: TickIndexSchema,
+    entityId: EntityIdSchema,
+    abilityIndex: nonNegativeInteger,
+    targetEntityId: EntityIdSchema.nullable(),
+  })
+  .strict();
+
 export const PendingIntentStateSchema = z.discriminatedUnion('kind', [
   PendingMoveIntentStateSchema,
   PendingAttackIntentStateSchema,
+  PendingCastIntentStateSchema,
 ]);
 
 function comparePendingIntents(
@@ -1490,14 +1502,15 @@ export const SimulationSnapshotSchema = z
       }
 
       if (
-        intent.kind === 'attack' &&
+        (intent.kind === 'attack' || intent.kind === 'cast') &&
+        intent.targetEntityId !== null &&
         !liveEntityIds.has(intent.targetEntityId)
       ) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
           ['pendingIntents', index, 'targetEntityId'],
-          `Attack intent target ${intent.targetEntityId} is not in the snapshot`,
+          `Intent target ${intent.targetEntityId} is not in the snapshot`,
         );
       }
 

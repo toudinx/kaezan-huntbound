@@ -594,7 +594,7 @@ function abilityGroupCooldowns(
   return groups;
 }
 
-function abilityOnCooldown(
+export function abilityOnCooldown(
   actor: ActorState,
   ability: AbilityDefinition,
   abilityIndex: number,

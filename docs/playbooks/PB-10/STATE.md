@@ -5,8 +5,8 @@
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
-`docs/content/HUNT_BANDS.md`. Tasks 01 a 04 fechadas e integradas. Próxima elegível: **PB-10-05**,
-escrita. A 05 e a 06 **podem rodar em paralelo**: a 05 vive em `apps/game`, a 06 no kernel.
+`docs/content/HUNT_BANDS.md`. Tasks 01 a 04 e 06 fechadas e integradas. Próxima elegível: **PB-10-05**,
+escrita. A 05 ainda pode rodar: vive em `apps/game`, a 06 já entregou o kernel.
 
 **Última atualização:** 2026-08-26
 
@@ -26,7 +26,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-03 | done | `codex/pb10-03-pipeline-multi-hunt` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ecff360` | registro declarativo; sidecar multi-hunt; artefatos sem diff; `verify` verde |
 | PB-10-04 | done | `codex/pb10-04-indice-de-hunts` | econômico `xhigh` | Codex GPT-5 `xhigh` | `1acfccf` | índice gerado + sidecar determinísticos; content, architecture e hunt checks verdes; verify bloqueado apenas pela falha ambiental B16 em `apps/game` |
 | PB-10-05 | pending | `<agente>/pb10-05-tela-hunting-places` | econômico `xhigh` | — | — | — |
-| PB-10-06 | pending | `<agente>/pb10-06-criatura-conjura` | frontier `xhigh` | — | — | — |
+| PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | — | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
 | PB-10-07+ | não escrita | — | econômico `xhigh` | — | — | — |
 
 ## Bloqueios

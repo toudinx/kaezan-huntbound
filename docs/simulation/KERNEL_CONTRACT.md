@@ -86,7 +86,8 @@ fora de `target`. `minPower` não pode exceder `maxPower`. Todo número é intei
 com default: `element` `'physical'`, `primaryCooldownGroup` `0` (`PRIMARY_COOLDOWN_GROUP`),
 `secondaryCooldownGroup` `null`, `secondaryGroupCooldownTicks` `0`, `appliedConditionIndex` `null`,
 `maxCharges` `null` com `rechargeKind` `'none'` (cargas ilimitadas, o comportamento v4), `toggle`
-`false`, `forcedTargetDurationTicks` `0`.
+`false`, `forcedTargetDurationTicks` `0`, `chanceBasisPoints` `10000` (sempre; a IA de criatura
+copia o valor do catálogo, comando do jogador ignora).
 
 ### Condições do cenário
 
@@ -247,10 +248,12 @@ schema: o snapshot não declara terreno, então só o cenário permite avaliá-l
 passa pelo command log e `pendingCommands` carrega apenas comandos externos. `pendingIntents` é o
 campo que a serializa, e é ele que torna `restoreSimulationKernel` fiel em **qualquer** fronteira.
 
-`PendingIntentState` é uma união discriminada por `kind: 'move' | 'attack'`. A variante `move` guarda
-`tick`, `entityId` e `direction`; a variante `attack` guarda `tick`, `entityId` e `targetEntityId`.
-`tick` é o tick de aplicação e satisfaz `tick >= snapshot.tick`; o schema reprova `SIM_TICK_IN_PAST`
-caso contrário. Um intent de ataque cujo alvo não existe no snapshot é reprovado.
+`PendingIntentState` é uma união discriminada por `kind: 'move' | 'attack' | 'cast'`. A variante `move` guarda
+`tick`, `entityId` e `direction`; a variante `attack` guarda `tick`, `entityId` e `targetEntityId`;
+a variante `cast` guarda `tick`, `entityId`, `abilityIndex` e `targetEntityId` (nulo para `self` e
+`area`). `tick` é o tick de aplicação e satisfaz `tick >= snapshot.tick`; o schema reprova
+`SIM_TICK_IN_PAST` caso contrário. Um intent de ataque ou conjuração cujo alvo nomeado não existe no
+snapshot é reprovado; alvo nulo é válido só em `cast`.
 
 Não existe campo `order`, e a omissão é consequência de duas invariantes:
 
@@ -707,7 +710,15 @@ Ator `hunter` no mesmo laço:
    andar, dentro do raio, com menor distância Chebyshev; empate resolve pelo menor `EntityId`.
    `aggroRadius = 0` nunca adquire. Hunter com `attackRangeTiles > 1` também exige `isSightClear`.
    A aquisição **não** consome aleatoriedade.
-4. **ação:** fora de cooldown, alvo a Chebyshev `<= attackRangeTiles` (mesmo andar) enfileira intent
+4. **habilidade:** fora de cooldown de passo, se `abilityIndices.length > 0`, avalia as habilidades
+   na ordem dos índices. Cada habilidade só consome o stream `ai` quando está fora de cooldown e tem
+   alvo válido: `self` de cura exige `health < maxHealth`; `target` exige o alvo corrente a Chebyshev
+   `<= rangeTiles` no mesmo andar; `area` exige ao menos um ator de outra facção no raio. A rolagem
+   é `nextBelow(10000) < chanceBasisPoints` (`chanceBasisPoints` omitido vale 10000). A primeira que
+   passa enfileira intent `cast` para `currentTick + 1` e encerra a decisão do ator — não há golpe
+   nem passo no mesmo ciclo. Sem `abilityIndices`, nenhum sorteio extra: o stream `ai` fica idêntico
+   ao PB-04/PB-05.
+5. **ação:** fora de cooldown, alvo a Chebyshev `<= attackRangeTiles` (mesmo andar) enfileira intent
    interna de ataque para `currentTick + 1`, desde que o alcance melee (`<= 1`) ou `isSightClear`
    permita o golpe. Alvo mais distante enfileira o primeiro passo do caminho BFS 8-vizinhos até
    qualquer célula a Chebyshev `<= attackRangeTiles` do alvo; empate segue a ordem canônica de
@@ -716,7 +727,7 @@ Ator `hunter` no mesmo laço:
    o custo do passo é dobrado (`WALK_TARGET_NEARBY_EXTRA_COST`). O golpe interno resolve em `S4` no
    tick seguinte, respeitando `attackReadyAtTick`; alvo ausente na resolução não emite
    `command/rejected`. `isSightClear` é `true` incondicionalmente a Chebyshev `<= 1` no mesmo andar.
-5. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
+6. **sem alvo:** fora de cooldown, o ator cai no comportamento `wander` e consome exatamente um
    `nextBelow(8)` do stream `ai`.
 
 Comandos internos gerados por `S6` usam uma fila interna própria, ordenada por `EntityId`. Eles não

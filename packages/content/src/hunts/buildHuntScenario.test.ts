@@ -327,6 +327,73 @@ function rotwormCreature(intervalMs = 2000): CreatureDefinition {
   );
 }
 
+/** Combat numbers copied from `packages/content/src/generated/pb-01-contract-coverage.json`. */
+function orcShamanCreature(): CreatureDefinition {
+  return {
+    ...identity('creature', 'orc-shaman', [
+      'identity',
+      'stats',
+      'appearance',
+      'combat',
+    ]),
+    stats: { health: 115, experience: 110, speed: 70 },
+    lookType: 6,
+    attacks: [
+      {
+        kind: 'melee',
+        name: 'melee',
+        intervalMs: 2000,
+        chanceBasisPoints: 10_000,
+        damageType: 'physical',
+        minDamage: 0,
+        maxDamage: 15,
+      },
+      {
+        kind: 'ranged',
+        name: 'combat',
+        intervalMs: 2000,
+        chanceBasisPoints: 1500,
+        damageType: 'energy',
+        minDamage: 20,
+        maxDamage: 31,
+        projectile: 'energyball',
+        rangeTiles: 7,
+      },
+      {
+        kind: 'area',
+        name: 'combat',
+        intervalMs: 2000,
+        chanceBasisPoints: 500,
+        damageType: 'fire',
+        minDamage: 5,
+        maxDamage: 43,
+        shape: 'square',
+        radiusTiles: 1,
+      },
+    ],
+    defenses: [
+      {
+        kind: 'heal',
+        intervalMs: 2000,
+        chanceBasisPoints: 6000,
+        minAmount: 27,
+        maxAmount: 43,
+      },
+    ],
+    conditions: [],
+    summons: [
+      {
+        creatureKey: 'creature:tibia:snake' as ContentKey,
+        count: 3,
+        chanceBasisPoints: 2000,
+      },
+    ],
+    resistances: {},
+    immunities: [],
+    loot: [],
+  };
+}
+
 function defaultSpells(): readonly SpellDefinition[] {
   return [
     knightSpell(
@@ -845,7 +912,92 @@ describe('buildHuntScenario combat blueprints', () => {
       behavior: 'hunter',
       attackRangeTiles: 1,
       aggroRadius: 11,
+      abilityIndices: [],
     });
+  });
+
+  it('translates orc shaman ranged, area and heal from the catalog and ignores summons', () => {
+    const { scenario, abilityKeys } = build(
+      syntheticHunt([combatNeutral('orc-shaman', 3, 'wander')]),
+      character,
+      registry({
+        creatures: [
+          rotwormCreature(),
+          wanderCreature('snake', 60),
+          orcShamanCreature(),
+        ],
+      }),
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    const rotworm = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'rotworm',
+    );
+    const shaman = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'orc-shaman',
+    );
+    const byId = new Map(
+      scenario.abilities.map((ability) => [ability.abilityId, ability]),
+    );
+
+    expect(player?.abilityIndices).toEqual([0, 1, 2]);
+    expect(rotworm?.abilityIndices).toEqual([]);
+    expect(shaman?.abilityIndices).toEqual([3, 4, 5]);
+    expect(abilityKeys).toEqual([
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+    ]);
+    expect(scenario.abilities.map((ability) => ability.abilityId)).toEqual([
+      'berserk',
+      'brutal-strike',
+      'wound-cleansing',
+      'orc-shaman-ranged',
+      'orc-shaman-area',
+      'orc-shaman-heal',
+    ]);
+    expect(byId.get('orc-shaman-ranged')).toMatchObject({
+      effect: 'damage',
+      shape: 'target',
+      radius: 0,
+      rangeTiles: 7,
+      resourceCost: 0,
+      cooldownTicks: 40,
+      groupCooldownTicks: 0,
+      minPower: 20,
+      maxPower: 31,
+      element: 'energy',
+      chanceBasisPoints: 1500,
+    });
+    expect(byId.get('orc-shaman-area')).toMatchObject({
+      effect: 'damage',
+      shape: 'area',
+      radius: 1,
+      rangeTiles: 0,
+      resourceCost: 0,
+      cooldownTicks: 40,
+      groupCooldownTicks: 0,
+      minPower: 5,
+      maxPower: 43,
+      element: 'fire',
+      chanceBasisPoints: 500,
+    });
+    expect(byId.get('orc-shaman-heal')).toMatchObject({
+      effect: 'heal',
+      shape: 'self',
+      radius: 0,
+      rangeTiles: 0,
+      resourceCost: 0,
+      cooldownTicks: 40,
+      groupCooldownTicks: 0,
+      minPower: 27,
+      maxPower: 43,
+      chanceBasisPoints: 6000,
+    });
+    expect(
+      scenario.blueprints.map((blueprint) => blueprint.blueprintId),
+    ).not.toContain('snake');
   });
 
   it('rejects an attack interval that is not divisible by 50', () => {

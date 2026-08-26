@@ -1,5 +1,6 @@
 import type {
   CharacterDefinition,
+  CombatElement,
   SpellDefinition,
   SpellFormulaDefinition,
 } from '@huntbound/contracts';
@@ -187,6 +188,15 @@ export function resolveSpellPower(
     case 'levelMagic':
       return levelMagicPower(formula, character.level, character.skills.magic);
   }
+}
+
+export function combatElementFromDamageType(
+  damageType: SpellDefinition['damageType'],
+): CombatElement {
+  if (damageType === 'healing') {
+    return 'physical';
+  }
+  return damageType;
 }
 
 export function abilityIdFromSpellKey(spellKey: string): string {
