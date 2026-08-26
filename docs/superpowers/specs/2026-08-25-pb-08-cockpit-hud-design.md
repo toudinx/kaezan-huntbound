@@ -141,16 +141,23 @@ O `CombatViewModel` precisa expor os dois grupos por ability, e cada célula pro
 
 ### A arte existe e é endereçável
 
-`C:\Kaezan\kaezan\otclient-4.0\data\images\game\spells\` contém `spell-icons-32x32.png` (396 KB),
-`spell-icons-20x20.png` e `spellgroup-icons-20x20.png`. O índice vem do próprio Canary: `berserk.lua`
-declara `spell:id(80)`.
+`C:\Kaezan\kaezan\otclient-4.0\data\images\game\spells\` contém `spell-icons-32x32.png`,
+`spell-icons-20x20.png` e `spellgroup-icons-20x20.png`. A arte de magia do Tibia é **fatiamento de
+atlas por índice**, não caça a asset.
 
-Então a arte de magia do Tibia é **fatiamento de atlas por id**, não caça a asset. O
-`spellgroup-icons-20x20.png` ainda entrega os ícones de grupo — attack, healing, support —, que fazem
-o cooldown de grupo se explicar sem legenda.
+> **Correção de 2026-08-25.** A versão anterior deste parágrafo dizia que o índice vinha do Canary,
+> via `spell:id(80)` do `berserk.lua`. **Está errado.** O atlas é recortado pelo `clientId` do
+> OTClient, que é outro campo: Berserk é `spell:id(80)` e `clientId(20)`, e a coluna 80 entrega uma
+> runa. Medido por imagem antes da correção. A tabela verificada das nove magias, as duas linhas do
+> OTClient que definem o recorte e o custo real da task estão em
+> `docs/assets/SPELL_ICON_INDEX.md`.
+
+O `spellgroup-icons-20x20.png` ainda entrega os ícones de grupo — attack, healing, support —, que
+fazem o cooldown de grupo se explicar sem legenda.
 
 Isto **estende o escopo do `AssetExtractor`**, que hoje conhece `outfitIds`, `objectIds`, `effectIds`
-e `missileIds`. Trabalho de pipeline, e por isso mora na `PB-08-09`.
+e `missileIds` e não conhece fatiamento de folha. Trabalho de pipeline, e por isso **task própria**
+(ver B13 no `STATE.md`), não a `PB-08-09`.
 
 ### O fallback é informação, não tapa-buraco
 

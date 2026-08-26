@@ -31,14 +31,15 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 
 ## Bloqueios
 
-**B13 — aberto, decisão do usuário.** O usuário pediu os ícones de magia do próprio Tibia, e a arte
-existe e está mapeada: `otclient-4.0\data\images\game\spells\spell-icons-32x32.png`, indexada pelo
-`spell:id(N)` que o Canary declara (`berserk.lua` → `80`). Mas
-`packages/assets/src/manifest/schemas.ts:77` fecha `AssetCategory` em cinco valores — `outfit`,
-`creature`, `object`, `effect`, `missile`. Ícone de magia exige uma **sexta categoria**, identidade
-`spellId` e suporte no packer: **schema público já integrado**, uma das três condições em que o
-`AGENTS.md` manda parar. Ficou fora da PB-08-09 e precisa de task própria. O PB-08 fecha sem ele — o
-glifo de área de efeito da 08 **é** o ícone, e ainda diz onde a magia acerta.
+**B13 — desbloqueado pelo usuário em 2026-08-25, vira task própria.** Ele autorizou a **sexta
+categoria de asset** (`spell`) em `packages/assets/src/manifest/schemas.ts:77`, com identidade
+`clientId` e suporte no packer. Duas coisas foram medidas antes de escrever isto e mudam a task:
+o atlas é indexado pelo **`clientId` do OTClient**, não pelo `spell:id` do Canary — a premissa
+anterior estava errada e a coluna 80 entrega uma runa no lugar do Berserk; e o packer **copia PNG
+inteiro, não fatia atlas**, então o custo real é recortar `spell-icons-32x32.png` em
+`spells/<clientId>.png` dentro do export privado, com source-lock. Tabela verificada das nove magias
+e derivação em `docs/assets/SPELL_ICON_INDEX.md`. **Não é PB-08-09.** Até lá o glifo de área de
+efeito segue no lugar.
 
 **B4 — aberto, decisão do usuário.** Dez worktrees antigas em `git worktree list`, de PB-02 a
 PB-07, e **cinco branches fora da `main`** com trabalho real: `claude/pb05-fixture-drift`,
@@ -58,11 +59,14 @@ command") é sensível a carga: reprovou no `verify` pós-integração da PB-08-
 era uma linha de markdown. Passa 14/14 isolada. Vale a regra do AGENTS.md: não mascarar com `retries`
 nem timeout inflado; a correção é tornar o tap determinístico. Vira task quando alguém tocar em input.
 
-**B14 — aberto, mesma família do B11.** `combat-fx.spec.ts:101` reprovou **duas vezes dentro de
-`corepack pnpm verify`** em 2026-08-25 e passou 5/5 isolada e em `playwright test` da suíte inteira.
-Ele amostra decorações transitórias por fase, então um frame perdido sob carga apaga a pista antes
-da sonda. A escrita por frame do deck foi reduzida (atributo só quando muda) e a rodada seguinte
-ficou verde — uma rodada não prova conserto. Vira task quando alguém tocar em decoração ou sonda.
+**B14 — aberto, mesma família do B11.** Sondas que **amostram decoração transitória por frame**
+reprovam de forma intermitente **só dentro da suíte cheia**, nunca isoladas. Observado 4× em
+2026-08-25, em teste **diferente a cada vez**: `combat-fx.spec.ts:101` (3×) e `combat-play.spec.ts:195`
+(`firstSeen.length > 1`, números de dano distintos amostrados ao longo do tempo). A causa comum é
+frame perdido sob carga — a pista some antes da sonda chegar. Passa 7/7 isolada, inclusive com o
+`vite` de desenvolvimento de pé, o que descarta o servidor como culpado. Reduzir a escrita por frame
+do deck (`cd4ddac`) **não** eliminou. A correção é tornar a amostragem independente de frame; `retries`
+e timeout inflado são proibidos pelo `AGENTS.md`. Vira task quando alguém tocar em decoração ou sonda.
 
 **B1–B3, B5–B8, B10 e B12 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 

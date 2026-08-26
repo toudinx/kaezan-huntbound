@@ -482,6 +482,24 @@ body {
   padding: 0 0.5rem 0.25rem;
 }
 
+/*
+ * Geometry held for the minimap, and nothing else: no border, no background, no
+ * pointer. An empty framed box would be the placeholder the spec refused, and
+ * the player would see a hole in his rail until PB-08-09 lands. Reserved space
+ * shows as nothing; the map drops into a slot already square and already sized.
+ */
+.cockpit__rail-slot {
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+
+/* No rail, no slot: on a phone the panels fold into the top band as one row. */
+.cockpit[data-cockpit-rail="off"] .cockpit__rail-slot {
+  display: none;
+}
+
 .cockpit-panel {
   min-width: 0;
   padding: 0.35rem 0.5rem;

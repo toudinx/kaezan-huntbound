@@ -104,6 +104,18 @@ export function mountCombatHud(
   vitalsLeft.append(health.element);
   vitalsRight.append(mana.element);
 
+  /**
+   * The rail's first slot, held open for the minimap PB-08-09 puts here.
+   *
+   * It reserves geometry and nothing else: no border, no background, no
+   * pointer. An empty box with a frame around it would be the placeholder the
+   * spec refused -- "zero placeholder na tela" -- and would show up in the
+   * player's hunt as a hole. Reserved space shows up as nothing at all, and the
+   * map drops into a slot that is already square and already the right size.
+   */
+  const mapSlot = createElement(document, 'div', 'cockpit-rail-map');
+  mapSlot.className = 'cockpit__rail-slot';
+
   const targetPanel = createElement(document, 'section', 'combat-target');
   targetPanel.className = 'cockpit-panel';
   targetPanel.setAttribute('aria-label', 'Target status');
@@ -126,7 +138,7 @@ export function mountCombatHud(
   const lootLog = createElement(document, 'div', 'combat-loot-log');
   const runBag = createElement(document, 'div', 'combat-run-bag');
   lootPanel.append(lootLog, runBag);
-  rail.append(targetPanel, modes, lootPanel);
+  rail.append(mapSlot, targetPanel, modes, lootPanel);
 
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
