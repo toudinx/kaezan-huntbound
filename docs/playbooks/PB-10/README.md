@@ -119,9 +119,21 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 06 | Criatura conjura | kernel e IA |
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo |
 
-**Escritas e fechadas: 01, 02, 03 e 04.** Da 05 em diante são bullets até chegar a vez — é a regra
-do `AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito inteiro antecipado
-envelhece contra o código real.
+**Fechadas: 01, 02, 03 e 04. Escritas e elegíveis: 05 e 06.** Da 07 em diante são bullets até chegar
+a vez — é a regra do `AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito
+inteiro antecipado envelhece contra o código real.
+
+### A 05 e a 06 rodam em paralelo
+
+A 05 vive em `apps/game` e a 06 no kernel e em `buildHuntScenario`; não compartilham arquivo. Depois
+das duas, a máquina do catálogo está inteira e o que resta são as hunts — uma task por faixa.
+
+### Por que a 06 provavelmente não regenera golden
+
+O quadro "Ordem das tasks" previa que sim. Conferido nos fixtures: em `pb04` e `pb05` o rotworm tem
+`abilityIndices: []` e o único ator com habilidades é o jogador, que é `inert`. Nenhum ator dirigido
+por IA tem habilidade em golden nenhum, então um gatilho guardado em `abilityIndices.length > 0`
+deixa `streams.ai` intacto e os goldens verdes. O card trata isso como critério de aceite.
 
 ### Por que a 01 vem primeiro
 
