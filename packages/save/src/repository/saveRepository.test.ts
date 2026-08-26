@@ -53,7 +53,7 @@ describe('SaveRepository', () => {
     const repository = createSaveRepository(createMemorySaveDriver({ stash }));
 
     await expect(repository.load()).resolves.toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       stash,
       completedRuns: 0,
       session: null,
@@ -73,12 +73,12 @@ describe('SaveRepository', () => {
   });
 
   it('rejects a future save version without downgrading it', async () => {
-    const future = { ...createEmptyGameSave(), schemaVersion: 2 };
+    const future = { ...createEmptyGameSave(), schemaVersion: 3 };
     const repository = createSaveRepository(createMemorySaveDriver(future));
 
     await expect(repository.load()).rejects.toMatchObject({
       code: 'SAVE_VERSION_UNSUPPORTED',
-      message: expect.stringContaining('2'),
+      message: expect.stringContaining('3'),
     });
   });
 
@@ -93,7 +93,7 @@ describe('SaveRepository', () => {
     ).resolves.toBe(1);
 
     await expect(repository.load()).resolves.toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       completedRuns: 1,
     });
   });
@@ -106,10 +106,10 @@ describe('SaveRepository', () => {
 
   it('rejects a future version from the migration entry point', () => {
     expectMigrationError(
-      { ...createEmptyGameSave(), schemaVersion: 2 },
+      { ...createEmptyGameSave(), schemaVersion: 3 },
       {
         code: 'SAVE_VERSION_UNSUPPORTED',
-        message: expect.stringContaining('2'),
+        message: expect.stringContaining('3'),
       },
     );
   });
@@ -241,11 +241,11 @@ describe('SaveRepository', () => {
     );
 
     await expect(repository.export()).resolves.toBe(
-      '{"completedRuns":4,"schemaVersion":1,"session":null,"stash":[]}\n',
+      '{"completedRuns":4,"schemaVersion":2,"session":null,"stash":[]}\n',
     );
   });
 
-  it('imports an unversioned document and persists the migrated v1 document', async () => {
+  it('imports an unversioned document and persists the migrated v2 document', async () => {
     const repository = createSaveRepository(createMemorySaveDriver());
     const serialized = '{"stash":[],"completedRuns":0,"session":null}';
 
@@ -258,7 +258,7 @@ describe('SaveRepository', () => {
     ['malformed JSON', '{', 'SAVE_DOCUMENT_INVALID'],
     [
       'a future schema version',
-      JSON.stringify({ ...createEmptyGameSave(), schemaVersion: 2 }),
+      JSON.stringify({ ...createEmptyGameSave(), schemaVersion: 3 }),
       'SAVE_VERSION_UNSUPPORTED',
     ],
     [

@@ -534,6 +534,7 @@ function syntheticHunt(
               offsetY: 0,
               offsetZ: 0,
               respawnTicks: 1800,
+              source: { x: 1, y: 2, z: 8 },
             },
             {
               creatureKey: 'creature:tibia:rotworm',
@@ -542,8 +543,10 @@ function syntheticHunt(
               offsetY: 1,
               offsetZ: 0,
               respawnTicks: 2000,
+              source: { x: 2, y: 3, z: 8 },
             },
           ],
+          sourceCenter: { x: 2, y: 2, z: 8 },
         },
       ],
       maxLiveActors: 64,

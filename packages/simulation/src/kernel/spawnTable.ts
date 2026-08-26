@@ -5,11 +5,11 @@ import type {
   ScenarioSpawnSlot,
   SpawnSlotState,
 } from '@huntbound/contracts';
+import { formatSpawnSlotId } from '@huntbound/contracts';
 
 /** A slot of the scenario table, with the live seat the kernel keeps for it. */
 export interface SpawnSlotRuntime {
-  readonly groupIndex: number;
-  readonly slotIndex: number;
+  readonly slotId: string;
   readonly blueprintId: string;
   readonly position: GridPosition;
   readonly respawnTicks: number;
@@ -40,10 +40,10 @@ function radiusCells(
 }
 
 /**
- * Builds the runtime table. `groupIndex` and `slotIndex` come from the
- * canonical `(z, y, x)` order of the group centres and of the slot cells, never
- * from the order the scenario document happens to list them in: two documents
- * with the same composition have to run identically.
+ * Builds the runtime table. Walk order stays the target `(z, y, x)` of group
+ * centres then slot cells, so S7 appearance and spawn-stream draws do not
+ * move when identity changes. `slotId` is the Canary source key, or the
+ * synthetic `(position, centre)` stand-in when a test scenario omits it.
  */
 export function createSpawnTable(
   scenario: KernelScenario,
@@ -52,16 +52,15 @@ export function createSpawnTable(
     comparePositions(left.center, right.center),
   );
 
-  return groups.flatMap((group, groupIndex) => {
+  return groups.flatMap((group) => {
     const cells = radiusCells(group.center, group.radius);
     const slots = [...group.slots].sort((left, right) =>
       comparePositions(left.position, right.position),
     );
 
     return slots.map(
-      (slot: ScenarioSpawnSlot, slotIndex): SpawnSlotRuntime => ({
-        groupIndex,
-        slotIndex,
+      (slot: ScenarioSpawnSlot): SpawnSlotRuntime => ({
+        slotId: slot.slotId ?? formatSpawnSlotId(slot.position, group.center),
         blueprintId: slot.blueprintId,
         position: slot.position,
         respawnTicks: slot.respawnTicks,
@@ -77,8 +76,7 @@ export function serializeSpawnTable(
   table: readonly SpawnSlotRuntime[],
 ): readonly SpawnSlotState[] {
   return table.map((slot) => ({
-    groupIndex: slot.groupIndex,
-    slotIndex: slot.slotIndex,
+    slotId: slot.slotId,
     readyAtTick: slot.readyAtTick,
     entityId: slot.entityId,
   }));
@@ -93,15 +91,13 @@ export function restoreSpawnTable(
   table: readonly SpawnSlotRuntime[],
   states: readonly SpawnSlotState[],
 ): void {
-  const byKey = new Map(
-    table.map((slot) => [`${slot.groupIndex}:${slot.slotIndex}`, slot]),
-  );
+  const byKey = new Map(table.map((slot) => [slot.slotId, slot]));
 
   for (const state of states) {
-    const slot = byKey.get(`${state.groupIndex}:${state.slotIndex}`);
+    const slot = byKey.get(state.slotId);
     if (slot === undefined) {
       throw new RangeError(
-        `Snapshot holds spawn slot (${state.groupIndex}, ${state.slotIndex}) that the scenario does not declare.`,
+        `Snapshot holds spawn slot ${state.slotId} that the scenario does not declare.`,
       );
     }
     slot.readyAtTick = state.readyAtTick;

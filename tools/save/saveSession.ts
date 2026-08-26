@@ -328,7 +328,7 @@ function encodeMigrated(legacyText: string): SaveSessionResult & {
       return divergence([
         {
           file: 'legacy.json',
-          expected: 'schemaVersion 1',
+          expected: 'supported SAVE_SCHEMA_VERSION',
           actual: error.message,
         },
       ]);

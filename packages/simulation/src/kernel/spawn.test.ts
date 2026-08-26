@@ -126,8 +126,7 @@ describe('S7 spawn', () => {
     expect(payloadsOfType(kernel.advanceOne(), 'spawn/deferred')).toEqual([
       {
         type: 'spawn/deferred',
-        groupIndex: 0,
-        slotIndex: 0,
+        slotId: '7:0:0@7:0:0',
         reason: 'no-free-cell',
       },
     ]);
@@ -202,11 +201,10 @@ describe('S7 spawn', () => {
     );
 
     expect(payloads(kernel.advanceOne()).slice(1)).toEqual([
-      { type: 'spawn/capped', groupIndex: 0, slotIndex: 0 },
+      { type: 'spawn/capped', slotId: '7:4:4@7:4:4' },
       {
         type: 'spawn/deferred',
-        groupIndex: 0,
-        slotIndex: 0,
+        slotId: '7:4:4@7:4:4',
         reason: 'cap-reached',
       },
     ]);
@@ -304,9 +302,9 @@ describe('S7 spawn', () => {
     kernel.advanceOne();
 
     expect(snapshotKernel(kernel).spawnSlots).toEqual([
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: 1 },
-      { groupIndex: 1, slotIndex: 0, readyAtTick: 0, entityId: 2 },
-      { groupIndex: 1, slotIndex: 1, readyAtTick: 0, entityId: 3 },
+      { slotId: '7:1:1@7:1:1', readyAtTick: 0, entityId: 1 },
+      { slotId: '7:3:2@7:3:3', readyAtTick: 0, entityId: 2 },
+      { slotId: '7:3:4@7:3:3', readyAtTick: 0, entityId: 3 },
     ]);
   });
 });

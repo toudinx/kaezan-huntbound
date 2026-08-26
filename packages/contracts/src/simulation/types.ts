@@ -161,6 +161,11 @@ export interface ScenarioSpawnSlot {
   readonly blueprintId: string;
   readonly position: GridPosition;
   readonly respawnTicks: number;
+  /**
+   * Stable seat id. When omitted, the kernel derives it from `position` and
+   * the group centre — the synthetic stand-in for Canary source coordinates.
+   */
+  readonly slotId?: string | undefined;
 }
 
 export interface ScenarioSpawnGroup {
@@ -283,14 +288,12 @@ export type SimulationEventPayload =
     }
   | {
       readonly type: 'spawn/deferred';
-      readonly groupIndex: number;
-      readonly slotIndex: number;
+      readonly slotId: string;
       readonly reason: SpawnDeferralReason;
     }
   | {
       readonly type: 'spawn/capped';
-      readonly groupIndex: number;
-      readonly slotIndex: number;
+      readonly slotId: string;
     }
   | {
       readonly type: 'combat/attacked';
@@ -414,8 +417,7 @@ export interface ActorState {
  * `readyAtTick`.
  */
 export interface SpawnSlotState {
-  readonly groupIndex: number;
-  readonly slotIndex: number;
+  readonly slotId: string;
   readonly readyAtTick: number;
   readonly entityId: EntityId | null;
 }

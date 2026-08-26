@@ -10,6 +10,7 @@ import type {
   SpawnSlotState,
 } from '@huntbound/contracts';
 import {
+  compareSpawnSlotIds,
   SIMULATION_RULES_VERSION,
   SIMULATION_SCHEMA_VERSION,
   validateSimulationSnapshot,
@@ -58,11 +59,8 @@ function byTickThenEntityId(
   );
 }
 
-function byGroupThenSlot(left: SpawnSlotState, right: SpawnSlotState): number {
-  return (
-    compareNumbers(left.groupIndex, right.groupIndex) ||
-    compareNumbers(left.slotIndex, right.slotIndex)
-  );
+function bySlotId(left: SpawnSlotState, right: SpawnSlotState): number {
+  return compareSpawnSlotIds(left.slotId, right.slotId);
 }
 
 export function omitIdleForcedTarget(actor: ActorState): ActorState {
@@ -102,7 +100,7 @@ export function snapshotKernel(kernel: SimulationKernel): SimulationSnapshot {
     actors: [...state.actors].sort(byEntityId).map(omitIdleForcedTarget),
     pendingCommands: [...state.pendingCommands].sort(byTickThenSequence),
     pendingIntents: [...state.pendingInternalIntents].sort(byTickThenEntityId),
-    spawnSlots: [...state.spawnSlots].sort(byGroupThenSlot),
+    spawnSlots: [...state.spawnSlots].sort(bySlotId),
   };
 }
 

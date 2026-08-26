@@ -248,10 +248,10 @@ Fixture `pb04`, revisão `2`, seed `1a2b3c4d5e6f7a8b`, `600` ticks, `1663` event
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `9e7a9dc9468a1a5344547bd65bce3c5a7441f9d9e86504ac4ebb8d584eb68876` |
+| `scenario.json` | `c046c26d8321b39ecaaa3f059a6cbc75e4ea660ce3607a5fce963731f2507cf8` |
 | `commands.jsonl` | `b7ceec01b745015695dd239113c667bcd6a4055161fcdde10cf6a50690ff76f0` |
-| `snapshot.golden.json` | `32738acc4ed9d89adbe8f3abff64aed3ff8dd60d6d21fb6925bf5fd2beaf041c` |
-| `events.golden.jsonl` | `6e1206eb2ce7ed7647e9923b6d29a3f08f30ca7ec9ddf01b539d6310818d42e1` |
+| `snapshot.golden.json` | `7522764abeba9805aa32823e180b3a13e1f1fe7bae2d2a1e8cc4142af322ebdd` |
+| `events.golden.jsonl` | `3cb8451acf549c618a630afd95463bbff0c7010006cee3bdf55ee3258ca884b6` |
 
 Fixture `pb04-respawn`, mesmo cenário e seed, `1805` ticks, `1185` eventos, tick final `1805`. Prova
 o respawn real: despawn da entidade `2` no tick `1` e `actor/spawned` da entidade `14` no tick `1801`.
@@ -259,10 +259,10 @@ Retomada nas fronteiras `0`, `1`, `2`, `1800`, `1801` e `1805`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `9e7a9dc9468a1a5344547bd65bce3c5a7441f9d9e86504ac4ebb8d584eb68876` |
+| `scenario.json` | `c046c26d8321b39ecaaa3f059a6cbc75e4ea660ce3607a5fce963731f2507cf8` |
 | `commands.jsonl` | `89a6c698de54912b2b11172d7bd5867460eb2a84864d906a8c5f104f7477f2d4` |
-| `snapshot.golden.json` | `286fc9c3930e96f2d9f9fcd6af52c0edd8056384c46f4a99377d72d46c1d0233` |
-| `events.golden.jsonl` | `613079d592335829a8e9e7565877c046cee9e21f0f4478b38af4050b7334ba30` |
+| `snapshot.golden.json` | `2ea5c739fc3f25483de166aa062b37635fb37c4dea4b09c9d53bd6db413a9d60` |
+| `events.golden.jsonl` | `686663d5bc8b3674c04a8cf52e59bbd87324488d8cbf6e38fe003e2c6ee5414e` |
 
 A fonte operacional desses digests é o `hashes.md` de cada fixture
 (`packages/test-fixtures/hunt/pb04/hashes.md` e
@@ -281,10 +281,10 @@ sem isso o hunter nunca emite `combat/target-changed`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `scenario.json` | `91f4e1144457253c6b21654fb19c92dd7e32535b24afd41787c072e0c17195a4` |
-| `commands.jsonl` | `f8ec4cf67d01124eb25714c3d107f7c41be33be50fbe844ae6e5fc4ce47fa3bd` |
-| `snapshot.golden.json` | `ed485307f2d2011b5b3c8bc4cd2194f46e0f2e238bb200bf1b0b942febc1cf1f` |
-| `events.golden.jsonl` | `d4521f09d1186c45ed2932e0c057725553037fda36533f61b889b913086e7c26` |
+| `scenario.json` | `143e025b0f530487cb5d6a55a01c68aaf775da0e3292d217f081751cac1a9b2e` |
+| `commands.jsonl` | `689cc3a8d44e46c6f25b609496dd7094e7f86304f1054a553014078b9bb734d3` |
+| `snapshot.golden.json` | `d9f48d46caa2284667c12a6d5d3faee5e0431c22be7d2020fa69ddcb3afac4aa` |
+| `events.golden.jsonl` | `9c0a4400591d12c5679da6b4eed908e86d56a92cbeeeefaa8397ee1fafc7d9f5` |
 
 A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.md`.
 `combat:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.
@@ -292,21 +292,22 @@ A fonte operacional desses digests é `packages/test-fixtures/hunt/pb05/hashes.m
 ## Hashes congelados — PB-06
 
 Fixture `pb-06-save-session`, derivada de `pb-05-hunt-combat` (mesmo cenário, mesmo log, mesma
-seed `2c3d4e5f60718293`). Checkpoint no tick `1400`, retomada até o tick `2700`. O documento
-gravado, o export e a migração de `legacy.json` (documento sem `schemaVersion`) são o mesmo
-`GameSave` canônico no checkpoint e no export. `legacy.json` permanece o documento sem
-`schemaVersion` de save, com snapshot ainda na forma v4 (`groupReadyAtTick` escalar). A migração
-de save só acrescenta `SAVE_SCHEMA_VERSION`; o parse do ator converte o escalar em
-`groupCooldowns` e preenche defaults v5, mas **não** sobe `snapshot.schemaVersion`. Por isso
-`migrated.golden.json` deixa de ser byte-idêntico ao checkpoint. O SHA-256 do snapshot retomado é o
-do sidecar do PB-05, `ed485307f2d2011b5b3c8bc4cd2194f46e0f2e238bb200bf1b0b942febc1cf1f`.
+seed `2c3d4e5f60718293`). Checkpoint no tick `1400`, retomada até o tick `2700`. `legacy.json`
+permanece o documento sem `schemaVersion` de save, com snapshot ainda na forma v4
+(`groupReadyAtTick` escalar e assentos `(groupIndex, slotIndex)`). A cadeia é
+unversioned → 1 → 2 (`SAVE_SCHEMA_VERSION = 2`). O passo 1→2 descarta `spawnSlots` para `[]`: o
+save não importa conteúdo e não pode traduzir índices na hunt. O parse do ator converte o
+escalar em `groupCooldowns` e preenche defaults v5, mas **não** sobe `snapshot.schemaVersion`.
+Checkpoint e export são o `GameSave` canônico v2 com `slotId`; `migrated.golden.json` não é
+byte-idêntico a eles. O SHA-256 do snapshot retomado é o do sidecar do PB-05,
+`d9f48d46caa2284667c12a6d5d3faee5e0431c22be7d2020fa69ddcb3afac4aa`.
 
 | Arquivo | SHA-256 |
 |---|---|
-| `checkpoint.golden.json` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
-| `export.golden.txt` | `34dcbc87c15d53eb04d2a1bc66011e3de93288f167e06ddcd3a16f9062480ff4` |
+| `checkpoint.golden.json` | `91008c3e078d32166642ae1c729aebf6e3ed4dc9630378dc1b6f55bb3620f8b5` |
+| `export.golden.txt` | `91008c3e078d32166642ae1c729aebf6e3ed4dc9630378dc1b6f55bb3620f8b5` |
 | `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
-| `migrated.golden.json` | `4adf164efa1c9795330d79af53daae10ce6fefd95f66a3e803aabbeb7ef07bc7` |
+| `migrated.golden.json` | `2bc551559d3c49ccefe353932efc84a6b5d7b8dc4faa9f18edbdcb7d3c562360` |
 
 A fonte operacional desses digests é `packages/test-fixtures/save/pb06/hashes.md`.
 `save:hashes:check` compara a tabela publicada com o arquivo e com o sidecar `.sha256`.

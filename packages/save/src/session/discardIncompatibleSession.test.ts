@@ -58,7 +58,7 @@ describe('incompatible session discard', () => {
 
     expect(counting.writeCount()).toBe(1);
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       completedRuns: 0,
       session: null,
       stash: [
@@ -104,7 +104,7 @@ describe('incompatible session discard', () => {
     });
 
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       completedRuns: 0,
       session: null,
       stash: [

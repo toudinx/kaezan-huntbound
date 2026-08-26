@@ -1,7 +1,7 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 1;
+export const SAVE_SCHEMA_VERSION = 2;
 
 export interface RunBagEntry {
   readonly itemKey: string;

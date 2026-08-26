@@ -7,6 +7,11 @@ import {
   StreamLabelSchema,
   TickIndexSchema,
 } from './identity.ts';
+import {
+  compareSpawnSlotIds,
+  formatSpawnSlotId,
+  isSpawnSlotId,
+} from './spawnIdentity.ts';
 import type {
   Direction,
   SimulationCommandType,
@@ -404,6 +409,11 @@ export const ScenarioSpawnSlotSchema = z
     blueprintId,
     position: GridPositionSchema,
     respawnTicks: nonNegativeInteger,
+    slotId: z
+      .string()
+      .min(1)
+      .refine(isSpawnSlotId, 'Expected a spawn slot id z:y:x@z:y:x')
+      .optional(),
   })
   .strict();
 
@@ -646,9 +656,10 @@ export const KernelScenarioSchema = z
       conditionIds.add(condition.conditionId);
     });
 
-    // The canonical spawn order is derived from `(z, y, x)` of the centre and
-    // of each slot, so both keys have to be unique for the order to be total.
+    // S7 walks groups and slots by target `(z, y, x)`. Seat identity is a
+    // separate key and has to be unique for snapshot order to be total.
     const groupCentres = new Set<string>();
+    const slotIds = new Set<string>();
     scenario.spawnGroups.forEach((group, groupIndex) => {
       const centreProblem = usable(group.center, true);
       if (centreProblem !== undefined) {
@@ -717,6 +728,18 @@ export const KernelScenarioSchema = z
           );
         }
         slotCells.add(slotKey);
+
+        const slotId =
+          slot.slotId ?? formatSpawnSlotId(slot.position, group.center);
+        if (slotIds.has(slotId)) {
+          addSimulationIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...path, slot.slotId === undefined ? 'position' : 'slotId'],
+            'Spawn slot identities must be unique',
+          );
+        }
+        slotIds.add(slotId);
       });
     });
 
@@ -932,11 +955,15 @@ export const ActorTransitionedEventPayloadSchema = z
   })
   .strict();
 
+const SpawnSlotIdSchema = z
+  .string()
+  .min(1)
+  .refine(isSpawnSlotId, 'Expected a spawn slot id z:y:x@z:y:x');
+
 export const SpawnDeferredEventPayloadSchema = z
   .object({
     type: z.literal('spawn/deferred'),
-    groupIndex: nonNegativeInteger,
-    slotIndex: nonNegativeInteger,
+    slotId: SpawnSlotIdSchema,
     reason: SpawnDeferralReasonSchema,
   })
   .strict();
@@ -944,8 +971,7 @@ export const SpawnDeferredEventPayloadSchema = z
 export const SpawnCappedEventPayloadSchema = z
   .object({
     type: z.literal('spawn/capped'),
-    groupIndex: nonNegativeInteger,
-    slotIndex: nonNegativeInteger,
+    slotId: SpawnSlotIdSchema,
   })
   .strict();
 
@@ -1267,8 +1293,7 @@ export const ActorStateSchema = z.preprocess(
 
 export const SpawnSlotStateSchema = z
   .object({
-    groupIndex: nonNegativeInteger,
-    slotIndex: nonNegativeInteger,
+    slotId: SpawnSlotIdSchema,
     readyAtTick: nonNegativeInteger,
     entityId: EntityIdSchema.nullable(),
   })
@@ -1311,16 +1336,10 @@ function comparePendingIntents(
 }
 
 function compareSpawnSlots(
-  left: { readonly groupIndex: number; readonly slotIndex: number },
-  right: { readonly groupIndex: number; readonly slotIndex: number },
+  left: { readonly slotId: string },
+  right: { readonly slotId: string },
 ) {
-  if (left.groupIndex !== right.groupIndex) {
-    return left.groupIndex < right.groupIndex ? -1 : 1;
-  }
-  if (left.slotIndex !== right.slotIndex) {
-    return left.slotIndex < right.slotIndex ? -1 : 1;
-  }
-  return 0;
+  return compareSpawnSlotIds(left.slotId, right.slotId);
 }
 
 function compareSnapshotCommands(
@@ -1528,14 +1547,14 @@ export const SimulationSnapshotSchema = z
           context,
           'SIM_SCHEMA_INVALID',
           ['spawnSlots', index],
-          'spawnSlots must not repeat a (groupIndex, slotIndex) pair',
+          'spawnSlots must not repeat a slotId',
         );
       } else if (order > 0) {
         addSimulationIssue(
           context,
           'SIM_SCHEMA_INVALID',
           ['spawnSlots', index],
-          'spawnSlots must be strictly ordered by (groupIndex, slotIndex)',
+          'spawnSlots must be strictly ordered by slotId',
         );
       }
     });

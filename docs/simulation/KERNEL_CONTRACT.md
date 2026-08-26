@@ -105,10 +105,18 @@ positivos com `minCount <= maxCount`.
 
 ### Ordem canônica de spawn
 
-`groupIndex` e `slotIndex` **não** são o índice de declaração. O kernel ordena os grupos por
-`(center.z, center.y, center.x)` e os slots de cada grupo por `(position.z, position.y, position.x)`,
-e numera a partir dessa ordem. Dois documentos com a mesma composição declarada em ordens diferentes
-produzem journal e snapshot idênticos.
+S7 percorre os grupos por `(center.z, center.y, center.x)` do **alvo** no recorte e os slots de cada
+grupo por `(position.z, position.y, position.x)` do alvo. Essa é a ordem observável de nascimento e
+a ordem dos draws do stream `spawn`. Dois documentos com a mesma composição de alvos, em ordens de
+declaração diferentes, produzem o mesmo journal.
+
+O endereço do assento **não** é essa posição na lista. Cada slot tem um `slotId`
+`{source.z}:{source.y}:{source.x}@{groupSource.z}:{groupSource.y}:{groupSource.x}` derivado da
+célula absoluta no mapa Canary e do centro XML do grupo. Recortar o layout de novo muda `target`;
+não muda o `slotId`. Dois slots que compartilham a célula de origem desempatam pelo centro de
+origem do grupo. `spawnSlots` no snapshot e os payloads de `spawn/deferred` e `spawn/capped`
+endereçam por `slotId`. A ordem canônica do array `spawnSlots` é a ordem total de `slotId`
+(coordenadas de origem, depois centro de origem), distinta da ordem de caminhada do S7.
 
 As direções canônicas, nesta ordem, são:
 
@@ -155,8 +163,8 @@ monotônica global na execução.
 | `actor/faced` | `entityId`, `facing` |
 | `actor/despawned` | `entityId` |
 | `actor/transitioned` | `entityId`, `from`, `to` |
-| `spawn/deferred` | `groupIndex`, `slotIndex`, `reason` |
-| `spawn/capped` | `groupIndex`, `slotIndex` |
+| `spawn/deferred` | `slotId`, `reason` |
+| `spawn/capped` | `slotId` |
 | `combat/attacked` | `entityId`, `targetEntityId` |
 | `combat/damaged` | `entityId`, `sourceEntityId`, `amount`, `remainingHealth`, `cause` |
 | `combat/healed` | `entityId`, `sourceEntityId`, `amount`, `health` |
@@ -191,7 +199,7 @@ As coleções têm ordem canônica parte do contrato:
 - `actors` por `entityId`, sem duplicatas;
 - `pendingCommands` por `(tick, sequence)`;
 - `pendingIntents` por `(tick, entityId)`, estritamente, sem duplicatas;
-- `spawnSlots` por `(groupIndex, slotIndex)`, estritamente, sem duplicatas.
+- `spawnSlots` por `slotId`, estritamente, sem duplicatas.
 
 `RandomStreamState` guarda `label`, quatro palavras `s0`–`s3` uint32 e `drawCount` não negativo.
 `ActorState` guarda `entityId`, `blueprintId`, `position`, `facing`, `readyAtTick`,
@@ -213,7 +221,7 @@ ator vivo do próprio snapshot. O teto `health <= maxHealth` do blueprint e a re
 de `transitionGuard`: a checagem mora em `restoreSimulationKernel`, não no schema isolado do
 snapshot. O kernel lê e escreve `primaryCooldownGroup` e, quando presente, `secondaryCooldownGroup`.
 Uma habilidade só consulta os grupos que declara: o canal secundário não trava o primário, e o
-primário não trava o secundário. `SpawnSlotState` guarda `groupIndex`, `slotIndex`,
+primário não trava o secundário. `SpawnSlotState` guarda `slotId`,
 `readyAtTick` e `entityId`, que é `null` quando o assento está vago. Um `entityId` de slot que não
 corresponda a nenhum ator do snapshot é reprovado.
 
@@ -714,8 +722,9 @@ Ator `hunter` no mesmo laço:
 Comandos internos gerados por `S6` usam uma fila interna própria, ordenada por `EntityId`. Eles não
 entram no command log e não consomem `sequence` de comando externo.
 
-`S7 spawn` percorre a tabela do cenário em ordem `(groupIndex, slotIndex)` — a ordem canônica
-descrita acima, não a de declaração. Para cada slot vago cujo `readyAtTick` já chegou:
+`S7 spawn` percorre a tabela do cenário na ordem de alvo `(center.z, center.y, center.x)` então
+`(position.z, position.y, position.x)` — a ordem observável de nascimento, não a de declaração e
+não a ordem de `slotId` no snapshot. Para cada slot vago cujo `readyAtTick` já chegou:
 
 1. se o número de atores vivos já alcançou `maxLiveActors`, emite `spawn/capped` e, em seguida,
    `spawn/deferred` com `cap-reached`, e passa ao próximo slot;

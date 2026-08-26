@@ -168,11 +168,10 @@ describe('createHuntProbeRecorder', () => {
       }),
       event(3, {
         type: 'spawn/deferred',
-        groupIndex: 0,
-        slotIndex: 0,
+        slotId: '8:0:0@8:0:0',
         reason: 'no-free-cell',
       }),
-      event(3, { type: 'spawn/capped', groupIndex: 7, slotIndex: 1 }),
+      event(3, { type: 'spawn/capped', slotId: '9:1:7@9:1:7' }),
     ]);
 
     expect(recorder.events()).toEqual([]);

@@ -86,7 +86,7 @@ describe('consolidateRun', () => {
 
   it('is a silent no-op when there is no session', () => {
     const draft = draftFrom({
-      schemaVersion: 1,
+      schemaVersion: 2,
       stash: [{ itemKey: 'item:tibia:arrow', count: 2 }],
       completedRuns: 8,
       session: null,

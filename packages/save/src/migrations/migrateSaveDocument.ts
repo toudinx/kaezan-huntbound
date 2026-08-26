@@ -129,17 +129,49 @@ export function applySaveMigrations(
 
 const unversionedToV1: SaveMigration = {
   from: null,
-  to: SAVE_SCHEMA_VERSION,
+  to: 1,
   migrate(document) {
     return {
       ...createEmptyGameSave(),
       ...(document as SaveDocument),
-      schemaVersion: SAVE_SCHEMA_VERSION,
+      schemaVersion: 1,
     };
   },
 };
 
-const saveMigrations: readonly SaveMigration[] = [unversionedToV1];
+function discardIndexedSpawnSlots(document: SaveDocument): SaveDocument {
+  const session = document.session;
+  if (!isSaveDocument(session)) {
+    return { ...document, schemaVersion: 2 };
+  }
+
+  const snapshot = session.snapshot;
+  if (!isSaveDocument(snapshot)) {
+    return { ...document, schemaVersion: 2 };
+  }
+
+  return {
+    ...document,
+    schemaVersion: 2,
+    session: {
+      ...session,
+      snapshot: {
+        ...snapshot,
+        spawnSlots: [],
+      },
+    },
+  };
+}
+
+const v1ToV2: SaveMigration = {
+  from: 1,
+  to: 2,
+  migrate(document) {
+    return discardIndexedSpawnSlots(document as SaveDocument);
+  },
+};
+
+const saveMigrations: readonly SaveMigration[] = [unversionedToV1, v1ToV2];
 
 export function migrateSaveDocument(document: unknown): unknown {
   return applySaveMigrations(document, saveMigrations, SAVE_SCHEMA_VERSION);

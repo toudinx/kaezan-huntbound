@@ -71,6 +71,8 @@ export interface CombatProbeDecoration {
   readonly expiresAtMs: number;
   readonly frame: number | string | null;
   readonly visible: boolean;
+  readonly x: number;
+  readonly y: number;
 }
 
 export interface CombatProbeImpulse {
@@ -762,6 +764,104 @@ async function readCombatProbeWhenImpulseActive(
   return snapshot;
 }
 
+async function readCombatProbeWhenDecorationKind(
+  page: Page,
+  kind: string,
+  timeoutMs = 25_000,
+): Promise<CombatProbeSnapshot> {
+  const handle = await page.waitForFunction(
+    (wanted: string) => {
+      const probe = (
+        globalThis as typeof globalThis & {
+          __huntboundHuntProbe?: {
+            state: () => HuntProbeState;
+            commands?: () => readonly HuntProbeCommand[];
+            visibleDecorations?: () => readonly { readonly kind: string }[];
+            activeImpulses?: () => readonly unknown[];
+            unresolvedCombatAssetKeys?: () => readonly string[];
+          };
+        }
+      ).__huntboundHuntProbe;
+      const decorations = probe?.visibleDecorations?.() ?? [];
+      if (!decorations.some((decoration) => decoration.kind === wanted)) {
+        return false;
+      }
+      return {
+        state: probe?.state(),
+        commands: probe?.commands?.() ?? [],
+        decorations,
+        impulses: probe?.activeImpulses?.() ?? [],
+        unresolvedCombatAssetKeys: probe?.unresolvedCombatAssetKeys?.() ?? [],
+      };
+    },
+    kind,
+    { polling: 'raf', timeout: timeoutMs },
+  );
+  const snapshot = await handle.jsonValue<CombatProbeSnapshot>();
+  await handle.dispose();
+  return snapshot;
+}
+
+async function readCombatProbeWhenDecorationMoved(
+  page: Page,
+  id: number,
+  fromX: number,
+  fromY: number,
+  timeoutMs = 5_000,
+): Promise<CombatProbeSnapshot> {
+  const handle = await page.waitForFunction(
+    ({
+      decorationId,
+      x,
+      y,
+    }: {
+      readonly decorationId: number;
+      readonly x: number;
+      readonly y: number;
+    }) => {
+      const probe = (
+        globalThis as typeof globalThis & {
+          __huntboundHuntProbe?: {
+            state: () => HuntProbeState;
+            commands?: () => readonly HuntProbeCommand[];
+            visibleDecorations?: () => readonly {
+              readonly id: number;
+              readonly x: number;
+              readonly y: number;
+            }[];
+            activeImpulses?: () => readonly unknown[];
+            unresolvedCombatAssetKeys?: () => readonly string[];
+          };
+        }
+      ).__huntboundHuntProbe;
+      const decorations = probe?.visibleDecorations?.() ?? [];
+      const later = decorations.find(
+        (decoration) => decoration.id === decorationId,
+      );
+      if (
+        later === undefined ||
+        !Number.isFinite(later.x) ||
+        !Number.isFinite(later.y) ||
+        (later.x === x && later.y === y)
+      ) {
+        return false;
+      }
+      return {
+        state: probe?.state(),
+        commands: probe?.commands?.() ?? [],
+        decorations,
+        impulses: probe?.activeImpulses?.() ?? [],
+        unresolvedCombatAssetKeys: probe?.unresolvedCombatAssetKeys?.() ?? [],
+      };
+    },
+    { decorationId: id, x: fromX, y: fromY },
+    { polling: 'raf', timeout: timeoutMs },
+  );
+  const snapshot = await handle.jsonValue<CombatProbeSnapshot>();
+  await handle.dispose();
+  return snapshot;
+}
+
 /**
  * Presses attack and waits for the engaged creature to lose health.
  *
@@ -1161,13 +1261,31 @@ export async function runCombatSession(
   const attackAfterTtlProbe = await probe();
 
   const killedTargetId = attack.targetEntityId;
+  // Read the autoloot arc on the first frame it exists. Waiting for the HUD
+  // "No target" first lets tick catch-up burn the 600 ms TTL.
+  const deathProbe = capture
+    ? await readCombatProbeWhenDecorationKind(page, 'autoloot-arc')
+    : undefined;
+  const autoloot = deathProbe?.decorations.find(
+    (decoration) => decoration.kind === 'autoloot-arc',
+  );
+  let deathAfterFrameProbe: CombatProbeSnapshot | undefined;
+  if (
+    autoloot !== undefined &&
+    Number.isFinite(autoloot.x) &&
+    Number.isFinite(autoloot.y)
+  ) {
+    deathAfterFrameProbe = await readCombatProbeWhenDecorationMoved(
+      page,
+      autoloot.id,
+      autoloot.x,
+      autoloot.y,
+    );
+  } else {
+    await settle(TICK_DURATION_MS * 2);
+    deathAfterFrameProbe = await probe();
+  }
   await waitForTargetCleared(page, 25_000);
-  // The creature dies here, under the auto-attack loop, well before the
-  // abilities are cast — so the corpse, its blood and the autoloot arc are read
-  // now rather than at the end of the session.
-  const deathProbe = await probe();
-  await settle(TICK_DURATION_MS * 2);
-  const deathAfterFrameProbe = await probe();
 
   // Floor 8 of the cave only seats four rotworms. Stay near spawn so the
   // southern one stays out of view. Dump Berserk on the pile while health is

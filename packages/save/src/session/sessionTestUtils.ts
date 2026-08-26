@@ -101,7 +101,7 @@ export function saveWithSession(
   completedRuns = 0,
 ): GameSave {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     stash,
     completedRuns,
     session,

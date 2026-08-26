@@ -55,11 +55,15 @@ export interface SpawnSlotDefinition {
   readonly offsetY: number;
   readonly offsetZ: number;
   readonly respawnTicks: number;
+  /** Absolute Canary cell this seat was declared on. Survives a layout recut. */
+  readonly source: GridPosition;
 }
 
 export interface SpawnGroupDefinition {
   readonly center: GridPosition;
   readonly radius: number;
+  /** Absolute Canary centre of the XML group. Survives a layout recut. */
+  readonly sourceCenter: GridPosition;
   readonly slots: readonly SpawnSlotDefinition[];
 }
 

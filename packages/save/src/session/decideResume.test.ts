@@ -15,7 +15,7 @@ import {
 
 function emptySave(): GameSave {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     stash: [],
     completedRuns: 0,
     session: null,

@@ -120,7 +120,15 @@ describe('buildSpawnTable', () => {
 
     expect(built.table.groups[0]).toMatchObject({
       center: { x: 1, y: 2, z: 8 },
-      slots: [{ offsetX: 0, offsetY: 0, offsetZ: 0 }],
+      slots: [
+        {
+          offsetX: 0,
+          offsetY: 0,
+          offsetZ: 0,
+          source: { x: MIN_X + 5, y: MIN_Y + 3, z: 8 },
+        },
+      ],
+      sourceCenter: { x: MIN_X + 4, y: MIN_Y + 5, z: 8 },
     });
     expect(built.diagnostics).toEqual([]);
   });
@@ -152,8 +160,10 @@ describe('buildSpawnTable', () => {
             offsetY: -2,
             offsetZ: 0,
             respawnTicks: 1800,
+            source: { x: MIN_X + 5, y: MIN_Y + 3, z: 8 },
           },
         ],
+        sourceCenter: { x: MIN_X + 4, y: MIN_Y + 5, z: 8 },
       },
     ]);
     expect(built.diagnostics).toEqual([]);

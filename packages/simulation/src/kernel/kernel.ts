@@ -881,13 +881,11 @@ export function createSimulationKernel(
         if (world.actors().length >= scenario.maxLiveActors) {
           journal.emit(currentTick, {
             type: 'spawn/capped',
-            groupIndex: slot.groupIndex,
-            slotIndex: slot.slotIndex,
+            slotId: slot.slotId,
           });
           journal.emit(currentTick, {
             type: 'spawn/deferred',
-            groupIndex: slot.groupIndex,
-            slotIndex: slot.slotIndex,
+            slotId: slot.slotId,
             reason: 'cap-reached',
           });
           continue;
@@ -906,8 +904,7 @@ export function createSimulationKernel(
         if (position === undefined) {
           journal.emit(currentTick, {
             type: 'spawn/deferred',
-            groupIndex: slot.groupIndex,
-            slotIndex: slot.slotIndex,
+            slotId: slot.slotId,
             reason: 'no-free-cell',
           });
           continue;

@@ -9,10 +9,11 @@ import {
 } from '@playwright/test';
 
 import type { HuntboundHuntGlobal } from '../../apps/game/src/hunt/HuntProbe.ts';
-import type {
-  GameSave,
-  RunBagEntry,
-  Seed,
+import {
+  type GameSave,
+  type RunBagEntry,
+  SAVE_SCHEMA_VERSION,
+  type Seed,
 } from '../../packages/contracts/src/index.ts';
 import { type CombatViewport, runCombatSession } from './support/combatDriver';
 import { readHuntState } from './support/huntDriver';
@@ -630,7 +631,7 @@ for (const viewport of VIEWPORTS) {
     const existing = await readSaveDocument(page);
     const future = JSON.stringify({
       ...loadCompletedFixture(),
-      schemaVersion: 2,
+      schemaVersion: SAVE_SCHEMA_VERSION + 1,
     });
 
     page.once('dialog', (dialog) => dialog.accept());

@@ -149,8 +149,8 @@ function createSnapshot() {
     pendingCommands: [],
     pendingIntents: [],
     spawnSlots: [
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: 2 },
-      { groupIndex: 0, slotIndex: 1, readyAtTick: 12, entityId: null },
+      { slotId: '8:2:1@8:2:1', readyAtTick: 0, entityId: 2 },
+      { slotId: '8:2:2@8:2:1', readyAtTick: 12, entityId: null },
     ],
   };
 }
@@ -409,38 +409,31 @@ describe('SimulationSnapshot v3', () => {
     expect(validateSimulationSnapshot(partial).ok).toBe(false);
   });
 
-  it('rejects spawnSlots that are out of (groupIndex, slotIndex) order', () => {
+  it('rejects spawnSlots that are out of slotId order', () => {
     const unordered = createSnapshot();
     unordered.spawnSlots = [
-      { groupIndex: 0, slotIndex: 1, readyAtTick: 0, entityId: null },
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: null },
+      { slotId: '8:2:2@8:2:1', readyAtTick: 0, entityId: null },
+      { slotId: '8:2:1@8:2:1', readyAtTick: 0, entityId: null },
     ];
     expect(validateSimulationSnapshot(unordered).ok).toBe(false);
-
-    const groupsUnordered = createSnapshot();
-    groupsUnordered.spawnSlots = [
-      { groupIndex: 1, slotIndex: 0, readyAtTick: 0, entityId: null },
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: null },
-    ];
-    expect(validateSimulationSnapshot(groupsUnordered).ok).toBe(false);
   });
 
-  it('rejects a repeated (groupIndex, slotIndex) pair', () => {
+  it('rejects a repeated slotId', () => {
     const duplicated = createSnapshot();
     duplicated.spawnSlots = [
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: null },
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 4, entityId: null },
+      { slotId: '8:2:1@8:2:1', readyAtTick: 0, entityId: null },
+      { slotId: '8:2:1@8:2:1', readyAtTick: 4, entityId: null },
     ];
 
     expect(messages(validateSimulationSnapshot(duplicated))).toContain(
-      'spawnSlots[1]: spawnSlots must not repeat a (groupIndex, slotIndex) pair',
+      'spawnSlots[1]: spawnSlots must not repeat a slotId',
     );
   });
 
   it('rejects a spawn slot pointing at an actor that is not in the snapshot', () => {
     const dangling = createSnapshot();
     dangling.spawnSlots = [
-      { groupIndex: 0, slotIndex: 0, readyAtTick: 0, entityId: 9 },
+      { slotId: '8:2:1@8:2:1', readyAtTick: 0, entityId: 9 },
     ];
 
     expect(validateSimulationSnapshot(dangling).ok).toBe(false);

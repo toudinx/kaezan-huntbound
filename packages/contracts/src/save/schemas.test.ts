@@ -28,7 +28,7 @@ function createSnapshot() {
 
 function createEmptyDocument() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     stash: [] as { itemKey: string; count: number }[],
     completedRuns: 0,
     session: null as {
@@ -44,7 +44,7 @@ function createEmptyDocument() {
 
 function createFullSave() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -76,15 +76,15 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 1', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(1);
+  it('pins SAVE_SCHEMA_VERSION at 2', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(2);
   });
 
-  it('createEmptyGameSave produces a valid empty v1 document', () => {
+  it('createEmptyGameSave produces a valid empty v2 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       stash: [],
       completedRuns: 0,
       session: null,
@@ -110,7 +110,7 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(1);
+    expect(save.schemaVersion).toBe(2);
     expect(save.stash).toEqual(document.stash);
     expect(save.completedRuns).toBe(3);
     expect(save.session).not.toBeNull();

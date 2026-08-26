@@ -4,6 +4,7 @@ import {
   ActorBlueprintSchema,
   GridPositionSchema,
 } from '../simulation/schemas.ts';
+import { formatSpawnSlotId } from '../simulation/spawnIdentity.ts';
 import type {
   HuntDefinition,
   MapRegion,
@@ -364,6 +365,7 @@ const SpawnSlotSchema = z
     offsetY: safeInteger,
     offsetZ: safeInteger,
     respawnTicks: positiveInteger,
+    source: GridPositionSchema,
   })
   .strict();
 
@@ -371,6 +373,7 @@ const SpawnGroupSchema = z
   .object({
     center: GridPositionSchema,
     radius: safeInteger.min(0).max(15),
+    sourceCenter: GridPositionSchema,
     slots: z.array(SpawnSlotSchema).min(1).readonly(),
   })
   .strict();
@@ -382,6 +385,8 @@ export const SpawnTableSchema: z.ZodType<SpawnTable> = z
   })
   .strict()
   .superRefine((table, context) => {
+    const sourceCentres = new Set<string>();
+    const slotIds = new Set<string>();
     for (let index = 0; index < table.groups.length; index += 1) {
       const group = table.groups[index];
       if (group === undefined) {
@@ -400,6 +405,30 @@ export const SpawnTableSchema: z.ZodType<SpawnTable> = z
           'Spawn groups must be strictly ordered by center (z, y, x)',
         );
       }
+
+      const sourceCentreKey = `${group.sourceCenter.z}:${group.sourceCenter.y}:${group.sourceCenter.x}`;
+      if (sourceCentres.has(sourceCentreKey)) {
+        addHuntIssue(
+          context,
+          'SIM_SCHEMA_INVALID',
+          [...groupPath, 'sourceCenter'],
+          'Spawn group source centres must be unique',
+        );
+      }
+      sourceCentres.add(sourceCentreKey);
+
+      group.slots.forEach((slot, slotIndex) => {
+        const slotId = formatSpawnSlotId(slot.source, group.sourceCenter);
+        if (slotIds.has(slotId)) {
+          addHuntIssue(
+            context,
+            'SIM_SCHEMA_INVALID',
+            [...groupPath, 'slots', slotIndex, 'source'],
+            'Spawn slot identities must be unique',
+          );
+        }
+        slotIds.add(slotId);
+      });
     }
   });
 

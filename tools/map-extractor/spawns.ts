@@ -277,6 +277,7 @@ export function buildSpawnTable(
           offsetY: layout === undefined ? offsetY : targetPosition.y,
           offsetZ: layout === undefined ? z - group.centerZ : targetPosition.z,
           respawnTicks: conversion.ticks,
+          source: sourcePosition,
         },
       });
     });
@@ -307,6 +308,11 @@ export function buildSpawnTable(
             }
           : targetCenter,
       radius: group.radius,
+      sourceCenter: {
+        x: group.centerX,
+        y: group.centerY,
+        z: group.centerZ,
+      },
       slots,
     });
   });

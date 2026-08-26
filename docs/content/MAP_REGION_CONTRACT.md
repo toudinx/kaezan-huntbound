@@ -59,9 +59,17 @@ o `transitionGuard` e a resolução de ocupação pertencem ao kernel da task PB
 
 ## Spawns
 
-Um grupo declara `center`, `radius` de `0..15` e pelo menos um slot. Cada slot preserva a identidade
-de conteúdo `creatureKey`, o `blueprintId` consumido pelo kernel, offsets inteiros relativos ao
-centro e `respawnTicks` positivo.
+Um grupo declara `center` (célula no recorte), `sourceCenter` (centro absoluto no mapa Canary),
+`radius` de `0..15` e pelo menos um slot. Cada slot preserva a identidade de conteúdo `creatureKey`,
+o `blueprintId` consumido pelo kernel, offsets inteiros relativos ao centro de **alvo**,
+`respawnTicks` positivo e `source` — a célula absoluta no XML de origem.
+
+O `slotId` estável do kernel é `formatSpawnSlotId(source, sourceCenter)`:
+`{source.z}:{source.y}:{source.x}@{sourceCenter.z}:{sourceCenter.y}:{sourceCenter.x}`.
+Ele não usa a posição na lista. Inserir um grupo ou um slot no meio não renumera os outros.
+Recortar o layout muda `center` e os offsets de alvo; não muda `source` nem `sourceCenter`.
+Dois slots com a mesma origem desempatam pelo `sourceCenter` do grupo. Duplicata de
+`(source, sourceCenter)` é recusa, não um contador de iteração.
 
 O XML de origem declara `spawntime` em segundos. A conversão congelada é:
 
@@ -462,8 +470,8 @@ Hashes congelados dos quatro arquivos:
 |---|---|
 | `region.json` | `a56697fd75a978ac2ccf270df44bf299de289076827be18ff5b2af0a8d6cf0c5` |
 | `transitions.json` | `8c59f8ef4f9a5f9842a06712a4d1bbfe2dbf4a6ef578ecdd1be55bf6e7bc51e7` |
-| `spawns.json` | `141be183e4603a72f7ee594a7fe694a20265336bf05f1f2eadf3e18116c58520` |
-| `hunt.json` | `7c6383061f77c317a34e945ae3b81d594a9f3dbbdc4a511155240bf6cffce6cc` |
+| `spawns.json` | `9f151bfb0fe085ba4a71b54fb532b9328924b3b5b66a49378ef896bc8c1624df` |
+| `hunt.json` | `4b76b6fa398a73cd23aab29537940c51b160007fe3eab9e8f5c34f38ad2022bb` |
 
 `expectedDroppedTransitions` da seleção era `0` e a medição confirmou `0`: **nenhuma transição foi
 derrubada**, então nenhuma reconciliação foi necessária e nenhuma travessia se perdeu no recorte.

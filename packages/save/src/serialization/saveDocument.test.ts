@@ -28,7 +28,7 @@ function createSnapshot() {
 
 function createActiveSave(): GameSave {
   const parsed = parseGameSave({
-    schemaVersion: 1,
+    schemaVersion: 2,
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -59,13 +59,13 @@ describe('save document serialization', () => {
     const document = createEmptyGameSave();
 
     expect(encodeSaveDocument(document)).toBe(
-      '{"completedRuns":0,"schemaVersion":1,"session":null,"stash":[]}\n',
+      '{"completedRuns":0,"schemaVersion":2,"session":null,"stash":[]}\n',
     );
   });
 
   it('returns the same export for repeated calls and insertion orders', () => {
     const first = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       stash: [],
       completedRuns: 0,
       session: null,
@@ -74,7 +74,7 @@ describe('save document serialization', () => {
       session: null,
       completedRuns: 0,
       stash: [],
-      schemaVersion: 1,
+      schemaVersion: 2,
     } as GameSave;
 
     expect(encodeSaveDocument(first)).toBe(encodeSaveDocument(first));
@@ -95,7 +95,7 @@ describe('save document serialization', () => {
 
   it('omits idle forced-target fields from encoded actors', () => {
     const parsed = parseGameSave({
-      schemaVersion: 1,
+      schemaVersion: 2,
       stash: [],
       completedRuns: 0,
       session: {
@@ -153,7 +153,7 @@ describe('save document serialization', () => {
   it('maps a future schema version to SAVE_VERSION_UNSUPPORTED', () => {
     const future = JSON.stringify({
       ...createEmptyGameSave(),
-      schemaVersion: 2,
+      schemaVersion: 3,
     });
 
     expect(() => decodeSaveDocument(future)).toThrow(

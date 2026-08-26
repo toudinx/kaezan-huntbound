@@ -452,8 +452,10 @@ describe('SpawnTable contract', () => {
               offsetY: 0,
               offsetZ: 0,
               respawnTicks: 1800,
+              source: { x: 0, y: 0, z: 8 },
             },
           ],
+          sourceCenter: { x: 0, y: 0, z: 8 },
         },
       ],
       maxLiveActors: 64,
@@ -508,7 +510,13 @@ describe('SpawnTable contract', () => {
     input.groups.unshift({
       center: { x: 0, y: 0, z: 9 },
       radius: 1,
-      slots: [...at(input.groups, 0).slots],
+      sourceCenter: { x: 0, y: 0, z: 9 },
+      slots: [
+        {
+          ...at(at(input.groups, 0).slots, 0),
+          source: { x: 0, y: 0, z: 9 },
+        },
+      ],
     });
 
     expectSchemaDiagnostic(SpawnTableSchema, input, 'SIM_SCHEMA_INVALID', [
@@ -594,8 +602,10 @@ describe('HuntDefinition contract', () => {
                 offsetY: 0,
                 offsetZ: 0,
                 respawnTicks: 1800,
+                source: { x: 1, y: 0, z: 8 },
               },
             ],
+            sourceCenter: { x: 1, y: 0, z: 8 },
           },
         ],
         maxLiveActors: 64,
