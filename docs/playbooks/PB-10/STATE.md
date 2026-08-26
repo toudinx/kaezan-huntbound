@@ -39,6 +39,12 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 `haste-play.spec.ts:167` falhou 3× isolado na PB-10-02; `hunt-play.spec.ts:405` passou. `retries` e
 timeout inflado seguem proibidos. Não bloquearam a integração da PB-10-02, que é docs-only.
 
+**B16 — aberto, ambiental, não é código.** Com uma segunda sessão de agente ativa no mesmo clone, o
+`vitest` de `tools/replay` estoura o timeout: 195 s e depois >600 s contra ~73 s com a máquina livre.
+O teste que reprova **muda a cada rodada** (`ContentCatalogApplication`, depois `pb04HuntFixture`), que
+é a assinatura de carga, não de defeito. Os goldens verificam verde pelo CLI (`simulation:check` e
+`hunt:check`). `retries` e timeout inflado seguem proibidos: a correção é rodar com a máquina livre.
+
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 
 ## Decisões congeladas
