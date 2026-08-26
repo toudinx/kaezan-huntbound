@@ -57,6 +57,8 @@ function emptyState(): HuntProbeState {
     floorRebuilds: 0,
     decorationTextWrites: 0,
     postureAura: null,
+    healthBars: [],
+    healthBarRedraws: 0,
     player: null,
     actors: [],
     targetRing: {

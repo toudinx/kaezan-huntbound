@@ -65,12 +65,28 @@ export interface HuntProbePostureAura {
   readonly y: number;
 }
 
+/** One creature's health bar, as it is actually drawn. */
+export interface HuntProbeHealthBar {
+  readonly entityId: number;
+  /** Health left, from 0 to 1. */
+  readonly fraction: number;
+  /** The ramp colour, as a packed `0xRRGGBB`. */
+  readonly color: number;
+  readonly visible: boolean;
+  readonly x: number;
+  readonly y: number;
+  readonly depth: number;
+}
+
 export interface HuntProbeState {
   readonly tick: number;
   readonly floor: number;
   readonly floorRebuilds: number;
   readonly decorationTextWrites: number;
   readonly postureAura: HuntProbePostureAura | null;
+  readonly healthBars: readonly HuntProbeHealthBar[];
+  /** Times a bar was repainted. Must not grow while nothing takes damage. */
+  readonly healthBarRedraws: number;
   readonly player: HuntProbeActor | null;
   readonly actors: readonly HuntProbeActor[];
   readonly targetRing: TargetRingState;

@@ -56,6 +56,15 @@ import {
   createCombatTargetSelection,
 } from '../../hunt/CombatTargeting';
 import { DEFAULT_COMBAT_ABILITIES } from '../../hunt/CombatViewModel';
+import {
+  CREATURE_HEALTH_BAR_BACKDROP_ALPHA,
+  CREATURE_HEALTH_BAR_BACKDROP_COLOR,
+  CREATURE_HEALTH_BAR_DEPTH_OFFSET,
+  type CreatureHealthBar,
+  type CreatureHealthBarGeometry,
+  creatureHealthBarGeometry,
+  resolveCreatureHealthBars,
+} from '../../hunt/CreatureHealthBar';
 import { effectFrame } from '../../hunt/EffectAnimation';
 import {
   groundBounds,
@@ -178,6 +187,14 @@ export class HuntScene extends Phaser.Scene {
   >();
   private postureAura: Phaser.GameObjects.Graphics | undefined;
   private postureAuraState: HuntProbePostureAura | null = null;
+  private readonly healthBars = new Map<
+    EntityId,
+    Phaser.GameObjects.Graphics
+  >();
+  /** What each bar is currently painted as, so a still one is never redrawn. */
+  private readonly healthBarPaint = new Map<EntityId, CreatureHealthBar>();
+  private healthBarRedraws = 0;
+  private readonly maxHealthByBlueprint = new Map<string, number>();
   private targetRing: Phaser.GameObjects.Graphics | undefined;
   private worldEdge: Phaser.GameObjects.Graphics | undefined;
   private worldEdgeCreations = 0;
@@ -291,10 +308,15 @@ export class HuntScene extends Phaser.Scene {
     for (const key of HUNT_PACK_COMBAT_KEYS) {
       this.unresolvedAssets.noteMissing(key);
     }
+    this.maxHealthByBlueprint.clear();
+    for (const blueprint of this.options.hunt.blueprints) {
+      this.maxHealthByBlueprint.set(blueprint.blueprintId, blueprint.maxHealth);
+    }
     this.renderClock = 0;
     this.floorRebuilds = 0;
     this.worldEdgeCreations = 0;
     this.decorationTextWrites = 0;
+    this.healthBarRedraws = 0;
     this.decorationTextValues.clear();
     this.inputCommands = [];
     this.invalidateDriverSnapshotCache();
@@ -404,6 +426,7 @@ export class HuntScene extends Phaser.Scene {
       this.invalidateDriverSnapshotCache();
       this.targetRing?.destroy();
       this.targetRing = undefined;
+      this.destroyCreatureHealthBars();
       this.worldEdge?.destroy();
       this.worldEdge = undefined;
       this.worldEdgeCells.clear();
@@ -521,6 +544,16 @@ export class HuntScene extends Phaser.Scene {
       decorationTextWrites: this.decorationTextWrites,
       postureAura:
         this.postureAuraState === null ? null : { ...this.postureAuraState },
+      healthBars: [...this.healthBars].map(([entityId, graphics]) => ({
+        entityId,
+        fraction: this.healthBarPaint.get(entityId)?.fraction ?? 0,
+        color: this.healthBarPaint.get(entityId)?.color ?? 0,
+        visible: graphics.visible,
+        x: graphics.x,
+        y: graphics.y,
+        depth: graphics.depth,
+      })),
+      healthBarRedraws: this.healthBarRedraws,
       player:
         actors.find((actor) => actor.blueprintId === playerBlueprintId) ?? null,
       actors,
@@ -694,6 +727,15 @@ export class HuntScene extends Phaser.Scene {
     }
     this.sprites = [];
     this.actorSprites.clear();
+    this.destroyCreatureHealthBars();
+  }
+
+  private destroyCreatureHealthBars(): void {
+    for (const bar of this.healthBars.values()) {
+      bar.destroy();
+    }
+    this.healthBars.clear();
+    this.healthBarPaint.clear();
   }
 
   private targetRingState(): TargetRingState {
@@ -1160,9 +1202,111 @@ export class HuntScene extends Phaser.Scene {
       if (!visible.has(entityId)) sprite.setVisible(false);
     }
 
+    this.syncCreatureHealthBars();
     this.syncPostureAura();
     this.syncTargetHighlight(renderTimeMs);
     this.followPlayer(alpha);
+  }
+
+  /**
+   * The bar over each creature's head, the way Tibia does it.
+   *
+   * Hung off the sprite rather than off the tile so it rides the walk cycle and
+   * the lunge with the creature it belongs to: a bar that stayed on the tile
+   * detached from the monster every time either of them moved.
+   *
+   * Repainted only when the reading changes. Position and depth are transforms
+   * and cost nothing per frame; the fill is geometry, and redrawing nine of
+   * them every frame for creatures nobody is hitting is the same waste the
+   * action deck was just cured of.
+   */
+  private syncCreatureHealthBars(): void {
+    const presentation = this.presentation;
+    if (!presentation) return;
+
+    const snapshot = this.currentDriverSnapshot();
+    const healthByEntity = new Map<EntityId, number>(
+      snapshot.actors.map((actor) => [actor.entityId, actor.health]),
+    );
+    const bars = resolveCreatureHealthBars(
+      presentation.actors().map((actor) => ({
+        entityId: actor.entityId,
+        health: healthByEntity.get(actor.entityId) ?? 0,
+        maxHealth: this.maxHealthByBlueprint.get(actor.blueprintId) ?? 0,
+        onScreen: this.actorSprites.get(actor.entityId)?.visible ?? false,
+        isPlayer: actor.blueprintId === this.options.hunt.playerBlueprintId,
+      })),
+    );
+
+    const geometry = creatureHealthBarGeometry(this.tileSize);
+    const drawn = new Set<EntityId>();
+
+    for (const bar of bars) {
+      const sprite = this.actorSprites.get(bar.entityId);
+      if (sprite === undefined) continue;
+
+      drawn.add(bar.entityId);
+      this.paintCreatureHealthBar(bar, geometry)
+        .setPosition(
+          // The cell hangs from the bottom-right of the tile, so the sprite's
+          // own x is the tile's right edge whatever the creature's cell size.
+          sprite.x - this.tileSize / 2,
+          sprite.y - sprite.displayHeight - geometry.gap,
+        )
+        .setDepth(sprite.depth + CREATURE_HEALTH_BAR_DEPTH_OFFSET)
+        .setVisible(true);
+    }
+
+    for (const [entityId, graphics] of this.healthBars) {
+      if (drawn.has(entityId)) continue;
+      // A creature that stepped to another floor keeps its bar, hidden: it is
+      // coming back. One whose sprite is gone is dead, and so is its bar.
+      if (this.actorSprites.has(entityId)) {
+        graphics.setVisible(false);
+        continue;
+      }
+      graphics.destroy();
+      this.healthBars.delete(entityId);
+      this.healthBarPaint.delete(entityId);
+    }
+  }
+
+  private paintCreatureHealthBar(
+    bar: CreatureHealthBar,
+    geometry: CreatureHealthBarGeometry,
+  ): Phaser.GameObjects.Graphics {
+    let graphics = this.healthBars.get(bar.entityId);
+    if (graphics === undefined) {
+      graphics = this.add.graphics();
+      graphics.setData('hunt-health-bar', true);
+      this.healthBars.set(bar.entityId, graphics);
+    }
+
+    const painted = this.healthBarPaint.get(bar.entityId);
+    if (painted?.fraction === bar.fraction && painted.color === bar.color) {
+      return graphics;
+    }
+
+    const left = -geometry.width / 2;
+    const top = -geometry.height;
+    graphics
+      .clear()
+      .fillStyle(
+        CREATURE_HEALTH_BAR_BACKDROP_COLOR,
+        CREATURE_HEALTH_BAR_BACKDROP_ALPHA,
+      )
+      .fillRect(left, top, geometry.width, geometry.height)
+      .fillStyle(bar.color, 1)
+      .fillRect(
+        left + geometry.inset,
+        top + geometry.inset,
+        (geometry.width - geometry.inset * 2) * bar.fraction,
+        geometry.height - geometry.inset * 2,
+      );
+
+    this.healthBarPaint.set(bar.entityId, bar);
+    this.healthBarRedraws += 1;
+    return graphics;
   }
 
   private renderCombatDecorations(): void {
