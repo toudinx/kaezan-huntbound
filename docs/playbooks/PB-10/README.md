@@ -6,7 +6,8 @@
 > `hunt-content-pipeline`. Execute uma task card por chat. O formato, o handoff e o ciclo automático
 > de integração e limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** reescrito em 2026-08-26 e **elegível**. A primeira task é **PB-10-01**.
+**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 e 02 fecharam e estão integradas; a
+próxima é **PB-10-03**.
 
 **Goal:** o jogo deixa de ter *uma* hunt compilada e passa a ter um **catálogo navegável**: você abre
 o jogo, olha as hunts disponíveis com faixa de nível, criaturas, exp e loot, escolhe uma e entra.
@@ -71,8 +72,9 @@ Cada faixa entra porque acrescenta um **comportamento** que nenhuma anterior tem
 
 ## A escada completa
 
-Vai inteira para o `HUNT_BANDS.md` na PB-10-02, com o **portão** de cada degrau escrito ao lado. Da
-faixa 6 em diante o portão quase nunca é arte: é kernel que ainda não existe.
+Foi inteira para o `HUNT_BANDS.md` na PB-10-02, com o **portão** de cada degrau escrito ao lado. Da
+faixa 6 em diante o portão quase nunca é arte: é kernel que ainda não existe. A tabela abaixo é o
+resumo; o documento é a fonte.
 
 | Degrau | Hunts | Portão |
 |---|---|---|
@@ -117,8 +119,9 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 06 | Criatura conjura | kernel e IA |
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo |
 
-**Só a 01 e a 02 estão escritas.** O resto são bullets até chegar a vez — é a regra do `AGENTS.md`,
-e existe porque playbook escrito inteiro antecipado envelhece contra o código real.
+**Escritas: 01, 02, 03 e 04.** Da 05 em diante são bullets até chegar a vez — é a regra do
+`AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito inteiro antecipado
+envelhece contra o código real.
 
 ### Por que a 01 vem primeiro
 
@@ -135,6 +138,13 @@ adicionada, então é a única que não pode esperar.
 Porque ela impede as duas descobertas caras: **faltar sprite na quarta hunt**, e **escrever uma hunt
 cujo comportamento o kernel não sabe executar**. As duas custam um ciclo inteiro se aparecerem no
 meio de uma task de conteúdo, e nenhuma delas aparece se a escada for levantada antes.
+
+### Por que a 03 vem antes da 04
+
+A 03 generaliza o `sidecar-check` para iterar os subdiretórios de
+`packages/content/src/generated/hunts/`, e é exatamente ele que passa a cobrir o `index.json` que a
+04 cria naquele diretório. Na ordem inversa o índice nasceria sem sidecar conferido, e as duas tasks
+brigariam pelo mesmo bloco de `package.json`. **São seriais.**
 
 ## Modelo e effort por task
 
