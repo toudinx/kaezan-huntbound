@@ -31,6 +31,7 @@ function hunt(
 ) {
   return {
     huntId,
+    runtimeDirectory: 'test-pack',
     displayName: 'Test Hunt',
     band,
     recommendedLevel,

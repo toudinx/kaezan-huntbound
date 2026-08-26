@@ -6,6 +6,7 @@ import type {
   AbilityDefinition,
   ActiveConditionState,
   ActorBlueprint,
+  CharacterDefinition,
   Direction,
   ElementResistance,
   EntityId,
@@ -1019,6 +1020,7 @@ export function createHuntCombatViewModel(
     | readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_ABILITIES,
   conditions: readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_FALLBACK_CONDITIONS,
   blueprints: readonly ActorBlueprint[] = [],
+  character?: CharacterDefinition,
 ): CombatViewModel {
   const receivedConditions =
     abilitiesOrConditions[0] !== undefined &&
@@ -1029,7 +1031,6 @@ export function createHuntCombatViewModel(
   const scenarioConditions = receivedConditions
     ? (abilitiesOrConditions as readonly ScenarioConditionDefinition[])
     : conditions;
-  const character = runtime.characters[0];
   const maxHealthByBlueprint = new Map<string, number>();
   const maxResourceByBlueprint = new Map<string, number>();
   const blueprintById = new Map(

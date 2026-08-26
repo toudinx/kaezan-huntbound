@@ -16,7 +16,7 @@ import {
   type Seed,
 } from '../../packages/contracts/src/index.ts';
 import { type CombatViewport, runCombatSession } from './support/combatDriver';
-import { readHuntState } from './support/huntDriver';
+import { readHuntState, selectHunt } from './support/huntDriver';
 
 const VIEWPORTS = [
   { name: 'mobile', width: 390, height: 844 },
@@ -180,6 +180,7 @@ async function openAppPage(
   const page = await createAppPage(context, viewport, watch);
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForSaveProbe(page);
+  await selectHunt(page);
   await waitForHuntBoot(page, requirePlayer);
   return page;
 }
@@ -480,6 +481,7 @@ for (const viewport of VIEWPORTS) {
 
     await captureFirstSaveLoad(page);
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await selectHunt(page);
     await expect(page.locator('[data-testid="save-status"]')).toHaveText(
       'Run resumed',
       { timeout: 15_000 },
@@ -520,6 +522,7 @@ for (const viewport of VIEWPORTS) {
     await captureInventoryScreenshot(page, viewport);
 
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await selectHunt(page);
     await expect(page.locator('[data-testid="save-status"]')).toHaveText(
       /^(New run started|Run resumed)$/,
       { timeout: 15_000 },
@@ -564,6 +567,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('[data-testid="save-run-bag"]')).toHaveText('');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await selectHunt(page);
     await expect(page.locator('[data-testid="save-status"]')).toHaveText(
       'New run started',
       { timeout: 15_000 },

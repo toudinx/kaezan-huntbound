@@ -10,6 +10,7 @@ import {
   summarizeCdpRequests,
   summarizeResponseTimings,
 } from './support/bootMetrics';
+import { selectHunt } from './support/huntDriver';
 
 test.describe.configure({ retries: 0 });
 
@@ -184,6 +185,7 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
       await page.goto('http://127.0.0.1:4173/', {
         timeout: navigationTimeoutMs,
       });
+      await selectHunt(page);
       await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1, {
         timeout: readinessTimeoutMs,
       });

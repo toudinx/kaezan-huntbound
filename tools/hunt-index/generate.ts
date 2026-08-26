@@ -7,6 +7,7 @@ import {
   HuntIndexSchema,
   type SpawnTable,
 } from '../../packages/contracts/src/index.ts';
+import { getHuntPipelineEntry } from '../asset-packer/hunt/huntRegistry.ts';
 import type { HuntSelection } from '../hunt-selection/types.ts';
 
 export interface HuntIndexCreatureSource {
@@ -236,6 +237,7 @@ export function buildHuntIndex(input: HuntIndexBuildInput): HuntIndex {
 
     return {
       huntId: selection.key,
+      runtimeDirectory: requireRuntimeDirectory(selection.key),
       displayName: selection.displayName,
       band: requireBand(selection),
       recommendedLevel: selection.recommendedLevel,
@@ -252,6 +254,14 @@ export function buildHuntIndex(input: HuntIndexBuildInput): HuntIndex {
     schemaVersion: HUNT_INDEX_SCHEMA_VERSION,
     hunts,
   });
+}
+
+function requireRuntimeDirectory(huntId: string): string {
+  const entry = getHuntPipelineEntry(huntId);
+  if (entry === undefined) {
+    throw new Error(`Hunt ${huntId} is absent from the hunt pipeline registry`);
+  }
+  return entry.runtimeDirectory;
 }
 
 export function encodeHuntIndex(index: HuntIndex): string {

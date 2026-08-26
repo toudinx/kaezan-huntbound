@@ -3,6 +3,7 @@
   "hunts": [
     {
       "huntId": "hunt:tibia:venore-rotworm-cave",
+      "runtimeDirectory": "pb04",
       "displayName": "Venore Rotworm Cave",
       "band": 1,
       "recommendedLevel": 8,

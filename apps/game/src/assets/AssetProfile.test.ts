@@ -6,6 +6,10 @@ import {
   parseAppAssetProfile,
 } from './AssetProfile';
 
+const fabricatedHunt = {
+  runtimeDirectory: 'fabricated-pack',
+} as const;
+
 describe('AssetProfile', () => {
   it.each(['test', 'personal', 'product'] as const)(
     'accepts the %s build mode',
@@ -33,10 +37,10 @@ describe('AssetProfile', () => {
   );
 
   it.each(['test', 'personal', 'product'] as const)(
-    'composes the PB-04 catalog route for %s',
+    'composes the selected hunt catalog route for %s',
     (profile) => {
-      expect(getHuntAssetCatalogUrl(profile)).toBe(
-        `/assets/${profile}/pb04/catalog.json`,
+      expect(getHuntAssetCatalogUrl(profile, fabricatedHunt)).toBe(
+        `/assets/${profile}/fabricated-pack/catalog.json`,
       );
     },
   );

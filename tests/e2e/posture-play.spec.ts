@@ -12,6 +12,7 @@ import {
   engageNearestRotworm,
   readCombatState,
 } from './support/combatDriver';
+import { selectHunt } from './support/huntDriver';
 import { readHuntDefinition } from './support/huntSession';
 
 interface SaveProbeTransaction<T> {
@@ -216,6 +217,7 @@ test('persists knight posture through reload, rival swap, and recast-off', async
 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForSaveProbe(page);
+  await selectHunt(page);
   await waitForHuntBoot(page);
   await expect(page.locator('[data-testid="combat-hud"]')).toHaveCount(1);
   await expect(page.locator('[data-testid="save-status"]')).toHaveText(
@@ -243,6 +245,7 @@ test('persists knight posture through reload, rival swap, and recast-off', async
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await waitForSaveProbe(page);
+  await selectHunt(page);
   await expect(page.locator('[data-testid="save-status"]')).toHaveText(
     'Run resumed',
     { timeout: 15_000 },

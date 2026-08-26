@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { selectHunt } from './support/huntDriver';
+
 const expectedKeys = [
   'creature:tibia:rotworm',
   'effect:tibia:energy-hit',
@@ -84,6 +86,7 @@ test('loads, unloads, and reloads the five browser asset contract keys', async (
   });
 
   await page.goto('/');
+  await selectHunt(page);
   await expect(
     page.locator('#shell-root[data-assets-ready="true"]'),
   ).toHaveCount(1, { timeout: 5_000 });

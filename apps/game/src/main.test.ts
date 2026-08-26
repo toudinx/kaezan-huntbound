@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as cachedMain from './main';
 
 const harness = vi.hoisted(() => ({
   events: [] as string[],
@@ -75,6 +76,19 @@ vi.mock('./ui/AppShell', () => ({
   },
 }));
 
+vi.mock('./ui/HuntingPlaces', () => ({
+  mountHuntingPlaces: (
+    _root: unknown,
+    index: { hunts: readonly unknown[] },
+    onSelect: (hunt: unknown) => void,
+  ) => {
+    harness.events.push('hunting');
+    const hunt = index.hunts[0];
+    if (hunt !== undefined) onSelect(hunt);
+    return { destroy: () => undefined };
+  },
+}));
+
 vi.mock('./phaser/createGame', () => ({
   createGame: (_parent: unknown, _bridge: unknown, options: unknown) => {
     harness.events.push('game');
@@ -114,6 +128,14 @@ class FakeElement {
   private readonly attributes = new Map<string, string>();
 
   constructor(readonly id: string) {}
+
+  get textContent() {
+    return '';
+  }
+
+  set textContent(_value: string) {
+    return;
+  }
 
   setAttribute(name: string, value: string) {
     this.attributes.set(name, value);
@@ -178,7 +200,40 @@ function createRuntime(events: string[], label: string, shouldFail = false) {
   };
 }
 
-async function loadBootstrapApp() {
+function createTestSaveSession() {
+  const state = {
+    status: 'ready' as const,
+    message: 'New run started',
+    bag: [],
+    stash: [],
+    completedRuns: 0,
+  };
+  return {
+    getState: () => state,
+    subscribe: (listener: (next: typeof state) => void) => {
+      listener(state);
+      return () => undefined;
+    },
+    boot: async (options: {
+      createDriver: (snapshot: undefined) => unknown;
+    }) => ({
+      decision: { kind: 'fresh' as const },
+      driver: options.createDriver(undefined),
+      bag: [],
+    }),
+    attachRun: () => undefined,
+    updateBag: () => undefined,
+    onTick: () => undefined,
+    finish: async () => undefined,
+    pagehide: async () => undefined,
+    export: async () => '{}',
+    import: async () => undefined,
+    destroy: () => undefined,
+  };
+}
+
+async function loadBootstrapApp(reset = false) {
+  if (!reset) return cachedMain;
   vi.resetModules();
   return import('./main');
 }
@@ -226,9 +281,12 @@ describe('main asset bootstrap', () => {
         );
         return undefined;
       },
+      createSaveSession: () => createTestSaveSession(),
     });
+    await vi.waitFor(() => expect(harness.events).toContain('game'));
 
     expect(harness.events).toEqual([
+      'hunting',
       'runtime:root',
       'runtime:hunt',
       'restoreSnapshot',
@@ -259,7 +317,9 @@ describe('main asset bootstrap', () => {
       document: roots.document,
       window: roots.window,
       createAssetRuntime: () => createRuntime(harness.events, 'root'),
+      createSaveSession: () => createTestSaveSession(),
     });
+    await vi.waitFor(() => expect(harness.viewModelCalls).toHaveLength(1));
 
     const viewModelCall = harness.viewModelCalls[0];
     if (viewModelCall === undefined) {
@@ -324,7 +384,7 @@ describe('main asset bootstrap', () => {
       },
     );
     const roots = createRoots();
-    const main = await loadBootstrapApp();
+    const main = await loadBootstrapApp(true);
     vi.stubGlobal('document', roots.document);
     vi.stubGlobal('window', roots.window);
     const bootstrapApp = main.bootstrapApp as unknown as (
@@ -335,7 +395,9 @@ describe('main asset bootstrap', () => {
       document: roots.document,
       window: roots.window,
       createAssetRuntime: () => createRuntime(harness.events, 'root'),
+      createSaveSession: () => createTestSaveSession(),
     });
+    await vi.waitFor(() => expect(harness.events).toContain('shell'));
 
     expect(harness.events).toContain('shell');
     expect(harness.shellSnapshots.at(-1)).toMatchObject({
@@ -359,7 +421,11 @@ describe('main asset bootstrap', () => {
       document: roots.document,
       window: roots.window,
       createAssetRuntime: () => runtime,
+      createSaveSession: () => createTestSaveSession(),
     });
+    await vi.waitFor(() =>
+      expect(harness.bridge?.getSnapshot().phase).toBe('error'),
+    );
 
     expect(roots.shellRoot.getAttribute('data-assets-ready')).toBe('false');
     expect(roots.shellRoot.getAttribute('data-assets-count')).toBe('0');

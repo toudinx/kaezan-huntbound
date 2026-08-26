@@ -51,6 +51,289 @@ body {
   pointer-events: none;
 }
 
+/*
+ * The hunt selector is the field atlas before the playfield exists. It keeps
+ * the same navy-and-gold language as the cockpit, but owns its scroll area so
+ * a long catalog never pushes the game viewport out of the shell.
+ */
+.hunting-places {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: auto;
+  padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5rem);
+  color: #dce6f8;
+  background:
+    radial-gradient(circle at 18% 0%, rgb(54 107 175 / 24%), transparent 32rem),
+    radial-gradient(
+      circle at 90% 100%,
+      rgb(165 112 42 / 14%),
+      transparent 28rem
+    ),
+    #060b16;
+  pointer-events: auto;
+  text-transform: none;
+}
+
+.hunting-places__header,
+.hunting-places__list {
+  width: min(100%, 78rem);
+  margin: 0 auto;
+}
+
+.hunting-places__header {
+  max-width: 52rem;
+}
+
+.hunting-places__eyebrow {
+  margin: 0 0 0.75rem;
+  color: #f1d78b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hunting-places__title {
+  margin: 0;
+  color: #f5f7ff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 7vw, 5.25rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.hunting-places__intro {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  color: #9fb4d5;
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.hunting-places__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 32rem), 1fr));
+  gap: 1rem;
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+
+.hunting-places__card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgb(137 170 219 / 36%);
+  border-radius: 0.85rem;
+  background:
+    linear-gradient(140deg, rgb(20 38 67 / 92%), rgb(8 16 30 / 96%)), #0b1528;
+  box-shadow:
+    0 1.5rem 4rem rgb(0 0 0 / 24%),
+    inset 0 1px rgb(255 255 255 / 7%);
+}
+
+.hunting-places__card[data-selected="true"] {
+  border-color: rgb(241 215 139 / 72%);
+  box-shadow:
+    0 1.5rem 4rem rgb(0 0 0 / 24%),
+    0 0 2rem rgb(241 215 139 / 12%),
+    inset 0 1px rgb(255 255 255 / 7%);
+}
+
+.hunting-places__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+}
+
+.hunting-places__card-title {
+  margin: 0;
+  color: #f5f7ff;
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.hunting-places__band {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid rgb(241 215 139 / 48%);
+  border-radius: 999px;
+  color: #f1d78b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hunting-places__card-details,
+.hunting-places__creature-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin: 0;
+  color: #9fb4d5;
+  font-size: 0.78rem;
+}
+
+.hunting-places__card-details span,
+.hunting-places__creature-stats span {
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.hunting-places__fact {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgb(123 161 216 / 23%);
+  border-radius: 0.45rem;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__fact-label {
+  margin: 0 0 0.35rem;
+  color: #8198bb;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hunting-places__fact-value {
+  margin: 0;
+  color: #f5f7ff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__section-title {
+  margin: 0;
+  color: #f1d78b;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hunting-places__creatures {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.hunting-places__creature {
+  padding: 0.85rem;
+  border-left: 2px solid rgb(123 161 216 / 50%);
+  background: rgb(5 12 24 / 36%);
+}
+
+.hunting-places__creature-name {
+  margin: 0 0 0.4rem;
+  color: #e5edff;
+  font-size: 1rem;
+}
+
+.hunting-places__loot-heading {
+  margin: 0.85rem 0 0.4rem;
+  color: #8198bb;
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hunting-places__loot {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #c9d8f1;
+  font-size: 0.76rem;
+}
+
+.hunting-places__loot-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.hunting-places__loot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hunting-places__loot-chance,
+.hunting-places__loot-count {
+  color: #9fb4d5;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__select {
+  width: 100%;
+  min-height: 3rem;
+  margin-top: auto;
+  border: 1px solid #d3b66d;
+  border-radius: 0.45rem;
+  color: #07101f;
+  background: #f1d78b;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.hunting-places__select:hover,
+.hunting-places__select:focus-visible {
+  border-color: #fff0b7;
+  background: #fff0b7;
+  outline: 2px solid rgb(241 215 139 / 36%);
+  outline-offset: 2px;
+}
+
+.hunting-places__select:disabled {
+  color: #9ca8bc;
+  background: #34445d;
+  border-color: #61728c;
+  cursor: wait;
+}
+
+@media (max-width: 40rem) {
+  .hunting-places {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .hunting-places__card-header {
+    flex-direction: column;
+  }
+
+  .hunting-places__band {
+    align-self: flex-start;
+  }
+
+  .hunting-places__loot-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .hunting-places__loot-count {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
 [data-testid="app-shell"] {
   position: absolute;
   inset: 0;

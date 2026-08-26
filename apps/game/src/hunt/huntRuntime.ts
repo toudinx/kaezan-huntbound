@@ -1,3 +1,4 @@
+import type { HuntIndexEntry } from '../../../../packages/contracts/src/index.ts';
 import {
   type AppAssetProfile,
   getHuntAssetCatalogUrl,
@@ -9,6 +10,7 @@ import {
 
 export function createHuntRuntime(
   profile: AppAssetProfile,
+  hunt: Pick<HuntIndexEntry, 'runtimeDirectory'>,
   runtimeFactory: (input: {
     readonly profile: AppAssetProfile;
     readonly catalogUrl: string;
@@ -16,6 +18,6 @@ export function createHuntRuntime(
 ): AssetRuntime {
   return runtimeFactory({
     profile,
-    catalogUrl: getHuntAssetCatalogUrl(profile),
+    catalogUrl: getHuntAssetCatalogUrl(profile, hunt),
   });
 }

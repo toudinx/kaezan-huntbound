@@ -5,6 +5,7 @@ import {
   PB05_COMBAT_SCENARIO_ID,
   PB05_COMBAT_TICK_COUNT,
 } from './support/combatSession';
+import { selectHunt } from './support/huntDriver';
 
 interface KernelProbeResult {
   readonly canonicalSnapshot: string;
@@ -39,6 +40,7 @@ test('replays PB-05 combat to the same SHA-256 in Chromium as in Node', async ({
   expect(session.node.eventCount).toBeGreaterThan(0);
 
   await page.goto('/');
+  await selectHunt(page);
   await expect(
     page.locator('#shell-root[data-assets-ready="true"]'),
   ).toHaveCount(1, { timeout: 15_000 });

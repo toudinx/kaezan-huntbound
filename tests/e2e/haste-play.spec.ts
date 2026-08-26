@@ -10,6 +10,7 @@ import { castCombatAbility, readCombatState } from './support/combatDriver';
 import {
   type HuntStepOutcome,
   movedEvents,
+  selectHunt,
   stepKeys,
   stepWithKeyboard,
 } from './support/huntDriver';
@@ -176,6 +177,7 @@ test('shows the haste clock and shortens the knight step', async ({
 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForSaveProbe(page);
+  await selectHunt(page);
   await waitForHuntBoot(page);
   await expect(page.locator('[data-testid="combat-hud"]')).toHaveCount(1);
   await expect(page.locator('[data-testid="combat-haste"]')).toHaveAttribute(

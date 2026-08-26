@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import type { HuntboundHuntGlobal } from '../../apps/game/src/hunt/HuntProbe.ts';
 import { readShellActionableDuration } from '../../apps/game/src/runtime/performance';
+import { selectHunt } from './support/huntDriver';
 
 // A retry would reuse a warm JavaScript compilation and stop representing the
 // first load, exactly as the PB-00 boot budget already argues.
@@ -72,6 +73,7 @@ test('holds the ADR-001 boot and walk budgets on a cold cache', async ({
     });
 
     await page.goto('http://127.0.0.1:4173/', { timeout: 30_000 });
+    await selectHunt(page);
     await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1, {
       timeout: 30_000,
     });

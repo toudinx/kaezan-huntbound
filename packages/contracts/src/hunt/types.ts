@@ -114,6 +114,8 @@ export interface HuntIndexCreature {
 
 export interface HuntIndexEntry {
   readonly huntId: HuntId;
+  /** Runtime asset pack directory supplied by the hunt pipeline registry. */
+  readonly runtimeDirectory: string;
   readonly displayName: string;
   readonly band: number;
   readonly recommendedLevel: number;

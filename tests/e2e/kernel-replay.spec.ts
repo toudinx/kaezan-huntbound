@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 import { expect, test } from '@playwright/test';
 
+import { selectHunt } from './support/huntDriver';
+
 interface KernelProbeResult {
   readonly canonicalSnapshot: string;
   readonly snapshotSha256: string;
@@ -39,6 +41,7 @@ test('matches the Node replay golden in Chromium', async ({ page }) => {
   });
 
   await page.goto('/');
+  await selectHunt(page);
   await expect(
     page.locator('#shell-root[data-assets-ready="true"]'),
   ).toHaveCount(1, { timeout: 5_000 });

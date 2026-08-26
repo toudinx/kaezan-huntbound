@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-
+import { selectHunt } from './support/huntDriver';
 import {
   buildHuntSession,
   HUNT_SESSION_SCENARIO_ID,
@@ -42,6 +42,7 @@ test('replays the first hunt to the same SHA-256 in Chromium as in Node', async 
   expect(session.node.eventCount).toBeGreaterThan(0);
 
   await page.goto('/');
+  await selectHunt(page);
   await expect(
     page.locator('#shell-root[data-assets-ready="true"]'),
   ).toHaveCount(1, { timeout: 15_000 });

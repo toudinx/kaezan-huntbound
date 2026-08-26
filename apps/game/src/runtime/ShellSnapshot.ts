@@ -1,4 +1,4 @@
-export type ShellPhase = 'booting' | 'ready' | 'paused' | 'error';
+export type ShellPhase = 'hunting' | 'booting' | 'ready' | 'paused' | 'error';
 
 export type RendererKind = 'webgl' | 'canvas' | 'unavailable';
 

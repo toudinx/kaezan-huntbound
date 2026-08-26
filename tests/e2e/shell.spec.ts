@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { selectHunt } from './support/huntDriver';
+
 const shellViewports = [
   { name: 'mobile', width: 390, height: 844 },
   { name: 'tablet', width: 768, height: 1024 },
@@ -61,6 +63,16 @@ for (const viewport of shellViewports) {
     await page.setViewportSize(viewport);
     await page.goto('/');
 
+    await expect(
+      page.locator('[data-testid="hunting-places-screen"]'),
+    ).toHaveCount(1);
+    await expect(page.locator('[data-testid="hunt-place-card"]')).toHaveCount(
+      1,
+    );
+    await expect(page.locator('[data-testid="hunt-place-name"]')).toHaveText(
+      'Venore Rotworm Cave',
+    );
+    await selectHunt(page);
     await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
     await expect(page.locator('#game-root canvas')).toHaveCount(1);
     await expect(
@@ -103,6 +115,7 @@ test('redraws the playfield after in-session viewport changes', async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await selectHunt(page);
   await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
   await page.setViewportSize({ width: 1366, height: 768 });
   await expect(page.locator('[data-testid="shell-viewport"]')).toContainText(
@@ -129,6 +142,7 @@ test('recovers lifecycle changes without duplicating shell elements', async ({
   page,
 }) => {
   await page.goto('/');
+  await selectHunt(page);
   await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
 
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));

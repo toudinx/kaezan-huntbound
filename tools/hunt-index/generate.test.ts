@@ -96,6 +96,7 @@ describe('buildHuntIndex', () => {
       hunts: [
         {
           huntId: selection.key,
+          runtimeDirectory: 'pb04',
           displayName: 'Venore Rotworm Cave',
           band: 1,
           recommendedLevel: 8,

@@ -48,12 +48,12 @@ function fixture() {
   roots.push(root);
   const selections = join(root, 'selections');
   const generatedRoot = join(root, 'generated', 'hunts');
-  const slug = 'test-cave';
+  const slug = 'venore-rotworm-cave';
   mkdirSync(selections, { recursive: true });
   mkdirSync(join(generatedRoot, slug), { recursive: true });
 
   const selection = {
-    key: 'hunt:tibia:test-cave',
+    key: 'hunt:tibia:venore-rotworm-cave',
     displayName: 'Test Cave',
     sourceUrl: 'https://example.invalid/hunt',
     source: { map: 'map.otbm', spawns: 'spawns.xml' },
@@ -163,7 +163,10 @@ describe('runHuntIndexCli', () => {
 
     expect(runHuntIndexCli(args(paths), io(captured))).toBe(0);
     const first = readFileSync(paths.output, 'utf8');
-    expect(JSON.parse(first).hunts[0].experiencePerHour).toBe(3200);
+    expect(JSON.parse(first).hunts[0]).toMatchObject({
+      experiencePerHour: 3200,
+      runtimeDirectory: 'pb04',
+    });
     expect(
       readFileSync(paths.output.replace(/\.json$/, '.sha256'), 'utf8'),
     ).toBe(`${sha256(first)}\n`);

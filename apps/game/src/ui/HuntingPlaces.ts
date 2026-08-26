@@ -1,0 +1,317 @@
+import type {
+  HuntIndex,
+  HuntIndexCreature,
+  HuntIndexEntry,
+  HuntIndexLootEntry,
+} from '../../../../packages/contracts/src/index.ts';
+
+export interface HuntingPlacesScreen {
+  destroy(): void;
+}
+
+export type HuntPlaceSelectionHandler = (hunt: HuntIndexEntry) => void;
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+function formatInteger(value: number): string {
+  return numberFormatter.format(value);
+}
+
+function formatContentName(key: string): string {
+  const slug = key.split(':').at(-1) ?? key;
+  return slug
+    .split('-')
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
+}
+
+function formatVocation(key: string): string {
+  return formatContentName(key);
+}
+
+function formatChance(chancePerHundredThousand: number): string {
+  const percent = chancePerHundredThousand / 1_000;
+  return `${percent.toFixed(percent % 1 === 0 ? 0 : 2)}%`;
+}
+
+function createTextElement<K extends keyof HTMLElementTagNameMap>(
+  document: Document,
+  tagName: K,
+  text: string,
+  className?: string,
+): HTMLElementTagNameMap[K] {
+  const element = document.createElement(tagName);
+  element.textContent = text;
+  if (className !== undefined) element.className = className;
+  return element;
+}
+
+function createFact(
+  document: Document,
+  label: string,
+  value: string,
+  testId: string,
+): HTMLElement {
+  const fact = document.createElement('div');
+  fact.className = 'hunting-places__fact';
+  const labelElement = createTextElement(
+    document,
+    'dt',
+    label,
+    'hunting-places__fact-label',
+  );
+  const valueElement = createTextElement(
+    document,
+    'dd',
+    value,
+    'hunting-places__fact-value',
+  );
+  valueElement.setAttribute('data-testid', testId);
+  fact.append(labelElement, valueElement);
+  return fact;
+}
+
+function createLootEntry(
+  document: Document,
+  loot: HuntIndexLootEntry,
+): HTMLLIElement {
+  const item = document.createElement('li');
+  item.className = 'hunting-places__loot-item';
+  item.setAttribute('data-testid', 'hunt-place-loot-entry');
+  item.append(
+    createTextElement(
+      document,
+      'span',
+      formatContentName(loot.itemKey),
+      'hunting-places__loot-name',
+    ),
+    createTextElement(
+      document,
+      'span',
+      formatChance(loot.chancePerHundredThousand),
+      'hunting-places__loot-chance',
+    ),
+    createTextElement(
+      document,
+      'span',
+      `${loot.minCount}–${loot.maxCount}`,
+      'hunting-places__loot-count',
+    ),
+  );
+  return item;
+}
+
+function createCreature(
+  document: Document,
+  creature: HuntIndexCreature,
+): HTMLElement {
+  const article = document.createElement('article');
+  article.className = 'hunting-places__creature';
+  article.setAttribute('data-testid', 'hunt-place-creature');
+  article.setAttribute('data-creature-key', creature.creatureKey);
+
+  const heading = createTextElement(
+    document,
+    'h3',
+    creature.displayName,
+    'hunting-places__creature-name',
+  );
+  heading.setAttribute('data-testid', 'hunt-place-creature-name');
+
+  const stats = document.createElement('p');
+  stats.className = 'hunting-places__creature-stats';
+  const health = createTextElement(
+    document,
+    'span',
+    `${formatInteger(creature.health)} HP`,
+  );
+  health.setAttribute('data-testid', 'hunt-place-creature-health');
+  const experience = createTextElement(
+    document,
+    'span',
+    `${formatInteger(creature.experience)} XP`,
+  );
+  experience.setAttribute('data-testid', 'hunt-place-creature-experience');
+  const slots = createTextElement(
+    document,
+    'span',
+    `${formatInteger(creature.slotCount)} spawns`,
+  );
+  stats.append(health, experience, slots);
+
+  const lootHeading = createTextElement(
+    document,
+    'h4',
+    'Loot table',
+    'hunting-places__loot-heading',
+  );
+  const loot = document.createElement('ul');
+  loot.className = 'hunting-places__loot';
+  loot.setAttribute('data-testid', 'hunt-place-creature-loot');
+  if (creature.loot.length === 0) {
+    loot.append(
+      createTextElement(
+        document,
+        'li',
+        'No catalogued loot',
+        'hunting-places__loot-empty',
+      ),
+    );
+  } else {
+    loot.append(
+      ...creature.loot.map((entry) => createLootEntry(document, entry)),
+    );
+  }
+
+  article.append(heading, stats, lootHeading, loot);
+  return article;
+}
+
+function createHuntCard(
+  document: Document,
+  hunt: HuntIndexEntry,
+  onSelect: HuntPlaceSelectionHandler,
+): HTMLElement {
+  const card = document.createElement('article');
+  card.className = 'hunting-places__card';
+  card.setAttribute('data-testid', 'hunt-place-card');
+  card.setAttribute('data-hunt-id', hunt.huntId);
+
+  const header = document.createElement('header');
+  header.className = 'hunting-places__card-header';
+  const title = createTextElement(
+    document,
+    'h2',
+    hunt.displayName,
+    'hunting-places__card-title',
+  );
+  title.setAttribute('data-testid', 'hunt-place-name');
+  const badge = createTextElement(
+    document,
+    'span',
+    `Band ${hunt.band}`,
+    'hunting-places__band',
+  );
+  badge.setAttribute('data-testid', 'hunt-place-band');
+  header.append(title, badge);
+
+  const details = document.createElement('p');
+  details.className = 'hunting-places__card-details';
+  const level = createTextElement(
+    document,
+    'span',
+    `Level ${hunt.recommendedLevel}`,
+  );
+  level.setAttribute('data-testid', 'hunt-place-level');
+  const vocation = createTextElement(
+    document,
+    'span',
+    `Recommended for ${formatVocation(hunt.soloVocation)}`,
+  );
+  vocation.setAttribute('data-testid', 'hunt-place-vocation');
+  details.append(level, vocation);
+
+  const summary = document.createElement('dl');
+  summary.className = 'hunting-places__facts';
+  summary.append(
+    createFact(
+      document,
+      'Experience / hour',
+      `${formatInteger(hunt.experiencePerHour)} XP/h`,
+      'hunt-place-experience',
+    ),
+    createFact(
+      document,
+      'Live actors',
+      formatInteger(hunt.maxLiveActors),
+      'hunt-place-live-actors',
+    ),
+  );
+
+  const creaturesHeading = createTextElement(
+    document,
+    'h3',
+    'Creatures',
+    'hunting-places__section-title',
+  );
+  const creatures = document.createElement('div');
+  creatures.className = 'hunting-places__creatures';
+  creatures.append(
+    ...hunt.creatures.map((creature) => createCreature(document, creature)),
+  );
+
+  const select = document.createElement('button');
+  select.type = 'button';
+  select.className = 'hunting-places__select';
+  select.setAttribute('data-testid', 'hunt-place-select');
+  select.setAttribute('data-hunt-id', hunt.huntId);
+  select.setAttribute('aria-label', `Enter ${hunt.displayName}`);
+  select.textContent = 'Enter hunt';
+  select.addEventListener('click', () => {
+    if (select.disabled) return;
+    select.disabled = true;
+    select.setAttribute('aria-busy', 'true');
+    card.setAttribute('data-selected', 'true');
+    select.textContent = 'Loading hunt…';
+    onSelect(hunt);
+  });
+
+  card.append(header, details, summary, creaturesHeading, creatures, select);
+  return card;
+}
+
+export function mountHuntingPlaces(
+  root: HTMLElement,
+  index: HuntIndex,
+  onSelect: HuntPlaceSelectionHandler,
+): HuntingPlacesScreen {
+  const document = root.ownerDocument;
+  const screen = document.createElement('main');
+  screen.className = 'hunting-places';
+  screen.setAttribute('data-testid', 'hunting-places-screen');
+  screen.setAttribute('data-shell-phase', 'hunting');
+  screen.setAttribute('aria-labelledby', 'hunting-places-title');
+
+  const header = document.createElement('header');
+  header.className = 'hunting-places__header';
+  const eyebrow = createTextElement(
+    document,
+    'p',
+    'Huntbound · Field atlas',
+    'hunting-places__eyebrow',
+  );
+  const title = createTextElement(
+    document,
+    'h1',
+    'Hunting Places',
+    'hunting-places__title',
+  );
+  title.id = 'hunting-places-title';
+  const intro = createTextElement(
+    document,
+    'p',
+    'Choose a place to begin your run. Your route sets the field and the recommended kit for now.',
+    'hunting-places__intro',
+  );
+  header.append(eyebrow, title, intro);
+
+  const list = document.createElement('section');
+  list.className = 'hunting-places__list';
+  list.setAttribute('data-testid', 'hunting-places-list');
+  list.setAttribute('aria-label', 'Available hunting places');
+  list.append(
+    ...index.hunts.map((hunt) => createHuntCard(document, hunt, onSelect)),
+  );
+
+  screen.append(header, list);
+  root.replaceChildren(screen);
+
+  let destroyed = false;
+  return {
+    destroy: () => {
+      if (destroyed) return;
+      destroyed = true;
+      screen.remove();
+    },
+  };
+}

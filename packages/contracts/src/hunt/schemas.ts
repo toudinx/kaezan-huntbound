@@ -626,6 +626,7 @@ const HuntIndexCreatureSchema: z.ZodType<HuntIndexCreature> = z
 const HuntIndexEntrySchema: z.ZodType<HuntIndexEntry> = z
   .object({
     huntId: HuntIdSchema,
+    runtimeDirectory: NonEmptyStringSchema,
     displayName: NonEmptyStringSchema,
     band: safeInteger.min(1).max(5),
     recommendedLevel: positiveInteger,

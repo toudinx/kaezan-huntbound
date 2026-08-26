@@ -47,6 +47,7 @@ export interface AppShellOptions {
 }
 
 const phaseLabels: Record<ShellPhase, string> = {
+  hunting: 'Choose a hunting place',
   booting: 'Booting renderer',
   ready: 'Shell ready',
   paused: 'Presentation paused',

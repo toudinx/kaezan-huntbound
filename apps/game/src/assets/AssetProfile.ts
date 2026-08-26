@@ -1,3 +1,5 @@
+import type { HuntIndexEntry } from '../../../../packages/contracts/src/index.ts';
+
 export type AppAssetProfile = 'test' | 'personal' | 'product';
 
 export function parseAppAssetProfile(mode: string): AppAssetProfile {
@@ -16,6 +18,9 @@ export function getAssetCatalogUrl(profile: AppAssetProfile): string {
   return `/assets/${profile}/catalog.json`;
 }
 
-export function getHuntAssetCatalogUrl(profile: AppAssetProfile): string {
-  return `/assets/${profile}/pb04/catalog.json`;
+export function getHuntAssetCatalogUrl(
+  profile: AppAssetProfile,
+  hunt: Pick<HuntIndexEntry, 'runtimeDirectory'>,
+): string {
+  return `/assets/${profile}/${hunt.runtimeDirectory}/catalog.json`;
 }
