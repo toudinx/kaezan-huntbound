@@ -9,7 +9,6 @@ import {
 } from '../../../../../packages/assets/src/index.ts';
 import type {
   AbilityDefinition,
-  ActiveConditionState,
   ActorBlueprint,
   EntityId,
   HuntDefinition,
@@ -42,11 +41,7 @@ import {
   createCombatDecorations,
   createDecorationObjectPool,
 } from '../../hunt/CombatDecorations';
-import {
-  combatFxForCause,
-  combatFxForHeal,
-  combatPostureAuraForAbility,
-} from '../../hunt/CombatFxTable';
+import { combatFxForCause, combatFxForHeal } from '../../hunt/CombatFxTable';
 import {
   type CombatImpulses,
   createCombatImpulses,
@@ -87,7 +82,6 @@ import {
   type HuntProbeDecoration,
   type HuntProbeImpulse,
   type HuntProbeLayerCounts,
-  type HuntProbePostureAura,
   type HuntProbeState,
   installHuntProbe,
 } from '../../hunt/HuntProbe';
@@ -196,8 +190,6 @@ export class HuntScene extends Phaser.Scene {
     EntityId,
     Phaser.GameObjects.Sprite
   >();
-  private postureAura: Phaser.GameObjects.Graphics | undefined;
-  private postureAuraState: HuntProbePostureAura | null = null;
   private readonly healthBars = new Map<
     EntityId,
     Phaser.GameObjects.Graphics
@@ -432,9 +424,6 @@ export class HuntScene extends Phaser.Scene {
       this.inputGate.reset();
       this.destroySprites();
       this.destroyCombatDecorations();
-      this.postureAura?.destroy();
-      this.postureAura = undefined;
-      this.postureAuraState = null;
       this.invalidateDriverSnapshotCache();
       this.targetRing?.destroy();
       this.targetRing = undefined;
@@ -554,8 +543,6 @@ export class HuntScene extends Phaser.Scene {
       floor: presentation?.floor() ?? this.options.hunt.playerStart.z,
       floorRebuilds: this.floorRebuilds,
       decorationTextWrites: this.decorationTextWrites,
-      postureAura:
-        this.postureAuraState === null ? null : { ...this.postureAuraState },
       healthBars: [...this.healthBars].map(([entityId, graphics]) => ({
         entityId,
         fraction: this.healthBarPaint.get(entityId)?.fraction ?? 0,
@@ -789,22 +776,6 @@ export class HuntScene extends Phaser.Scene {
     return ring;
   }
 
-  private ensurePostureAura(): Phaser.GameObjects.Graphics {
-    if (this.postureAura !== undefined) return this.postureAura;
-
-    const aura = this.add
-      .graphics()
-      .setVisible(false)
-      .setData('hunt-posture-aura', true);
-    this.postureAura = aura;
-    return aura;
-  }
-
-  private hidePostureAura(): void {
-    this.postureAura?.clear().setVisible(false);
-    this.postureAuraState = null;
-  }
-
   private invalidateDriverSnapshotCache(): void {
     this.cachedDriverSnapshot = undefined;
     this.cachedDriverSnapshotTick = undefined;
@@ -823,84 +794,6 @@ export class HuntScene extends Phaser.Scene {
     this.cachedDriverSnapshot = snapshot;
     this.cachedDriverSnapshotTick = tick;
     return snapshot;
-  }
-
-  private snapshotPlayerConditions(
-    snapshot: SimulationSnapshot,
-  ): readonly ActiveConditionState[] {
-    const player = snapshot.actors.find(
-      (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
-    );
-    return player?.activeConditions ?? [];
-  }
-
-  private activePostureAura(
-    snapshot: SimulationSnapshot,
-  ): ReturnType<typeof combatPostureAuraForAbility> {
-    const conditions = this.options.conditions ?? [];
-    const activeConditionIndices = new Set(
-      this.snapshotPlayerConditions(snapshot).map(
-        (entry) => entry.conditionIndex,
-      ),
-    );
-
-    for (const ability of this.options.abilities ?? []) {
-      if (ability.appliedConditionIndex === null) continue;
-      if (conditions[ability.appliedConditionIndex] === undefined) continue;
-      if (!activeConditionIndices.has(ability.appliedConditionIndex)) continue;
-      const aura = combatPostureAuraForAbility(ability.abilityId);
-      if (aura !== undefined) return aura;
-    }
-
-    return undefined;
-  }
-
-  private syncPostureAura(): void {
-    const snapshot = this.currentDriverSnapshot();
-    const player = snapshot.actors.find(
-      (actor) => actor.blueprintId === this.options.hunt.playerBlueprintId,
-    );
-    const sprite =
-      player === undefined ? undefined : this.actorSprites.get(player.entityId);
-    const auraRecipe = this.activePostureAura(snapshot);
-    if (auraRecipe === undefined || sprite === undefined || !sprite.visible) {
-      this.hidePostureAura();
-      return;
-    }
-
-    const aura = this.ensurePostureAura();
-    const radius = Math.max(this.tileSize * 0.28, 8);
-    // The cell hangs from the bottom-right of the tile, so the sprite's own
-    // position is that tile's far corner, not the figure's middle. Drawing the
-    // ring at the graphics origin therefore pinned it to that corner and left
-    // it a half tile down and to the right of the feet it belongs under; the
-    // tile's own centre is what the ring hangs on, exactly as the target ring
-    // does.
-    const centerX = -this.tileSize / 2;
-    const centerY = -this.tileSize / 2;
-    aura
-      .clear()
-      .lineStyle(Math.max(2, this.tileSize / 12), auraRecipe.color, 0.95)
-      .setPosition(sprite.x, sprite.y)
-      .setDepth(sprite.depth - 0.5)
-      .setVisible(true);
-
-    if (auraRecipe.shape === 'closed') {
-      aura.strokeCircle(centerX, centerY, radius);
-    } else {
-      aura.beginPath();
-      aura.arc(centerX, centerY, radius, Math.PI * 0.2, Math.PI * 1.8, false);
-      aura.strokePath();
-    }
-
-    this.postureAuraState = {
-      abilityId: auraRecipe.abilityId,
-      visible: true,
-      shape: auraRecipe.shape,
-      color: auraRecipe.color,
-      x: sprite.x,
-      y: sprite.y,
-    };
   }
 
   private syncTargetRing(): void {
@@ -1223,7 +1116,6 @@ export class HuntScene extends Phaser.Scene {
     }
 
     this.syncCreatureHealthBars();
-    this.syncPostureAura();
     this.syncTargetHighlight(renderTimeMs);
     this.followPlayer(alpha);
   }

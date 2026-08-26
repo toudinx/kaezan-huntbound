@@ -56,15 +56,6 @@ export interface HuntProbeLayerCounts {
   readonly objectsAbove: number;
 }
 
-export interface HuntProbePostureAura {
-  readonly abilityId: 'blood-rage' | 'protector';
-  readonly visible: boolean;
-  readonly shape: 'open' | 'closed';
-  readonly color: number;
-  readonly x: number;
-  readonly y: number;
-}
-
 /** One creature's health bar, as it is actually drawn. */
 export interface HuntProbeHealthBar {
   readonly entityId: number;
@@ -83,7 +74,6 @@ export interface HuntProbeState {
   readonly floor: number;
   readonly floorRebuilds: number;
   readonly decorationTextWrites: number;
-  readonly postureAura: HuntProbePostureAura | null;
   readonly healthBars: readonly HuntProbeHealthBar[];
   /** Times a bar was repainted. Must not grow while nothing takes damage. */
   readonly healthBarRedraws: number;

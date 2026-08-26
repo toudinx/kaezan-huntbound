@@ -293,7 +293,6 @@ import type {
   TickIndex,
 } from '../../../../../packages/contracts/src/index.ts';
 import { createSceneBridge } from '../../bridge/SceneBridge';
-import { combatPostureAuraForAbility } from '../../hunt/CombatFxTable';
 import { healthRampColor } from '../../hunt/HealthRamp';
 import { HuntScene, type HuntSimulationDriver } from './HuntScene';
 
@@ -607,7 +606,7 @@ function createHarness(initialSnapshot: SimulationSnapshot) {
   return { scene, driver };
 }
 
-describe('HuntScene posture aura', () => {
+describe('HuntScene driver snapshot', () => {
   beforeEach(() => {
     vi.stubGlobal('window', { devicePixelRatio: 1 });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -616,157 +615,6 @@ describe('HuntScene posture aura', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-  });
-
-  it('restores a persistent aura from the snapshot, keeps it on the player through movement and flash, then removes it when the condition clears', () => {
-    const { scene, driver } = createHarness(
-      snapshot({
-        activeConditionIndices: [0],
-      }),
-    );
-
-    scene.create();
-    scene.update(250);
-
-    const aura = combatPostureAuraForAbility('blood-rage');
-    expect(aura).toBeDefined();
-    expect(scene.huntProbeState().player?.sprite).toEqual({ x: 32, y: 32 });
-    expect(scene.huntProbeState().postureAura).toEqual({
-      abilityId: 'blood-rage',
-      visible: true,
-      shape: aura?.shape,
-      color: aura?.color,
-      x: 32,
-      y: 32,
-    });
-
-    driver.setSnapshot(
-      snapshot({
-        tick: 6,
-        position: position(1, 0),
-        activeConditionIndices: [0],
-      }),
-    );
-    driver.pushEvents([
-      event(6, {
-        type: 'actor/moved',
-        entityId: 1 as EntityId,
-        from: position(0, 0),
-        to: position(1, 0),
-        facing: 'e',
-      }),
-    ]);
-    driver.alpha = 1;
-
-    scene.update(300);
-    driver.setSnapshot(
-      snapshot({
-        tick: 7,
-        position: position(1, 0),
-        activeConditionIndices: [0],
-      }),
-    );
-    scene.update(350);
-
-    expect(scene.huntProbeState().player?.sprite).toEqual({ x: 64, y: 32 });
-    expect(scene.huntProbeState().postureAura).toEqual({
-      abilityId: 'blood-rage',
-      visible: true,
-      shape: aura?.shape,
-      color: aura?.color,
-      x: 64,
-      y: 32,
-    });
-
-    driver.setSnapshot(
-      snapshot({
-        tick: 8,
-        position: position(1, 0),
-        activeConditionIndices: [0],
-      }),
-    );
-    driver.pushEvents([
-      event(8, {
-        type: 'combat/damaged',
-        entityId: 1 as EntityId,
-        sourceEntityId: 99 as EntityId,
-        amount: 4,
-        remainingHealth: 181,
-        cause: 'attack',
-      }),
-    ]);
-
-    scene.update(400);
-
-    expect(scene.huntProbeState().postureAura).toEqual({
-      abilityId: 'blood-rage',
-      visible: true,
-      shape: aura?.shape,
-      color: aura?.color,
-      x: 64,
-      y: 32,
-    });
-
-    driver.setSnapshot(
-      snapshot({
-        tick: 9,
-        position: position(1, 0),
-        activeConditionIndices: [],
-      }),
-    );
-
-    scene.update(450);
-
-    expect(scene.huntProbeState().postureAura).toBeNull();
-  });
-
-  it('keeps a single aura graphics object across floor rebuilds and destroys it on shutdown without counting it as floor art', () => {
-    const { scene, driver } = createHarness(
-      snapshot({
-        activeConditionIndices: [1],
-      }),
-    );
-
-    scene.create();
-    scene.update(250);
-
-    const firstAura = (
-      scene as unknown as { postureAura?: { destroyed: boolean } }
-    ).postureAura;
-    expect(firstAura).toBeDefined();
-    expect(scene.huntProbeState().drawn.total).toBe(3);
-
-    driver.setSnapshot(
-      snapshot({
-        tick: 6,
-        position: position(0, 0, 9),
-        activeConditionIndices: [1],
-      }),
-    );
-    driver.pushEvents([
-      event(6, {
-        type: 'actor/transitioned',
-        entityId: 1 as EntityId,
-        from: position(0, 0, 8),
-        to: position(0, 0, 9),
-      }),
-    ]);
-
-    scene.update(300);
-    scene.update(350);
-
-    expect((scene as unknown as { postureAura?: unknown }).postureAura).toBe(
-      firstAura,
-    );
-    expect(scene.huntProbeState().floorRebuilds).toBe(2);
-    expect(scene.huntProbeState().drawn.total).toBe(3);
-
-    (scene as { __shutdown?: () => void }).__shutdown?.();
-
-    expect(firstAura?.destroyed).toBe(true);
-    expect(
-      (scene as unknown as { postureAura?: unknown }).postureAura,
-    ).toBeUndefined();
   });
 
   it('reuses one snapshot across repeated syncs in the same tick and refreshes it after a tick advance', () => {

@@ -12,7 +12,6 @@ import {
   engageNearestRotworm,
   readCombatState,
 } from './support/combatDriver';
-import { readHuntState } from './support/huntDriver';
 import { readHuntDefinition } from './support/huntSession';
 
 interface SaveProbeTransaction<T> {
@@ -172,31 +171,6 @@ async function waitForSavedPosture(
   }, conditionIndex);
 }
 
-async function expectPostureAura(
-  page: Page,
-  expected: {
-    readonly abilityId: 'blood-rage' | 'protector';
-    readonly color: number;
-    readonly shape: 'open' | 'closed';
-  } | null,
-): Promise<void> {
-  await page.waitForFunction(
-    (aura) => {
-      const probe = (globalThis as HuntboundHuntGlobal).__huntboundHuntProbe;
-      const current = probe?.state().postureAura ?? null;
-      if (aura === null) return current === null;
-      return (
-        current?.visible === true &&
-        current.abilityId === aura.abilityId &&
-        current.color === aura.color &&
-        current.shape === aura.shape
-      );
-    },
-    expected,
-    { polling: 'raf', timeout: 5_000 },
-  );
-}
-
 async function waitForTargetDamage(page: Page): Promise<void> {
   const before = await readCombatState(page);
   await page.waitForFunction(
@@ -258,11 +232,6 @@ test('persists knight posture through reload, rival swap, and recast-off', async
   await expect(
     page.locator('[data-testid="combat-ability-5"]'),
   ).toHaveAttribute('aria-pressed', 'true');
-  await expectPostureAura(page, {
-    abilityId: 'blood-rage',
-    color: 0xff5a5a,
-    shape: 'open',
-  });
   const bloodRageState = await readCombatState(page);
   expect(bloodRageState.postureText).toBe('Posture: Blood Rage');
   expect(bloodRageState.bloodRagePressed).toBe(true);
@@ -283,11 +252,6 @@ test('persists knight posture through reload, rival swap, and recast-off', async
     'data-posture',
     'blood-rage',
   );
-  await expectPostureAura(page, {
-    abilityId: 'blood-rage',
-    color: 0xff5a5a,
-    shape: 'open',
-  });
 
   await castCombatAbility(page, 6);
   await expect(page.locator('[data-testid="combat-posture"]')).toHaveAttribute(
@@ -300,11 +264,6 @@ test('persists knight posture through reload, rival swap, and recast-off', async
   await expect(
     page.locator('[data-testid="combat-ability-6"]'),
   ).toHaveAttribute('aria-pressed', 'true');
-  await expectPostureAura(page, {
-    abilityId: 'protector',
-    color: 0x5c8dff,
-    shape: 'closed',
-  });
   const protectorState = await readCombatState(page);
   expect(protectorState.playerPosture).toBe('protector');
   expect(protectorState.protectorPressed).toBe(true);
@@ -317,7 +276,5 @@ test('persists knight posture through reload, rival swap, and recast-off', async
   await expect(
     page.locator('[data-testid="combat-ability-6"]'),
   ).toHaveAttribute('aria-pressed', 'false');
-  await expectPostureAura(page, null);
-  expect((await readHuntState(page)).postureAura).toBeNull();
   expectQuiet(watch);
 });

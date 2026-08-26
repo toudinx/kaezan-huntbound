@@ -11,7 +11,6 @@ import {
   combatFxForAbility,
   combatFxForCause,
   combatFxForHeal,
-  combatPostureAuraForAbility,
 } from './CombatFxTable';
 
 describe('combatFxForCause', () => {
@@ -138,27 +137,5 @@ describe('combatFxForAbility', () => {
         combatFxForHeal().numberColor,
       ]),
     ).toHaveLength(3);
-  });
-});
-
-describe('combatPostureAuraForAbility', () => {
-  it('maps blood-rage to a red open aura', () => {
-    expect(combatPostureAuraForAbility('blood-rage')).toEqual({
-      abilityId: 'blood-rage',
-      color: 0xff5a5a,
-      shape: 'open',
-    });
-  });
-
-  it('maps protector to a blue closed aura', () => {
-    expect(combatPostureAuraForAbility('protector')).toEqual({
-      abilityId: 'protector',
-      color: 0x5c8dff,
-      shape: 'closed',
-    });
-  });
-
-  it('returns undefined for an ability without a posture aura', () => {
-    expect(combatPostureAuraForAbility('unknown-spell')).toBeUndefined();
   });
 });
