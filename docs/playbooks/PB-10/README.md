@@ -6,8 +6,8 @@
 > `hunt-content-pipeline`. Execute uma task card por chat. O formato, o handoff e o ciclo automático
 > de integração e limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 e 02 fecharam e estão integradas; a
-próxima é **PB-10-03**.
+**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 a 04 fecharam e estão integradas; a
+próxima é **PB-10-05**.
 
 **Goal:** o jogo deixa de ter *uma* hunt compilada e passa a ter um **catálogo navegável**: você abre
 o jogo, olha as hunts disponíveis com faixa de nível, criaturas, exp e loot, escolhe uma e entra.
@@ -119,8 +119,8 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 06 | Criatura conjura | kernel e IA |
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo |
 
-**Escritas: 01, 02, 03 e 04.** Da 05 em diante são bullets até chegar a vez — é a regra do
-`AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito inteiro antecipado
+**Escritas e fechadas: 01, 02, 03 e 04.** Da 05 em diante são bullets até chegar a vez — é a regra
+do `AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito inteiro antecipado
 envelhece contra o código real.
 
 ### Por que a 01 vem primeiro

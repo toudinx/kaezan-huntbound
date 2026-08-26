@@ -5,13 +5,15 @@
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
-`docs/content/HUNT_BANDS.md`. Tasks 01 e 02 fechadas e integradas. Próxima elegível: **PB-10-03**.
-As tasks 03 e 04 estão escritas; da 05 em diante é bullet no `README.md`.
+`docs/content/HUNT_BANDS.md`. Tasks 01 a 04 fechadas e integradas. Próxima elegível: **PB-10-05**,
+**ainda não escrita** — escrever 05 e 06 antes de executar.
 
 **Última atualização:** 2026-08-26
 
-**Base:** o jogo tem uma hunt, compilada em `apps/game/src/main.ts:9`. A extração já roda sobre o
-diretório de selections e a seleção de asset já é derivada da região — é o que a 03 aproveita.
+**Base:** o pipeline já é multi-hunt e o índice de catálogo já é artefato gerado
+(`packages/content/src/generated/hunts/index.json`). O que ainda prende o jogo a uma hunt é
+`apps/game`: o import estático em `apps/game/src/main.ts:9` e `runtime.characters[0]` em `:310` —
+é exatamente o que a 05 desfaz.
 
 ## Tasks
 
@@ -39,11 +41,15 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 `haste-play.spec.ts:167` falhou 3× isolado na PB-10-02; `hunt-play.spec.ts:405` passou. `retries` e
 timeout inflado seguem proibidos. Não bloquearam a integração da PB-10-02, que é docs-only.
 
-**B16 — aberto, ambiental, não é código.** Com uma segunda sessão de agente ativa no mesmo clone, o
-`vitest` de `tools/replay` estoura o timeout: 195 s e depois >600 s contra ~73 s com a máquina livre.
-O teste que reprova **muda a cada rodada** (`ContentCatalogApplication`, depois `pb04HuntFixture`), que
-é a assinatura de carga, não de defeito. Os goldens verificam verde pelo CLI (`simulation:check` e
-`hunt:check`). `retries` e timeout inflado seguem proibidos: a correção é rodar com a máquina livre.
+**B16 — aberto, ambiental, não é código. Reprova o `verify` inteiro.** Sob 87–94 % de CPU de
+aplicativos de desktop, os fixtures de replay estouram o timeout do Vitest: `pb04HuntFixture` 78,9 s e
+`pb05CombatFixture` 380,5 s, ambos com `Test timed out`, nunca divergência de golden. O teste que
+reprova **muda a cada rodada** (`ContentCatalogApplication`, `pb04HuntFixture`, `pb05CombatFixture`),
+que é assinatura de carga: defeito real reprova sempre o mesmo. Os mesmos goldens passam verdes pelo
+CLI na mesma execução (`simulation:check`, `hunt:check`, `combat:check`, hashes conferidos).
+**Consequência:** `verify` para no `test` e nunca chega em `build` nem `qa:browser`, então essas duas
+camadas seguem não medidas desde a PB-10-02. `retries` e timeout inflado seguem proibidos; a correção
+é rodar com a máquina livre.
 
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 
