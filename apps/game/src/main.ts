@@ -444,6 +444,9 @@ export async function bootstrapApp(
   const gameFactory = overrides.createGame ?? createGame;
   const gameRuntime = gameFactory(gameRoot, bridge, {
     hunt,
+    // The caps the kernel was built with. `hunt.blueprints` still carries the
+    // movement-era placeholders.
+    blueprints: scenario.blueprints,
     assets: huntAssets,
     input: inputMap,
     driver: activeDriver,

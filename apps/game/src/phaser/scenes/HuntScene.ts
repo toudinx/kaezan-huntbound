@@ -10,6 +10,7 @@ import {
 import type {
   AbilityDefinition,
   ActiveConditionState,
+  ActorBlueprint,
   EntityId,
   HuntDefinition,
   ScenarioConditionDefinition,
@@ -144,6 +145,16 @@ export interface HuntSimulationDriver {
 export interface HuntSceneOptions {
   readonly bridge: SceneBridge;
   readonly hunt: HuntDefinition;
+  /**
+   * The blueprints the kernel was actually built with.
+   *
+   * `hunt.blueprints` is the movement-era definition and carries `maxHealth: 1`
+   * placeholders for every actor -- combat stats live in the content catalog
+   * and only reach the kernel through `buildHuntScenario`. Reading a ceiling
+   * from the hunt file gave every creature a bar that stayed full until the
+   * moment it died, which is the same trap the combat view model documents.
+   */
+  readonly blueprints?: readonly ActorBlueprint[];
   readonly assets: readonly ResolvedAsset[];
   readonly input: InputMap;
   readonly driver: HuntSimulationDriver;
@@ -309,7 +320,8 @@ export class HuntScene extends Phaser.Scene {
       this.unresolvedAssets.noteMissing(key);
     }
     this.maxHealthByBlueprint.clear();
-    for (const blueprint of this.options.hunt.blueprints) {
+    for (const blueprint of this.options.blueprints ??
+      this.options.hunt.blueprints) {
       this.maxHealthByBlueprint.set(blueprint.blueprintId, blueprint.maxHealth);
     }
     this.renderClock = 0;
@@ -1249,9 +1261,12 @@ export class HuntScene extends Phaser.Scene {
       this.paintCreatureHealthBar(bar, geometry)
         .setPosition(
           // The cell hangs from the bottom-right of the tile, so the sprite's
-          // own x is the tile's right edge whatever the creature's cell size.
+          // own position is that tile's far corner whatever the creature's cell
+          // size -- and the tile, not the cell, is what the bar hangs over. A
+          // rotworm is a 32px figure in a 64px cell, so measuring from the top
+          // of the cell floated its bar a whole tile above its head.
           sprite.x - this.tileSize / 2,
-          sprite.y - sprite.displayHeight - geometry.gap,
+          sprite.y - this.tileSize - geometry.gap,
         )
         .setDepth(sprite.depth + CREATURE_HEALTH_BAR_DEPTH_OFFSET)
         .setVisible(true);

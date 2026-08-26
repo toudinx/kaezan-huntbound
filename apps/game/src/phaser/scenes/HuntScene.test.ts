@@ -294,6 +294,7 @@ import type {
 } from '../../../../../packages/contracts/src/index.ts';
 import { createSceneBridge } from '../../bridge/SceneBridge';
 import { combatPostureAuraForAbility } from '../../hunt/CombatFxTable';
+import { healthRampColor } from '../../hunt/HealthRamp';
 import { HuntScene, type HuntSimulationDriver } from './HuntScene';
 
 function resolvedAsset(key: string): ResolvedAsset {
@@ -793,5 +794,213 @@ describe('HuntScene posture aura', () => {
     scene.update(270);
 
     expect(driver.snapshotCalls).toBe(2);
+  });
+});
+
+/** Reads an element the test knows is there, without a non-null assertion. */
+function at<T>(items: readonly T[], index: number): T {
+  const item = items[index];
+  if (item === undefined) {
+    throw new RangeError(`No item at index ${index}`);
+  }
+  return item;
+}
+
+const ROTWORM_KEY = 'creature:tibia:rotworm';
+
+/** A rotworm is a 32px figure authored inside a 64x64 cell, like Tibia's. */
+function rotwormAsset(): ResolvedAsset {
+  return { ...resolvedAsset(ROTWORM_KEY), cellWidth: 64, cellHeight: 64 };
+}
+
+/**
+ * The hunt file as it is actually generated: it names the creature, and its
+ * blueprint carries the movement-era `maxHealth: 1` placeholder.
+ */
+const combatHunt: HuntDefinition = {
+  ...hunt,
+  spawns: {
+    groups: [
+      {
+        center: position(1, 0),
+        radius: 1,
+        slots: [
+          {
+            creatureKey: ROTWORM_KEY,
+            blueprintId: 'rotworm',
+            offsetX: 0,
+            offsetY: 0,
+            offsetZ: 0,
+            respawnTicks: 100,
+          },
+        ],
+      },
+    ],
+    maxLiveActors: 2,
+  },
+  blueprints: [
+    ...hunt.blueprints,
+    { ...at(hunt.blueprints, 0), blueprintId: 'rotworm', maxHealth: 1 },
+  ],
+};
+
+/** The caps the kernel is really built with, merged in from the catalog. */
+const combatBlueprints = combatHunt.blueprints.map((blueprint) =>
+  blueprint.blueprintId === 'rotworm'
+    ? { ...blueprint, maxHealth: 65 }
+    : blueprint,
+);
+
+function combatSnapshot(input: {
+  tick?: number;
+  rotwormHealth: number;
+}): SimulationSnapshot {
+  const base = snapshot(input.tick === undefined ? {} : { tick: input.tick });
+  const player = at(base.actors, 0);
+
+  return {
+    ...base,
+    actors: [
+      player,
+      {
+        ...player,
+        entityId: 2 as EntityId,
+        blueprintId: 'rotworm',
+        position: position(1, 0),
+        health: input.rotwormHealth,
+      },
+    ],
+  };
+}
+
+function createCombatHarness(initialSnapshot: SimulationSnapshot) {
+  const driver = new FakeDriver(initialSnapshot);
+  driver.pushEvents([
+    event(initialSnapshot.tick, {
+      type: 'actor/spawned',
+      entityId: 1 as EntityId,
+      blueprintId: 'player',
+      position: position(0, 0),
+      facing: 's',
+    }),
+    event(initialSnapshot.tick, {
+      type: 'actor/spawned',
+      entityId: 2 as EntityId,
+      blueprintId: 'rotworm',
+      position: position(1, 0),
+      facing: 's',
+    }),
+  ]);
+
+  const bridge = createSceneBridge({
+    phase: 'booting',
+    renderer: 'unavailable',
+    viewport: { width: 352, height: 352, devicePixelRatio: 1 },
+    message: 'Booting',
+  });
+  const scene = new HuntScene({
+    bridge,
+    hunt: combatHunt,
+    blueprints: combatBlueprints,
+    assets: [
+      resolvedAsset(HUNT_PACK_OUTFIT_KEY),
+      resolvedAsset('tile:tibia:100'),
+      rotwormAsset(),
+    ],
+    input: {
+      drain: () => [],
+      releaseHeld: () => {},
+    } as never,
+    driver,
+    abilities: postureAbilities,
+    conditions: postureConditions,
+  });
+
+  return { scene, driver };
+}
+
+describe('HuntScene creature health bars', () => {
+  beforeEach(() => {
+    vi.stubGlobal('window', { devicePixelRatio: 1 });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('takes the ceiling from the kernel blueprints, so the bar drains as the creature is hit', () => {
+    const { scene, driver } = createCombatHarness(
+      combatSnapshot({ rotwormHealth: 65 }),
+    );
+
+    scene.create();
+    scene.update(250);
+
+    const full = at(scene.huntProbeState().healthBars, 0);
+    expect(full.entityId).toBe(2);
+    expect(full.fraction).toBe(1);
+    expect(full.color).toBe(healthRampColor(1));
+
+    driver.setSnapshot(combatSnapshot({ tick: 6, rotwormHealth: 13 }));
+    scene.update(260);
+
+    const hurt = at(scene.huntProbeState().healthBars, 0);
+    expect(hurt.fraction).toBeCloseTo(0.2, 5);
+    expect(hurt.color).toBe(healthRampColor(0.2));
+    expect(hurt.color).not.toBe(full.color);
+  });
+
+  it('hangs the bar over the creature tile, not over the top of its cell', () => {
+    const { scene } = createCombatHarness(
+      combatSnapshot({ rotwormHealth: 65 }),
+    );
+
+    scene.create();
+    scene.update(250);
+
+    const sprite = at(
+      scene.huntProbeState().actors.filter((actor) => actor.entityId === 2),
+      0,
+    ).sprite;
+    const bar = at(scene.huntProbeState().healthBars, 0);
+
+    // The sprite is 64px tall and hangs from the bottom-right of its tile, so
+    // measuring from the cell would put the bar a whole tile higher.
+    expect(sprite).toEqual({ x: 64, y: 32 });
+    expect(bar.x).toBe(48);
+    expect(bar.y).toBe(32 - 32 - 2);
+    expect(bar.visible).toBe(true);
+  });
+
+  it('leaves a bar alone while nothing about it changes', () => {
+    const { scene, driver } = createCombatHarness(
+      combatSnapshot({ rotwormHealth: 65 }),
+    );
+
+    scene.create();
+    scene.update(250);
+
+    const afterFirstDraw = scene.huntProbeState().healthBarRedraws;
+    scene.update(260);
+    expect(scene.huntProbeState().healthBarRedraws).toBe(afterFirstDraw);
+
+    driver.setSnapshot(combatSnapshot({ tick: 6, rotwormHealth: 40 }));
+    scene.update(270);
+    expect(scene.huntProbeState().healthBarRedraws).toBe(afterFirstDraw + 1);
+  });
+
+  it('gives the player no bar of his own', () => {
+    const { scene } = createCombatHarness(
+      combatSnapshot({ rotwormHealth: 65 }),
+    );
+
+    scene.create();
+    scene.update(250);
+
+    expect(
+      scene.huntProbeState().healthBars.map((bar) => bar.entityId),
+    ).toEqual([2]);
   });
 });
