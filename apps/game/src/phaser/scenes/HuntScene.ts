@@ -870,6 +870,14 @@ export class HuntScene extends Phaser.Scene {
 
     const aura = this.ensurePostureAura();
     const radius = Math.max(this.tileSize * 0.28, 8);
+    // The cell hangs from the bottom-right of the tile, so the sprite's own
+    // position is that tile's far corner, not the figure's middle. Drawing the
+    // ring at the graphics origin therefore pinned it to that corner and left
+    // it a half tile down and to the right of the feet it belongs under; the
+    // tile's own centre is what the ring hangs on, exactly as the target ring
+    // does.
+    const centerX = -this.tileSize / 2;
+    const centerY = -this.tileSize / 2;
     aura
       .clear()
       .lineStyle(Math.max(2, this.tileSize / 12), auraRecipe.color, 0.95)
@@ -878,10 +886,10 @@ export class HuntScene extends Phaser.Scene {
       .setVisible(true);
 
     if (auraRecipe.shape === 'closed') {
-      aura.strokeCircle(0, 0, radius);
+      aura.strokeCircle(centerX, centerY, radius);
     } else {
       aura.beginPath();
-      aura.arc(0, 0, radius, Math.PI * 0.2, Math.PI * 1.8, false);
+      aura.arc(centerX, centerY, radius, Math.PI * 0.2, Math.PI * 1.8, false);
       aura.strokePath();
     }
 
