@@ -5,15 +5,16 @@
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
-`docs/content/HUNT_BANDS.md`. Tasks 01 a 04 e 06 fechadas e integradas. Próxima elegível: **PB-10-05**,
-escrita. A 05 ainda pode rodar: vive em `apps/game`, a 06 já entregou o kernel.
+`docs/content/HUNT_BANDS.md`. Tasks 01 a 06 fechadas e integradas — a máquina do catálogo está
+inteira e o que resta é conteúdo. Próximas elegíveis: **PB-10-07 e PB-10-08**, que **trabalham em
+paralelo e integram em série** (bloqueio B17).
 
 **Última atualização:** 2026-08-26
 
-**Base:** o pipeline já é multi-hunt e o índice de catálogo já é artefato gerado
-(`packages/content/src/generated/hunts/index.json`). O que ainda prende o jogo a uma hunt é
-`apps/game`: o import estático em `apps/game/src/main.ts:9` e `runtime.characters[0]` em `:310` —
-é exatamente o que a 05 desfaz.
+**Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
+em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
+selection, **receita de layout**, entrada no `huntRegistry.ts` e pack. As tasks 07 a 10 são de mob
+básico mas **sobretudo de mapa** — decisão do usuário em 2026-08-26.
 
 ## Tasks
 
@@ -27,7 +28,9 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-04 | done | `codex/pb10-04-indice-de-hunts` | econômico `xhigh` | Codex GPT-5 `xhigh` | `1acfccf` | índice gerado + sidecar determinísticos; content, architecture e hunt checks verdes; verify bloqueado apenas pela falha ambiental B16 em `apps/game` |
 | PB-10-05 | done | `codex/pb10-05-tela-hunting-places` | econômico `xhigh` | Codex GPT-5 `xhigh` | `2795b68` | tela DOM; boot por índice; `verify` e `qa:browser` verdes; orçamento informativo em 5,269/5,284 ms |
 | PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | `790f91f` | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
-| PB-10-07+ | não escrita | — | econômico `xhigh` | — | — | — |
+| PB-10-07 | pending | `<agente>/pb10-07-orc-fortress` | econômico `xhigh` | — | — | — |
+| PB-10-08 | pending | `<agente>/pb10-08-cyclopolis` | econômico `xhigh` | — | — | — |
+| PB-10-09/10 | não escrita | — | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -37,19 +40,20 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 **B15 — fechado pela PB-10-02.** Sete espécies congeladas das faixas 1–5 com `lookType` aberto em
 `outfits/<id>.png`; nenhuma falta. Hashes em `docs/content/HUNT_BANDS.md` §3.
 
-**B11 e B14 — abertos, herdados do PB-08.** Sondas de frame sensíveis a carga da máquina.
-`haste-play.spec.ts:167` falhou 3× isolado na PB-10-02; `hunt-play.spec.ts:405` passou. `retries` e
-timeout inflado seguem proibidos. Não bloquearam a integração da PB-10-02, que é docs-only.
+**B11 e B14 — abertos, herdados do PB-08.** Sondas de frame sensíveis a carga. Último caso:
+`combat-play.spec.ts:195` reprovou só no viewport desktop no fechamento das 05/06 e passou 4×
+seguidas isolado. `retries` e timeout inflado seguem proibidos.
 
-**B16 — aberto, ambiental, não é código. Reprova o `verify` inteiro.** Sob 87–94 % de CPU de
-aplicativos de desktop, os fixtures de replay estouram o timeout do Vitest: `pb04HuntFixture` 78,9 s e
-`pb05CombatFixture` 380,5 s, ambos com `Test timed out`, nunca divergência de golden. O teste que
-reprova **muda a cada rodada** (`ContentCatalogApplication`, `pb04HuntFixture`, `pb05CombatFixture`),
-que é assinatura de carga: defeito real reprova sempre o mesmo. Os mesmos goldens passam verdes pelo
-CLI na mesma execução (`simulation:check`, `hunt:check`, `combat:check`, hashes conferidos).
-**Consequência:** `verify` para no `test` e nunca chega em `build` nem `qa:browser`, então essas duas
-camadas seguem não medidas desde a PB-10-02. `retries` e timeout inflado seguem proibidos; a correção
-é rodar com a máquina livre.
+**B16 — aberto, ambiental, não é código.** Sob CPU alta de aplicativos de desktop os replays do
+Vitest estouram timeout, sempre com `Test timed out` e nunca divergência de golden; o teste que
+reprova muda a cada rodada. **Não reproduziu no fechamento das 05/06**, com a máquina em ~40–60 %:
+`verify` chegou em `build` e `qa:browser` pela primeira vez desde a PB-10-02.
+
+**B17 — aberto por desenho, não é defeito.** As tasks de hunt (07–10) **trabalham em paralelo e
+integram em série**: cruzam-se em duas fontes (`pb-01-contract-coverage.json`, `huntRegistry.ts`) e em
+dois artefatos **gerados** (`generated/pb-01-contract-coverage.json` e `generated/hunts/index.json`,
+com sidecars). Artefato gerado não se edita à mão, então conflito ali se resolve **regenerando depois
+do rebase**, nunca mergeando. Paralelismo útil na prática: 2.
 
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 

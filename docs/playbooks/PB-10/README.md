@@ -117,11 +117,30 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 04 | Índice de hunts como artefato gerado | contrato e gerador |
 | 05 | A tela de hunting places | `apps/game`, DOM fora do canvas |
 | 06 | Criatura conjura | kernel e IA |
-| 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo |
+| 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo — **sobretudo mapa** |
 
 **Fechadas: 01, 02, 03 e 04. Escritas e elegíveis: 05 e 06.** Da 07 em diante são bullets até chegar
 a vez — é a regra do `AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito
 inteiro antecipado envelhece contra o código real.
+
+### As tasks de hunt são, principalmente, mapa
+
+Decisão do usuário em 2026-08-26. As faixas 2 a 5 já têm caixa, espécies, números, loot e `lookType`
+congelados com `sha256` pela PB-10-02 — a curadoria acabou. O que resta em cada uma é **a receita de
+layout autorada**, e ela domina o trabalho: a da rotworm tem 3087 linhas para um 24 × 24 de dois
+andares. Os mobs são o elenco de apoio; o recorte jogável é a entrega.
+
+Bullets das quatro, até chegar a vez de cada uma:
+
+- **07 — Orc Fortress**, faixa 2. Consome a PB-10-06. Orc e Orc Spearman entram no catálogo; o Shaman
+  já está. Snake **não** entra: `summons` é o portão das faixas 10–11.
+- **08 — Cyclopolis**, faixa 3. Só Cyclops. Nenhum portão de kernel. O `armor` 17 fica inerte até o
+  PB-11.
+- **09 — Dragon Lair (Ankrahmun)**, faixa 4. **A hunt entra inteira.** O Dragon tem dois ataques de
+  fogo no Lua: o de `range` 7 + `radius` 4 é o degrau e **entra**; o de `length` 8 / `spread` 3 é onda,
+  `AbilityShape` não tem `'wave'`, e ele simplesmente **não é adicionado**. Isso não remove a hunt nem
+  a criatura — remove um ataque. Fogo entra cheio; mitigação é PB-11.
+- **10 — Hero Cave**, faixa 5. O heal é o teto do kit atual. `armor` 35 inerte até o PB-11.
 
 ### A 05 e a 06 rodam em paralelo
 
@@ -162,15 +181,15 @@ brigariam pelo mesmo bloco de `package.json`. **São seriais.**
 
 `docs/08_POLITICA_MODELOS_AGENTES.md` é normativo. Alocação prevista:
 
-| Task | Classe | Modelo previsto |
-|---|---|---|
-| PB-10-01 | implementação complexa — contrato integrado, kernel, migração de save, regenera golden | frontier `xhigh` |
-| PB-10-02 | especificação e curadoria | frontier `xhigh` |
-| PB-10-03 | implementação bem especificada — refactor sem conteúdo novo | econômico `xhigh` |
-| PB-10-04 | implementação bem especificada — gerador com `--check` | econômico `xhigh` |
-| PB-10-05 | apresentação em `apps/game` | econômico `xhigh`, **validado pelo usuário jogando** |
-| PB-10-06 | implementação complexa — IA e kernel, regenera golden | frontier `xhigh` |
-| PB-10-07+ | conteúdo, uma hunt por task | econômico `xhigh` |
+| Task      | Classe                                                                                 | Modelo previsto                                      |
+| --------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| PB-10-01  | implementação complexa — contrato integrado, kernel, migração de save, regenera golden | frontier `xhigh`                                     |
+| PB-10-02  | especificação e curadoria                                                              | frontier `xhigh`                                     |
+| PB-10-03  | implementação bem especificada — refactor sem conteúdo novo                            | econômico `xhigh`                                    |
+| PB-10-04  | implementação bem especificada — gerador com `--check`                                 | econômico `xhigh`                                    |
+| PB-10-05  | apresentação em `apps/game`                                                            | econômico `xhigh`, **validado pelo usuário jogando** |
+| PB-10-06  | implementação complexa — IA e kernel, regenera golden                                  | frontier `xhigh`                                     |
+| PB-10-07+ | conteúdo, uma hunt por task                                                            | econômico `xhigh`                                    |
 
 Revisão prefere modelo **diferente** do implementador. Modelo e effort efetivamente usados vão para o
 `STATE.md`.
