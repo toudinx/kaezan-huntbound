@@ -296,7 +296,12 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       write(
         cell,
         'aria-label',
-        `${ability.label} (${ability.resourceCost} mana)`,
+        // A stance costs nothing, and "(0 mana)" is a price tag on a free
+        // thing: the reader hears the name alone, the same as the cost badge
+        // below already shows nothing.
+        ability.resourceCost > 0
+          ? `${ability.label} (${ability.resourceCost} mana)`
+          : ability.label,
       );
       write(cell, 'title', ability.label);
       write(cell, 'aria-disabled', String(!ability.available));

@@ -287,7 +287,7 @@ describe('validateCombatSelection', () => {
         conditionId: 'blood-rage',
         displayName: 'Blood Rage',
         level: 20,
-        mana: 20,
+        mana: 0,
         skillIndex: 2,
         skillModifierPermille: 250,
         damageReceivedPermille: 150,
@@ -297,7 +297,7 @@ describe('validateCombatSelection', () => {
           provider: 'TibiaWiki',
           version: '15.25.3a4a52',
           divergence:
-            'Uses the 2026 stance values because the Canary snapshot predates toggle stances.',
+            'Uses the 2026 stance values because the Canary snapshot predates toggle stances. Mana is 0 rather than the wiki 20: a stance is which way the knight is standing, not a spell he pays for, and charging for the toggle taxed the player for changing his mind mid-fight.',
         },
       },
       {
@@ -305,7 +305,7 @@ describe('validateCombatSelection', () => {
         conditionId: 'protector',
         displayName: 'Protector',
         level: 20,
-        mana: 20,
+        mana: 0,
         skillIndex: null,
         skillModifierPermille: 0,
         damageReceivedPermille: -150,
@@ -315,7 +315,7 @@ describe('validateCombatSelection', () => {
           provider: 'TibiaWiki',
           version: '15.25.3a4a52',
           divergence:
-            'Shielding stays declarative until PB-11 adds armor and shielding resolution.',
+            'Shielding stays declarative until PB-11 adds armor and shielding resolution. Mana is 0 rather than the wiki 20, for the same reason as Blood Rage: switching stance is free.',
         },
       },
     ]);

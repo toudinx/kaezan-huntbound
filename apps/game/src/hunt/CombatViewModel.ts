@@ -725,7 +725,8 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       shape: 'self',
       radius: 0,
       rangeTiles: 0,
-      resourceCost: 20,
+      // A stance is free: see the divergence note on the PB-05 selection.
+      resourceCost: 0,
       cooldownTicks: 0,
       groupCooldownTicks: 40,
       minPower: 0,
@@ -746,7 +747,8 @@ export const DEFAULT_COMBAT_ABILITIES: readonly AbilityDefinition[] =
       shape: 'self',
       radius: 0,
       rangeTiles: 0,
-      resourceCost: 20,
+      // A stance is free: see the divergence note on the PB-05 selection.
+      resourceCost: 0,
       cooldownTicks: 0,
       groupCooldownTicks: 40,
       minPower: 0,
