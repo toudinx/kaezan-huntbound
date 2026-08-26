@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "b19bbe60a4666c9d6eaf07ee03a6e74da1f962448a46e1ca5582e5724d771688",
-    "byteLength": 57802
+    "sha256": "5eb593e7f4405f0fa1d810fada45a8f6901d582dc6abbc180944e969585f1246",
+    "byteLength": 61122
   },
   "files": [
     {
@@ -64,6 +64,72 @@
       "byteLength": 68
     },
     {
+      "key": "item:tibia:gold-coin",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3031
+      },
+      "path": "objects/3031.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:ham",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3582
+      },
+      "path": "objects/3582.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:legion-helmet",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3374
+      },
+      "path": "objects/3374.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:lump-of-dirt",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 9692
+      },
+      "path": "objects/9692.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:mace",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3286
+      },
+      "path": "objects/3286.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:meat",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3577
+      },
+      "path": "objects/3577.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "item:tibia:small-splash",
       "category": "object",
       "sourceIdentity": {
@@ -71,6 +137,28 @@
         "id": 2889
       },
       "path": "objects/2889.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:sword",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3264
+      },
+      "path": "objects/3264.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:worm",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3492
+      },
+      "path": "objects/3492.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

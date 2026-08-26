@@ -6,7 +6,11 @@ import {
 import type { InputMap } from '../input/InputMap';
 import type { ShellPhase, ShellSnapshot } from '../runtime/ShellSnapshot';
 import type { SaveStateSource } from '../save/SaveState';
-import { type CombatHud, mountCombatHud } from './CombatHud';
+import {
+  type CombatHud,
+  type CombatHudOptions,
+  mountCombatHud,
+} from './CombatHud';
 import { type Cockpit, mountCockpit } from './cockpit/CockpitLayout';
 import { mountDpad } from './Dpad';
 import {
@@ -31,6 +35,8 @@ export interface AppShellOptions {
   readonly combat?: {
     readonly viewModel: CombatViewModel;
     readonly onRestart?: () => void;
+    readonly region?: CombatHudOptions['region'];
+    readonly resolveAsset?: CombatHudOptions['resolveAsset'];
   };
   readonly save?: {
     readonly source: SaveStateSource;
@@ -141,14 +147,21 @@ export function mountAppShell(
   }
 
   if (combatViewModel !== undefined) {
-    combatHud = mountCombatHud(combatRoot, {
+    const combatHudOptions: CombatHudOptions = {
       onRestart: () => {
         options.combat?.onRestart?.();
         combatViewModel.reset();
         combatHud?.render(combatViewModel.snapshot());
         bridge.requestRestart();
       },
-    });
+      ...(options.combat?.region === undefined
+        ? {}
+        : { region: options.combat.region }),
+      ...(options.combat?.resolveAsset === undefined
+        ? {}
+        : { resolveAsset: options.combat.resolveAsset }),
+    };
+    combatHud = mountCombatHud(combatRoot, combatHudOptions);
     combatHud.render(combatViewModel.snapshot());
     unsubscribeCombatEvents = bridge.subscribeEvents((events) => {
       combatViewModel.handle(events);

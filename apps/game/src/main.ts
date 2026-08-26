@@ -340,12 +340,17 @@ export async function bootstrapApp(
   }
 
   const scenario = scenarioResult.value.scenario;
+  let huntAssets: readonly ResolvedAsset[] = [];
+  let huntAssetsByKey = new Map<string, ResolvedAsset>();
+  const resolveHuntAsset = (key: string): ResolvedAsset | undefined =>
+    huntAssetsByKey.get(key);
   const combatViewModel = createHuntCombatViewModel(
     runtime,
     1 as EntityId,
     'player',
     scenario.abilities,
     scenario.conditions,
+    scenario.blueprints,
   );
   const identity = {
     huntId: hunt.huntId,
@@ -381,6 +386,8 @@ export async function bootstrapApp(
           });
         });
       },
+      region: hunt.region,
+      resolveAsset: resolveHuntAsset,
     },
     save: {
       source: saveSession,
@@ -411,11 +418,12 @@ export async function bootstrapApp(
   unsubscribeSaveTick = bridge.subscribeTick((tick) => {
     saveSession.onTick(tick);
   });
-  let huntAssets: readonly ResolvedAsset[] = [];
-
   try {
     const assets = await activeAssetRuntime.preload();
     huntAssets = await huntAssetRuntime.preload();
+    huntAssetsByKey = new Map(
+      huntAssets.map((asset) => [asset.key, asset] as const),
+    );
     setAssetReadiness(shellRoot, true, assets.length);
 
     if (profile === 'test') {

@@ -12,6 +12,16 @@ export const HUNT_PACK_SMALL_SPLASH_KEY = 'item:tibia:small-splash';
 export const HUNT_PACK_HIT_AREA_EFFECT_KEY = 'effect:tibia:hit-area';
 export const HUNT_PACK_MAGIC_BLUE_EFFECT_KEY = 'effect:tibia:magic-blue';
 export const HUNT_PACK_DEAD_ROTWORM_KEY = 'item:tibia:dead-rotworm';
+export const HUNT_PACK_LOOT_KEYS = [
+  'item:tibia:gold-coin',
+  'item:tibia:ham',
+  'item:tibia:legion-helmet',
+  'item:tibia:lump-of-dirt',
+  'item:tibia:mace',
+  'item:tibia:meat',
+  'item:tibia:sword',
+  'item:tibia:worm',
+] as const;
 
 export const HUNT_PACK_COMBAT_KEYS = [
   HUNT_PACK_BLOOD_EFFECT_KEY,
@@ -25,6 +35,7 @@ const HUNT_PACK_EXTRA_KEYS = [
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_OUTFIT_KEY,
   ...HUNT_PACK_COMBAT_KEYS,
+  ...HUNT_PACK_LOOT_KEYS,
 ] as const;
 
 export interface HuntPackSelection {

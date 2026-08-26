@@ -37,6 +37,16 @@ const huntCombatKeys = [
   'effect:tibia:magic-blue',
   'item:tibia:dead-rotworm',
 ];
+const huntLootKeys = [
+  'item:tibia:gold-coin',
+  'item:tibia:ham',
+  'item:tibia:legion-helmet',
+  'item:tibia:lump-of-dirt',
+  'item:tibia:mace',
+  'item:tibia:meat',
+  'item:tibia:sword',
+  'item:tibia:worm',
+];
 
 function selectionFor(
   input: MapRegion,
@@ -46,7 +56,7 @@ function selectionFor(
     packKey: 'pb-04-venore-rotworm-cave',
     huntId: 'hunt:tibia:venore-rotworm-cave',
     regionSha256: hashHuntRegion(input),
-    keys: [...keys, ...huntExtras, ...huntCombatKeys],
+    keys: [...keys, ...huntExtras, ...huntCombatKeys, ...huntLootKeys],
     budget: { maxEntries: 512, maxBytes: 6 * 1024 * 1024 },
   };
 }
@@ -96,12 +106,12 @@ describe('hunt pack validation', () => {
     ]);
   });
 
-  it('rejects keys outside the palette and the frozen creature/outfit extras', () => {
+  it('rejects keys outside the palette and the frozen hunt extras', () => {
     const input = region([100]);
     const selected = selectionFor(input, [
       'tile:tibia:100',
       'tile:tibia:999',
-      'item:tibia:gold-coin',
+      'item:tibia:unused-loot',
     ]);
     const diagnostics = validateHuntPack(
       selected,
@@ -114,7 +124,7 @@ describe('hunt pack validation', () => {
         .filter(({ code }) => code === 'HUNT_ASSET_KEY_UNEXPECTED')
         .map(({ message }) => message),
     ).toEqual([
-      'Selection contains unexpected item:tibia:gold-coin',
+      'Selection contains unexpected item:tibia:unused-loot',
       'Selection contains unexpected tile:tibia:999',
     ]);
   });

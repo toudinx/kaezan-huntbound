@@ -5,7 +5,11 @@ import {
 import type {
   AbilityDefinition,
   ActiveConditionState,
+  ActorBlueprint,
+  Direction,
+  ElementResistance,
   EntityId,
+  GridPosition,
   RuntimeContentBundle,
   ScenarioConditionDefinition,
   SimulationEvent,
@@ -26,6 +30,8 @@ export interface CombatViewModelOptions {
   readonly itemKeys: readonly string[];
   readonly maxHealthByBlueprint: ReadonlyMap<string, number>;
   readonly maxResourceByBlueprint: ReadonlyMap<string, number>;
+  readonly targetDetailsByBlueprint?: ReadonlyMap<string, CombatTargetDetails>;
+  readonly initialFloor?: number;
 }
 
 export interface CombatVitalsView {
@@ -34,6 +40,25 @@ export interface CombatVitalsView {
   readonly maxHealth: number;
   readonly resource: number;
   readonly maxResource: number;
+}
+
+export interface CombatTargetDetails {
+  readonly blueprintId: string;
+  readonly displayName: string;
+  readonly assetKey: string | null;
+  readonly resistances: readonly ElementResistance[];
+}
+
+export interface CombatMapActorView {
+  readonly entityId: EntityId;
+  readonly blueprintId: string;
+  readonly position: GridPosition;
+  readonly isPlayer: boolean;
+}
+
+export interface CombatMinimapView {
+  readonly floor: number;
+  readonly actors: readonly CombatMapActorView[];
 }
 
 export interface CombatAbilityView {
@@ -78,6 +103,8 @@ export interface CombatViewState {
   readonly player: CombatVitalsView | null;
   readonly targetEntityId: EntityId | null;
   readonly target: CombatVitalsView | null;
+  readonly targetDetails: CombatTargetDetails | null;
+  readonly minimap: CombatMinimapView;
   readonly abilities: readonly CombatAbilityView[];
   /** Every group the ability catalog references, with what it still owes. */
   readonly cooldownGroups: readonly CombatCooldownGroupView[];
@@ -116,6 +143,8 @@ interface MutableVitals {
   maxHealth: number;
   resource: number;
   maxResource: number;
+  position: GridPosition | null;
+  facing: Direction | null;
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -127,6 +156,17 @@ function titleFromAbilityId(abilityId: string): string {
     .split('-')
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ');
+}
+
+function titleFromBlueprintId(blueprintId: string): string {
+  return blueprintId
+    .split(/[-_]/u)
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
+}
+
+function copyPosition(position: GridPosition): GridPosition {
+  return { x: position.x, y: position.y, z: position.z };
 }
 
 function copyVitals(actor: MutableVitals): CombatVitalsView {
@@ -166,6 +206,12 @@ export function createCombatViewModel(
   let bag: readonly RunBagEntry[] = [];
   let lootLog: readonly CombatLootLogEntry[] = [];
   let lastRejection: CombatCommandRejection | null = null;
+  let minimapRevision = 0;
+  let cachedMinimapRevision = -1;
+  let cachedMinimap: CombatMinimapView = {
+    floor: options.initialFloor ?? 0,
+    actors: [],
+  };
 
   const maxHealthFor = (blueprintId: string, fallback: number): number =>
     options.maxHealthByBlueprint.get(blueprintId) ?? Math.max(fallback, 1);
@@ -176,13 +222,23 @@ export function createCombatViewModel(
   const actorFor = (entityId: EntityId): MutableVitals | undefined =>
     actorsById.get(entityId);
 
+  const invalidateMinimap = (): void => {
+    minimapRevision += 1;
+  };
+
   const actorFromEvent = (
     entityId: EntityId,
     blueprintId: string | undefined,
     fallbackHealth: number,
+    position?: GridPosition,
+    facing?: Direction,
   ): MutableVitals => {
     const existing = actorFor(entityId);
-    if (existing !== undefined) return existing;
+    if (existing !== undefined) {
+      if (position !== undefined) existing.position = copyPosition(position);
+      if (facing !== undefined) existing.facing = facing;
+      return existing;
+    }
 
     const resolvedBlueprintId =
       blueprintId ??
@@ -198,6 +254,8 @@ export function createCombatViewModel(
       maxHealth,
       resource: maxResource,
       maxResource,
+      position: position === undefined ? null : copyPosition(position),
+      facing: facing ?? null,
     };
     actorsById.set(entityId, actor);
     return actor;
@@ -310,6 +368,7 @@ export function createCombatViewModel(
     lootLog = [];
     lastRejection = null;
     targetSelection.reset();
+    invalidateMinimap();
   };
 
   const handle = (events: readonly SimulationEvent[]): void => {
@@ -323,9 +382,34 @@ export function createCombatViewModel(
             event.payload.entityId,
             event.payload.blueprintId,
             maxHealthFor(event.payload.blueprintId, 1),
+            event.payload.position,
+            event.payload.facing,
           );
+          invalidateMinimap();
           break;
         }
+        case 'actor/moved': {
+          const actor = actorFromEvent(event.payload.entityId, undefined, 1);
+          actor.position = copyPosition(event.payload.to);
+          actor.facing = event.payload.facing;
+          invalidateMinimap();
+          break;
+        }
+        case 'actor/transitioned': {
+          const actor = actorFromEvent(event.payload.entityId, undefined, 1);
+          actor.position = copyPosition(event.payload.to);
+          invalidateMinimap();
+          break;
+        }
+        case 'actor/faced': {
+          const actor = actorFromEvent(event.payload.entityId, undefined, 1);
+          actor.facing = event.payload.facing;
+          break;
+        }
+        case 'actor/despawned':
+          actorsById.delete(event.payload.entityId);
+          invalidateMinimap();
+          break;
         case 'combat/damaged': {
           const actor = actorFromEvent(
             event.payload.entityId,
@@ -430,6 +514,7 @@ export function createCombatViewModel(
             playerDead = true;
           } else {
             actorsById.delete(event.payload.entityId);
+            invalidateMinimap();
           }
           break;
         case 'command/rejected':
@@ -478,6 +563,56 @@ export function createCombatViewModel(
       }));
   };
 
+  const targetDetailsFor = (
+    entityId: EntityId | null,
+  ): CombatTargetDetails | null => {
+    if (entityId === null) return null;
+    const actor = actorFor(entityId);
+    if (actor === undefined) return null;
+    const authored = options.targetDetailsByBlueprint?.get(actor.blueprintId);
+    if (authored !== undefined) {
+      return {
+        ...authored,
+        resistances: authored.resistances.map((entry) => ({ ...entry })),
+      };
+    }
+    return {
+      blueprintId: actor.blueprintId,
+      displayName: titleFromBlueprintId(actor.blueprintId),
+      assetKey: null,
+      resistances: [],
+    };
+  };
+
+  const minimapView = (): CombatMinimapView => {
+    if (cachedMinimapRevision === minimapRevision) {
+      return cachedMinimap;
+    }
+
+    const playerPosition = actorFor(options.playerEntityId)?.position;
+    const firstPosition = [...actorsById.values()].find(
+      (actor) => actor.position !== null,
+    )?.position;
+    const floor =
+      playerPosition?.z ?? firstPosition?.z ?? options.initialFloor ?? 0;
+    cachedMinimap = {
+      floor,
+      actors: [...actorsById.values()]
+        .filter(
+          (actor): actor is MutableVitals & { position: GridPosition } =>
+            actor.position !== null,
+        )
+        .map((actor) => ({
+          entityId: actor.entityId,
+          blueprintId: actor.blueprintId,
+          position: copyPosition(actor.position),
+          isPlayer: actor.entityId === options.playerEntityId,
+        })),
+    };
+    cachedMinimapRevision = minimapRevision;
+    return cachedMinimap;
+  };
+
   const snapshot = (): CombatViewState => {
     const selectedTargetId = targetSelection.targetId();
     const playerPosture = activePosture();
@@ -504,6 +639,8 @@ export function createCombatViewModel(
       player: vitalsFor(options.playerEntityId),
       targetEntityId: selectedTargetId,
       target: vitalsFor(selectedTargetId),
+      targetDetails: targetDetailsFor(selectedTargetId),
+      minimap: minimapView(),
       abilities: Object.freeze(
         options.abilities.map((ability, index) => {
           const groupReadyAtTick_ = Math.max(
@@ -575,6 +712,8 @@ export function createCombatViewModel(
           actorState.entityId,
           actorState.blueprintId,
           actorState.health,
+          actorState.position,
+          actorState.facing,
         );
         actor.health = clamp(actorState.health, 0, actor.maxHealth);
         actor.resource = clamp(actorState.resource, 0, actor.maxResource);
@@ -879,6 +1018,7 @@ export function createHuntCombatViewModel(
     | readonly AbilityDefinition[]
     | readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_ABILITIES,
   conditions: readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_FALLBACK_CONDITIONS,
+  blueprints: readonly ActorBlueprint[] = [],
 ): CombatViewModel {
   const receivedConditions =
     abilitiesOrConditions[0] !== undefined &&
@@ -892,6 +1032,10 @@ export function createHuntCombatViewModel(
   const character = runtime.characters[0];
   const maxHealthByBlueprint = new Map<string, number>();
   const maxResourceByBlueprint = new Map<string, number>();
+  const blueprintById = new Map(
+    blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
+  );
+  const targetDetailsByBlueprint = new Map<string, CombatTargetDetails>();
 
   if (character !== undefined) {
     maxHealthByBlueprint.set(playerBlueprintId, character.maxHealth);
@@ -903,6 +1047,12 @@ export function createHuntCombatViewModel(
     if (blueprintId === undefined) continue;
     maxHealthByBlueprint.set(blueprintId, creature.stats.health);
     maxResourceByBlueprint.set(blueprintId, 0);
+    targetDetailsByBlueprint.set(blueprintId, {
+      blueprintId,
+      displayName: creature.displayName,
+      assetKey: creature.stableKey,
+      resistances: blueprintById.get(blueprintId)?.resistances ?? [],
+    });
   }
 
   return createCombatViewModel({
@@ -913,6 +1063,7 @@ export function createHuntCombatViewModel(
     itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
     maxHealthByBlueprint,
     maxResourceByBlueprint,
+    targetDetailsByBlueprint,
   });
 }
 
@@ -930,5 +1081,16 @@ export function createDefaultCombatViewModel(
       ['rotworm', 65],
     ]),
     maxResourceByBlueprint: new Map([['player', 185]]),
+    targetDetailsByBlueprint: new Map([
+      [
+        'rotworm',
+        {
+          blueprintId: 'rotworm',
+          displayName: 'Rotworm',
+          assetKey: 'creature:tibia:rotworm',
+          resistances: [],
+        },
+      ],
+    ]),
   });
 }

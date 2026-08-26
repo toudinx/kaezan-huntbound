@@ -1,6 +1,12 @@
-import { TICK_DURATION_MS } from '../../../../packages/contracts/src/index.ts';
+import {
+  type MapRegion,
+  TICK_DURATION_MS,
+} from '../../../../packages/contracts/src/index.ts';
 import type { CombatViewState } from '../hunt/CombatViewModel';
 import { mountActionDeck } from './cockpit/ActionDeck';
+import { type HuntBag, mountHuntBag } from './cockpit/HuntBag';
+import { type Minimap, mountMinimap } from './cockpit/Minimap';
+import { mountTargetWindow, type TargetWindow } from './cockpit/TargetWindow';
 import { createVitalArc, type VitalArc } from './cockpit/VitalArcs';
 import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
 
@@ -19,9 +25,9 @@ import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
  * measure of its own: two numbers for one edge is the defect this task exists
  * to avoid.
  *
- * Target, loot and the death overlay keep their current shape. PB-08-09 turns
- * the first two into real rail panels, once there is map and asset work to back
- * them.
+ * The rail owns the minimap, target and hunt bag panels; all three only render
+ * the projection they receive here. The simulation remains behind the view
+ * model and never learns about DOM, canvas or asset URLs.
  */
 export interface CombatHud {
   render(state: CombatViewState): void;
@@ -30,6 +36,10 @@ export interface CombatHud {
 
 export interface CombatHudOptions {
   readonly onRestart?: () => void;
+  readonly region?: MapRegion;
+  readonly resolveAsset?: (
+    key: string,
+  ) => { readonly mediaUrl: string } | undefined;
 }
 
 function createElement(
@@ -50,20 +60,6 @@ function band(document: Document, className: string): HTMLElement {
 
 function formatItemKey(itemKey: string): string {
   return itemKey.split(':').at(-1) ?? itemKey;
-}
-
-function updateBar(
-  element: HTMLElement,
-  label: string,
-  value: number,
-  maximum: number,
-): void {
-  element.setAttribute('aria-label', label);
-  element.setAttribute('role', 'progressbar');
-  element.setAttribute('aria-valuemin', '0');
-  element.setAttribute('aria-valuemax', String(maximum));
-  element.setAttribute('aria-valuenow', String(value));
-  element.textContent = `${label}: ${value}/${maximum}`;
 }
 
 function postureDataValue(
@@ -107,24 +103,15 @@ export function mountCombatHud(
 
   const banner: VitalBanner = mountVitalBanner(document);
 
-  /**
-   * The rail's first slot, held open for the minimap PB-08-09 puts here.
-   *
-   * It reserves geometry and nothing else: no border, no background, no
-   * pointer. An empty box with a frame around it would be the placeholder the
-   * spec refused -- "zero placeholder na tela" -- and would show up in the
-   * player's hunt as a hole. Reserved space shows up as nothing at all, and the
-   * map drops into a slot that is already square and already the right size.
-   */
-  const mapSlot = createElement(document, 'div', 'cockpit-rail-map');
-  mapSlot.className = 'cockpit__rail-slot';
-
-  const targetPanel = createElement(document, 'section', 'combat-target');
-  targetPanel.className = 'cockpit-panel';
-  targetPanel.setAttribute('aria-label', 'Target status');
-  const targetName = createElement(document, 'p', 'combat-target-name');
-  const targetHealth = createElement(document, 'div', 'combat-target-health');
-  targetPanel.append(targetName, targetHealth);
+  const minimap: Minimap = mountMinimap(
+    rail,
+    options.region === undefined ? {} : { region: options.region },
+  );
+  const targetWindow: TargetWindow = mountTargetWindow(rail, {
+    ...(options.resolveAsset === undefined
+      ? {}
+      : { resolveAsset: options.resolveAsset }),
+  });
 
   // Posture and haste used to be two lines of prose in a rail panel, on the
   // far side of the screen from the pools they modify. They belong beside the
@@ -137,9 +124,13 @@ export function mountCombatHud(
   lootPanel.className = 'cockpit-panel';
   lootPanel.setAttribute('aria-label', 'Loot');
   const lootLog = createElement(document, 'div', 'combat-loot-log');
-  const runBag = createElement(document, 'div', 'combat-run-bag');
-  lootPanel.append(lootLog, runBag);
-  rail.append(mapSlot, targetPanel, lootPanel);
+  lootPanel.append(lootLog);
+  const huntBag: HuntBag = mountHuntBag(lootPanel, {
+    ...(options.resolveAsset === undefined
+      ? {}
+      : { resolveAsset: options.resolveAsset }),
+  });
+  rail.append(lootPanel);
 
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
@@ -192,20 +183,11 @@ export function mountCombatHud(
     }
     banner.update(state.player);
 
-    targetName.textContent =
-      state.targetEntityId === null
-        ? 'No target'
-        : `Target #${state.targetEntityId}`;
-    if (state.target === null) {
-      updateBar(targetHealth, 'Target health', 0, 0);
-    } else {
-      updateBar(
-        targetHealth,
-        'Target health',
-        state.target.health,
-        state.target.maxHealth,
-      );
-    }
+    targetWindow.render({
+      target: state.target,
+      details: state.targetDetails,
+    });
+    minimap.render(state.minimap);
 
     rejection.textContent =
       state.lastRejection === null
@@ -243,10 +225,7 @@ export function mountCombatHud(
       )
       .join(' | ');
     if (lootLog.textContent !== lootText) lootLog.textContent = lootText;
-    const bagText = state.bag
-      .map((entry) => `${formatItemKey(entry.itemKey)} × ${entry.count}`)
-      .join(' | ');
-    if (runBag.textContent !== bagText) runBag.textContent = bagText;
+    huntBag.render(state.bag);
     deathOverlay.setAttribute('data-visible', String(state.playerDead));
   };
 
@@ -258,6 +237,9 @@ export function mountCombatHud(
       destroyed = true;
       restart.removeEventListener('click', onRestart);
       deck.destroy();
+      minimap.destroy();
+      targetWindow.destroy();
+      huntBag.destroy();
       root.replaceChildren();
     },
   };

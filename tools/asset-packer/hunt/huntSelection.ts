@@ -8,6 +8,7 @@ import {
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_DEAD_ROTWORM_KEY,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
+  HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
   HUNT_PACK_OUTFIT_KEY,
   HUNT_PACK_SMALL_SPLASH_KEY,
@@ -34,6 +35,7 @@ export function deriveHuntPackSelection(region: MapRegion): HuntPackSelection {
       HUNT_PACK_CREATURE_KEY,
       HUNT_PACK_OUTFIT_KEY,
       ...HUNT_PACK_COMBAT_KEYS,
+      ...HUNT_PACK_LOOT_KEYS,
     ],
     budget: HUNT_PACK_BUDGET,
   };
@@ -105,6 +107,25 @@ function identityForKey(key: string): {
     return {
       category: 'object',
       sourceIdentity: { kind: 'clientId', id: 5967 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+
+  const lootClientIds: ReadonlyMap<string, number> = new Map([
+    ['item:tibia:gold-coin', 3031],
+    ['item:tibia:ham', 3582],
+    ['item:tibia:legion-helmet', 3374],
+    ['item:tibia:lump-of-dirt', 9692],
+    ['item:tibia:mace', 3286],
+    ['item:tibia:meat', 3577],
+    ['item:tibia:sword', 3264],
+    ['item:tibia:worm', 3492],
+  ]);
+  const lootClientId = lootClientIds.get(key);
+  if (lootClientId !== undefined) {
+    return {
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: lootClientId },
       pivot: { x: 0.5, y: 1 },
     };
   }

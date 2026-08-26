@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-private-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "9d8cb67ed018aeb1a2b534770eb5cba34cce46f982417c65e09d52b02b170696",
-    "byteLength": 33703
+    "sha256": "8fe9d9898321f8dcc076a2b78270f458d02c3504adcf31d68ae4cf36feb960fa",
+    "byteLength": 1200123
   },
   "files": [
     {
@@ -64,6 +64,72 @@
       "byteLength": 1441
     },
     {
+      "key": "item:tibia:gold-coin",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3031
+      },
+      "path": "objects/3031.png",
+      "sha256": "cc44391cf4b0a8ec1573737d954d95e6352b5c942559ad3b91d87c59fc33faf1",
+      "byteLength": 1301
+    },
+    {
+      "key": "item:tibia:ham",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3582
+      },
+      "path": "objects/3582.png",
+      "sha256": "8526d5cd40c0bb2b3e3eca62680f4deeda7a98c59d597829f250ddc03bb6767d",
+      "byteLength": 1855
+    },
+    {
+      "key": "item:tibia:legion-helmet",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3374
+      },
+      "path": "objects/3374.png",
+      "sha256": "f059e1c0bcfc09700453f6c597ac094ae015fa160b056140258059634cd98cc4",
+      "byteLength": 1552
+    },
+    {
+      "key": "item:tibia:lump-of-dirt",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 9692
+      },
+      "path": "objects/9692.png",
+      "sha256": "1171d6cb35be4bb08c2a7230faefcfdc452754107df9311e7380989115b3bf42",
+      "byteLength": 504
+    },
+    {
+      "key": "item:tibia:mace",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3286
+      },
+      "path": "objects/3286.png",
+      "sha256": "317c7158aad2339ea106745158b453a59c5e9ee8870cb3a134a22915209035ad",
+      "byteLength": 1252
+    },
+    {
+      "key": "item:tibia:meat",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3577
+      },
+      "path": "objects/3577.png",
+      "sha256": "fba06d1acfa3e5fe24f8a439d0bd9ba6cda6557c33059e7de959720a0f7f69a2",
+      "byteLength": 3055
+    },
+    {
       "key": "item:tibia:small-splash",
       "category": "object",
       "sourceIdentity": {
@@ -73,6 +139,28 @@
       "path": "objects/2889.png",
       "sha256": "cfc360df7a411b94939d62d5b66074648915b13fd7f121549588db4db20fe52e",
       "byteLength": 5145
+    },
+    {
+      "key": "item:tibia:sword",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3264
+      },
+      "path": "objects/3264.png",
+      "sha256": "a5760d8c8d4c9555ea33363c88ca49c8b0d448b06f305ad9a6fa3bd0ad0adcc9",
+      "byteLength": 599
+    },
+    {
+      "key": "item:tibia:worm",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3492
+      },
+      "path": "objects/3492.png",
+      "sha256": "8adaa3d5e6f6e8b5c9755385af25850c14bcfd73118e67f5541e769526a68555",
+      "byteLength": 12833
     },
     {
       "key": "outfit:tibia:knight",

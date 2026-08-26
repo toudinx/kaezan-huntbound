@@ -139,6 +139,16 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
       resource: 0,
       maxResource: 0,
     },
+    targetDetails: {
+      blueprintId: 'rotworm',
+      displayName: 'Rotworm',
+      assetKey: null,
+      resistances: [],
+    },
+    minimap: {
+      floor: 7,
+      actors: [],
+    },
     abilities: [
       {
         index: 0,
@@ -280,8 +290,8 @@ describe('CombatHud', () => {
     expect(byTestId(root, 'combat-loot-log').textContent).toContain(
       'dead-rotworm × 2',
     );
-    expect(byTestId(root, 'combat-run-bag').textContent).toContain(
-      'dead-rotworm × 2',
+    expect(byTestId(root, 'combat-bag-slot-label-0').textContent).toContain(
+      'dead rotworm × 2',
     );
     expect(
       byTestId(root, 'combat-death-overlay').getAttribute('data-visible'),

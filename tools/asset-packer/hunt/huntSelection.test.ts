@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_OUTFIT_KEY,
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
@@ -56,6 +57,7 @@ describe('PB-04 hunt selection generation', () => {
       HUNT_PACK_CREATURE_KEY,
       HUNT_PACK_OUTFIT_KEY,
       ...combatKeys,
+      ...HUNT_PACK_LOOT_KEYS,
     ]);
     expect(selection.regionSha256).toMatch(/^[0-9a-f]{64}$/);
   });
@@ -66,14 +68,22 @@ describe('PB-04 hunt selection generation', () => {
       group,
     });
 
-    expect(manifest.hunt?.keys).toHaveLength(9);
+    expect(manifest.hunt?.keys).toHaveLength(17);
     expect(manifest.entries.map(({ key }) => key)).toEqual([
       HUNT_PACK_CREATURE_KEY,
       'effect:tibia:draw-blood',
       'effect:tibia:hit-area',
       'effect:tibia:magic-blue',
       'item:tibia:dead-rotworm',
+      'item:tibia:gold-coin',
+      'item:tibia:ham',
+      'item:tibia:legion-helmet',
+      'item:tibia:lump-of-dirt',
+      'item:tibia:mace',
+      'item:tibia:meat',
       'item:tibia:small-splash',
+      'item:tibia:sword',
+      'item:tibia:worm',
       HUNT_PACK_OUTFIT_KEY,
       'tile:tibia:100',
       'tile:tibia:200',
