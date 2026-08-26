@@ -51,16 +51,16 @@ corepack pnpm assets:personal:generate
 corepack pnpm assets:personal:check
 ```
 
-The Venore hunt uses the same env var and a dedicated pair:
+The registered hunt pipeline uses the same env var and a dedicated pair:
 
 ```
-corepack pnpm assets:pb04:personal:generate
-corepack pnpm assets:pb04:personal:check
+corepack pnpm assets:hunt:personal:generate
+corepack pnpm assets:hunt:personal:check
 ```
 
-`assets:pb04:personal:check` is the step that detects a stale personal pack: it rebuilds the
-source lock against the private export, materializes the pack, and runs `checkHuntPack` so a
-declared hunt key that the export cannot resolve fails with `HUNT_ASSET_KEY_MISSING`. It is not
+`assets:hunt:personal:check` is the step that detects stale personal packs: it rebuilds the
+source locks against the private export, materializes every registered pack, and runs `checkHuntPack`
+so a declared hunt key that the export cannot resolve fails with `HUNT_ASSET_KEY_MISSING`. It is not
 part of `check` or `verify` because it depends on art that is not in Git and would fail on a
 clean clone.
 

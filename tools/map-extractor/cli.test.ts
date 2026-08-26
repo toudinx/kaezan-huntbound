@@ -101,6 +101,10 @@ function sha256Of(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 
+function sha256Text(value: string): string {
+  return createHash('sha256').update(Buffer.from(value, 'utf8')).digest('hex');
+}
+
 /** Rewrites the fixture lock so it matches whatever is on disk right now. */
 function writeSourceLock(
   overrides: {
@@ -331,6 +335,47 @@ describe('runMapExtractorCli', () => {
       runMapExtractorCli(['sidecar-check', '--output', output], io(captured)),
     ).toBe(1);
     expect(captured.err.join(' ')).toContain('spawns');
+  });
+
+  it('checks every hunt directory in hunt id order', () => {
+    runMapExtractorCli(buildArgs(), io(captured));
+
+    const outputDirectories = [
+      { directory: 'z-directory', huntId: 'hunt:tibia:a-cave' },
+      { directory: 'a-directory', huntId: 'hunt:tibia:z-cave' },
+    ];
+    for (const { directory, huntId } of outputDirectories) {
+      const destination = join(output, directory);
+      mkdirSync(destination, { recursive: true });
+      for (const name of HUNT_FILE_NAMES) {
+        const original = readFileSync(join(output, `${name}.json`), 'utf8');
+        const encoded =
+          name === 'hunt'
+            ? original.replace(
+                JSON.stringify(JSON.parse(original).huntId),
+                JSON.stringify(huntId),
+              )
+            : original;
+        writeFileSync(join(destination, `${name}.json`), encoded);
+        writeFileSync(
+          join(destination, `${name}.sha256`),
+          `${sha256Text(encoded)}\n`,
+        );
+      }
+    }
+
+    captured = { out: [], err: [], usage: 0 };
+    expect(
+      runMapExtractorCli(['sidecar-check', '--output', output], io(captured)),
+    ).toBe(0);
+
+    const summary = JSON.parse(captured.out.join('')) as {
+      readonly sha256: Record<string, unknown>;
+    };
+    expect(Object.keys(summary.sha256)).toEqual([
+      'hunt:tibia:a-cave',
+      'hunt:tibia:z-cave',
+    ]);
   });
 
   it('reports the provenance of every source it consumed', () => {

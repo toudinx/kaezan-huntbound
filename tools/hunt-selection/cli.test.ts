@@ -352,7 +352,7 @@ describe('hunt selection CLI', () => {
     ) as { scripts: Record<string, string> };
 
     expect(packageJson.scripts['hunt:selection:check']).toBe(
-      'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check --selection packages/content/src/selections/hunts/venore-rotworm-cave.json --source-root-env HUNTBOUND_CANARY_SOURCE',
+      'node --no-warnings --experimental-transform-types tools/hunt-selection/checkAll.ts',
     );
     expect(packageJson.scripts['pb05:selection:check']).toBe(
       'node --no-warnings --experimental-transform-types tools/hunt-selection/cli.ts check-combat --selection packages/content/src/selections/pb-05-knight-combat.json --source-root-env HUNTBOUND_CANARY_SOURCE',

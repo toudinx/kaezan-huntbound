@@ -47,9 +47,15 @@ const combatKeys = [
   'item:tibia:dead-rotworm',
 ];
 
-describe('PB-04 hunt selection generation', () => {
+const metadata = {
+  huntId: 'hunt:tibia:test-cave',
+  packKey: 'test-pack',
+};
+const consumer = 'Test hunt asset pack';
+
+describe('hunt selection generation', () => {
   it('derives metadata and tile keys from the region', () => {
-    const selection = deriveHuntPackSelection(region());
+    const selection = deriveHuntPackSelection(region(), metadata);
 
     expect(selection.keys).toEqual([
       'tile:tibia:100',
@@ -64,8 +70,9 @@ describe('PB-04 hunt selection generation', () => {
 
   it('creates a regular asset selection without media paths', () => {
     const manifest = createHuntAssetSelection({
-      hunt: deriveHuntPackSelection(region()),
+      hunt: deriveHuntPackSelection(region(), metadata),
       group,
+      consumer,
     });
 
     expect(manifest.hunt?.keys).toHaveLength(17);
@@ -93,8 +100,9 @@ describe('PB-04 hunt selection generation', () => {
 
   it('maps combat keys to their frozen source identities', () => {
     const manifest = createHuntAssetSelection({
-      hunt: deriveHuntPackSelection(region()),
+      hunt: deriveHuntPackSelection(region(), metadata),
       group,
+      consumer,
     });
 
     expect(

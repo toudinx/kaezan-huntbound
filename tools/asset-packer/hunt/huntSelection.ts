@@ -18,17 +18,23 @@ import {
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 
-export const HUNT_PACK_KEY = 'pb-04-venore-rotworm-cave';
-export const HUNT_ID = 'hunt:tibia:venore-rotworm-cave';
 export const HUNT_PACK_BUDGET = {
   maxEntries: 512,
   maxBytes: 6 * 1024 * 1024,
 } as const;
 
-export function deriveHuntPackSelection(region: MapRegion): HuntPackSelection {
+export type HuntPackMetadata = {
+  readonly huntId: string;
+  readonly packKey: string;
+};
+
+export function deriveHuntPackSelection(
+  region: MapRegion,
+  metadata: HuntPackMetadata,
+): HuntPackSelection {
   const selection: HuntPackSelection = {
-    packKey: HUNT_PACK_KEY,
-    huntId: HUNT_ID,
+    packKey: metadata.packKey,
+    huntId: metadata.huntId,
     regionSha256: hashHuntRegion(region),
     keys: [
       ...deriveHuntPackKeys(region),
@@ -132,7 +138,7 @@ function identityForKey(key: string): {
 
   const match = /^tile:tibia:([1-9][0-9]*)$/.exec(key);
   if (match === null) {
-    throw new Error(`Unsupported PB-04 hunt asset key ${key}`);
+    throw new Error(`Unsupported hunt asset key ${key}`);
   }
   return {
     category: 'object',
@@ -144,6 +150,7 @@ function identityForKey(key: string): {
 export function createHuntAssetSelection(input: {
   readonly hunt: HuntPackSelection;
   readonly group: AssetSourceGroup;
+  readonly consumer: string;
 }): AssetSelectionManifest {
   const entries = [...input.hunt.keys]
     .sort((left, right) => left.localeCompare(right))
@@ -154,7 +161,7 @@ export function createHuntAssetSelection(input: {
         category: identity.category,
         sourceIdentity: identity.sourceIdentity,
         sourceGroupId: input.group.groupId,
-        consumer: 'PB-04 Venore Rotworm Cave asset pack',
+        consumer: input.consumer,
         rationale: `Covers ${key} required by the frozen hunt selection.`,
         presentation: {
           pivot: identity.pivot,

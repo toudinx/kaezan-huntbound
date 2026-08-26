@@ -2,6 +2,8 @@ import { spawn } from 'node:child_process';
 import { lstat, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import { listHuntPipelineEntries } from '../asset-packer/hunt/huntRegistry.ts';
+
 export type DevProfile = 'test' | 'personal';
 
 type DevEnvironment = Readonly<Record<string, string | undefined>>;
@@ -103,10 +105,10 @@ export function createDevPlan(
         : [
             options.personalProfileExists
               ? {
-                  command: 'corepack pnpm assets:pb04:personal:check',
-                  recovery: 'corepack pnpm assets:pb04:personal:generate',
+                  command: 'corepack pnpm assets:hunt:personal:check',
+                  recovery: 'corepack pnpm assets:hunt:personal:generate',
                 }
-              : { command: 'corepack pnpm assets:pb04:personal:generate' },
+              : { command: 'corepack pnpm assets:hunt:personal:generate' },
             {
               command:
                 'corepack pnpm --filter @huntbound/game exec vite --mode personal',
@@ -140,6 +142,23 @@ async function isDevServerRunning(): Promise<boolean> {
     }
   }
   return false;
+}
+
+async function arePersonalHuntProfilesPresent(root: string): Promise<boolean> {
+  for (const entry of listHuntPipelineEntries()) {
+    if (
+      !(await pathExists(
+        resolve(
+          root,
+          'apps/game/public/assets/personal',
+          entry.runtimeDirectory,
+        ),
+      ))
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 async function loadLocalEnvironment(
@@ -201,10 +220,7 @@ export async function runDevLauncher(
   const plan = createDevPlan(profile, environment, {
     devServerRunning: await isDevServerRunning(),
     personalProfileExists:
-      profile === 'personal' &&
-      (await pathExists(
-        resolve(root, 'apps/game/public/assets/personal/pb04'),
-      )),
+      profile === 'personal' && (await arePersonalHuntProfilesPresent(root)),
   });
 
   if (!plan.ok) {

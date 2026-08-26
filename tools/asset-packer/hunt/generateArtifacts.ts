@@ -8,37 +8,20 @@ import type {
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 import { createAssetSourceLock } from '../source/sourceLock.ts';
 import {
+  getHuntPipelineEntry,
+  type HuntPipelineEntry,
+  listHuntPipelineEntries,
+} from './huntRegistry.ts';
+import {
   createHuntAssetSelection,
   deriveHuntPackSelection,
 } from './huntSelection.ts';
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..');
-const regionPath = join(
-  repositoryRoot,
-  'packages/content/src/generated/hunts/venore-rotworm-cave/region.json',
-);
-const testRoot = join(repositoryRoot, 'packages/test-fixtures/assets/pb04');
-const testSourceRoot = join(testRoot, 'source');
 const transparentPixel = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
 );
-
-const testGroup = {
-  groupId: 'huntbound-test',
-  source: 'huntbound-synthetic-fixture',
-  sourceSnapshot: 'pb04-synthetic-v1',
-  licenseClass: 'huntbound-test' as const,
-  buildProfiles: ['test', 'product'] as const,
-};
-
-const personalGroup = {
-  groupId: 'huntbound-private-assets-pb04',
-  source: 'huntbound-private-assets',
-  sourceSnapshot: 'pb04-private-v1',
-  licenseClass: 'cipsoft-personal' as const,
-  buildProfiles: ['personal'] as const,
-};
 
 function canonicalJson(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
@@ -140,12 +123,13 @@ async function writeOrCheck(
 
 async function writeSourceFixture(
   selection: AssetSelectionManifest,
+  sourceRoot: string,
   check: boolean,
 ): Promise<void> {
   const manifest = canonicalJson(syntheticManifest(selection));
-  await writeOrCheck(join(testSourceRoot, 'manifest.json'), manifest, check);
+  await writeOrCheck(join(sourceRoot, 'manifest.json'), manifest, check);
   for (const path of syntheticPaths(selection)) {
-    await writeOrCheck(join(testSourceRoot, path), transparentPixel, check);
+    await writeOrCheck(join(sourceRoot, path), transparentPixel, check);
   }
 }
 
@@ -164,21 +148,32 @@ async function lockFor(input: {
   return result.value;
 }
 
-async function readRegion(): Promise<MapRegion> {
-  return JSON.parse(await readFile(regionPath, 'utf8')) as MapRegion;
+async function readRegion(entry: HuntPipelineEntry): Promise<MapRegion> {
+  return JSON.parse(
+    await readFile(
+      join(repositoryRoot, entry.generatedDirectory, 'region.json'),
+      'utf8',
+    ),
+  ) as MapRegion;
 }
 
 async function writeTestArtifacts(
+  entry: HuntPipelineEntry,
   hunt: HuntPackSelection,
   check: boolean,
 ): Promise<void> {
-  const selection = createHuntAssetSelection({ hunt, group: testGroup });
-  await writeSourceFixture(selection, check);
+  const testRoot = join(repositoryRoot, entry.assetFixtureRoot);
+  const selection = createHuntAssetSelection({
+    hunt,
+    group: entry.testGroup,
+    consumer: entry.consumer,
+  });
+  await writeSourceFixture(selection, join(testRoot, 'source'), check);
   const sourceLock = await lockFor({
-    sourceRoot: testSourceRoot,
+    sourceRoot: join(testRoot, 'source'),
     selection,
-    source: testGroup.source,
-    sourceSnapshot: testGroup.sourceSnapshot,
+    source: entry.testGroup.source,
+    sourceSnapshot: entry.testGroup.sourceSnapshot,
   });
   await writeOrCheck(
     join(testRoot, 'selection.json'),
@@ -193,21 +188,24 @@ async function writeTestArtifacts(
 }
 
 async function writePersonalArtifacts(
+  entry: HuntPipelineEntry,
   hunt: HuntPackSelection,
   sourceRoot: string,
   check: boolean,
 ): Promise<void> {
   const selection = createHuntAssetSelection({
     hunt,
-    group: personalGroup,
+    group: entry.personalGroup,
+    consumer: entry.consumer,
   });
   const sourceLock = await lockFor({
     sourceRoot,
     selection,
-    source: personalGroup.source,
-    sourceSnapshot: personalGroup.sourceSnapshot,
+    source: entry.personalGroup.source,
+    sourceSnapshot: entry.personalGroup.sourceSnapshot,
   });
-  await writePersonalSelection(selection, check);
+  await writePersonalSelection(entry, selection, check);
+  const testRoot = join(repositoryRoot, entry.assetFixtureRoot);
   await writeOrCheck(
     join(testRoot, 'personal-source-lock.json'),
     canonicalJson(sourceLock),
@@ -216,52 +214,99 @@ async function writePersonalArtifacts(
 }
 
 async function writePersonalSelection(
+  entry: HuntPipelineEntry,
   selection: AssetSelectionManifest,
   check: boolean,
 ): Promise<void> {
   await writeOrCheck(
-    join(
-      repositoryRoot,
-      'packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json',
-    ),
+    join(repositoryRoot, entry.personalSelectionPath),
     canonicalJson(selection),
     check,
   );
 }
 
-async function main(): Promise<void> {
-  const args = new Set(process.argv.slice(2));
-  const check = args.has('--check');
-  const profile = args.has('--personal') ? 'personal' : 'test';
-  const selectionOnly = args.has('--selection-only');
-  const region = await readRegion();
-  const hunt = deriveHuntPackSelection(region);
+export type GenerateHuntArtifactsOptions = {
+  readonly profile: 'test' | 'personal';
+  readonly check: boolean;
+  readonly selectionOnly?: boolean;
+  readonly personalSourceRoot?: string;
+};
 
-  if (profile === 'test') {
-    await writeTestArtifacts(hunt, check);
+export async function generateHuntArtifacts(
+  entry: HuntPipelineEntry,
+  options: GenerateHuntArtifactsOptions,
+): Promise<void> {
+  const region = await readRegion(entry);
+  const hunt = deriveHuntPackSelection(region, {
+    huntId: entry.huntId,
+    packKey: entry.packKey,
+  });
+
+  if (options.profile === 'test') {
+    await writeTestArtifacts(entry, hunt, options.check);
     return;
   }
 
-  if (selectionOnly) {
+  if (options.selectionOnly === true) {
     await writePersonalSelection(
-      createHuntAssetSelection({ hunt, group: personalGroup }),
-      check,
+      entry,
+      createHuntAssetSelection({
+        hunt,
+        group: entry.personalGroup,
+        consumer: entry.consumer,
+      }),
+      options.check,
     );
     return;
   }
 
-  const sourceRoot = process.env.HUNTBOUND_PERSONAL_ASSET_SOURCE;
+  const sourceRoot =
+    options.personalSourceRoot ?? process.env.HUNTBOUND_PERSONAL_ASSET_SOURCE;
   if (sourceRoot === undefined) {
     throw new Error(
-      'HUNTBOUND_PERSONAL_ASSET_SOURCE is required for PB-04 personal assets',
+      'HUNTBOUND_PERSONAL_ASSET_SOURCE is required for personal hunt assets',
     );
   }
-  await writePersonalArtifacts(hunt, sourceRoot, check);
+  await writePersonalArtifacts(entry, hunt, sourceRoot, options.check);
+}
+
+function option(args: readonly string[], name: string): string | undefined {
+  const index = args.indexOf(name);
+  const value = index < 0 ? undefined : args[index + 1];
+  return value === undefined || value.startsWith('--') ? undefined : value;
+}
+
+export async function runGenerateArtifacts(
+  args: readonly string[] = process.argv.slice(2),
+): Promise<void> {
+  const argSet = new Set(args);
+  const check = argSet.has('--check');
+  const profile = argSet.has('--personal') ? 'personal' : 'test';
+  const selectionOnly = argSet.has('--selection-only');
+  const requestedHuntId = option(args, '--hunt-id');
+  const entries =
+    requestedHuntId === undefined
+      ? listHuntPipelineEntries()
+      : (() => {
+          const entry = getHuntPipelineEntry(requestedHuntId);
+          if (entry === undefined) {
+            throw new Error(`Unknown hunt pipeline id: ${requestedHuntId}`);
+          }
+          return [entry];
+        })();
+
+  for (const entry of entries) {
+    await generateHuntArtifacts(entry, {
+      profile,
+      check,
+      selectionOnly,
+    });
+  }
 }
 
 if (import.meta.main) {
   try {
-    await main();
+    await runGenerateArtifacts();
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;

@@ -1,5 +1,11 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import type { SourceSnapshotLock } from '../../packages/content/src/application/sourceLockTypes.ts';
@@ -268,7 +274,7 @@ function readSelection(path: string): HuntSelection {
   return JSON.parse(readFileSync(resolve(path), 'utf8')) as HuntSelection;
 }
 
-/** `hunt:tibia:venore-rotworm-cave` writes into `venore-rotworm-cave/`. */
+/** A selection key's final segment names its generated output directory. */
 function huntSlug(selection: HuntSelection): string {
   const slug = selection.key.split(':').at(-1) ?? selection.key;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -576,22 +582,71 @@ function runSources(
   return 0;
 }
 
+function compareStrings(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function readHuntId(output: string): string {
+  const encoded = readFileSync(jsonPath(output, 'hunt'), 'utf8');
+  const parsed = JSON.parse(encoded) as { readonly huntId?: unknown };
+  if (typeof parsed.huntId !== 'string' || parsed.huntId.length === 0) {
+    throw new Error(`Generated hunt has no valid huntId: ${output}`);
+  }
+  return parsed.huntId;
+}
+
+function huntOutputDirectories(outputRoot: string): readonly {
+  readonly directory: string;
+  readonly huntId: string;
+}[] {
+  const resolvedRoot = resolve(outputRoot);
+  const directories = readdirSync(resolvedRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(resolvedRoot, entry.name));
+  if (directories.length === 0 && existsSync(jsonPath(resolvedRoot, 'hunt'))) {
+    return [{ directory: resolvedRoot, huntId: readHuntId(resolvedRoot) }];
+  }
+
+  const outputs = directories
+    .map((directory) => ({ directory, huntId: readHuntId(directory) }))
+    .sort((left, right) => {
+      const byHuntId = compareStrings(left.huntId, right.huntId);
+      return byHuntId === 0
+        ? compareStrings(left.directory, right.directory)
+        : byHuntId;
+    });
+  if (outputs.length === 0) {
+    throw new Error(`No generated hunt directories found: ${resolvedRoot}`);
+  }
+  return outputs;
+}
+
 function runSidecarCheck(output: string, io: MapExtractorCliIo): number {
-  const digests: Record<string, string> = {};
-  for (const name of HUNT_FILE_NAMES) {
-    const expected = sha256Hex(readFileSync(jsonPath(output, name), 'utf8'));
-    const actual = readFileSync(sidecarPath(output, name), 'utf8').trim();
-    if (expected !== actual) {
-      io.stderr({
-        command: 'sidecar-check',
-        reason: 'sidecar-divergent',
-        file: `${name}.sha256`,
-        expected,
-        actual,
-      });
-      return 1;
+  const digests: Record<string, Record<string, string>> = {};
+  for (const { directory, huntId } of huntOutputDirectories(output)) {
+    if (digests[huntId] !== undefined) {
+      throw new Error(`Duplicate generated hunt id: ${huntId}`);
     }
-    digests[name] = expected;
+    const huntDigests: Record<string, string> = {};
+    for (const name of HUNT_FILE_NAMES) {
+      const expected = sha256Hex(
+        readFileSync(jsonPath(directory, name), 'utf8'),
+      );
+      const actual = readFileSync(sidecarPath(directory, name), 'utf8').trim();
+      if (expected !== actual) {
+        io.stderr({
+          command: 'sidecar-check',
+          reason: 'sidecar-divergent',
+          huntId,
+          file: `${name}.sha256`,
+          expected,
+          actual,
+        });
+        return 1;
+      }
+      huntDigests[name] = expected;
+    }
+    digests[huntId] = huntDigests;
   }
   io.stdout({ command: 'sidecar-check', ok: true, sha256: digests });
   return 0;

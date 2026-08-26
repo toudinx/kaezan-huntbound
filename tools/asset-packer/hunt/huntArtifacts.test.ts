@@ -5,7 +5,8 @@ import {
   AssetSelectionManifestSchema,
   AssetSourceLockSchema,
 } from '../../../packages/assets/src/manifest/schemas.ts';
-import { HUNT_PACK_BUDGET, HUNT_PACK_KEY } from './huntSelection.ts';
+import { HUNT_PIPELINE_REGISTRY } from './huntRegistry.ts';
+import { HUNT_PACK_BUDGET } from './huntSelection.ts';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 
@@ -15,13 +16,15 @@ async function readJson(relativePath: string): Promise<unknown> {
   ) as unknown;
 }
 
-describe('PB-04 generated hunt artifacts', () => {
+describe('generated hunt artifacts', () => {
   it('keeps the synthetic selection aligned with the derived hunt keys', async () => {
     const selection = AssetSelectionManifestSchema.parse(
       await readJson('packages/test-fixtures/assets/pb04/selection.json'),
     );
 
-    expect(selection.hunt?.packKey).toBe(HUNT_PACK_KEY);
+    expect(selection.hunt?.packKey).toBe(
+      HUNT_PIPELINE_REGISTRY['hunt:tibia:venore-rotworm-cave'].packKey,
+    );
     expect(selection.hunt?.keys).toHaveLength(140);
     expect(selection.hunt?.budget).toEqual(HUNT_PACK_BUDGET);
     expect(selection.hunt?.keys).not.toContain('tile:tibia:0');

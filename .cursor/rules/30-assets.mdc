@@ -29,8 +29,8 @@ Pack é reprodutível: a mesma seleção mais o mesmo `source-lock` produzem o m
 Toda geração tem `--check` correspondente:
 
 - `assets:check` — cobre geração, profile e pack das fixtures.
-- `assets:pb04:hunt:check` — cruza seleção, região e pack da hunt.
-- `assets:personal:check` / `assets:pb04:personal:check` — exigem o source pessoal configurado;
+- `assets:hunt:check` — cruza cada seleção, região e pack registrado.
+- `assets:personal:check` / `assets:hunt:personal:check` — exigem o source pessoal configurado;
   falham por ambiente ausente, o que **não** é motivo para relaxar o gate.
 
 Adicionar asset significa: atualizar a seleção, atualizar o `source-lock`, regenerar, rodar o

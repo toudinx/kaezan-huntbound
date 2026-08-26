@@ -46,7 +46,7 @@ describe('dev launcher', () => {
     expect(createDevPlan('personal', environment)).toEqual({
       ok: true,
       commands: [
-        { command: 'corepack pnpm assets:pb04:personal:generate' },
+        { command: 'corepack pnpm assets:hunt:personal:generate' },
         {
           command:
             'corepack pnpm --filter @huntbound/game exec vite --mode personal',
@@ -69,8 +69,8 @@ describe('dev launcher', () => {
       ok: true,
       commands: [
         {
-          command: 'corepack pnpm assets:pb04:personal:check',
-          recovery: 'corepack pnpm assets:pb04:personal:generate',
+          command: 'corepack pnpm assets:hunt:personal:check',
+          recovery: 'corepack pnpm assets:hunt:personal:generate',
         },
         {
           command:
