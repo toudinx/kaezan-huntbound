@@ -1,12 +1,13 @@
 # PB-08 — O Knight completo
 
-> **Para agentes executores:** skill obrigatória por task:
-> `superpowers:test-driven-development` e `superpowers:verification-before-completion`. Procedimento
-> operacional nas skills `playbook-task`, `run-gates` e `worktree-cycle`. Execute uma task card por
-> chat. O formato, o handoff e o ciclo automático de integração/limpeza seguem
+> **Para agentes executores:** **nenhuma skill externa é obrigatória.** Teste primeiro e nada
+> afirmado sem saída fresca são regra do `AGENTS.md` e de cada card, não de um plugin. Procedimento
+> operacional nas skills do repositório: `playbook-task`, `run-gates` e `worktree-cycle`. Execute uma
+> task card por chat. O formato, o handoff e o ciclo automático de integração/limpeza seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** reescrito em 2026-08-24 e **elegível**. A próxima task é PB-08-02.
+**Status:** reescrito em 2026-08-24 e **elegível**. A próxima e última task é **PB-08-09**; a
+PB-08-10 foi **cancelada em 2026-08-26**.
 
 **Goal:** o Knight sai de quatro ações — das quais só três dão dano — para **nove ações que se
 distinguem olhando, cinco delas de dano**, com o mapa da classe inteira congelado para nunca mais
@@ -205,9 +206,9 @@ Não se redesenham dentro de uma task. Mudá-las é decisão de produto, fora do
 | PB-08-07 | **card escrita** | Mobilidade — Haste | `utani hur`. Charge é corte declarado | não |
 | PB-08-08 | **reescrita em 2026-08-25** | O chassi do cockpit | Arcos de vida e mana, deck centrado com vão entre dano e situacional, switch de postura, cooldown por grupo, câmera centrada na área livre | não |
 | PB-08-09 | **reescrita em 2026-08-25** | A rail de janelas | Mapa quadrado, janela de alvo e bag da hunt — três painéis sobre dado que já existe. Sprites de loot no extractor | não |
-| PB-08-10 | **reescrita em 2026-08-25** | Aceite | `verify` verde, `qa:budgets` medido, `dev` de pé, e um roteiro que julga **leitura antes de mecânica** | — |
+| ~~PB-08-10~~ | **cancelada em 2026-08-26** | ~~Aceite~~ | O aceite é o usuário jogando, não uma task. `verify`, `qa:budgets` medido, `dev` de pé e a nota do que olhar passaram para a **PB-08-09** | — |
 
-### A reescrita de 08 a 10
+### A reescrita de 08 a 10, e o cancelamento da 10
 
 O playtest de 2026-08-25 fechou o kit e mostrou que o que faltava não era mecânica: as nove ações
 existem e funcionam desde a PB-08-07, mas saem numa lista plana onde postura parece magia e uma ação
@@ -222,6 +223,12 @@ o layout aprovado e as quatro propostas recusadas antes dele. Duas mudanças de 
   mostrar. Com isso os três painéis da rail leem dado que já existe, e não sobra placeholder na tela.
 
 **As cards de 01 a 07 continuam como estavam** — estão integradas e viraram histórico.
+
+**A PB-08-10 foi cancelada pelo dono em 2026-08-26.** Ela existia para produzir um roteiro de aceite,
+e o `AGENTS.md` já diz que o aceite é o usuário jogando — uma task de agente para *preparar* isso é
+cerimônia. O que ela carregava e não era cerimônia passou para a **PB-08-09**: `qa:budgets` medido com
+o número no `STATE.md`, `dev` de pé e uma nota curta do que olhar. Os oito critérios que o roteiro
+julgaria vivem em "Critérios finais de aceite", no fim deste README.
 
 **As dez cards estavam escritas de uma vez.** Isso **desviava** da regra do `AGENTS.md` de congelar só
 duas à frente, e o desvio foi deliberado, pedido pelo dono em 2026-08-24 para distribuir trabalho
@@ -257,7 +264,6 @@ do usuário no momento da execução. Implementação bem especificada = **GPT-5
 | **07** | implementação geral bem especificada | **Luna, `xhigh`** | gates automatizados | A mais mecânica das dez. `speedPermille` já é aplicado em `conditions.ts:37` |
 | **08** | **implementação complexa** | **frontier, `xhigh`** | **o usuário jogando** | Subiu de Luna na reescrita de 2026-08-25. É a superfície que o usuário julga no aceite, e deixou de ser só DOM e CSS: arrasta deslocamento de câmera e a **reescrita** de `hunt-mobile.spec.ts:95`, um teste derivado de ADR |
 | **09** | implementação geral bem especificada | **Luna, `xhigh`** | gates + screenshot do perfil `personal` | Três painéis sobre dado que já existe, mais ids novos numa lista que já existe. Nenhuma decisão de contrato. O juiz do painel de bag **não** é gate verde: o perfil `test` fabrica placeholder 1×1 |
-| **10** | gate final / aceite | **frontier, `xhigh`** | **o usuário jogando** | A política manda camada frontier para gate final. E o aceite de produto não é veredito de agente |
 
 **Diversidade de revisão.** 02, 06 e 08 são frontier implementando; cada uma é revisada por um
 frontier **diferente** — Sol prefere Opus 5 ou Grok 4.6; Opus 5 prefere Sol ou Grok 4.6; Grok 4.6
@@ -282,9 +288,12 @@ O `STATE.md` registra o modelo e o effort **efetivamente** usados. Divergência 
                                     +-> 05 postura
                                     +-> 06 taunt (kernel, golden)
                                     +-> 07 mobilidade
-                                             \--> 08 HUD --> 10 aceite
-09 (arma) depende de 03; fecha no PB-11.
+                                             \--> 08 chassi do cockpit --> 09 rail de janelas
+10 (aceite) cancelada: o playbook fecha com a 09 integrada e o usuário jogando.
 ```
+
+**A 09 é a última.** Com a 10 cancelada, é ela que entrega `verify` verde, `qa:budgets` medido e o
+jogo de pé com a nota do que olhar — o que o `AGENTS.md` pede da última task de implementação.
 
 **PB-08-02 vem primeiro e sozinha.** É a única task cujo resultado muda o julgamento das seguintes:
 sem o mapa, não se sabe qual forma de cada papel entra. 04, 05 e 07 são paralelizáveis entre si. 06 é
@@ -315,7 +324,7 @@ O PB-08 original foi redistribuído. **Nada disto entra aqui.**
 |---|---|---|
 | **PB-09 — Progressão** | XP, level, skill por uso, ficha derivada, Códex | **Começa por design doc**, não por task card. O princípio de design é a entrada dele, e a decisão congelada 2 torna a pergunta *"o que ganhar um level me dá?"* mais afiada, não mais fácil |
 | **PB-10 — Novas criaturas** | Snake, Orc, Orc Spearman, Orc Shaman, IA que conjura, spawn por identidade estável | É o playbook que dá valor ao taunt |
-| **PB-11 — O loot vira poder** | Stats de item, três slots, `armor` no kernel v6, elemento/resistência, loot equipável, **e o fim da run** | Fecha também o eixo de arma da PB-08-09 |
+| **PB-11 — O loot vira poder** | Stats de item, três slots, `armor` no kernel v6, elemento/resistência, loot equipável, **e o fim da run** | Fecha também o eixo de arma que saiu do PB-08 na reescrita de 2026-08-25 |
 | **PB-12 — Hunts moduladas e level sync** | Sync de nível e de gear | **A outra metade do princípio de design. Exige emenda à ADR-05** |
 | Depois | Runas com cargas, charms/sigilos, contrato de caça, criatura-do-dia, bossiary, trilha Fenda, subclasses de Knight | |
 

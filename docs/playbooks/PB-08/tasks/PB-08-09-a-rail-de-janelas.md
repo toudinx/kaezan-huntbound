@@ -18,6 +18,7 @@ Skills operacionais do repositório: `playbook-task`, `run-gates`, `worktree-cyc
 `hunt-content-pipeline`.
 
 **Paralelismo:** depende de **PB-08-08 integrada** — a rail é uma das regiões que o chassi cria.
+**É a última task do playbook**, desde o cancelamento da PB-08-10 em 2026-08-26.
 
 **Spec:** `docs/superpowers/specs/2026-08-25-pb-08-cockpit-hud-design.md`.
 
@@ -152,6 +153,28 @@ filtro** — é helper, e helper é PB-15.
    `assets:pb04:personal:generate` e `assets:pb04:personal:check`.
 4. Rode os gates nos quatro viewports.
 
+## O fechamento do PB-08 cai nesta task
+
+A PB-08-10 era uma task de aceite e foi **cancelada em 2026-08-26**: o `AGENTS.md` já diz que o aceite
+é o usuário jogando, então uma task de agente para *preparar* o aceite era cerimônia. O que ela
+carregava e **não** era cerimônia cai aqui, porque esta virou a última task de implementação:
+
+1. **`corepack pnpm qa:budgets` medido**, com o número no `STATE.md` e **comparado com a medição da
+   PB-08-05** (boot 15254,2 ms; hunt 4955,7 ms). É a primeira vez que o minimapa entra na medição, e
+   ele é o suspeito óbvio se algo regredir — daí a exigência de terreno em camada *offscreen*.
+   **Vermelho aqui não bloqueia merge**, vira task de performance no backlog. Rodar não é opcional.
+   Antes de teorizar sobre performance, liste o que está rodando:
+   `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*kaezan-huntbound*' }`
+2. **`corepack pnpm dev` de pé** ao terminar — ou uma linha dizendo como subir. Se deixar de pé, diga
+   que foi de propósito: um `vite` de pé segura `apps/game/public/assets` e faz `assets:stage:test`
+   falhar com `EPERM ... rename` de forma determinística.
+3. **Uma nota curta do que olhar**, no relatório: um item por critério de
+   "Critérios finais de aceite" do `README.md` do PB-08, dizendo o que olhar e como reproduzir em
+   menos de um minuto. **Não é parecer de auditoria** — quem julga é o usuário jogando.
+
+**Defeito encontrado aqui não se conserta aqui**, salvo quando for da própria rail: registre no
+`STATE.md`, abra a correção como task própria e diga no relatório de qual task veio.
+
 ## Verificações exigidas
 
 Evidência fresca, colada no relatório:
@@ -165,6 +188,7 @@ Evidência fresca, colada no relatório:
 - `corepack pnpm qa:browser` — nos quatro viewports.
 - `corepack pnpm combat:check`, `hunt:check` e `simulation:check` — **inalterados**.
 - `corepack pnpm verify` no fechamento.
+- `corepack pnpm qa:budgets` — **medido, não bloqueante**, número no `STATE.md`.
 - **Screenshot do perfil `personal`** com loot na bag. É a única prova que vale para o painel 3.
 
 ## Definition of Done
@@ -177,6 +201,9 @@ Evidência fresca, colada no relatório:
 - [ ] Nenhum painel da rail é placeholder.
 - [ ] `combat:check`, `hunt:check` e `simulation:check` inalterados.
 - [ ] `verify` verde.
+- [ ] `qa:budgets` medido, número no `STATE.md`, comparado com a medição da PB-08-05.
+- [ ] Jogo de pé, ou instrução de como subir em uma linha.
+- [ ] Nota do que olhar escrita, um item por critério de aceite do `README.md`.
 - [ ] Screenshot do perfil `personal` anexada.
 - [ ] `STATE.md` só na linha da task.
 - [ ] Branch integrada por `git merge --ff-only` e worktree removida.
@@ -258,10 +285,24 @@ Verificacao exigida, com saida fresca colada no relatorio:
 - corepack pnpm verify no fechamento
 - SCREENSHOT DO PERFIL PERSONAL com loot na bag.
 
+ESTA E A ULTIMA TASK DO PB-08: a PB-08-10 (aceite) foi CANCELADA em 2026-08-26 porque o aceite e o
+usuario jogando, nao uma task de agente. Tres coisas dela caem aqui:
+1. corepack pnpm qa:budgets MEDIDO, numero no STATE.md, COMPARADO com a medicao da PB-08-05
+   (boot 15254.2 ms, hunt 4955.7 ms). O minimapa entra na medicao pela primeira vez e e o suspeito
+   obvio se algo regredir. NAO BLOQUEIA MERGE, mas RODAR NAO E OPCIONAL. Antes de teorizar sobre
+   performance, liste o que esta rodando:
+   Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*kaezan-huntbound*' }
+2. corepack pnpm dev de pe ao terminar, ou uma linha de como subir. Se deixar de pe, diga que foi de
+   proposito: um vite de pe segura apps/game/public/assets e faz assets:stage:test falhar com EPERM.
+3. UMA NOTA CURTA DO QUE OLHAR: um item por criterio de "Criterios finais de aceite" do README do
+   PB-08, com o que olhar e como reproduzir em menos de um minuto. NAO e parecer de auditoria.
+Defeito que nao seja da propria rail NAO SE CONSERTA AQUI: registre no STATE.md, abra task propria e
+diga de qual task veio.
+
 Ao terminar: atualize somente a linha PB-08-09 do STATE.md com o modelo e o effort EFETIVAMENTE
 usados. Commit com mensagem que explique o PORQUE. Integre voce mesmo na main com git merge --ff-only,
 rode a verificacao pos-integracao, remova a worktree e a branch, e cole no relatorio a saida de:
 git status --porcelain && git branch --no-merged main && git worktree list
 
-Isso ja esta autorizado pela task; nao peca confirmacao. NAO inicie a proxima task.
+Isso ja esta autorizado pela task; nao peca confirmacao. NAO inicie o PB-09.
 ```

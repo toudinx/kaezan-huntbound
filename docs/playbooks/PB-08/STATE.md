@@ -5,9 +5,10 @@
 **Estado geral:** reescrito em 2026-08-24 como "O Knight completo". Tasks **08 a 10 reescritas em
 2026-08-25** em torno do cockpit, após playtest do usuário; spec em
 `docs/superpowers/specs/2026-08-25-pb-08-cockpit-hud-design.md`.
-Próxima elegível: **PB-08-09**. O mapa da 02 está vigente.
+Próxima e **última** elegível: **PB-08-09**; a **PB-08-10 foi cancelada em 2026-08-26**. O mapa
+da 02 está vigente.
 
-**Última atualização:** 2026-08-25
+**Última atualização:** 2026-08-26
 
 **Base:** PB-07 congelado na 05. A máquina de condições, toggle, cooldown secundário, leech e regen
 sensível a combate está integrada e **sem conteúdo que a use** — é o que a PB-08-04 a 07 consomem.
@@ -27,7 +28,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-08-07 | done | `grok/pb08-07-haste-feel` | Luna `xhigh` | Grok 4.6 `xhigh` | `fa39c5e` | Haste `speedPermille` 600 → passo 11→6 / 600 t; sprite interpola no cooldown efetivo; Charge fora; `scenario.json` `24d4ad2b`; commands/snapshot/events iguais; `verify` pós-ff `qa:browser` 78/78 |
 | PB-08-08 | done | `claude/pb08-08-cockpit-chassis` | **frontier `xhigh`** | Claude Opus 5 `xhigh` | `891410c` | área livre única em `playfieldViewport.ts` (mín. 260×320); câmera centra nela; `hunt-mobile.spec.ts` reescrito — moldura inteira em vez de 2/9, orçamento de 13 px removido; `verify` verde, `qa:browser` 78/78; goldens `pb03`/`pb04`/`pb05` inalterados (`24d4ad2b`); screenshots dos 4 viewports regeradas |
 | PB-08-09 | pending | `<agente>/pb08-09-window-rail` | Luna `xhigh` | — | — | — |
-| PB-08-10 | pending | `<agente>/pb08-10-acceptance` | frontier `xhigh` | — | — | — |
+| ~~PB-08-10~~ | **cancelada** | — | — | — | — | cancelada pelo usuário em 2026-08-26; aceite é o usuário jogando. `qa:budgets`, `dev` de pé e a nota do que olhar passaram para a PB-08-09 |
 
 ## Bloqueios
 
