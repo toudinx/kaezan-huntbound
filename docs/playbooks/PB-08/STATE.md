@@ -59,14 +59,21 @@ command") é sensível a carga: reprovou no `verify` pós-integração da PB-08-
 era uma linha de markdown. Passa 14/14 isolada. Vale a regra do AGENTS.md: não mascarar com `retries`
 nem timeout inflado; a correção é tornar o tap determinístico. Vira task quando alguém tocar em input.
 
-**B14 — aberto, mesma família do B11.** Sondas que **amostram decoração transitória por frame**
-reprovam de forma intermitente **só dentro da suíte cheia**, nunca isoladas. Observado 4× em
-2026-08-25, em teste **diferente a cada vez**: `combat-fx.spec.ts:101` (3×) e `combat-play.spec.ts:195`
-(`firstSeen.length > 1`, números de dano distintos amostrados ao longo do tempo). A causa comum é
-frame perdido sob carga — a pista some antes da sonda chegar. Passa 7/7 isolada, inclusive com o
-`vite` de desenvolvimento de pé, o que descarta o servidor como culpado. Reduzir a escrita por frame
-do deck (`cd4ddac`) **não** eliminou. A correção é tornar a amostragem independente de frame; `retries`
-e timeout inflado são proibidos pelo `AGENTS.md`. Vira task quando alguém tocar em decoração ou sonda.
+**B14 — aberto, mesma família do B11.** Sondas que dependem de **amostrar frame** reprovam de forma
+intermitente **só dentro da suíte cheia**, em teste diferente a cada vez: `combat-fx.spec.ts:101`
+(5×), `combat-play.spec.ts:195` (1×) e `haste-play.spec.ts:167` (1×, "never accepted two consecutive
+cardinal steps"). Isoladas passam sempre — 12/12 medidas.
+
+**Correlação medida em 2026-08-25:** com o `vite --mode personal` da máquina de pé, a suíte cheia
+reprovou em 3 de 4 rodadas; com ele derrubado, 4 de 4 verdes. Uma afirmação anterior deste bloqueio
+dizia que o servidor estava descartado — estava errada, e vinha de ter testado **só o teste isolado**
+com ele de pé, o que não reproduz a carga da suíte. Também foi descartado por medição que a mudança
+da moldura seja causa: o `haste-play` reprovou uma vez com ela e passou 2/2 logo em seguida, com o
+mesmo código.
+
+**Como conviver até virar task:** derrube o dev server antes de `verify` e suba de volta no fim.
+A correção de verdade é tornar a amostragem independente de frame; `retries` e timeout inflado são
+proibidos pelo `AGENTS.md`.
 
 **B1–B3, B5–B8, B10 e B12 — fechados** entre 2026-08-23 e 2026-08-24. Narrativa no Git.
 

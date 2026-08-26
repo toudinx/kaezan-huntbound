@@ -77,7 +77,7 @@ const RAIL_BAND = 208;
  * window a little taller than it is wide, which is the shape a top-down grid
  * reads best in.
  */
-const PLAYFIELD_MAX_COLUMNS = 9;
+const PLAYFIELD_MAX_COLUMNS = 7;
 
 function assertPositiveFinite(name: string, value: number): void {
   if (!Number.isFinite(value) || value <= 0) {

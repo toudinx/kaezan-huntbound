@@ -408,17 +408,24 @@ body {
 
 .cockpit-arc__track {
   stroke: rgb(123 161 216 / 22%);
-  stroke-width: 12;
+  stroke-width: 18;
 }
 
 .cockpit-arc__fill {
-  stroke-width: 12;
-  transition: stroke-dashoffset 120ms linear;
+  stroke-width: 18;
+  transition:
+    stroke-dashoffset 120ms linear,
+    stroke 200ms linear;
 }
 
+/*
+ * Health carries its own colour: green while it is healthy, amber around half,
+ * red as it runs out. `VitalArcs` publishes the mix as `--arc-colour` so the
+ * stroke and its glow can never disagree.
+ */
 .cockpit-arc--health .cockpit-arc__fill {
-  stroke: #ff6b6b;
-  filter: drop-shadow(0 0 6px rgb(255 107 107 / 45%));
+  stroke: var(--arc-colour, #ff6b6b);
+  filter: drop-shadow(0 0 5px var(--arc-colour, #ff6b6b));
 }
 
 .cockpit-arc--mana .cockpit-arc__fill {
