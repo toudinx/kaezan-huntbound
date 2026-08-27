@@ -1,6 +1,26 @@
 {
   "characters": [
     {
+      "level": 130,
+      "maxHealth": 2015,
+      "maxMana": 185,
+      "skills": {
+        "magic": 0,
+        "sword": 60
+      },
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ],
+      "stableKey": "character:huntbound:knight-hero-cave",
+      "vocationKey": "vocation:tibia:knight",
+      "weaponAttack": 14,
+      "weaponItemKey": "item:tibia:sword"
+    },
+    {
       "level": 35,
       "maxHealth": 590,
       "maxMana": 185,
@@ -146,6 +166,239 @@
         "experience": 60,
         "health": 110,
         "speed": 86
+      },
+      "summons": []
+    },
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 240,
+          "minDamage": 0,
+          "name": "melee"
+        },
+        {
+          "chanceBasisPoints": 2000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "ranged",
+          "maxDamage": 120,
+          "minDamage": 0,
+          "name": "combat",
+          "projectile": "arrow",
+          "rangeTiles": 7
+        }
+      ],
+      "conditions": [],
+      "defenses": [
+        {
+          "chanceBasisPoints": 2000,
+          "intervalMs": 2000,
+          "kind": "heal",
+          "maxAmount": 250,
+          "minAmount": 200
+        }
+      ],
+      "displayName": "Hero",
+      "guid": "04a09207-87f9-56d5-a620-c45a10205faf",
+      "immunities": [
+        "paralyze",
+        "invisible"
+      ],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 73,
+      "loot": [
+        {
+          "chancePerHundredThousand": 45000,
+          "itemKey": "item:tibia:scroll",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1640,
+          "itemKey": "item:tibia:lyre",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 80,
+          "itemKey": "item:tibia:piggy-bank",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2190,
+          "itemKey": "item:tibia:rope",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4910,
+          "itemKey": "item:tibia:wedding-ring",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 59500,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 100,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 470,
+          "itemKey": "item:tibia:might-ring",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1500,
+          "itemKey": "item:tibia:two-handed-sword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 870,
+          "itemKey": "item:tibia:war-hammer",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 550,
+          "itemKey": "item:tibia:fire-sword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 13300,
+          "itemKey": "item:tibia:bow",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 490,
+          "itemKey": "item:tibia:crown-armor",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 660,
+          "itemKey": "item:tibia:crown-legs",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 450,
+          "itemKey": "item:tibia:crown-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 280,
+          "itemKey": "item:tibia:crown-shield",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 26000,
+          "itemKey": "item:tibia:arrow",
+          "maxCount": 13,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 8000,
+          "itemKey": "item:tibia:green-tunic",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1110,
+          "itemKey": "item:tibia:scarf",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 8200,
+          "itemKey": "item:tibia:meat",
+          "maxCount": 3,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 19850,
+          "itemKey": "item:tibia:grapes",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 20450,
+          "itemKey": "item:tibia:red-rose",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2006,
+          "itemKey": "item:tibia:red-piece-of-cloth",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 11400,
+          "itemKey": "item:tibia:sniper-arrow",
+          "maxCount": 4,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 720,
+          "itemKey": "item:tibia:great-health-potion",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 930,
+          "itemKey": "item:tibia:small-notebook",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 5000,
+          "itemKey": "item:tibia:scroll-of-heroic-deeds",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.2,
+        "drown": 0,
+        "earth": 0.5,
+        "energy": 0.4,
+        "fire": 0.3,
+        "holy": 0.5,
+        "ice": 0.1,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0.1
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "73",
+        "sourcePath": "data-otservbr-global/monster/humans/hero.lua",
+        "sourceSha256": "8c7add3d9e2baf5ab0e91934588d0e59f3b309a48d46d2f181605297220cb089",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:hero",
+      "stats": {
+        "experience": 1200,
+        "health": 1400,
+        "speed": 140
       },
       "summons": []
     },
@@ -475,6 +728,24 @@
   "items": [
     {
       "aliases": [],
+      "displayName": "arrow",
+      "guid": "7d0d7331-6f27-59e3-b40e-eeaab8183c1c",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3447",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:arrow",
+      "weight": 70
+    },
+    {
+      "aliases": [],
       "displayName": "book",
       "guid": "b88c6eba-dd05-56ed-9ba9-3ef19bbb6e7b",
       "includedFacets": [
@@ -490,6 +761,24 @@
       },
       "stableKey": "item:tibia:book",
       "weight": 1300
+    },
+    {
+      "aliases": [],
+      "displayName": "bow",
+      "guid": "b09a1630-d902-5939-af6b-70d93172ec18",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3350",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:bow",
+      "weight": 3100
     },
     {
       "aliases": [],
@@ -565,6 +854,78 @@
     },
     {
       "aliases": [],
+      "displayName": "crown armor",
+      "guid": "3f2e4c53-f5d3-5877-8f31-a4cd80a55ae8",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3381",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crown-armor",
+      "weight": 9900
+    },
+    {
+      "aliases": [],
+      "displayName": "crown helmet",
+      "guid": "4a2bacb3-5bf5-581f-9db5-d935a88b5d33",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3385",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crown-helmet",
+      "weight": 2950
+    },
+    {
+      "aliases": [],
+      "displayName": "crown legs",
+      "guid": "91d51291-ac02-5784-9ef4-1995c005f45e",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3382",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crown-legs",
+      "weight": 6500
+    },
+    {
+      "aliases": [],
+      "displayName": "crown shield",
+      "guid": "d3e7ef21-36d2-538e-858f-29bf42ff0300",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3419",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crown-shield",
+      "weight": 6200
+    },
+    {
+      "aliases": [],
       "displayName": "crystal necklace",
       "guid": "79aafb96-5486-5fbc-a9b8-4e4dc781b4f4",
       "includedFacets": [
@@ -601,6 +962,24 @@
     },
     {
       "aliases": [],
+      "displayName": "fire sword",
+      "guid": "cfb2627e-06b6-52a9-9ad4-d471dcc13bb6",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3280",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:fire-sword",
+      "weight": 2300
+    },
+    {
+      "aliases": [],
       "displayName": "girlish hair decoration",
       "guid": "33858c73-a992-59c8-b38b-1c6c3171084d",
       "includedFacets": [
@@ -634,6 +1013,60 @@
       },
       "stableKey": "item:tibia:gold-coin",
       "weight": 10
+    },
+    {
+      "aliases": [],
+      "displayName": "grapes",
+      "guid": "16e3705a-3b55-5b72-8fdd-af8b67e328e0",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3592",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:grapes",
+      "weight": 250
+    },
+    {
+      "aliases": [],
+      "displayName": "great health potion",
+      "guid": "3e5a218d-c267-5371-90b5-ffd9187240e0",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "239",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:great-health-potion",
+      "weight": 310
+    },
+    {
+      "aliases": [],
+      "displayName": "green tunic",
+      "guid": "ab76f91e-180a-5969-8526-20fa3957ce59",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3563",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:green-tunic",
+      "weight": 930
     },
     {
       "aliases": [],
@@ -709,6 +1142,24 @@
     },
     {
       "aliases": [],
+      "displayName": "lyre",
+      "guid": "c76eb496-66a9-5d2f-ab76-083a09497688",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "2949",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:lyre",
+      "weight": 1250
+    },
+    {
+      "aliases": [],
       "displayName": "mace",
       "guid": "a3fd722f-8cb4-50f0-9c6b-aa685e5ae879",
       "includedFacets": [
@@ -742,6 +1193,24 @@
       },
       "stableKey": "item:tibia:meat",
       "weight": 1300
+    },
+    {
+      "aliases": [],
+      "displayName": "might ring",
+      "guid": "78b7332c-ef6c-58b6-8d3c-cb10b1d6e06e",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3048",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:might-ring",
+      "weight": 100
     },
     {
       "aliases": [],
@@ -781,6 +1250,24 @@
     },
     {
       "aliases": [],
+      "displayName": "piggy bank",
+      "guid": "27d5d8a7-0567-5f8c-a0c2-2fbff6795ef0",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "2995",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:piggy-bank",
+      "weight": 750
+    },
+    {
+      "aliases": [],
       "displayName": "protective charm",
       "guid": "5a8300ad-7bff-5a20-8fb4-b3a518ca3dbf",
       "includedFacets": [
@@ -799,6 +1286,60 @@
     },
     {
       "aliases": [],
+      "displayName": "red piece of cloth",
+      "guid": "e98d3231-734a-57df-b607-f9fb003fa0a2",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "5911",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:red-piece-of-cloth",
+      "weight": 500
+    },
+    {
+      "aliases": [],
+      "displayName": "red rose",
+      "guid": "e4fd316d-0326-5666-97ac-853e61f47f3e",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3658",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:red-rose",
+      "weight": 80
+    },
+    {
+      "aliases": [],
+      "displayName": "rope",
+      "guid": "87a2c372-798e-5576-9c46-817613561293",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3003",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:rope",
+      "weight": 1800
+    },
+    {
+      "aliases": [],
       "displayName": "sabre",
       "guid": "92f5f3a0-41d3-58c3-b797-d87ac59169c0",
       "includedFacets": [
@@ -814,6 +1355,60 @@
       },
       "stableKey": "item:tibia:sabre",
       "weight": 2500
+    },
+    {
+      "aliases": [],
+      "displayName": "scarf",
+      "guid": "c1f5d5eb-0152-504d-884b-a06f55b7b7ba",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3572",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:scarf",
+      "weight": 200
+    },
+    {
+      "aliases": [],
+      "displayName": "scroll",
+      "guid": "ebc51d34-b7c8-55c1-a20b-0f3aeef9e592",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "2815",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:scroll",
+      "weight": 50
+    },
+    {
+      "aliases": [],
+      "displayName": "scroll of heroic deeds",
+      "guid": "b86fcd56-807d-5072-a6ec-70d72c1ab81f",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11510",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:scroll-of-heroic-deeds",
+      "weight": 79
     },
     {
       "aliases": [],
@@ -853,6 +1448,24 @@
     },
     {
       "aliases": [],
+      "displayName": "small notebook",
+      "guid": "aef133b2-f01c-5bb0-bec9-65733a115d03",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11450",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:small-notebook",
+      "weight": 80
+    },
+    {
+      "aliases": [],
       "displayName": "small ruby",
       "guid": "403dad1a-2cb4-5ecd-bd31-4b77f91247e2",
       "includedFacets": [
@@ -868,6 +1481,24 @@
       },
       "stableKey": "item:tibia:small-ruby",
       "weight": 10
+    },
+    {
+      "aliases": [],
+      "displayName": "sniper arrow",
+      "guid": "4d2834fc-fb95-527b-a2f2-7d2073bc9dd0",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "7364",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:sniper-arrow",
+      "weight": 70
     },
     {
       "aliases": [],
@@ -925,6 +1556,24 @@
     },
     {
       "aliases": [],
+      "displayName": "two handed sword",
+      "guid": "9bb399fd-826f-5791-8b2b-212049d6ac44",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3265",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:two-handed-sword",
+      "weight": 7000
+    },
+    {
+      "aliases": [],
       "displayName": "wand of decay",
       "guid": "bbf16d6e-5b90-5e2d-a2f8-5fd7e4cdc889",
       "includedFacets": [
@@ -940,6 +1589,42 @@
       },
       "stableKey": "item:tibia:wand-of-decay",
       "weight": 2300
+    },
+    {
+      "aliases": [],
+      "displayName": "war hammer",
+      "guid": "1942ff5e-eb96-57dd-93a5-16b794aadc3e",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3279",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:war-hammer",
+      "weight": 8500
+    },
+    {
+      "aliases": [],
+      "displayName": "wedding ring",
+      "guid": "89965d61-d690-5a25-9214-3d498a61a31f",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3004",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:wedding-ring",
+      "weight": 40
     },
     {
       "aliases": [],
@@ -1028,32 +1713,56 @@
     "curationState": "accepted",
     "dependencies": [
       "creature:tibia:snake",
+      "item:tibia:arrow",
       "item:tibia:book",
+      "item:tibia:bow",
       "item:tibia:broken-shamanic-staff",
       "item:tibia:brown-bread",
       "item:tibia:chain-armor",
       "item:tibia:corncob",
+      "item:tibia:crown-armor",
+      "item:tibia:crown-helmet",
+      "item:tibia:crown-legs",
+      "item:tibia:crown-shield",
       "item:tibia:crystal-necklace",
       "item:tibia:dagger",
+      "item:tibia:fire-sword",
       "item:tibia:girlish-hair-decoration",
       "item:tibia:gold-coin",
+      "item:tibia:grapes",
+      "item:tibia:great-health-potion",
+      "item:tibia:green-tunic",
       "item:tibia:ham",
       "item:tibia:heavy-old-tome",
       "item:tibia:legion-helmet",
       "item:tibia:lump-of-dirt",
+      "item:tibia:lyre",
       "item:tibia:mace",
       "item:tibia:meat",
+      "item:tibia:might-ring",
       "item:tibia:orc-leather",
       "item:tibia:orc-tooth",
+      "item:tibia:piggy-bank",
       "item:tibia:protective-charm",
+      "item:tibia:red-piece-of-cloth",
+      "item:tibia:red-rose",
+      "item:tibia:rope",
       "item:tibia:sabre",
+      "item:tibia:scarf",
+      "item:tibia:scroll",
+      "item:tibia:scroll-of-heroic-deeds",
       "item:tibia:shamanic-hood",
       "item:tibia:skull",
+      "item:tibia:small-notebook",
       "item:tibia:small-ruby",
+      "item:tibia:sniper-arrow",
       "item:tibia:spear",
       "item:tibia:sword",
       "item:tibia:torch",
+      "item:tibia:two-handed-sword",
       "item:tibia:wand-of-decay",
+      "item:tibia:war-hammer",
+      "item:tibia:wedding-ring",
       "item:tibia:worm"
     ],
     "dependencyMode": "reachable-only",
@@ -1072,6 +1781,18 @@
           "loot"
         ],
         "rationale": "The root covers melee and ranged physical combat with a projectile."
+      },
+      {
+        "consumer": "Hero Cave hunt and creature contract tests",
+        "entityKey": "creature:tibia:hero",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers dual melee/ranged physical combat, healing, armor provenance, and loot."
       },
       {
         "consumer": "creature contract tests",
@@ -1111,12 +1832,30 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:arrow",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:book",
         "facets": [
           "identity",
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:bow",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1156,6 +1895,42 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crown-armor",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crown-helmet",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crown-legs",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crown-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:crystal-necklace",
         "facets": [
           "identity",
@@ -1174,6 +1949,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:fire-sword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:girlish-hair-decoration",
         "facets": [
           "identity",
@@ -1188,7 +1972,34 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:amazon, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:grapes",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:great-health-potion",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:green-tunic",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1228,6 +2039,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:lyre",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:mace",
         "facets": [
           "identity",
@@ -1242,7 +2062,16 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:hero, creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:might-ring",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1264,6 +2093,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:piggy-bank",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:protective-charm",
         "facets": [
           "identity",
@@ -1273,12 +2111,66 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:red-piece-of-cloth",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:red-rose",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:rope",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:sabre",
         "facets": [
           "identity",
           "item"
         ],
         "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:scarf",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:scroll",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:scroll-of-heroic-deeds",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1300,12 +2192,30 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:small-notebook",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:small-ruby",
         "facets": [
           "identity",
           "item"
         ],
         "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:sniper-arrow",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1323,7 +2233,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
+        "rationale": "Required by character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",
@@ -1336,12 +2246,39 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:two-handed-sword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:wand-of-decay",
         "facets": [
           "identity",
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:war-hammer",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:wedding-ring",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:hero loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1409,6 +2346,7 @@
     ],
     "roots": [
       "creature:tibia:amazon",
+      "creature:tibia:hero",
       "creature:tibia:orc-shaman",
       "creature:tibia:rotworm",
       "spell:tibia:berserk",
@@ -1422,6 +2360,7 @@
     "sourceFiles": [
       "data-otservbr-global/monster/humanoids/orc_shaman.lua",
       "data-otservbr-global/monster/humans/amazon.lua",
+      "data-otservbr-global/monster/humans/hero.lua",
       "data-otservbr-global/monster/reptiles/snake.lua",
       "data-otservbr-global/monster/vermins/rotworm.lua",
       "data/XML/vocations.xml",

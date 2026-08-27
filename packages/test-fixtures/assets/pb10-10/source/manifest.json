@@ -1,0 +1,2518 @@
+{
+  "outfits": {
+    "73": {
+      "name": "",
+      "file": "outfits/73.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "131": {
+      "name": "",
+      "file": "outfits/131.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    }
+  },
+  "objects": {
+    "101": {
+      "name": "",
+      "file": "objects/101.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "410": {
+      "name": "",
+      "file": "objects/410.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1450": {
+      "name": "",
+      "file": "objects/1450.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1451": {
+      "name": "",
+      "file": "objects/1451.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1452": {
+      "name": "",
+      "file": "objects/1452.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1453": {
+      "name": "",
+      "file": "objects/1453.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1454": {
+      "name": "",
+      "file": "objects/1454.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1459": {
+      "name": "",
+      "file": "objects/1459.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1479": {
+      "name": "",
+      "file": "objects/1479.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1480": {
+      "name": "",
+      "file": "objects/1480.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1854": {
+      "name": "",
+      "file": "objects/1854.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1855": {
+      "name": "",
+      "file": "objects/1855.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1856": {
+      "name": "",
+      "file": "objects/1856.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1857": {
+      "name": "",
+      "file": "objects/1857.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1858": {
+      "name": "",
+      "file": "objects/1858.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1865": {
+      "name": "",
+      "file": "objects/1865.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1866": {
+      "name": "",
+      "file": "objects/1866.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "1867": {
+      "name": "",
+      "file": "objects/1867.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2112": {
+      "name": "",
+      "file": "objects/2112.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2469": {
+      "name": "",
+      "file": "objects/2469.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2489": {
+      "name": "",
+      "file": "objects/2489.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2490": {
+      "name": "",
+      "file": "objects/2490.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2491": {
+      "name": "",
+      "file": "objects/2491.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2492": {
+      "name": "",
+      "file": "objects/2492.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2726": {
+      "name": "",
+      "file": "objects/2726.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2728": {
+      "name": "",
+      "file": "objects/2728.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2729": {
+      "name": "",
+      "file": "objects/2729.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2730": {
+      "name": "",
+      "file": "objects/2730.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2732": {
+      "name": "",
+      "file": "objects/2732.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2733": {
+      "name": "",
+      "file": "objects/2733.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2736": {
+      "name": "",
+      "file": "objects/2736.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "2889": {
+      "name": "",
+      "file": "objects/2889.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "3031": {
+      "name": "",
+      "file": "objects/3031.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "3350": {
+      "name": "",
+      "file": "objects/3350.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "3447": {
+      "name": "",
+      "file": "objects/3447.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "3563": {
+      "name": "",
+      "file": "objects/3563.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "3577": {
+      "name": "",
+      "file": "objects/3577.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4415": {
+      "name": "",
+      "file": "objects/4415.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4417": {
+      "name": "",
+      "file": "objects/4417.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4418": {
+      "name": "",
+      "file": "objects/4418.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4419": {
+      "name": "",
+      "file": "objects/4419.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4420": {
+      "name": "",
+      "file": "objects/4420.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4421": {
+      "name": "",
+      "file": "objects/4421.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4422": {
+      "name": "",
+      "file": "objects/4422.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4423": {
+      "name": "",
+      "file": "objects/4423.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4424": {
+      "name": "",
+      "file": "objects/4424.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4425": {
+      "name": "",
+      "file": "objects/4425.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4426": {
+      "name": "",
+      "file": "objects/4426.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "4427": {
+      "name": "",
+      "file": "objects/4427.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5019": {
+      "name": "",
+      "file": "objects/5019.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5020": {
+      "name": "",
+      "file": "objects/5020.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5518": {
+      "name": "",
+      "file": "objects/5518.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5577": {
+      "name": "",
+      "file": "objects/5577.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5578": {
+      "name": "",
+      "file": "objects/5578.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5579": {
+      "name": "",
+      "file": "objects/5579.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5580": {
+      "name": "",
+      "file": "objects/5580.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5581": {
+      "name": "",
+      "file": "objects/5581.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5582": {
+      "name": "",
+      "file": "objects/5582.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5583": {
+      "name": "",
+      "file": "objects/5583.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5584": {
+      "name": "",
+      "file": "objects/5584.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5585": {
+      "name": "",
+      "file": "objects/5585.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5595": {
+      "name": "",
+      "file": "objects/5595.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5596": {
+      "name": "",
+      "file": "objects/5596.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5711": {
+      "name": "",
+      "file": "objects/5711.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5712": {
+      "name": "",
+      "file": "objects/5712.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5713": {
+      "name": "",
+      "file": "objects/5713.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5714": {
+      "name": "",
+      "file": "objects/5714.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5715": {
+      "name": "",
+      "file": "objects/5715.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5716": {
+      "name": "",
+      "file": "objects/5716.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5717": {
+      "name": "",
+      "file": "objects/5717.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5719": {
+      "name": "",
+      "file": "objects/5719.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5721": {
+      "name": "",
+      "file": "objects/5721.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5722": {
+      "name": "",
+      "file": "objects/5722.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5726": {
+      "name": "",
+      "file": "objects/5726.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "5967": {
+      "name": "",
+      "file": "objects/5967.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6373": {
+      "name": "",
+      "file": "objects/6373.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6374": {
+      "name": "",
+      "file": "objects/6374.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6375": {
+      "name": "",
+      "file": "objects/6375.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6376": {
+      "name": "",
+      "file": "objects/6376.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6377": {
+      "name": "",
+      "file": "objects/6377.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6378": {
+      "name": "",
+      "file": "objects/6378.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6379": {
+      "name": "",
+      "file": "objects/6379.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6380": {
+      "name": "",
+      "file": "objects/6380.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6381": {
+      "name": "",
+      "file": "objects/6381.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6382": {
+      "name": "",
+      "file": "objects/6382.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6383": {
+      "name": "",
+      "file": "objects/6383.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6384": {
+      "name": "",
+      "file": "objects/6384.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6385": {
+      "name": "",
+      "file": "objects/6385.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6475": {
+      "name": "",
+      "file": "objects/6475.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6476": {
+      "name": "",
+      "file": "objects/6476.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6477": {
+      "name": "",
+      "file": "objects/6477.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6478": {
+      "name": "",
+      "file": "objects/6478.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6479": {
+      "name": "",
+      "file": "objects/6479.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6481": {
+      "name": "",
+      "file": "objects/6481.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6482": {
+      "name": "",
+      "file": "objects/6482.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6483": {
+      "name": "",
+      "file": "objects/6483.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6485": {
+      "name": "",
+      "file": "objects/6485.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "6486": {
+      "name": "",
+      "file": "objects/6486.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "7364": {
+      "name": "",
+      "file": "objects/7364.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "8597": {
+      "name": "",
+      "file": "objects/8597.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "8598": {
+      "name": "",
+      "file": "objects/8598.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "8603": {
+      "name": "",
+      "file": "objects/8603.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "8604": {
+      "name": "",
+      "file": "objects/8604.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "15484": {
+      "name": "",
+      "file": "objects/15484.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    }
+  },
+  "effects": {
+    "1": {
+      "name": "",
+      "file": "effects/1.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "10": {
+      "name": "",
+      "file": "effects/10.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    },
+    "13": {
+      "name": "",
+      "file": "effects/13.png",
+      "cellW": 1,
+      "cellH": 1,
+      "cols": 1,
+      "groups": {
+        "kind": "default",
+        "patternX": 1,
+        "patternY": 1,
+        "patternZ": 1,
+        "layers": 1,
+        "phases": [
+          [
+            100,
+            100
+          ]
+        ],
+        "start": 0,
+        "count": 1
+      },
+      "flags": {}
+    }
+  },
+  "missiles": {},
+  "semantic": {},
+  "objectNames": {}
+}

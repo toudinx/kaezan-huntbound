@@ -139,6 +139,36 @@ describe('parseCanaryItemsXml', () => {
     });
   });
 
+  it('ignores Canary combat fields that are outside the item contract', () => {
+    const xml = `<items>
+      <item id="9301" name="fixture shard" article="a">
+        <attribute key="showAttributes" value="1" />
+        <attribute key="absorbpercentphysical" value="10" />
+        <attribute key="absorbpercentfire" value="20" />
+        <attribute key="absorbpercentpoison" value="30" />
+        <attribute key="absorbpercentenergy" value="40" />
+        <attribute key="absorbpercentice" value="50" />
+        <attribute key="absorbpercentholy" value="60" />
+        <attribute key="absorbpercentdeath" value="70" />
+        <attribute key="charges" value="3" />
+        <attribute key="elementfire" value="1" />
+        <attribute key="ammotype" value="arrow" />
+      </item>
+    </items>`;
+    const result = parseCanaryItemsXml(xml, { ids: ['9301'], names: [] });
+
+    expect(result).toEqual({
+      ok: true,
+      value: [
+        {
+          sourceId: '9301',
+          displayName: 'fixture shard',
+          attributes: { article: 'a' },
+        },
+      ],
+    });
+  });
+
   it('does not validate or return unknown fields from an unselected item', () => {
     const xml = fixture.replace(
       'id="9302" name="fixture tonic"',

@@ -2,6 +2,187 @@
   "schemaVersion": 1,
   "hunts": [
     {
+      "huntId": "hunt:tibia:hero-cave",
+      "runtimeDirectory": "pb10-10-hero-cave",
+      "displayName": "Hero Cave",
+      "band": 5,
+      "recommendedLevel": 130,
+      "soloVocation": "vocation:tibia:knight",
+      "sourceUrl": "https://tibiaroute.com/br/hunting-places/Hero-Cave",
+      "maxLiveActors": 24,
+      "experiencePerHour": 1152000,
+      "creatures": [
+        {
+          "creatureKey": "creature:tibia:hero",
+          "displayName": "Hero",
+          "slotCount": 24,
+          "health": 1400,
+          "experience": 1200,
+          "lookType": 73,
+          "respawnTicks": 1800,
+          "experiencePerHour": 1152000,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 59500,
+              "minCount": 1,
+              "maxCount": 100
+            },
+            {
+              "itemKey": "item:tibia:scroll",
+              "chancePerHundredThousand": 45000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:arrow",
+              "chancePerHundredThousand": 26000,
+              "minCount": 1,
+              "maxCount": 13
+            },
+            {
+              "itemKey": "item:tibia:red-rose",
+              "chancePerHundredThousand": 20450,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:grapes",
+              "chancePerHundredThousand": 19850,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:bow",
+              "chancePerHundredThousand": 13300,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:sniper-arrow",
+              "chancePerHundredThousand": 11400,
+              "minCount": 1,
+              "maxCount": 4
+            },
+            {
+              "itemKey": "item:tibia:meat",
+              "chancePerHundredThousand": 8200,
+              "minCount": 1,
+              "maxCount": 3
+            },
+            {
+              "itemKey": "item:tibia:green-tunic",
+              "chancePerHundredThousand": 8000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:scroll-of-heroic-deeds",
+              "chancePerHundredThousand": 5000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:wedding-ring",
+              "chancePerHundredThousand": 4910,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:rope",
+              "chancePerHundredThousand": 2190,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:red-piece-of-cloth",
+              "chancePerHundredThousand": 2006,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:lyre",
+              "chancePerHundredThousand": 1640,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:two-handed-sword",
+              "chancePerHundredThousand": 1500,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:scarf",
+              "chancePerHundredThousand": 1110,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:small-notebook",
+              "chancePerHundredThousand": 930,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:war-hammer",
+              "chancePerHundredThousand": 870,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:great-health-potion",
+              "chancePerHundredThousand": 720,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:crown-legs",
+              "chancePerHundredThousand": 660,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:fire-sword",
+              "chancePerHundredThousand": 550,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:crown-armor",
+              "chancePerHundredThousand": 490,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:might-ring",
+              "chancePerHundredThousand": 470,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:crown-helmet",
+              "chancePerHundredThousand": 450,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:crown-shield",
+              "chancePerHundredThousand": 280,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:piggy-bank",
+              "chancePerHundredThousand": 80,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "huntId": "hunt:tibia:venore-rotworm-cave",
       "runtimeDirectory": "pb04",
       "displayName": "Venore Rotworm Cave",

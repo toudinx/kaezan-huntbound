@@ -7,6 +7,7 @@ import {
   HUNT_PACK_COMBAT_KEYS,
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_DEAD_ROTWORM_KEY,
+  HUNT_PACK_HERO_CREATURE_KEY,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
   HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
@@ -26,22 +27,28 @@ export const HUNT_PACK_BUDGET = {
 export type HuntPackMetadata = {
   readonly huntId: string;
   readonly packKey: string;
+  readonly creatureKey?: string;
+  readonly lootKeys?: readonly string[];
 };
 
 export function deriveHuntPackSelection(
   region: MapRegion,
   metadata: HuntPackMetadata,
 ): HuntPackSelection {
+  const creatureKey = metadata.creatureKey ?? HUNT_PACK_CREATURE_KEY;
+  const lootKeys = metadata.lootKeys ?? HUNT_PACK_LOOT_KEYS;
   const selection: HuntPackSelection = {
     packKey: metadata.packKey,
     huntId: metadata.huntId,
     regionSha256: hashHuntRegion(region),
     keys: [
-      ...deriveHuntPackKeys(region),
-      HUNT_PACK_CREATURE_KEY,
-      HUNT_PACK_OUTFIT_KEY,
-      ...HUNT_PACK_COMBAT_KEYS,
-      ...HUNT_PACK_LOOT_KEYS,
+      ...new Set([
+        ...deriveHuntPackKeys(region),
+        creatureKey,
+        HUNT_PACK_OUTFIT_KEY,
+        ...HUNT_PACK_COMBAT_KEYS,
+        ...lootKeys,
+      ]),
     ],
     budget: HUNT_PACK_BUDGET,
   };
@@ -71,6 +78,13 @@ function identityForKey(key: string): {
     return {
       category: 'creature',
       sourceIdentity: { kind: 'lookType', id: 26 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+  if (key === HUNT_PACK_HERO_CREATURE_KEY) {
+    return {
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 73 },
       pivot: { x: 0.5, y: 1 },
     };
   }
@@ -126,6 +140,10 @@ function identityForKey(key: string): {
     ['item:tibia:meat', 3577],
     ['item:tibia:sword', 3264],
     ['item:tibia:worm', 3492],
+    ['item:tibia:arrow', 3447],
+    ['item:tibia:bow', 3350],
+    ['item:tibia:green-tunic', 3563],
+    ['item:tibia:sniper-arrow', 7364],
   ]);
   const lootClientId = lootClientIds.get(key);
   if (lootClientId !== undefined) {

@@ -6,6 +6,7 @@ import { type AssetKey, AssetKeySchema } from '../manifest/identity.ts';
 const VOID_SERVER_ID = 0;
 
 export const HUNT_PACK_CREATURE_KEY = 'creature:tibia:rotworm';
+export const HUNT_PACK_HERO_CREATURE_KEY = 'creature:tibia:hero';
 export const HUNT_PACK_OUTFIT_KEY = 'outfit:tibia:knight';
 export const HUNT_PACK_BLOOD_EFFECT_KEY = 'effect:tibia:draw-blood';
 export const HUNT_PACK_SMALL_SPLASH_KEY = 'item:tibia:small-splash';
@@ -23,19 +24,36 @@ export const HUNT_PACK_LOOT_KEYS = [
   'item:tibia:worm',
 ] as const;
 
+/**
+ * Item sprites already present in the personal export and used by Hero loot.
+ * The remaining Hero drops stay in the content catalog and render as their
+ * textual fallback until their personal export is available.
+ */
+export const HUNT_PACK_HERO_LOOT_KEYS = [
+  'item:tibia:gold-coin',
+  'item:tibia:arrow',
+  'item:tibia:bow',
+  'item:tibia:green-tunic',
+  'item:tibia:meat',
+  'item:tibia:sniper-arrow',
+] as const;
+
+/** Dynamic creature/item keys accepted by the hunt asset pipeline. */
+export const HUNT_PACK_DYNAMIC_KEYS = [
+  HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_HERO_CREATURE_KEY,
+  ...HUNT_PACK_LOOT_KEYS,
+  ...HUNT_PACK_HERO_LOOT_KEYS,
+] as const;
+
+const huntPackDynamicKeySet = new Set<string>(HUNT_PACK_DYNAMIC_KEYS);
+
 export const HUNT_PACK_COMBAT_KEYS = [
   HUNT_PACK_BLOOD_EFFECT_KEY,
   HUNT_PACK_SMALL_SPLASH_KEY,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
   HUNT_PACK_DEAD_ROTWORM_KEY,
-] as const;
-
-const HUNT_PACK_EXTRA_KEYS = [
-  HUNT_PACK_CREATURE_KEY,
-  HUNT_PACK_OUTFIT_KEY,
-  ...HUNT_PACK_COMBAT_KEYS,
-  ...HUNT_PACK_LOOT_KEYS,
 ] as const;
 
 export interface HuntPackSelection {
@@ -219,6 +237,10 @@ export function hashHuntRegion(region: MapRegion): string {
   return sha256(new TextEncoder().encode(canonicalHuntRegionJson(region)));
 }
 
+function selectedDynamicKeys(selection: HuntPackSelection): readonly string[] {
+  return selection.keys.filter((key) => huntPackDynamicKeySet.has(key));
+}
+
 export function deriveHuntPackKeys(region: MapRegion): readonly AssetKey[] {
   return [...new Set(region.palette)]
     .filter((serverId) => serverId > VOID_SERVER_ID)
@@ -244,7 +266,12 @@ export function validateHuntPack(
   resolvedEntries: readonly HuntPackResolvedEntry[],
 ): readonly HuntPackDiagnostic[] {
   const diagnostics: HuntPackDiagnostic[] = [];
-  const expectedKeys = [...deriveHuntPackKeys(region), ...HUNT_PACK_EXTRA_KEYS];
+  const expectedKeys = [
+    ...deriveHuntPackKeys(region),
+    HUNT_PACK_OUTFIT_KEY,
+    ...HUNT_PACK_COMBAT_KEYS,
+    ...selectedDynamicKeys(selection),
+  ];
   const expectedSet = new Set<string>(expectedKeys);
   const selectedSet = new Set(selection.keys);
   const resolvedSet = new Set(resolvedEntries.map(({ key }) => key));

@@ -1,0 +1,76 @@
+{
+  "key": "hunt:tibia:hero-cave",
+  "displayName": "Hero Cave",
+  "sourceUrl": "https://tibiaroute.com/br/hunting-places/Hero-Cave",
+  "source": {
+    "map": "data-otservbr-global/world/otservbr.otbm",
+    "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+  },
+  "layout": "../../layouts/hunts/hero-cave.json",
+  "recommendedLevel": 130,
+  "soloVocation": "vocation:tibia:knight",
+  "band": 5,
+  "region": {
+    "minX": 33270,
+    "minY": 31550,
+    "maxX": 33340,
+    "maxY": 31620,
+    "floors": [8, 9, 10]
+  },
+  "creatures": ["creature:tibia:hero"],
+  "excludedCreatures": [
+    {
+      "name": "Renegade Knight",
+      "reason": "modern Edron overlay excluded from the faixa 5 selection",
+      "count": 43
+    },
+    {
+      "name": "Vile Grandmaster",
+      "reason": "modern Edron overlay excluded from the faixa 5 selection",
+      "count": 35
+    },
+    {
+      "name": "Vicious Squire",
+      "reason": "modern Edron overlay excluded from the faixa 5 selection",
+      "count": 36
+    },
+    {
+      "name": "Blood Priest",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 17
+    },
+    {
+      "name": "Bonebeast",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 12
+    },
+    {
+      "name": "Undead Gladiator",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 11
+    },
+    {
+      "name": "Necromancer",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 3
+    },
+    {
+      "name": "Lich",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 2
+    },
+    {
+      "name": "Ghoul",
+      "reason": "undead and condition-bearing creature excluded from the faixa 5 selection",
+      "count": 1
+    }
+  ],
+  "expectedSpawnGroups": 17,
+  "expectedSpawnSlots": 24,
+  "expectedDroppedTransitions": 0,
+  "budget": {
+    "maxFloors": 3,
+    "maxWidth": 96,
+    "maxHeight": 96
+  }
+}

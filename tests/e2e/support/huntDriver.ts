@@ -17,6 +17,8 @@ export const stepKeys: Readonly<Record<'n' | 's' | 'w' | 'e', StepKey>> = {
   e: 'ArrowRight',
 };
 
+export const DEFAULT_HUNT_ID = 'hunt:tibia:venore-rotworm-cave';
+
 /** What one held input produced: the events it caused and the state after it. */
 export interface HuntStepOutcome {
   readonly before: HuntProbeState;
@@ -33,8 +35,13 @@ const playerEventTypes = new Set([
 
 const probeErrorMessage = 'Hunt probe is not installed in the test browser.';
 
-export async function selectHunt(page: Page): Promise<void> {
-  const selector = page.locator('[data-testid="hunt-place-select"]');
+export async function selectHunt(
+  page: Page,
+  huntId = DEFAULT_HUNT_ID,
+): Promise<void> {
+  const selector = page.locator(
+    `[data-testid="hunt-place-select"][data-hunt-id="${huntId}"]`,
+  );
   await expect(selector).toHaveCount(1, { timeout: 15_000 });
   await selector.click();
 }

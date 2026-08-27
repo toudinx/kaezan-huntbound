@@ -83,7 +83,14 @@ vi.mock('./ui/HuntingPlaces', () => ({
     onSelect: (hunt: unknown) => void,
   ) => {
     harness.events.push('hunting');
-    const hunt = index.hunts[0];
+    const hunt =
+      index.hunts.find(
+        (candidate) =>
+          typeof candidate === 'object' &&
+          candidate !== null &&
+          (candidate as { readonly huntId?: unknown }).huntId ===
+            'hunt:tibia:venore-rotworm-cave',
+      ) ?? index.hunts[0];
     if (hunt !== undefined) onSelect(hunt);
     return { destroy: () => undefined };
   },

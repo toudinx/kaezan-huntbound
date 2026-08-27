@@ -29,6 +29,7 @@ function selectionFixture(): SelectionInput {
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
+      'creature:tibia:hero',
     ],
     dependencies: ['creature:tibia:snake'],
     projections: [
@@ -72,6 +73,7 @@ function selectionFixture(): SelectionInput {
         'creature:tibia:rotworm',
         'creature:tibia:amazon',
         'creature:tibia:orc-shaman',
+        'creature:tibia:hero',
       ].map((entityKey) => ({
         entityKey,
         facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
@@ -100,12 +102,13 @@ function selectionFixture(): SelectionInput {
       'data-otservbr-global/monster/vermins/rotworm.lua',
       'data-otservbr-global/monster/humans/amazon.lua',
       'data-otservbr-global/monster/humanoids/orc_shaman.lua',
+      'data-otservbr-global/monster/humans/hero.lua',
       'data-otservbr-global/monster/reptiles/snake.lua',
     ],
     rootSourceIds: {
       vocation: ['4'],
       spell: ['80', '61', '123', '106', '107'],
-      creature: ['26', '77', '6'],
+      creature: ['26', '77', '6', '73'],
     },
     projectionPolicy: {
       vocationFamilyKey: 'vocation-family:huntbound:knight',
@@ -122,29 +125,49 @@ function selectionFixture(): SelectionInput {
       aliases: [],
     },
     dependencySourceIds: { creature: ['28'] },
-    character: {
-      stableKey: 'character:huntbound:knight-venore-rotworm-cave',
-      vocationKey: 'vocation:tibia:knight',
-      level: 35,
-      skills: { sword: 60, magic: 0 },
-      weaponItemKey: 'item:tibia:sword',
-      weaponSourceId: '3264',
-      weaponAttack: 14,
-      maxHealth: 590,
-      maxMana: 185,
-      spellKeys: [
-        'spell:tibia:berserk',
-        'spell:tibia:brutal-strike',
-        'spell:tibia:wound-cleansing',
-        'spell:tibia:groundshaker',
-        'spell:tibia:whirlwind-throw',
-      ],
-    },
+    characters: [
+      {
+        stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 35,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 590,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
+        stableKey: 'character:huntbound:knight-hero-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 130,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 2015,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+    ],
   };
 }
 
 describe('curated slice selection', () => {
-  it('accepts the frozen seven-root selection and its dependency projection', () => {
+  it('accepts the frozen ten-root selection and its dependency projection', () => {
     expect(
       validateSliceSelection(asSliceDefinition(selectionFixture())),
     ).toEqual([]);

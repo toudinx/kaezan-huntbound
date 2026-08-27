@@ -76,6 +76,11 @@
       "purpose": "creature"
     },
     {
+      "relativePath": "data-otservbr-global/monster/humans/hero.lua",
+      "sha256": "8c7add3d9e2baf5ab0e91934588d0e59f3b309a48d46d2f181605297220cb089",
+      "purpose": "creature"
+    },
+    {
       "relativePath": "data-otservbr-global/monster/reptiles/snake.lua",
       "sha256": "e626dc3591330481f37e1e3703afe67bf89a93771c42ccbd46ad59f0690ca48b",
       "purpose": "creature"

@@ -4,6 +4,8 @@ import type { MapRegion } from '../../../contracts/src/hunt/types.ts';
 
 import {
   deriveHuntPackKeys,
+  HUNT_PACK_HERO_CREATURE_KEY,
+  HUNT_PACK_HERO_LOOT_KEYS,
   hashHuntRegion,
   validateHuntPack,
 } from './HuntPack.ts';
@@ -208,5 +210,23 @@ describe('hunt pack validation', () => {
         .filter(({ code }) => code === 'HUNT_ASSET_KEY_UNEXPECTED')
         .map(({ message }) => message),
     ).toEqual(['Selection contains unexpected item:tibia:unused-combat-asset']);
+  });
+
+  it('accepts the selected Hero creature and loot keys', () => {
+    const input = region([100]);
+    const selected = {
+      ...selectionFor(input),
+      keys: [
+        'tile:tibia:100',
+        HUNT_PACK_HERO_CREATURE_KEY,
+        'outfit:tibia:knight',
+        ...huntCombatKeys,
+        ...HUNT_PACK_HERO_LOOT_KEYS,
+      ],
+    };
+
+    expect(validateHuntPack(selected, input, resolved(selected.keys))).toEqual(
+      [],
+    );
   });
 });

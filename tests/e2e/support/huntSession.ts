@@ -28,6 +28,8 @@ export const HUNT_SESSION_ID = 'pb-04-hunt-session';
 export const HUNT_SESSION_SEED = '1a2b3c4d5e6f7a8b';
 export const HUNT_SESSION_SCENARIO_ID =
   'scenario:hunt:tibia:venore-rotworm-cave';
+export const HUNT_SESSION_CHARACTER_KEY =
+  'character:huntbound:knight-venore-rotworm-cave';
 export const HUNT_SESSION_TICK_COUNT = 600;
 export const HUNT_SESSION_PLAYER_ENTITY_ID = 1;
 
@@ -103,9 +105,13 @@ function readHuntCombatContext() {
   const runtime = projectRuntimeBundle(
     JSON.parse(readFileSync(catalogBundleUrl, 'utf8')) as CatalogContentBundle,
   );
-  const character = runtime.characters[0];
+  const character = runtime.characters.find(
+    (candidate) => candidate.stableKey === HUNT_SESSION_CHARACTER_KEY,
+  );
   if (character === undefined) {
-    throw new Error('Generated catalog is missing the hunt character.');
+    throw new Error(
+      `Generated catalog is missing character ${HUNT_SESSION_CHARACTER_KEY}.`,
+    );
   }
   return {
     character,

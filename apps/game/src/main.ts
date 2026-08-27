@@ -430,6 +430,7 @@ export async function bootstrapApp(
         scenario.conditions,
         scenario.blueprints,
         character,
+        scenarioResult.value.itemKeys,
       );
       const identity = {
         huntId: hunt.huntId,

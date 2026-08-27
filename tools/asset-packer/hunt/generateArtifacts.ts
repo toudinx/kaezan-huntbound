@@ -240,6 +240,8 @@ export async function generateHuntArtifacts(
   const hunt = deriveHuntPackSelection(region, {
     huntId: entry.huntId,
     packKey: entry.packKey,
+    creatureKey: entry.creatureKey,
+    lootKeys: entry.lootKeys,
   });
 
   if (options.profile === 'test') {

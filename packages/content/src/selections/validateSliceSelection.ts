@@ -39,7 +39,7 @@ interface CuratedSelectionInput extends ContentSliceDefinition {
   readonly rootSourceIds: SourceIdGroups;
   readonly dependencySourceIds: Readonly<Record<string, readonly string[]>>;
   readonly projectionPolicy: ProjectionPolicy;
-  readonly character: FrozenCharacter;
+  readonly characters: readonly FrozenCharacter[];
 }
 
 const expectedRoots = [
@@ -52,6 +52,7 @@ const expectedRoots = [
   'creature:tibia:rotworm',
   'creature:tibia:amazon',
   'creature:tibia:orc-shaman',
+  'creature:tibia:hero',
 ] as const;
 
 const expectedDependencies = ['creature:tibia:snake'] as const;
@@ -67,6 +68,7 @@ const expectedSourceFiles = [
   'data-otservbr-global/monster/vermins/rotworm.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
+  'data-otservbr-global/monster/humans/hero.lua',
   'data-otservbr-global/monster/reptiles/snake.lua',
 ] as const;
 
@@ -76,24 +78,44 @@ const expectedSourceFiles = [
  * `berserk.lua` gates at level 35: the hunt was unwinnable by arithmetic.
  * Level 35 with sword 60 is the ordinary knight the cave is written for.
  */
-const expectedCharacter: FrozenCharacter = {
-  stableKey: 'character:huntbound:knight-venore-rotworm-cave',
-  vocationKey: 'vocation:tibia:knight',
-  level: 35,
-  skills: { sword: 60, magic: 0 },
-  weaponItemKey: 'item:tibia:sword',
-  weaponSourceId: '3264',
-  weaponAttack: 14,
-  maxHealth: 590,
-  maxMana: 185,
-  spellKeys: [
-    'spell:tibia:berserk',
-    'spell:tibia:brutal-strike',
-    'spell:tibia:wound-cleansing',
-    'spell:tibia:groundshaker',
-    'spell:tibia:whirlwind-throw',
-  ],
-};
+const expectedCharacters: readonly FrozenCharacter[] = [
+  {
+    stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+    vocationKey: 'vocation:tibia:knight',
+    level: 35,
+    skills: { sword: 60, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponSourceId: '3264',
+    weaponAttack: 14,
+    maxHealth: 590,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ],
+  },
+  {
+    stableKey: 'character:huntbound:knight-hero-cave',
+    vocationKey: 'vocation:tibia:knight',
+    level: 130,
+    skills: { sword: 60, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponSourceId: '3264',
+    weaponAttack: 14,
+    maxHealth: 2015,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ],
+  },
+];
 
 const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
   'vocation:tibia:knight': ['identity', 'progression'],
@@ -123,6 +145,7 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
     'combat',
     'loot',
   ],
+  'creature:tibia:hero': ['identity', 'stats', 'appearance', 'combat', 'loot'],
   'creature:tibia:snake': [
     'identity',
     'stats',
@@ -163,7 +186,7 @@ function validateSourceIdGroups(
   const expected: SourceIdGroups = {
     vocation: ['4'],
     spell: ['80', '61', '123', '106', '107'],
-    creature: ['26', '77', '6'],
+    creature: ['26', '77', '6', '73'],
   };
 
   for (const kind of ['vocation', 'spell', 'creature'] as const) {
@@ -250,7 +273,7 @@ export function validateSliceSelection(
     rootSourceIds: _rootSourceIds,
     dependencySourceIds: _dependencySourceIds,
     projectionPolicy: _projectionPolicy,
-    character: _character,
+    characters: _characters,
     ...definition
   } = input as unknown as Record<string, unknown>;
   const diagnostics: ContentDiagnostic[] = [];
@@ -272,7 +295,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain Knight, five combat spells, Rotworm, Amazon, and Orc Shaman as roots',
+        'Selection must contain Knight, five combat spells, Rotworm, Amazon, Orc Shaman, and Hero as roots',
       ),
     );
   }
@@ -359,21 +382,21 @@ export function validateSliceSelection(
 
   diagnostics.push(...validateSourceIdGroups(input));
   diagnostics.push(...validateProjectionPolicy(input.projectionPolicy));
-  diagnostics.push(...validateFrozenCharacter(input.character));
+  diagnostics.push(...validateFrozenCharacters(input.characters));
   return diagnostics;
 }
 
-function validateFrozenCharacter(
-  character: FrozenCharacter | undefined,
+function validateFrozenCharacters(
+  characters: readonly FrozenCharacter[] | undefined,
 ): ContentDiagnostic[] {
   if (
-    character === undefined ||
-    JSON.stringify(character) !== JSON.stringify(expectedCharacter)
+    characters === undefined ||
+    JSON.stringify(characters) !== JSON.stringify(expectedCharacters)
   ) {
     return [
       selectionDiagnostic(
         'selection.character-mismatch',
-        'Character sheet must match the frozen PB-05 Knight loadout',
+        'Character sheets must match the frozen PB-05 Knight loadouts',
       ),
     ];
   }

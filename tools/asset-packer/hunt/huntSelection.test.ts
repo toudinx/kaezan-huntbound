@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_HERO_CREATURE_KEY,
+  HUNT_PACK_HERO_LOOT_KEYS,
   HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_OUTFIT_KEY,
 } from '../../../packages/assets/src/index.ts';
@@ -140,5 +142,41 @@ describe('hunt selection generation', () => {
         sourceIdentity: { kind: 'clientId', id: 2889 },
       },
     ]);
+  });
+
+  it('maps the Hero creature and loot keys to their source identities', () => {
+    const manifest = createHuntAssetSelection({
+      hunt: deriveHuntPackSelection(region(), {
+        ...metadata,
+        creatureKey: HUNT_PACK_HERO_CREATURE_KEY,
+        lootKeys: HUNT_PACK_HERO_LOOT_KEYS,
+      }),
+      group,
+      consumer,
+    });
+    const entries = new Map(
+      manifest.entries.map((entry) => [entry.key, entry]),
+    );
+
+    expect(entries.get(HUNT_PACK_HERO_CREATURE_KEY)).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 73 },
+    });
+    expect(entries.get('item:tibia:arrow')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3447 },
+    });
+    expect(entries.get('item:tibia:bow')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3350 },
+    });
+    expect(entries.get('item:tibia:green-tunic')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3563 },
+    });
+    expect(entries.get('item:tibia:sniper-arrow')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 7364 },
+    });
   });
 });

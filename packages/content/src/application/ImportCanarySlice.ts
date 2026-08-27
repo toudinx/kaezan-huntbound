@@ -41,7 +41,7 @@ interface SelectionManifest extends ContentSliceDefinition {
     }[];
     readonly aliases: readonly string[];
   };
-  readonly character: {
+  readonly characters: readonly {
     readonly stableKey: string;
     readonly vocationKey: string;
     readonly level: number;
@@ -55,7 +55,7 @@ interface SelectionManifest extends ContentSliceDefinition {
     readonly maxHealth: number;
     readonly maxMana: number;
     readonly spellKeys: readonly string[];
-  };
+  }[];
 }
 
 export interface ImportCanarySliceDependencies {
@@ -479,7 +479,7 @@ export function importCanarySlice(
     ...itemRefs.flatMap((reference) =>
       'sourceId' in reference ? [reference.sourceId] : [],
     ),
-    input.character.weaponSourceId,
+    ...input.characters.map((character) => character.weaponSourceId),
   ];
   const itemNames = itemRefs.flatMap((reference) =>
     'sourceName' in reference ? [reference.sourceName] : [],
@@ -554,29 +554,31 @@ export function importCanarySlice(
       itemRequiredBy.set(itemKey, requiredBy);
     }
   }
-  const weaponItem = itemById.get(input.character.weaponSourceId);
-  if (weaponItem === undefined) {
-    throw new ContentImportError('Character weapon resolution failed', [
-      errorDiagnostic(
-        'import.weapon-item-missing',
-        `Could not resolve character weapon ${input.character.weaponSourceId}`,
-      ),
-    ]);
+  for (const character of input.characters) {
+    const weaponItem = itemById.get(character.weaponSourceId);
+    if (weaponItem === undefined) {
+      throw new ContentImportError('Character weapon resolution failed', [
+        errorDiagnostic(
+          'import.weapon-item-missing',
+          `Could not resolve character weapon ${character.weaponSourceId}`,
+        ),
+      ]);
+    }
+    const weaponKey = asContentKey(
+      `item:tibia:${stableSlug(weaponItem.displayName)}`,
+    );
+    if (weaponKey !== asContentKey(character.weaponItemKey)) {
+      throw new ContentImportError('Character weapon key mismatch', [
+        errorDiagnostic(
+          'import.weapon-key-mismatch',
+          `Weapon source ${character.weaponSourceId} resolved to ${weaponKey}`,
+        ),
+      ]);
+    }
+    const weaponRequiredBy = itemRequiredBy.get(weaponKey) ?? [];
+    weaponRequiredBy.push(asContentKey(character.stableKey));
+    itemRequiredBy.set(weaponKey, weaponRequiredBy);
   }
-  const weaponKey = asContentKey(
-    `item:tibia:${stableSlug(weaponItem.displayName)}`,
-  );
-  if (weaponKey !== asContentKey(input.character.weaponItemKey)) {
-    throw new ContentImportError('Character weapon key mismatch', [
-      errorDiagnostic(
-        'import.weapon-key-mismatch',
-        `Weapon source ${input.character.weaponSourceId} resolved to ${weaponKey}`,
-      ),
-    ]);
-  }
-  const weaponRequiredBy = itemRequiredBy.get(weaponKey) ?? [];
-  weaponRequiredBy.push(asContentKey(input.character.stableKey));
-  itemRequiredBy.set(weaponKey, weaponRequiredBy);
   for (const [itemKey, requiredBy] of itemRequiredBy) {
     const fromCharacter = requiredBy.some((key) =>
       String(key).startsWith('character:'),
@@ -681,24 +683,26 @@ export function importCanarySlice(
       ] as CatalogSpellDefinition['allowedVocationFamilies'][number],
     }));
   });
-  const character = {
-    stableKey: input.character.stableKey,
-    vocationKey: input.character.vocationKey,
-    level: input.character.level,
-    skills: input.character.skills,
-    weaponItemKey: input.character.weaponItemKey,
-    weaponAttack: input.character.weaponAttack,
-    maxHealth: input.character.maxHealth,
-    maxMana: input.character.maxMana,
-    spellKeys: input.character.spellKeys,
-  };
+  const characters = input.characters
+    .map((character) => ({
+      stableKey: character.stableKey,
+      vocationKey: character.vocationKey,
+      level: character.level,
+      skills: character.skills,
+      weaponItemKey: character.weaponItemKey,
+      weaponAttack: character.weaponAttack,
+      maxHealth: character.maxHealth,
+      maxMana: character.maxMana,
+      spellKeys: character.spellKeys,
+    }))
+    .sort((left, right) => left.stableKey.localeCompare(right.stableKey));
 
   const entities = {
     vocations: [vocation],
     creatures: creatureDefinitions,
     items,
     spells,
-    characters: [character],
+    characters,
   };
   const allKeys = [
     ...entities.vocations,

@@ -1021,6 +1021,7 @@ export function createHuntCombatViewModel(
   conditions: readonly ScenarioConditionDefinition[] = DEFAULT_COMBAT_FALLBACK_CONDITIONS,
   blueprints: readonly ActorBlueprint[] = [],
   character?: CharacterDefinition,
+  itemKeys: readonly string[] = DEFAULT_COMBAT_ITEM_KEYS,
 ): CombatViewModel {
   const receivedConditions =
     abilitiesOrConditions[0] !== undefined &&
@@ -1061,7 +1062,7 @@ export function createHuntCombatViewModel(
     playerBlueprintId,
     abilities,
     conditions: scenarioConditions,
-    itemKeys: DEFAULT_COMBAT_ITEM_KEYS,
+    itemKeys,
     maxHealthByBlueprint,
     maxResourceByBlueprint,
     targetDetailsByBlueprint,

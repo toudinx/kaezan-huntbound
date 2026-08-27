@@ -16,6 +16,7 @@ const paths = {
   rotworm: 'data-otservbr-global/monster/vermins/rotworm.lua',
   amazon: 'data-otservbr-global/monster/humans/amazon.lua',
   orc: 'data-otservbr-global/monster/humanoids/orc_shaman.lua',
+  hero: 'data-otservbr-global/monster/humans/hero.lua',
   snake: 'data-otservbr-global/monster/reptiles/snake.lua',
 } as const;
 
@@ -149,6 +150,7 @@ spell:register()`,
   [paths.rotworm]: monster('Rotworm', 26, 'gold coin'),
   [paths.amazon]: monster('Amazon', 77, 'gold coin'),
   [paths.orc]: monster('Orc Shaman', 6, 'gold coin', true),
+  [paths.hero]: monster('Hero', 73, 'gold coin'),
   [paths.snake]: monster('Snake', 28, undefined, false, true),
 };
 
@@ -191,6 +193,7 @@ function selection(): ContentSliceDefinition {
       'creature:tibia:rotworm',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
+      'creature:tibia:hero',
     ],
     dependencies: ['creature:tibia:snake'],
     projections: [
@@ -230,7 +233,7 @@ function selection(): ContentSliceDefinition {
         consumer: 'spell tests',
         rationale: 'Whirlwind Throw spell is covered',
       },
-      ...['rotworm', 'amazon', 'orc-shaman'].map((name) => ({
+      ...['rotworm', 'amazon', 'orc-shaman', 'hero'].map((name) => ({
         entityKey: `creature:tibia:${name}`,
         facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
         consumer: 'creature tests',
@@ -250,7 +253,7 @@ function selection(): ContentSliceDefinition {
     rootSourceIds: {
       vocation: ['4'],
       spell: ['80', '61', '123', '106', '107'],
-      creature: ['26', '77', '6'],
+      creature: ['26', '77', '6', '73'],
     },
     dependencySourceIds: { creature: ['28'] },
     projectionPolicy: {
@@ -267,24 +270,44 @@ function selection(): ContentSliceDefinition {
       ],
       aliases: [],
     },
-    character: {
-      stableKey: 'character:huntbound:knight-venore-rotworm-cave',
-      vocationKey: 'vocation:tibia:knight',
-      level: 35,
-      skills: { sword: 60, magic: 0 },
-      weaponItemKey: 'item:tibia:sword',
-      weaponSourceId: '3264',
-      weaponAttack: 14,
-      maxHealth: 590,
-      maxMana: 185,
-      spellKeys: [
-        'spell:tibia:berserk',
-        'spell:tibia:brutal-strike',
-        'spell:tibia:wound-cleansing',
-        'spell:tibia:groundshaker',
-        'spell:tibia:whirlwind-throw',
-      ],
-    },
+    characters: [
+      {
+        stableKey: 'character:huntbound:knight-venore-rotworm-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 35,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 590,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
+        stableKey: 'character:huntbound:knight-hero-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 130,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 2015,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+    ],
   } as unknown as ContentSliceDefinition;
 }
 
@@ -412,6 +435,23 @@ describe('importCanarySlice', () => {
     ]);
     expect(result.bundle.characters).toEqual([
       {
+        stableKey: 'character:huntbound:knight-hero-cave',
+        vocationKey: 'vocation:tibia:knight',
+        level: 130,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponAttack: 14,
+        maxHealth: 2015,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
         stableKey: 'character:huntbound:knight-venore-rotworm-cave',
         vocationKey: 'vocation:tibia:knight',
         level: 35,
@@ -433,6 +473,7 @@ describe('importCanarySlice', () => {
       result.bundle.creatures.map((creature) => creature.stableKey),
     ).toEqual([
       'creature:tibia:amazon',
+      'creature:tibia:hero',
       'creature:tibia:orc-shaman',
       'creature:tibia:rotworm',
       'creature:tibia:snake',

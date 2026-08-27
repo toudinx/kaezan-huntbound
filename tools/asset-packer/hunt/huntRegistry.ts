@@ -1,4 +1,8 @@
-import type { AssetSourceGroup } from '../../../packages/assets/src/index.ts';
+import {
+  type AssetSourceGroup,
+  HUNT_PACK_HERO_CREATURE_KEY,
+  HUNT_PACK_HERO_LOOT_KEYS,
+} from '../../../packages/assets/src/index.ts';
 
 export type HuntPipelineConfig = {
   readonly selectionPath: string;
@@ -8,6 +12,8 @@ export type HuntPipelineConfig = {
   readonly packKey: string;
   readonly personalSelectionPath: string;
   readonly consumer: string;
+  readonly creatureKey?: string;
+  readonly lootKeys?: readonly string[];
   readonly testGroup: AssetSourceGroup;
   readonly personalGroup: AssetSourceGroup;
 };
@@ -39,6 +45,32 @@ export const HUNT_PIPELINE_REGISTRY = {
       groupId: 'huntbound-private-assets-pb04',
       source: 'huntbound-private-assets',
       sourceSnapshot: 'pb04-private-v1',
+      licenseClass: 'cipsoft-personal',
+      buildProfiles: ['personal'],
+    },
+  },
+  'hunt:tibia:hero-cave': {
+    selectionPath: 'packages/content/src/selections/hunts/hero-cave.json',
+    generatedDirectory: 'packages/content/src/generated/hunts/hero-cave',
+    assetFixtureRoot: 'packages/test-fixtures/assets/pb10-10',
+    runtimeDirectory: 'pb10-10-hero-cave',
+    packKey: 'pb-10-10-hero-cave',
+    personalSelectionPath:
+      'packages/assets/catalog/selections/pb-10-10-hero-cave.json',
+    consumer: 'PB-10-10 Hero Cave asset pack',
+    creatureKey: HUNT_PACK_HERO_CREATURE_KEY,
+    lootKeys: HUNT_PACK_HERO_LOOT_KEYS,
+    testGroup: {
+      groupId: 'huntbound-test-pb10-10',
+      source: 'huntbound-synthetic-fixture',
+      sourceSnapshot: 'pb10-10-synthetic-v1',
+      licenseClass: 'huntbound-test',
+      buildProfiles: ['test', 'product'],
+    },
+    personalGroup: {
+      groupId: 'huntbound-private-assets-pb10-10',
+      source: 'huntbound-private-assets',
+      sourceSnapshot: 'pb10-10-private-v1',
       licenseClass: 'cipsoft-personal',
       buildProfiles: ['personal'],
     },
