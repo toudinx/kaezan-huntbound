@@ -194,6 +194,24 @@ describe('ActorFrame', () => {
     expect(phaseAt(29)).toBe(2);
   });
 
+  it('holds the last walk phase across the tick the AI leaves between steps', () => {
+    // The kernel queues a creature's next step for the tick *after* it comes
+    // off cooldown, so consecutive `actor/moved` events are `cost + 1` ticks
+    // apart. Dropping to the idle pose in that tick put a standing frame in
+    // the middle of every tile a humanoid walked.
+    const moving = requireAnimation(movingAsset, 'moving');
+    const stride = moving.patternX * moving.layers;
+
+    expect(
+      actorFrameAtTick({
+        asset: movingAsset,
+        facing: 'n',
+        motion: stepMotion,
+        renderTick: 10,
+      }),
+    ).toBe(moving.startFrame + 2 * stride);
+  });
+
   it('falls back to the idle set once the step has ended', () => {
     expect(
       actorFrameAtTick({

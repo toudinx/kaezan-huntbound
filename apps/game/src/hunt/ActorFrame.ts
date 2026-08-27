@@ -144,6 +144,24 @@ export function actorFrame(
 }
 
 /**
+ * How long a figure keeps its walking pose after the step it is taking ends.
+ *
+ * A creature's steps are not back to back. The AI only decides once the actor
+ * is off cooldown, and it queues the intent for the *next* tick, so two
+ * `actor/moved` events sit `cost + 1` ticks apart while the step between them
+ * animates over `cost`. The PB-04 golden shows it exactly: every rotworm gap
+ * is 21 or 31 against step costs of 20 and 30, while the player, who moves
+ * from held input rather than from the AI, gaps at a clean 20.
+ *
+ * That leftover tick used to draw the idle pose. The rotworm declares no idle
+ * set, so nothing showed and nobody noticed; a humanoid outfit declares one,
+ * and it punched a rigid standing frame into every tile of the march. Holding
+ * the last walk phase across the gap costs 50 ms of settle when the figure
+ * really does stop, which is below what the eye picks up.
+ */
+const WALK_SETTLE_TICKS = 1;
+
+/**
  * The frame an actor shows at a render tick, given the step it is walking.
  *
  * Mid-step the phase comes from how far along the step the actor is, so one
@@ -164,7 +182,8 @@ export function actorFrameAtTick(input: {
   const motion = input.motion;
   const moving =
     motion !== undefined &&
-    input.renderTick < motion.startTick + motion.durationTicks;
+    input.renderTick <
+      motion.startTick + motion.durationTicks + WALK_SETTLE_TICKS;
   const animation = animationFor(input.asset, moving);
   const phase = moving
     ? stepAnimationPhase(
