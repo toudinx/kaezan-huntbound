@@ -59,6 +59,22 @@ gerado se resolve **regenerando depois do rebase**, nunca mergeando. Isso serial
 reprovaram o `tools/replay` por timeout (B16), e a suíte Playwright leva 8,4 min sozinha com a máquina
 livre. Escrever recipe é barato; `verify` é que não pode coincidir.
 
+**B18 — aberto, bloqueia a PB-10-07. Não é código deste repositório.** Todo outfit de **32×32**
+do export pessoal sai cisalhado ~1 px por linha e aparece deitado na diagonal: conferidos os
+lookTypes 73, 5, 25 e 40. Os de 64×64 saem certos (Rotworm 26, knight 131, 1.118 no total; o
+manifesto tem 79 em 32×32 contra 1.118 em 64×64). O packer copia o PNG byte a byte, então o jogo
+desenha o arquivo como ele é. Reproduzido fora do jogo decodificando a folha CIP com a mesma lógica
+de header do extractor: o cisalhamento já está na folha, e o header dela é normal (384×384, 32 bpp,
+`pixoff` 122, stride 1536). Conserto e re-export vivem no `AssetExtractor`. **Orc é 32×32.**
+
+**B19 — aberto, `main` vermelha desde `3fa4845`.** `tests/e2e/haste-play.spec.ts:171` reprova com
+`The player never accepted two consecutive cardinal steps`, na Venore Rotworm Cave. Bisect: passa em
+`87e12e0`, reprova em `3fa4845` e em `c551e84`, três vezes seguidas isolada — não é o B11/B14. A
+linha de evidência da PB-10-08 registra `correctness 80/80`; o gate hoje dá 79/1. Suspeita a
+investigar: ordem de blueprint mudando o consumo do stream de RNG da IA. Junto, o fallback por
+vocação em `readHuntCharacter` (`apps/game/src/main.ts:182`) faz hunt sem ficha própria pegar em
+silêncio a primeira ficha de knight do catálogo em vez de estourar.
+
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 
 ## Decisões congeladas
