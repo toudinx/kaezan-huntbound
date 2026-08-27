@@ -49,6 +49,7 @@ const allowedMonsterFields = new Set([
   'defenses',
   'description',
   'elements',
+  'events',
   'experience',
   'flags',
   'health',
@@ -71,6 +72,7 @@ const ignoredMonsterFields = new Set([
   'changeTarget',
   'corpse',
   'description',
+  'events',
   'flags',
   'light',
   'manaCost',
@@ -84,6 +86,7 @@ const attackFields = new Set([
   'condition',
   'effect',
   'interval',
+  'length',
   'maxDamage',
   'minDamage',
   'name',
@@ -91,6 +94,7 @@ const attackFields = new Set([
   'range',
   'chance',
   'shootEffect',
+  'spread',
   'target',
   'type',
 ]);
@@ -520,6 +524,36 @@ function readAttack(
   const shape = tableShape(expression, 'attack', diagnostics);
   if (shape === undefined) return undefined;
   checkAllowedFields(shape, attackFields, 'attack', diagnostics);
+  const isWave = shape.named.has('length') || shape.named.has('spread');
+  if (isWave) {
+    if (!shape.named.has('length')) {
+      pushDiagnostic(
+        diagnostics,
+        expression,
+        'lua.missing-field',
+        'Wave attacks require length',
+      );
+    } else {
+      readInteger(shape.named.get('length'), 'attack length', diagnostics, {
+        min: 1,
+      });
+    }
+    if (!shape.named.has('spread')) {
+      pushDiagnostic(
+        diagnostics,
+        expression,
+        'lua.missing-field',
+        'Wave attacks require spread',
+      );
+    } else {
+      readInteger(shape.named.get('spread'), 'attack spread', diagnostics, {
+        min: 0,
+      });
+    }
+    // AbilityShape has no wave representation yet. Keep validating the
+    // source-only fields above, but do not project this attack into the DTO.
+    return undefined;
+  }
   const name = readString(shape.named.get('name'), 'attack name', diagnostics);
   const intervalMs = readInteger(
     shape.named.get('interval'),

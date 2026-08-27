@@ -4,6 +4,8 @@ import type { MapRegion } from '../../../contracts/src/hunt/types.ts';
 
 import {
   deriveHuntPackKeys,
+  HUNT_PACK_DRAGON_CREATURE_KEY,
+  HUNT_PACK_DRAGON_LOOT_KEYS,
   HUNT_PACK_HERO_CREATURE_KEY,
   HUNT_PACK_HERO_LOOT_KEYS,
   hashHuntRegion,
@@ -222,6 +224,24 @@ describe('hunt pack validation', () => {
         'outfit:tibia:knight',
         ...huntCombatKeys,
         ...HUNT_PACK_HERO_LOOT_KEYS,
+      ],
+    };
+
+    expect(validateHuntPack(selected, input, resolved(selected.keys))).toEqual(
+      [],
+    );
+  });
+
+  it('accepts the selected Dragon creature and loot keys', () => {
+    const input = region([100]);
+    const selected = {
+      ...selectionFor(input),
+      keys: [
+        'tile:tibia:100',
+        HUNT_PACK_DRAGON_CREATURE_KEY,
+        'outfit:tibia:knight',
+        ...huntCombatKeys,
+        ...HUNT_PACK_DRAGON_LOOT_KEYS,
       ],
     };
 

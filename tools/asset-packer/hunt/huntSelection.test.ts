@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   HUNT_PACK_CREATURE_KEY,
+  HUNT_PACK_DRAGON_CREATURE_KEY,
+  HUNT_PACK_DRAGON_LOOT_KEYS,
   HUNT_PACK_HERO_CREATURE_KEY,
   HUNT_PACK_HERO_LOOT_KEYS,
   HUNT_PACK_LOOT_KEYS,
@@ -224,5 +226,37 @@ describe('hunt selection generation', () => {
         sourceIdentity: { kind: 'clientId', id: 3294 },
       },
     ]);
+  });
+
+  it('maps the Dragon creature and loot keys to their source identities', () => {
+    const manifest = createHuntAssetSelection({
+      hunt: deriveHuntPackSelection(region(), {
+        ...metadata,
+        creatureKey: HUNT_PACK_DRAGON_CREATURE_KEY,
+        lootKeys: HUNT_PACK_DRAGON_LOOT_KEYS,
+      }),
+      group,
+      consumer,
+    });
+    const entries = new Map(
+      manifest.entries.map((entry) => [entry.key, entry]),
+    );
+
+    expect(entries.get(HUNT_PACK_DRAGON_CREATURE_KEY)).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 34 },
+    });
+    expect(entries.get('item:tibia:dragon-ham')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3583 },
+    });
+    expect(entries.get('item:tibia:burst-arrow')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3449 },
+    });
+    expect(entries.get('item:tibia:dragon-s-tail')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 11457 },
+    });
   });
 });

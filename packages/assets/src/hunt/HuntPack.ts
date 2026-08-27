@@ -7,6 +7,7 @@ const VOID_SERVER_ID = 0;
 
 export const HUNT_PACK_CREATURE_KEY = 'creature:tibia:rotworm';
 export const HUNT_PACK_HERO_CREATURE_KEY = 'creature:tibia:hero';
+export const HUNT_PACK_DRAGON_CREATURE_KEY = 'creature:tibia:dragon';
 export const HUNT_PACK_OUTFIT_KEY = 'outfit:tibia:knight';
 export const HUNT_PACK_BLOOD_EFFECT_KEY = 'effect:tibia:draw-blood';
 export const HUNT_PACK_SMALL_SPLASH_KEY = 'item:tibia:small-splash';
@@ -38,12 +39,31 @@ export const HUNT_PACK_HERO_LOOT_KEYS = [
   'item:tibia:sniper-arrow',
 ] as const;
 
+/**
+ * Item sprites already present in the personal export and used by Dragon loot.
+ * Remaining Dragon drops stay in the content catalog as textual fallback.
+ */
+export const HUNT_PACK_DRAGON_LOOT_KEYS = [
+  'item:tibia:gold-coin',
+  'item:tibia:dragon-ham',
+  'item:tibia:steel-shield',
+  'item:tibia:dragon-s-tail',
+  'item:tibia:crossbow',
+  'item:tibia:burst-arrow',
+  'item:tibia:longsword',
+  'item:tibia:steel-helmet',
+  'item:tibia:broadsword',
+  'item:tibia:plate-legs',
+] as const;
+
 /** Dynamic creature/item keys accepted by the hunt asset pipeline. */
 export const HUNT_PACK_DYNAMIC_KEYS = [
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_HERO_CREATURE_KEY,
+  HUNT_PACK_DRAGON_CREATURE_KEY,
   ...HUNT_PACK_LOOT_KEYS,
   ...HUNT_PACK_HERO_LOOT_KEYS,
+  ...HUNT_PACK_DRAGON_LOOT_KEYS,
 ] as const;
 
 const huntPackDynamicKeySet = new Set<string>(HUNT_PACK_DYNAMIC_KEYS);

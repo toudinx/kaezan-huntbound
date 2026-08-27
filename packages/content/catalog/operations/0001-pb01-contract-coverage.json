@@ -21,6 +21,26 @@
       "weaponItemKey": "item:tibia:sword"
     },
     {
+      "level": 70,
+      "maxHealth": 1115,
+      "maxMana": 185,
+      "skills": {
+        "magic": 0,
+        "sword": 60
+      },
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ],
+      "stableKey": "character:huntbound:knight-dragon-lair",
+      "vocationKey": "vocation:tibia:knight",
+      "weaponAttack": 14,
+      "weaponItemKey": "item:tibia:sword"
+    },
+    {
       "level": 130,
       "maxHealth": 2015,
       "maxMana": 645,
@@ -319,6 +339,209 @@
         "experience": 150,
         "health": 260,
         "speed": 95
+      },
+      "summons": []
+    },
+    {
+      "aliases": [],
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 120,
+          "minDamage": 0,
+          "name": "melee"
+        },
+        {
+          "chanceBasisPoints": 1500,
+          "damageType": "fire",
+          "intervalMs": 2000,
+          "kind": "area",
+          "maxDamage": 140,
+          "minDamage": 60,
+          "name": "combat",
+          "radiusTiles": 4,
+          "shape": "square"
+        }
+      ],
+      "conditions": [],
+      "defenses": [
+        {
+          "chanceBasisPoints": 1500,
+          "intervalMs": 2000,
+          "kind": "heal",
+          "maxAmount": 70,
+          "minAmount": 40
+        }
+      ],
+      "displayName": "Dragon",
+      "guid": "43ea204a-8abc-5afb-af6d-1ea7f7e9ab64",
+      "immunities": [
+        "paralyze",
+        "invisible"
+      ],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 34,
+      "loot": [
+        {
+          "chancePerHundredThousand": 89920,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 102,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 66270,
+          "itemKey": "item:tibia:dragon-ham",
+          "maxCount": 2,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 15650,
+          "itemKey": "item:tibia:steel-shield",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 9680,
+          "itemKey": "item:tibia:dragon-s-tail",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 9120,
+          "itemKey": "item:tibia:crossbow",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 8060,
+          "itemKey": "item:tibia:burst-arrow",
+          "maxCount": 10,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 3830,
+          "itemKey": "item:tibia:longsword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 3490,
+          "itemKey": "item:tibia:steel-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2700,
+          "itemKey": "item:tibia:broadsword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2029,
+          "itemKey": "item:tibia:plate-legs",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1580,
+          "itemKey": "item:tibia:double-axe",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1130,
+          "itemKey": "item:tibia:strong-health-potion",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1070,
+          "itemKey": "item:tibia:green-dragon-leather",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1010,
+          "itemKey": "item:tibia:green-dragon-scale",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 560,
+          "itemKey": "item:tibia:wand-of-inferno",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 450,
+          "itemKey": "item:tibia:small-diamond",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 230,
+          "itemKey": "item:tibia:serpent-sword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 230,
+          "itemKey": "item:tibia:dragon-hammer",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 170,
+          "itemKey": "item:tibia:dragonbone-staff",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 170,
+          "itemKey": "item:tibia:life-crystal",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 110,
+          "itemKey": "item:tibia:dragon-shield",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": 0,
+        "drown": 0,
+        "earth": 0.8,
+        "energy": 0.2,
+        "fire": 1,
+        "holy": 0,
+        "ice": -0.1,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "34",
+        "sourcePath": "data-otservbr-global/monster/dragons/dragon.lua",
+        "sourceSha256": "5cf359b04cd7ac0ca47d552c35f224d635d643733af834418c82de22af736ef6",
+        "system": "canary"
+      },
+      "stableKey": "creature:tibia:dragon",
+      "stats": {
+        "experience": 700,
+        "health": 1000,
+        "speed": 86
       },
       "summons": []
     },
@@ -953,6 +1176,24 @@
     },
     {
       "aliases": [],
+      "displayName": "broadsword",
+      "guid": "b39d45fe-405a-56d7-9412-c587251e9aa4",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3301",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:broadsword",
+      "weight": 5250
+    },
+    {
+      "aliases": [],
       "displayName": "broken shamanic staff",
       "guid": "fd3c90c2-d0e9-5229-b3f8-c3c0d97939ed",
       "includedFacets": [
@@ -986,6 +1227,24 @@
       },
       "stableKey": "item:tibia:brown-bread",
       "weight": 400
+    },
+    {
+      "aliases": [],
+      "displayName": "burst arrow",
+      "guid": "e402d338-b42f-58df-a062-034e7ce3871d",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3449",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:burst-arrow",
+      "weight": 90
     },
     {
       "aliases": [],
@@ -1040,6 +1299,24 @@
       },
       "stableKey": "item:tibia:corncob",
       "weight": 350
+    },
+    {
+      "aliases": [],
+      "displayName": "crossbow",
+      "guid": "7b7056d3-8347-5568-831c-9c911063e755",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3349",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:crossbow",
+      "weight": 4000
     },
     {
       "aliases": [],
@@ -1205,6 +1482,114 @@
     },
     {
       "aliases": [],
+      "displayName": "double axe",
+      "guid": "e67617cb-7fb2-5bc6-b932-321746415005",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3275",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:double-axe",
+      "weight": 7000
+    },
+    {
+      "aliases": [],
+      "displayName": "dragon ham",
+      "guid": "d53bf7e5-39eb-5cbe-a9e5-ae22ebe6cd41",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3583",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dragon-ham",
+      "weight": 3000
+    },
+    {
+      "aliases": [],
+      "displayName": "dragon hammer",
+      "guid": "59a413ce-a1d6-52b8-812c-27e5b329f6f6",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3322",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dragon-hammer",
+      "weight": 9700
+    },
+    {
+      "aliases": [],
+      "displayName": "dragon's tail",
+      "guid": "491833f9-36f2-50df-8125-1eadef4ada08",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "11457",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dragon-s-tail",
+      "weight": 250
+    },
+    {
+      "aliases": [],
+      "displayName": "dragon shield",
+      "guid": "e1838947-4d8f-5488-8858-bef65048382a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3416",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dragon-shield",
+      "weight": 6000
+    },
+    {
+      "aliases": [],
+      "displayName": "dragonbone staff",
+      "guid": "a08aacec-f589-5ed1-93b3-3fe7ee82e2b7",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "7430",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:dragonbone-staff",
+      "weight": 1800
+    },
+    {
+      "aliases": [],
       "displayName": "fire sword",
       "guid": "cfb2627e-06b6-52a9-9ad4-d471dcc13bb6",
       "includedFacets": [
@@ -1292,6 +1677,42 @@
       },
       "stableKey": "item:tibia:great-health-potion",
       "weight": 310
+    },
+    {
+      "aliases": [],
+      "displayName": "green dragon leather",
+      "guid": "b6848a9b-35aa-5110-9985-f10817cae9b4",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "5877",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:green-dragon-leather",
+      "weight": 60
+    },
+    {
+      "aliases": [],
+      "displayName": "green dragon scale",
+      "guid": "6f8cf89b-6c75-510a-bfba-fb6e8954203b",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "5920",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:green-dragon-scale",
+      "weight": 80
     },
     {
       "aliases": [],
@@ -1400,6 +1821,42 @@
       },
       "stableKey": "item:tibia:legion-helmet",
       "weight": 3100
+    },
+    {
+      "aliases": [],
+      "displayName": "life crystal",
+      "guid": "d75e46a9-fd3f-5929-87fb-1cf5f925b233",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3061",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:life-crystal",
+      "weight": 263
+    },
+    {
+      "aliases": [],
+      "displayName": "longsword",
+      "guid": "85322a32-7464-5071-8d0d-6df837e1a814",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3285",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:longsword",
+      "weight": 4200
     },
     {
       "aliases": [],
@@ -1544,6 +2001,24 @@
       },
       "stableKey": "item:tibia:piggy-bank",
       "weight": 750
+    },
+    {
+      "aliases": [],
+      "displayName": "plate legs",
+      "guid": "f4956724-8160-5003-953f-07d65e3d3d66",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3557",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:plate-legs",
+      "weight": 5000
     },
     {
       "aliases": [],
@@ -1709,6 +2184,24 @@
     },
     {
       "aliases": [],
+      "displayName": "serpent sword",
+      "guid": "27d3c20c-0697-50f4-b77d-363df971b2ba",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3297",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:serpent-sword",
+      "weight": 4100
+    },
+    {
+      "aliases": [],
       "displayName": "shamanic hood",
       "guid": "008f3f02-e124-51cf-872a-6d7fc5678769",
       "includedFacets": [
@@ -1760,6 +2253,24 @@
       },
       "stableKey": "item:tibia:skull",
       "weight": 2180
+    },
+    {
+      "aliases": [],
+      "displayName": "small diamond",
+      "guid": "feef3d9d-4f61-591a-87f1-2b1e1ef4a348",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3028",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:small-diamond",
+      "weight": 10
     },
     {
       "aliases": [],
@@ -1835,6 +2346,60 @@
     },
     {
       "aliases": [],
+      "displayName": "steel helmet",
+      "guid": "d3c7305e-d876-579a-851a-2937199813be",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3351",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:steel-helmet",
+      "weight": 4600
+    },
+    {
+      "aliases": [],
+      "displayName": "steel shield",
+      "guid": "985fe1c8-80d5-50b8-bd28-1741a9b2a74a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3409",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:steel-shield",
+      "weight": 6900
+    },
+    {
+      "aliases": [],
+      "displayName": "strong health potion",
+      "guid": "57c26843-0c8a-5d2a-b13c-d5e0657eb7f6",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "236",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:strong-health-potion",
+      "weight": 290
+    },
+    {
+      "aliases": [],
       "displayName": "sword",
       "guid": "bf749ad4-7f98-5777-8b65-39a515150871",
       "includedFacets": [
@@ -1904,6 +2469,24 @@
       },
       "stableKey": "item:tibia:wand-of-decay",
       "weight": 2300
+    },
+    {
+      "aliases": [],
+      "displayName": "wand of inferno",
+      "guid": "f9705f47-1571-5d90-b258-784fbe606aa7",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "source": {
+        "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
+        "sourceId": "3071",
+        "sourcePath": "data/items/items.xml",
+        "sourceSha256": "b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8",
+        "system": "canary"
+      },
+      "stableKey": "item:tibia:wand-of-inferno",
+      "weight": 2700
     },
     {
       "aliases": [],
@@ -2050,11 +2633,14 @@
       "item:tibia:battle-shield",
       "item:tibia:book",
       "item:tibia:bow",
+      "item:tibia:broadsword",
       "item:tibia:broken-shamanic-staff",
       "item:tibia:brown-bread",
+      "item:tibia:burst-arrow",
       "item:tibia:chain-armor",
       "item:tibia:club-ring",
       "item:tibia:corncob",
+      "item:tibia:crossbow",
       "item:tibia:crown-armor",
       "item:tibia:crown-helmet",
       "item:tibia:crown-legs",
@@ -2064,17 +2650,27 @@
       "item:tibia:cyclops-trophy",
       "item:tibia:dagger",
       "item:tibia:dark-helmet",
+      "item:tibia:double-axe",
+      "item:tibia:dragon-ham",
+      "item:tibia:dragon-hammer",
+      "item:tibia:dragon-s-tail",
+      "item:tibia:dragon-shield",
+      "item:tibia:dragonbone-staff",
       "item:tibia:fire-sword",
       "item:tibia:girlish-hair-decoration",
       "item:tibia:gold-coin",
       "item:tibia:grapes",
       "item:tibia:great-health-potion",
+      "item:tibia:green-dragon-leather",
+      "item:tibia:green-dragon-scale",
       "item:tibia:green-tunic",
       "item:tibia:halberd",
       "item:tibia:ham",
       "item:tibia:health-potion",
       "item:tibia:heavy-old-tome",
       "item:tibia:legion-helmet",
+      "item:tibia:life-crystal",
+      "item:tibia:longsword",
       "item:tibia:lump-of-dirt",
       "item:tibia:lyre",
       "item:tibia:mace",
@@ -2083,6 +2679,7 @@
       "item:tibia:orc-leather",
       "item:tibia:orc-tooth",
       "item:tibia:piggy-bank",
+      "item:tibia:plate-legs",
       "item:tibia:plate-shield",
       "item:tibia:protective-charm",
       "item:tibia:red-piece-of-cloth",
@@ -2092,17 +2689,23 @@
       "item:tibia:scarf",
       "item:tibia:scroll",
       "item:tibia:scroll-of-heroic-deeds",
+      "item:tibia:serpent-sword",
       "item:tibia:shamanic-hood",
       "item:tibia:short-sword",
       "item:tibia:skull",
+      "item:tibia:small-diamond",
       "item:tibia:small-notebook",
       "item:tibia:small-ruby",
       "item:tibia:sniper-arrow",
       "item:tibia:spear",
+      "item:tibia:steel-helmet",
+      "item:tibia:steel-shield",
+      "item:tibia:strong-health-potion",
       "item:tibia:sword",
       "item:tibia:torch",
       "item:tibia:two-handed-sword",
       "item:tibia:wand-of-decay",
+      "item:tibia:wand-of-inferno",
       "item:tibia:war-hammer",
       "item:tibia:wedding-ring",
       "item:tibia:wolf-tooth-chain",
@@ -2136,6 +2739,18 @@
           "loot"
         ],
         "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot. Lua armor 17 is provenance only and stays inert until PB-11."
+      },
+      {
+        "consumer": "Dragon Lair hunt and creature contract tests",
+        "entityKey": "creature:tibia:dragon",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers melee, fire area of radius 4, healing, unused fire immunity until PB-11, and loot. The length/spread wave is omitted until AbilityShape supports wave."
       },
       {
         "consumer": "Hero Cave hunt and creature contract tests",
@@ -2223,6 +2838,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:broadsword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:broken-shamanic-staff",
         "facets": [
           "identity",
@@ -2238,6 +2862,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:burst-arrow",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2265,6 +2898,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:crossbow",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2349,6 +2991,60 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:double-axe",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dragon-ham",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dragon-hammer",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dragon-s-tail",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dragon-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dragonbone-staff",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:fire-sword",
         "facets": [
           "identity",
@@ -2372,7 +3068,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2391,6 +3087,24 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:green-dragon-leather",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:green-dragon-scale",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2445,6 +3159,24 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:rotworm loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:life-crystal",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:longsword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2517,6 +3249,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:plate-legs",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2601,6 +3342,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:serpent-sword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:shamanic-hood",
         "facets": [
           "identity",
@@ -2625,6 +3375,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:small-diamond",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2663,13 +3422,40 @@
         "rationale": "Required by creature:tibia:orc-shaman loot"
       },
       {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:steel-helmet",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:steel-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:strong-health-potion",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
+      },
+      {
         "consumer": "frozen character sheet",
         "entityKey": "item:tibia:sword",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
+        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",
@@ -2697,6 +3483,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:wand-of-inferno",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:dragon loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2792,6 +3587,7 @@
     "roots": [
       "creature:tibia:amazon",
       "creature:tibia:cyclops",
+      "creature:tibia:dragon",
       "creature:tibia:hero",
       "creature:tibia:orc-shaman",
       "creature:tibia:rotworm",
@@ -2804,6 +3600,7 @@
     ],
     "snapshot": "157e6f9e21318bd3033eea553fe9275b429faf72",
     "sourceFiles": [
+      "data-otservbr-global/monster/dragons/dragon.lua",
       "data-otservbr-global/monster/giants/cyclops.lua",
       "data-otservbr-global/monster/humanoids/orc_shaman.lua",
       "data-otservbr-global/monster/humans/amazon.lua",

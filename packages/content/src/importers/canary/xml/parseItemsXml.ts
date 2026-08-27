@@ -85,6 +85,7 @@ const ignoredAttributeKeys = new Set([
   'absorbpercentdeath',
   'charges',
   'elementfire',
+  'elementearth',
   'ammotype',
   'walkstack',
   'perfectshotrange',

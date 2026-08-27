@@ -1,0 +1,46 @@
+{
+  "key": "hunt:tibia:dragon-lair",
+  "displayName": "Dragon Lair",
+  "sourceUrl": "https://tibiaroute.com/br/hunting-places/Dragon-Lair",
+  "source": {
+    "map": "data-otservbr-global/world/otservbr.otbm",
+    "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+  },
+  "layout": "../../layouts/hunts/dragon-lair.json",
+  "recommendedLevel": 70,
+  "soloVocation": "vocation:tibia:knight",
+  "band": 4,
+  "region": {
+    "minX": 33002,
+    "minY": 32640,
+    "maxX": 33070,
+    "maxY": 32700,
+    "floors": [5, 6, 7]
+  },
+  "creatures": ["creature:tibia:dragon"],
+  "excludedCreatures": [
+    {
+      "name": "Dragon Hatchling",
+      "reason": "same visual family with lower numbers; reserved for a lower step",
+      "count": 2
+    },
+    {
+      "name": "Dragon Lord",
+      "reason": "same visual family with higher numbers; reserved as a future replacement",
+      "count": 5
+    },
+    {
+      "name": "Hydra",
+      "reason": "multi-target creature reserved for another hunt band",
+      "count": 8
+    }
+  ],
+  "expectedSpawnGroups": 26,
+  "expectedSpawnSlots": 31,
+  "expectedDroppedTransitions": 0,
+  "budget": {
+    "maxFloors": 3,
+    "maxWidth": 96,
+    "maxHeight": 96
+  }
+}

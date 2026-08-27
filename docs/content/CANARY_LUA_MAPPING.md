@@ -48,6 +48,7 @@ Source form: `Game.createMonsterType` followed by assignments to `monster`, endi
 | `range` plus `shootEffect` | `kind: ranged`, `rangeTiles`, `projectile` | Integer tiles; known `CONST_ANI_*` names normalized | Ranged action |
 | `radius` | `kind: area`, `radiusTiles` | Integer tiles; `radius` wins when source also has `range` | Area action |
 | `attack.type` | `damageType` | `COMBAT_*` constant mapped to contract vocabulary | Damage type |
+| `attack.length` + `attack.spread` | omitted | Wave attacks are validated as source data but omitted until `AbilityShape` supports `wave` | Future area-wave gate |
 | `attack.condition` with `CONDITION_POISON` | `conditions[]` | `totalDamage >= 0`, positive `intervalMs` | Declarative condition |
 | healing entry in `monster.defenses` | `defenses[]` | `minDamage/maxDamage` become non-negative `minAmount/maxAmount`; chance/interval normalized as actions | Healing action |
 | `monster.summon.summons[]` | `summons[]` | ID or name reference, positive count, chance in basis points | Reachable creature dependency |
@@ -59,14 +60,14 @@ Source form: `Game.createMonsterType` followed by assignments to `monster`, endi
 Known combat keys include `physical`, `energy`, `earth`, `fire`, `lifeDrain`, `manaDrain`, `drown`,
 `ice`, `holy`, `death`, `healing`, and `poison`. A melee attack without a type is physical. Area attacks
 may contain both `range` and `radius` in the source; the DTO emits only the area radius.
-Bestiary race constants (`BESTY_RACE_HUMAN`, `BESTY_RACE_HUMANOID`, `BESTY_RACE_REPTILE`, and
+Bestiary race constants (`BESTY_RACE_HUMAN`, `BESTY_RACE_HUMANOID`, `BESTY_RACE_DRAGON`, `BESTY_RACE_REPTILE`, and
 `BESTY_RACE_VERMIN`) are accepted only inside the ignored Bestiary projection.
 
 ### Creature fields intentionally ignored
 
 These forms are recognized and statically validated but are not copied into metadata:
 
-- `description`, `maxHealth`, `race`, `corpse`, and `manaCost`;
+- `description`, `events`, `maxHealth`, `race`, `corpse`, and `manaCost`;
 - `Bestiary`, including class, race, unlock values, stars, and textual `Locations`;
 - `changeTarget`, `strategiesTarget`, `flags`, `light`, and `voices`;
 - scalar `defense`, `armor`, and `mitigation` entries in `monster.defenses`;

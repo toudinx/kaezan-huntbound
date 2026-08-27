@@ -343,6 +343,56 @@ describe('buildSpawnTable', () => {
     expect(built.diagnostics).toEqual([]);
   });
 
+  it('includes an edge group when its slot is inside the region', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X - 5,
+          centerY: MIN_Y,
+          centerZ: 8,
+          radius: 2,
+          slots: [{ name: 'Rotworm', x: 5, y: 0, z: 8 }],
+        },
+      ]),
+      selection,
+      region,
+    );
+
+    expect(built.table.groups[0]).toMatchObject({
+      center: { x: -5, y: 0, z: 8 },
+      slots: [{ source: { x: MIN_X, y: MIN_Y, z: 8 } }],
+      sourceCenter: { x: MIN_X - 5, y: MIN_Y, z: 8 },
+    });
+    expect(built.diagnostics).toEqual([]);
+  });
+
+  it('omits out-of-region siblings on an edge group without a diagnostic', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X - 5,
+          centerY: MIN_Y,
+          centerZ: 8,
+          radius: 5,
+          slots: [
+            { name: 'Rotworm', x: 4, y: 0, z: 8 },
+            { name: 'Rotworm', x: 5, y: 0, z: 8 },
+          ],
+        },
+      ]),
+      selection,
+      region,
+    );
+
+    expect(built.table.groups[0]?.slots).toHaveLength(1);
+    expect(built.table.groups[0]?.slots[0]?.source).toEqual({
+      x: MIN_X,
+      y: MIN_Y,
+      z: 8,
+    });
+    expect(built.diagnostics).toEqual([]);
+  });
+
   it('keeps a group whose selected slot is inside when its center is outside', () => {
     const built = buildSpawnTable(
       monsterXml([

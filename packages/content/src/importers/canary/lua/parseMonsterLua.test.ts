@@ -112,6 +112,18 @@ describe('parseCanaryMonsterLua', () => {
     });
   });
 
+  it('accepts source-only monster events without projecting them to runtime', () => {
+    const result = parseCanaryMonsterLua(
+      rotwormFixture.replace(
+        'monster.description = "a fixture rotbeast"',
+        'monster.description = "a fixture rotbeast"\nmonster.events = { "FixtureEvent" }',
+      ),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.value : undefined).not.toHaveProperty('events');
+  });
+
   it('maps a ranged physical attack and projectile', () => {
     const result = parseCanaryMonsterLua(amazonFixture);
 
@@ -171,6 +183,20 @@ describe('parseCanaryMonsterLua', () => {
         },
         immunities: [],
       }),
+    );
+  });
+
+  it('validates but omits wave attacks until the contract supports their shape', () => {
+    const result = parseCanaryMonsterLua(
+      orcShamanFixture.replace(
+        '  { name = "burst", interval = 3300, chance = 9, type = COMBAT_FIREDAMAGE, minDamage = -4, maxDamage = -26, range = 7, radius = 1, shootEffect = CONST_ANI_FIRE, target = true },',
+        '  { name = "burst", interval = 3300, chance = 9, type = COMBAT_FIREDAMAGE, minDamage = -4, maxDamage = -26, range = 7, radius = 1, shootEffect = CONST_ANI_FIRE, target = true },\n  { name = "wave", interval = 3300, chance = 10, type = COMBAT_FIREDAMAGE, minDamage = -100, maxDamage = -170, length = 8, spread = 3, effect = CONST_ME_FIREAREA, target = false },',
+      ),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.value.attacks : []).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'wave' })]),
     );
   });
 

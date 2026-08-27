@@ -105,6 +105,157 @@
       ]
     },
     {
+      "huntId": "hunt:tibia:dragon-lair",
+      "runtimeDirectory": "pb10-09-dragon-lair",
+      "displayName": "Dragon Lair",
+      "band": 4,
+      "recommendedLevel": 70,
+      "soloVocation": "vocation:tibia:knight",
+      "sourceUrl": "https://tibiaroute.com/br/hunting-places/Dragon-Lair",
+      "maxLiveActors": 31,
+      "experiencePerHour": 868000,
+      "creatures": [
+        {
+          "creatureKey": "creature:tibia:dragon",
+          "displayName": "Dragon",
+          "slotCount": 31,
+          "health": 1000,
+          "experience": 700,
+          "lookType": 34,
+          "respawnTicks": 1800,
+          "experiencePerHour": 868000,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 89920,
+              "minCount": 1,
+              "maxCount": 102
+            },
+            {
+              "itemKey": "item:tibia:dragon-ham",
+              "chancePerHundredThousand": 66270,
+              "minCount": 1,
+              "maxCount": 2
+            },
+            {
+              "itemKey": "item:tibia:steel-shield",
+              "chancePerHundredThousand": 15650,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:dragon-s-tail",
+              "chancePerHundredThousand": 9680,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:crossbow",
+              "chancePerHundredThousand": 9120,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:burst-arrow",
+              "chancePerHundredThousand": 8060,
+              "minCount": 1,
+              "maxCount": 10
+            },
+            {
+              "itemKey": "item:tibia:longsword",
+              "chancePerHundredThousand": 3830,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:steel-helmet",
+              "chancePerHundredThousand": 3490,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:broadsword",
+              "chancePerHundredThousand": 2700,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:plate-legs",
+              "chancePerHundredThousand": 2029,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:double-axe",
+              "chancePerHundredThousand": 1580,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:strong-health-potion",
+              "chancePerHundredThousand": 1130,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:green-dragon-leather",
+              "chancePerHundredThousand": 1070,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:green-dragon-scale",
+              "chancePerHundredThousand": 1010,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:wand-of-inferno",
+              "chancePerHundredThousand": 560,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:small-diamond",
+              "chancePerHundredThousand": 450,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:dragon-hammer",
+              "chancePerHundredThousand": 230,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:serpent-sword",
+              "chancePerHundredThousand": 230,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:dragonbone-staff",
+              "chancePerHundredThousand": 170,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:life-crystal",
+              "chancePerHundredThousand": 170,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:dragon-shield",
+              "chancePerHundredThousand": 110,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "huntId": "hunt:tibia:hero-cave",
       "runtimeDirectory": "pb10-10-hero-cave",
       "displayName": "Hero Cave",

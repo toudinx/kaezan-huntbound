@@ -13,6 +13,7 @@
     "creature:tibia:cyclops",
     "creature:tibia:amazon",
     "creature:tibia:orc-shaman",
+    "creature:tibia:dragon",
     "creature:tibia:hero"
   ],
   "dependencies": ["creature:tibia:snake"],
@@ -78,6 +79,12 @@
       "rationale": "The root covers elemental, area, healing, summon, and loot forms."
     },
     {
+      "entityKey": "creature:tibia:dragon",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "Dragon Lair hunt and creature contract tests",
+      "rationale": "The root covers melee, fire area of radius 4, healing, unused fire immunity until PB-11, and loot. The length/spread wave is omitted until AbilityShape supports wave."
+    },
+    {
       "entityKey": "creature:tibia:hero",
       "facets": ["identity", "stats", "appearance", "combat", "loot"],
       "consumer": "Hero Cave hunt and creature contract tests",
@@ -106,13 +113,14 @@
     "data-otservbr-global/monster/giants/cyclops.lua",
     "data-otservbr-global/monster/humans/amazon.lua",
     "data-otservbr-global/monster/humanoids/orc_shaman.lua",
+    "data-otservbr-global/monster/dragons/dragon.lua",
     "data-otservbr-global/monster/humans/hero.lua",
     "data-otservbr-global/monster/reptiles/snake.lua"
   ],
   "rootSourceIds": {
     "vocation": ["4"],
     "spell": ["80", "61", "123", "106", "107"],
-    "creature": ["26", "22", "77", "6", "73"]
+    "creature": ["26", "22", "77", "6", "34", "73"]
   },
   "dependencySourceIds": {
     "creature": ["28"]
@@ -159,6 +167,24 @@
       "weaponSourceId": "3264",
       "weaponAttack": 14,
       "maxHealth": 740,
+      "maxMana": 185,
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ]
+    },
+    {
+      "stableKey": "character:huntbound:knight-dragon-lair",
+      "vocationKey": "vocation:tibia:knight",
+      "level": 70,
+      "skills": { "sword": 60, "magic": 0 },
+      "weaponItemKey": "item:tibia:sword",
+      "weaponSourceId": "3264",
+      "weaponAttack": 14,
+      "maxHealth": 1115,
       "maxMana": 185,
       "spellKeys": [
         "spell:tibia:berserk",

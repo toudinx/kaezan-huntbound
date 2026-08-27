@@ -79,4 +79,39 @@ describe('generated hunt artifacts', () => {
     expect(sourceLock.files.every((file) => file.byteLength === 68)).toBe(true);
     expect(sourceLock.sourceSnapshot).toBe('pb10-10-synthetic-v1');
   });
+
+  it('keeps the Dragon Lair selection tied to lookType 34 and its loot', async () => {
+    const selection = AssetSelectionManifestSchema.parse(
+      await readJson('packages/test-fixtures/assets/pb10-09/selection.json'),
+    );
+
+    expect(selection.hunt?.packKey).toBe(
+      HUNT_PIPELINE_REGISTRY['hunt:tibia:dragon-lair'].packKey,
+    );
+    expect(selection.hunt?.keys).toHaveLength(65);
+    expect(selection.entries).toHaveLength(65);
+    expect(
+      selection.entries.find((entry) => entry.key === 'creature:tibia:dragon'),
+    ).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 34 },
+    });
+    expect(
+      selection.entries.find((entry) => entry.key === 'item:tibia:dragon-ham'),
+    ).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3583 },
+    });
+    expect(selection.groups[0]?.buildProfiles).toContain('product');
+  });
+
+  it('keeps the Dragon Lair source lock complete and synthetic', async () => {
+    const sourceLock = AssetSourceLockSchema.parse(
+      await readJson('packages/test-fixtures/assets/pb10-09/source-lock.json'),
+    );
+
+    expect(sourceLock.files).toHaveLength(65);
+    expect(sourceLock.files.every((file) => file.byteLength === 68)).toBe(true);
+    expect(sourceLock.sourceSnapshot).toBe('pb10-09-synthetic-v1');
+  });
 });

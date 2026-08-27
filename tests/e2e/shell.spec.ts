@@ -67,13 +67,16 @@ for (const viewport of shellViewports) {
       page.locator('[data-testid="hunting-places-screen"]'),
     ).toHaveCount(1);
     await expect(page.locator('[data-testid="hunt-place-card"]')).toHaveCount(
-      3,
+      4,
     );
     const rotwormCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:venore-rotworm-cave"]',
     );
     const cyclopolisCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:cyclopolis"]',
+    );
+    const dragonCard = page.locator(
+      '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:dragon-lair"]',
     );
     const heroCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:hero-cave"]',
@@ -86,6 +89,10 @@ for (const viewport of shellViewports) {
     await expect(
       cyclopolisCard.locator('[data-testid="hunt-place-name"]'),
     ).toHaveText('Cyclopolis');
+    await expect(dragonCard).toHaveCount(1);
+    await expect(
+      dragonCard.locator('[data-testid="hunt-place-name"]'),
+    ).toHaveText('Dragon Lair');
     await expect(heroCard).toHaveCount(1);
     await expect(
       heroCard.locator('[data-testid="hunt-place-name"]'),

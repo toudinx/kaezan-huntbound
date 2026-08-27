@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ContentSliceDefinition } from '@huntbound/contracts';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { importCanarySlice } from '../../../packages/content/src/application/ImportCanarySlice';
 import type { SourceSnapshotLock } from '../../../packages/content/src/application/sourceLockTypes';
 import { canonicalizeCatalogBundle } from '../repository/canonicalCatalog';
@@ -44,56 +44,80 @@ describe.skipIf(sourceRoot === undefined)(
   'Canary slice application integration',
   () => {
     const canaryRoot = sourceRoot as string;
+    const sourceCache = new Map<string, string>();
+    const readSource = (relativePath: string): string => {
+      const cached = sourceCache.get(relativePath);
+      if (cached !== undefined) return cached;
+      const text = readFileSync(`${canaryRoot}/${relativePath}`, 'utf8');
+      sourceCache.set(relativePath, text);
+      return text;
+    };
 
-    it('materializes the frozen real slice and is idempotent by bundle and row counts', () => {
-      const temporary = createTemporaryCatalogFile();
-      const catalog = openMutableContentCatalog(temporary.path, migrations);
-      cleanups.push(() => {
+    describe('materializes the frozen real slice', () => {
+      let temporary: ReturnType<typeof createTemporaryCatalogFile>;
+      let catalog: ReturnType<typeof openMutableContentCatalog>;
+      let result: ReturnType<typeof importCanarySlice>;
+      let firstBundle: ReturnType<
+        ReturnType<typeof openMutableContentCatalog>['readCatalogBundle']
+      >;
+      let firstCounts: ReturnType<
+        ReturnType<typeof openMutableContentCatalog>['countRows']
+      >;
+
+      beforeAll(() => {
+        temporary = createTemporaryCatalogFile();
+        catalog = openMutableContentCatalog(temporary.path, migrations);
+        catalog.migrate();
+        result = importCanarySlice(selection, lock, {
+          readSource,
+          writer: catalog,
+        });
+        firstBundle = catalog.readCatalogBundle(selection.key);
+        firstCounts = catalog.countRows();
+      });
+
+      afterAll(() => {
         catalog.close();
         temporary.cleanup();
       });
-      catalog.migrate();
-      const result = importCanarySlice(selection, lock, {
-        readSource: (relativePath) =>
-          readFileSync(`${canaryRoot}/${relativePath}`, 'utf8'),
-        writer: catalog,
-      });
-      const firstBundle = catalog.readCatalogBundle(selection.key);
-      const firstCounts = catalog.countRows();
 
-      importCanarySlice(selection, lock, {
-        readSource: (relativePath) =>
-          readFileSync(`${canaryRoot}/${relativePath}`, 'utf8'),
-        writer: catalog,
+      it('covers the contracted creatures and loot', () => {
+        expect(result.diagnostics).toEqual([]);
+        expect(firstBundle.slice.roots).toEqual(
+          canonicalizeCatalogBundle(result.bundle).slice.roots,
+        );
+        expect(
+          firstBundle.creatures.map((creature) => creature.stableKey),
+        ).toEqual([
+          'creature:tibia:amazon',
+          'creature:tibia:cyclops',
+          'creature:tibia:dragon',
+          'creature:tibia:hero',
+          'creature:tibia:orc-shaman',
+          'creature:tibia:rotworm',
+          'creature:tibia:snake',
+        ]);
+        expect(
+          firstBundle.creatures.find(
+            (creature) => creature.stableKey === 'creature:tibia:rotworm',
+          )?.loot,
+        ).toContainEqual({
+          itemKey: 'item:tibia:gold-coin',
+          chancePerHundredThousand: 71760,
+          minCount: 1,
+          maxCount: 17,
+        });
+        expect(firstBundle.items.length).toBeGreaterThan(0);
       });
 
-      expect(result.diagnostics).toEqual([]);
-      expect(firstBundle).toEqual(catalog.readCatalogBundle(selection.key));
-      expect(catalog.countRows()).toEqual(firstCounts);
-      expect(firstBundle.slice.roots).toEqual(
-        canonicalizeCatalogBundle(result.bundle).slice.roots,
-      );
-      expect(
-        firstBundle.creatures.map((creature) => creature.stableKey),
-      ).toEqual([
-        'creature:tibia:amazon',
-        'creature:tibia:cyclops',
-        'creature:tibia:hero',
-        'creature:tibia:orc-shaman',
-        'creature:tibia:rotworm',
-        'creature:tibia:snake',
-      ]);
-      expect(
-        firstBundle.creatures.find(
-          (creature) => creature.stableKey === 'creature:tibia:rotworm',
-        )?.loot,
-      ).toContainEqual({
-        itemKey: 'item:tibia:gold-coin',
-        chancePerHundredThousand: 71760,
-        minCount: 1,
-        maxCount: 17,
+      it('is idempotent by bundle and row counts', () => {
+        importCanarySlice(selection, lock, {
+          readSource,
+          writer: catalog,
+        });
+        expect(firstBundle).toEqual(catalog.readCatalogBundle(selection.key));
+        expect(catalog.countRows()).toEqual(firstCounts);
       });
-      expect(firstBundle.items.length).toBeGreaterThan(0);
     });
 
     it('does not leave a partial slice when a bundle fails validation', () => {
@@ -105,8 +129,7 @@ describe.skipIf(sourceRoot === undefined)(
       });
       catalog.migrate();
       const valid = importCanarySlice(selection, lock, {
-        readSource: (relativePath) =>
-          readFileSync(`${canaryRoot}/${relativePath}`, 'utf8'),
+        readSource,
         writer: catalog,
       }).bundle;
       const before = catalog.countRows();

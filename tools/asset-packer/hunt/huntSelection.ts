@@ -7,6 +7,8 @@ import {
   HUNT_PACK_COMBAT_KEYS,
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_DEAD_ROTWORM_KEY,
+  HUNT_PACK_DRAGON_CREATURE_KEY,
+  HUNT_PACK_DRAGON_LOOT_KEYS,
   HUNT_PACK_HERO_CREATURE_KEY,
   HUNT_PACK_HERO_LOOT_KEYS,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
@@ -82,6 +84,15 @@ const knownLootClientIds: ReadonlyMap<string, number> = new Map([
   ['item:tibia:bow', 3350],
   ['item:tibia:green-tunic', 3563],
   ['item:tibia:sniper-arrow', 7364],
+  ['item:tibia:dragon-ham', 3583],
+  ['item:tibia:steel-shield', 3409],
+  ['item:tibia:dragon-s-tail', 11457],
+  ['item:tibia:crossbow', 3349],
+  ['item:tibia:burst-arrow', 3449],
+  ['item:tibia:longsword', 3285],
+  ['item:tibia:steel-helmet', 3351],
+  ['item:tibia:broadsword', 3301],
+  ['item:tibia:plate-legs', 3557],
 ]);
 
 function assetSelectionForMetadata(
@@ -95,9 +106,11 @@ function assetSelectionForMetadata(
   const lookType =
     creatureKey === HUNT_PACK_HERO_CREATURE_KEY
       ? 73
-      : creatureKey === HUNT_PACK_CREATURE_KEY
-        ? 26
-        : undefined;
+      : creatureKey === HUNT_PACK_DRAGON_CREATURE_KEY
+        ? 34
+        : creatureKey === HUNT_PACK_CREATURE_KEY
+          ? 26
+          : undefined;
   if (lookType === undefined) {
     throw new Error(`Unsupported hunt creature key ${creatureKey}`);
   }
@@ -106,7 +119,9 @@ function assetSelectionForMetadata(
     metadata.lootKeys ??
     (creatureKey === HUNT_PACK_HERO_CREATURE_KEY
       ? HUNT_PACK_HERO_LOOT_KEYS
-      : HUNT_PACK_LOOT_KEYS);
+      : creatureKey === HUNT_PACK_DRAGON_CREATURE_KEY
+        ? HUNT_PACK_DRAGON_LOOT_KEYS
+        : HUNT_PACK_LOOT_KEYS);
   return {
     creature: { key: creatureKey, lookType },
     loot: lootKeys.map((key) => {
@@ -176,6 +191,13 @@ function identityForKey(
     return {
       category: 'creature',
       sourceIdentity: { kind: 'lookType', id: 73 },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+  if (key === HUNT_PACK_DRAGON_CREATURE_KEY) {
+    return {
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 34 },
       pivot: { x: 0.5, y: 1 },
     };
   }

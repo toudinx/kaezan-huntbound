@@ -53,6 +53,7 @@ const expectedRoots = [
   'creature:tibia:cyclops',
   'creature:tibia:amazon',
   'creature:tibia:orc-shaman',
+  'creature:tibia:dragon',
   'creature:tibia:hero',
 ] as const;
 
@@ -70,6 +71,7 @@ const expectedSourceFiles = [
   'data-otservbr-global/monster/giants/cyclops.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
+  'data-otservbr-global/monster/dragons/dragon.lua',
   'data-otservbr-global/monster/humans/hero.lua',
   'data-otservbr-global/monster/reptiles/snake.lua',
 ] as const;
@@ -135,6 +137,24 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     ],
   },
   {
+    stableKey: 'character:huntbound:knight-dragon-lair',
+    vocationKey: 'vocation:tibia:knight',
+    level: 70,
+    skills: { sword: 60, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponSourceId: '3264',
+    weaponAttack: 14,
+    maxHealth: 1115,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ],
+  },
+  {
     stableKey: 'character:huntbound:knight-hero-cave',
     vocationKey: 'vocation:tibia:knight',
     level: 130,
@@ -189,6 +209,13 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
     'combat',
     'loot',
   ],
+  'creature:tibia:dragon': [
+    'identity',
+    'stats',
+    'appearance',
+    'combat',
+    'loot',
+  ],
   'creature:tibia:hero': ['identity', 'stats', 'appearance', 'combat', 'loot'],
   'creature:tibia:snake': [
     'identity',
@@ -230,7 +257,7 @@ function validateSourceIdGroups(
   const expected: SourceIdGroups = {
     vocation: ['4'],
     spell: ['80', '61', '123', '106', '107'],
-    creature: ['26', '22', '77', '6', '73'],
+    creature: ['26', '22', '77', '6', '34', '73'],
   };
 
   for (const kind of ['vocation', 'spell', 'creature'] as const) {
@@ -339,7 +366,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain Knight, five combat spells, Rotworm, Cyclops, Amazon, Orc Shaman, and Hero as roots',
+        'Selection must contain Knight, five combat spells, Rotworm, Cyclops, Amazon, Orc Shaman, Dragon, and Hero as roots',
       ),
     );
   }

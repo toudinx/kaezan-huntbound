@@ -58,6 +58,7 @@ interface CandidateGroup {
   readonly centerY: number;
   readonly centerZ: number;
   readonly radius: number;
+  readonly centerInside: boolean;
   readonly element: UnknownRecord;
 }
 
@@ -66,9 +67,12 @@ interface CandidateGroup {
  *
  * A group enters the table when its center is inside the extracted region or
  * when one of its selected slots is inside it. Each emitted slot still
- * survives only when its absolute position is inside too. Creatures listed in
- * `excludedCreatures` are omitted silently; any other creature outside the
- * selection is a diagnostic, never a silent import.
+ * survives only when its absolute position is inside too. An out-of-region
+ * slot on a group whose center is inside is a diagnostic; an out-of-region
+ * sibling on an edge group that entered only by slot is omitted, so a frozen
+ * box can keep the in-box Dragons whose Canary center sits one tile past
+ * maxX. Creatures listed in `excludedCreatures` are omitted silently; any
+ * other creature outside the selection is a diagnostic, never a silent import.
  */
 export function buildSpawnTable(
   monsterXml: string,
@@ -145,7 +149,6 @@ export function buildSpawnTable(
     ) {
       continue;
     }
-
     const centerInside = insideRegion(centerX, centerY, centerZ);
     const selectedSlotInside = asXmlElements(element.monster).some((slot) => {
       const name = xmlAttribute(slot, 'name');
@@ -165,7 +168,14 @@ export function buildSpawnTable(
       return insideRegion(centerX + offsetX, centerY + offsetY, z);
     });
     if (!centerInside && !selectedSlotInside) continue;
-    candidates.push({ centerX, centerY, centerZ, radius, element });
+    candidates.push({
+      centerX,
+      centerY,
+      centerZ,
+      radius,
+      centerInside,
+      element,
+    });
   }
 
   // Canonical order first, so diagnostic paths address the emitted table.
@@ -230,13 +240,15 @@ export function buildSpawnTable(
       const absoluteX = group.centerX + offsetX;
       const absoluteY = group.centerY + offsetY;
       if (!insideRegion(absoluteX, absoluteY, z)) {
-        diagnostics.push(
-          diagnostic(
-            path,
-            'HUNT_SPAWN_OUT_OF_REGION',
-            `${name} at (${absoluteX}, ${absoluteY}, ${z}) falls outside the extracted region`,
-          ),
-        );
+        if (group.centerInside) {
+          diagnostics.push(
+            diagnostic(
+              path,
+              'HUNT_SPAWN_OUT_OF_REGION',
+              `${name} at (${absoluteX}, ${absoluteY}, ${z}) falls outside the extracted region`,
+            ),
+          );
+        }
         return;
       }
 

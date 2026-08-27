@@ -18,6 +18,7 @@ const paths = {
   amazon: 'data-otservbr-global/monster/humans/amazon.lua',
   orc: 'data-otservbr-global/monster/humanoids/orc_shaman.lua',
   hero: 'data-otservbr-global/monster/humans/hero.lua',
+  dragon: 'data-otservbr-global/monster/dragons/dragon.lua',
   snake: 'data-otservbr-global/monster/reptiles/snake.lua',
 } as const;
 
@@ -153,6 +154,7 @@ spell:register()`,
   [paths.amazon]: monster('Amazon', 77, 'gold coin'),
   [paths.orc]: monster('Orc Shaman', 6, 'gold coin', true),
   [paths.hero]: monster('Hero', 73, 'gold coin'),
+  [paths.dragon]: monster('Dragon', 34, 'gold coin'),
   [paths.snake]: monster('Snake', 28, undefined, false, true),
 };
 
@@ -196,6 +198,7 @@ function selection(): ContentSliceDefinition {
       'creature:tibia:cyclops',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
+      'creature:tibia:dragon',
       'creature:tibia:hero',
     ],
     dependencies: ['creature:tibia:snake'],
@@ -236,12 +239,14 @@ function selection(): ContentSliceDefinition {
         consumer: 'spell tests',
         rationale: 'Whirlwind Throw spell is covered',
       },
-      ...['rotworm', 'cyclops', 'amazon', 'orc-shaman', 'hero'].map((name) => ({
-        entityKey: `creature:tibia:${name}`,
-        facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
-        consumer: 'creature tests',
-        rationale: `${name} combat and loot are covered`,
-      })),
+      ...['rotworm', 'cyclops', 'amazon', 'orc-shaman', 'dragon', 'hero'].map(
+        (name) => ({
+          entityKey: `creature:tibia:${name}`,
+          facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
+          consumer: 'creature tests',
+          rationale: `${name} combat and loot are covered`,
+        }),
+      ),
       {
         entityKey: 'creature:tibia:snake',
         facets: ['identity', 'stats', 'appearance', 'combat', 'conditions'],
@@ -256,7 +261,7 @@ function selection(): ContentSliceDefinition {
     rootSourceIds: {
       vocation: ['4'],
       spell: ['80', '61', '123', '106', '107'],
-      creature: ['26', '22', '77', '6', '73'],
+      creature: ['26', '22', '77', '6', '34', '73'],
     },
     dependencySourceIds: { creature: ['28'] },
     projectionPolicy: {
@@ -301,6 +306,24 @@ function selection(): ContentSliceDefinition {
         weaponSourceId: '3264',
         weaponAttack: 14,
         maxHealth: 740,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
+        stableKey: 'character:huntbound:knight-dragon-lair',
+        vocationKey: 'vocation:tibia:knight',
+        level: 70,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 1115,
         maxMana: 185,
         spellKeys: [
           'spell:tibia:berserk',
@@ -473,6 +496,23 @@ describe('importCanarySlice', () => {
         ],
       },
       {
+        stableKey: 'character:huntbound:knight-dragon-lair',
+        vocationKey: 'vocation:tibia:knight',
+        level: 70,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponAttack: 14,
+        maxHealth: 1115,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
         stableKey: 'character:huntbound:knight-hero-cave',
         vocationKey: 'vocation:tibia:knight',
         level: 130,
@@ -512,6 +552,7 @@ describe('importCanarySlice', () => {
     ).toEqual([
       'creature:tibia:amazon',
       'creature:tibia:cyclops',
+      'creature:tibia:dragon',
       'creature:tibia:hero',
       'creature:tibia:orc-shaman',
       'creature:tibia:rotworm',

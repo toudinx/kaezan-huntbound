@@ -332,10 +332,12 @@ Regras congeladas:
 
 ### Spawns e blueprints
 
-Um grupo entra na tabela quando seu **centro** está dentro da região e de um andar extraído; cada
-slot sobrevive quando sua posição absoluta também está. Slot fora da região vira
-`HUNT_SPAWN_OUT_OF_REGION`; criatura listada em `excludedCreatures` é omitida em silêncio; qualquer
-outra criatura fora da seleção vira `HUNT_UNKNOWN_CREATURE`. `spawntime` converte por
+Um grupo entra na tabela quando seu **centro** ou **algum slot** está dentro da região e de um andar
+extraído; cada slot sobrevive quando sua posição absoluta também está. Slot fora da região, num
+grupo cujo centro está dentro, vira `HUNT_SPAWN_OUT_OF_REGION`. Slot fora da região num grupo de
+borda — centro fora, um irmão dentro — é omitido, para a caixa congelada poder manter o Dragon cujo
+centro Canary cai um tile além de `maxX`. Criatura listada em `excludedCreatures` é omitida em
+silêncio; qualquer outra criatura fora da seleção vira `HUNT_UNKNOWN_CREATURE`. `spawntime` converte por
 `segundos * 1000 / 50` e um valor que não divide exatamente vira `HUNT_SPAWNTIME_NOT_DIVISIBLE`.
 Grupo que perde todos os slots é descartado, porque o schema exige pelo menos um.
 

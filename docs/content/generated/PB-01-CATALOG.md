@@ -3,8 +3,8 @@
 - Slice: fixture:pb-01-contract-coverage
 - Content version: pb-01-contract-coverage-v1
 - Snapshot: 157e6f9e21318bd3033eea553fe9275b429faf72
-- Roots: creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
-- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:battle-shield, item:tibia:book, item:tibia:bow, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:chain-armor, item:tibia:club-ring, item:tibia:corncob, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dagger, item:tibia:dark-helmet, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-tunic, item:tibia:halberd, item:tibia:ham, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:plate-shield, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:shamanic-hood, item:tibia:short-sword, item:tibia:skull, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:wolf-tooth-chain, item:tibia:worm
+- Roots: creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
+- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:battle-shield, item:tibia:book, item:tibia:bow, item:tibia:broadsword, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:burst-arrow, item:tibia:chain-armor, item:tibia:club-ring, item:tibia:corncob, item:tibia:crossbow, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dagger, item:tibia:dark-helmet, item:tibia:double-axe, item:tibia:dragon-ham, item:tibia:dragon-hammer, item:tibia:dragon-s-tail, item:tibia:dragon-shield, item:tibia:dragonbone-staff, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-dragon-leather, item:tibia:green-dragon-scale, item:tibia:green-tunic, item:tibia:halberd, item:tibia:ham, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:life-crystal, item:tibia:longsword, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:plate-legs, item:tibia:plate-shield, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:serpent-sword, item:tibia:shamanic-hood, item:tibia:short-sword, item:tibia:skull, item:tibia:small-diamond, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:steel-helmet, item:tibia:steel-shield, item:tibia:strong-health-potion, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:wand-of-inferno, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:wolf-tooth-chain, item:tibia:worm
 
 ## Entities
 
@@ -29,6 +29,17 @@
 - Rationale: The root covers the frozen heavy melee creature, appearance, combat, and loot. Lua armor 17 is provenance only and stays inert until PB-11.
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/giants/cyclops.lua / 22 / 17ffa298767933be8c5284fe98f81dba8e27d7a384d387d85e9d243a6426707f
 - Relations: item:tibia:battle-shield, item:tibia:club-ring, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dark-helmet, item:tibia:gold-coin, item:tibia:halberd, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:meat, item:tibia:plate-shield, item:tibia:short-sword, item:tibia:wolf-tooth-chain
+
+### creature:tibia:dragon
+
+- Kind: creature
+- GUID: 43ea204a-8abc-5afb-af6d-1ea7f7e9ab64
+- Display name: Dragon
+- Facets: identity, stats, appearance, combat, loot
+- Consumer: Dragon Lair hunt and creature contract tests
+- Rationale: The root covers melee, fire area of radius 4, healing, unused fire immunity until PB-11, and loot. The length/spread wave is omitted until AbilityShape supports wave.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/dragons/dragon.lua / 34 / 5cf359b04cd7ac0ca47d552c35f224d635d643733af834418c82de22af736ef6
+- Relations: item:tibia:broadsword, item:tibia:burst-arrow, item:tibia:crossbow, item:tibia:double-axe, item:tibia:dragon-ham, item:tibia:dragon-hammer, item:tibia:dragon-s-tail, item:tibia:dragon-shield, item:tibia:dragonbone-staff, item:tibia:gold-coin, item:tibia:green-dragon-leather, item:tibia:green-dragon-scale, item:tibia:life-crystal, item:tibia:longsword, item:tibia:plate-legs, item:tibia:serpent-sword, item:tibia:small-diamond, item:tibia:steel-helmet, item:tibia:steel-shield, item:tibia:strong-health-potion, item:tibia:wand-of-inferno
 
 ### creature:tibia:hero
 
@@ -118,6 +129,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3350 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:broadsword
+
+- Kind: item
+- GUID: b39d45fe-405a-56d7-9412-c587251e9aa4
+- Display name: broadsword
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3301 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:broken-shamanic-staff
 
 - Kind: item
@@ -138,6 +160,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:amazon loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3602 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:burst-arrow
+
+- Kind: item
+- GUID: e402d338-b42f-58df-a062-034e7ce3871d
+- Display name: burst arrow
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3449 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:chain-armor
@@ -171,6 +204,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:orc-shaman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3597 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:crossbow
+
+- Kind: item
+- GUID: 7b7056d3-8347-5568-831c-9c911063e755
+- Display name: crossbow
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3349 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:crown-armor
@@ -272,6 +316,72 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3384 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:double-axe
+
+- Kind: item
+- GUID: e67617cb-7fb2-5bc6-b932-321746415005
+- Display name: double axe
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3275 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dragon-ham
+
+- Kind: item
+- GUID: d53bf7e5-39eb-5cbe-a9e5-ae22ebe6cd41
+- Display name: dragon ham
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3583 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dragon-hammer
+
+- Kind: item
+- GUID: 59a413ce-a1d6-52b8-812c-27e5b329f6f6
+- Display name: dragon hammer
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3322 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dragon-s-tail
+
+- Kind: item
+- GUID: 491833f9-36f2-50df-8125-1eadef4ada08
+- Display name: dragon's tail
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 11457 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dragon-shield
+
+- Kind: item
+- GUID: e1838947-4d8f-5488-8858-bef65048382a
+- Display name: dragon shield
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3416 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dragonbone-staff
+
+- Kind: item
+- GUID: a08aacec-f589-5ed1-93b3-3fe7ee82e2b7
+- Display name: dragonbone staff
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 7430 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:fire-sword
 
 - Kind: item
@@ -301,7 +411,7 @@
 - Display name: gold coin
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot
+- Rationale: Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3031 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -325,6 +435,28 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:hero loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 239 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:green-dragon-leather
+
+- Kind: item
+- GUID: b6848a9b-35aa-5110-9985-f10817cae9b4
+- Display name: green dragon leather
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 5877 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:green-dragon-scale
+
+- Kind: item
+- GUID: 6f8cf89b-6c75-510a-bfba-fb6e8954203b
+- Display name: green dragon scale
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 5920 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:green-tunic
@@ -391,6 +523,28 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3374 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:life-crystal
+
+- Kind: item
+- GUID: d75e46a9-fd3f-5929-87fb-1cf5f925b233
+- Display name: life crystal
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3061 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:longsword
+
+- Kind: item
+- GUID: 85322a32-7464-5071-8d0d-6df837e1a814
+- Display name: longsword
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3285 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:lump-of-dirt
@@ -479,6 +633,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:hero loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 2995 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:plate-legs
+
+- Kind: item
+- GUID: f4956724-8160-5003-953f-07d65e3d3d66
+- Display name: plate legs
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3557 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:plate-shield
@@ -580,6 +745,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 11510 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:serpent-sword
+
+- Kind: item
+- GUID: 27d3c20c-0697-50f4-b77d-363df971b2ba
+- Display name: serpent sword
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3297 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:shamanic-hood
 
 - Kind: item
@@ -611,6 +787,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:amazon loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3114 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:small-diamond
+
+- Kind: item
+- GUID: feef3d9d-4f61-591a-87f1-2b1e1ef4a348
+- Display name: small diamond
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3028 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:small-notebook
@@ -657,6 +844,39 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3277 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:steel-helmet
+
+- Kind: item
+- GUID: d3c7305e-d876-579a-851a-2937199813be
+- Display name: steel helmet
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3351 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:steel-shield
+
+- Kind: item
+- GUID: 985fe1c8-80d5-50b8-bd28-1741a9b2a74a
+- Display name: steel shield
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3409 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:strong-health-potion
+
+- Kind: item
+- GUID: 57c26843-0c8a-5d2a-b13c-d5e0657eb7f6
+- Display name: strong health potion
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 236 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:sword
 
 - Kind: item
@@ -664,7 +884,7 @@
 - Display name: sword
 - Facets: identity, item
 - Consumer: frozen character sheet
-- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
+- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3264 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -699,6 +919,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:orc-shaman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3072 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:wand-of-inferno
+
+- Kind: item
+- GUID: f9705f47-1571-5d90-b258-784fbe606aa7
+- Display name: wand of inferno
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:dragon loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3071 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:war-hammer
@@ -820,6 +1051,15 @@
 - Skills: magic 0, sword 60
 - Weapon: item:tibia:sword attack 14
 - Vitals: health 740, mana 185
+- Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
+
+### character:huntbound:knight-dragon-lair
+
+- Vocation: vocation:tibia:knight
+- Level: 70
+- Skills: magic 0, sword 60
+- Weapon: item:tibia:sword attack 14
+- Vitals: health 1115, mana 185
 - Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
 
 ### character:huntbound:knight-hero-cave

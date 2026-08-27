@@ -152,6 +152,7 @@ describe('parseCanaryItemsXml', () => {
         <attribute key="absorbpercentdeath" value="70" />
         <attribute key="charges" value="3" />
         <attribute key="elementfire" value="1" />
+        <attribute key="elementearth" value="1" />
         <attribute key="ammotype" value="arrow" />
       </item>
     </items>`;
