@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-private-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "8fe9d9898321f8dcc076a2b78270f458d02c3504adcf31d68ae4cf36feb960fa",
-    "byteLength": 1200123
+    "sha256": "34ba0a1f04def8f7afb89b8c28edaa84c914ae5a07dc322d341a5b08d3eb2de1",
+    "byteLength": 1208942
   },
   "files": [
     {
