@@ -286,6 +286,14 @@ role, não spearman de novo.
 
 **Comportamento novo:** o alvo que se cura o bastante para o metrônomo não bastar.
 
+**Correção de 2026-08-27.** A conta acima usava a ficha do nível 35 (sword 60, sword atk 14) para
+julgar a faixa 5, e ela sobrestimava a folga: o `39 HP/s` só olha a corrida de dano e ignora que o
+Hero devolve ~60 HP/s em cima de 2 015 de vida. Jogado, era invencível, não "vence por pouco". A
+ficha `character:huntbound:knight-hero-cave` passou a seguir o nível 130 — sword 90, two handed
+sword (`3265`, atk 30), 645 de mana pela progressão do Canary — o que põe o filler em ~70 HP/s e o
+tempo de morte de um Hero em ~29 s só de auto-ataque. O degrau segue sendo obrigar o burst: com a
+rotação inteira o Hero cai em ~13 s, e a mana acaba antes do terceiro.
+
 ---
 
 ## Seção 3 — `lookType` conferido, espécie por espécie

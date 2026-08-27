@@ -79,6 +79,23 @@ const expectedSourceFiles = [
  * damage against a 65 HP rotworm and could not legally cast Berserk, which
  * `berserk.lua` gates at level 35: the hunt was unwinnable by arithmetic.
  * Level 35 with sword 60 is the ordinary knight the cave is written for.
+ *
+ * The Hero Cave sheet unfrozen again on 2026-08-26, for the same reason one
+ * band up. It carried level 130 over the level 35 kit -- sword 60, a plain
+ * sword (`3264`, attack 14) and 185 mana -- which caps melee at 97 per 2 s,
+ * about 31 HP/s. Hero heals 200-250 at 20 % per 2 s, so 22,5 HP/s of that is
+ * undone before it lands: one Hero took near three minutes to fall while
+ * dealing 0-240 per 2 s into 2015 HP. Unwinnable by arithmetic, again, and
+ * the player reported it as such.
+ *
+ * The three numbers now follow level 130 instead of level 35. Sword 90 is the
+ * ordinary trained knight at that level. The weapon is the two handed sword
+ * (`3265`, attack 30, `weaponType` sword, level 20) -- the strongest sword the
+ * slice carries, and one Hero itself drops. Mana is Canary's own progression
+ * rather than a copied literal: 35 at level 8 plus `gainMana` 5 per level is
+ * 645 at 130. By that same formula the level 35 sheet should read 170, not
+ * 185; it stays as it is, because the PB-04 and PB-05 goldens were replayed
+ * against 185 and nothing about the rotworm cave is broken.
  */
 const expectedCharacters: readonly FrozenCharacter[] = [
   {
@@ -121,12 +138,12 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     stableKey: 'character:huntbound:knight-hero-cave',
     vocationKey: 'vocation:tibia:knight',
     level: 130,
-    skills: { sword: 60, magic: 0 },
-    weaponItemKey: 'item:tibia:sword',
-    weaponSourceId: '3264',
-    weaponAttack: 14,
+    skills: { sword: 90, magic: 0 },
+    weaponItemKey: 'item:tibia:two-handed-sword',
+    weaponSourceId: '3265',
+    weaponAttack: 30,
     maxHealth: 2015,
-    maxMana: 185,
+    maxMana: 645,
     spellKeys: [
       'spell:tibia:berserk',
       'spell:tibia:brutal-strike',

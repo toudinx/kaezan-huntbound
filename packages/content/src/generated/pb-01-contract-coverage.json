@@ -23,10 +23,10 @@
     {
       "level": 130,
       "maxHealth": 2015,
-      "maxMana": 185,
+      "maxMana": 645,
       "skills": {
         "magic": 0,
-        "sword": 60
+        "sword": 90
       },
       "spellKeys": [
         "spell:tibia:berserk",
@@ -37,8 +37,8 @@
       ],
       "stableKey": "character:huntbound:knight-hero-cave",
       "vocationKey": "vocation:tibia:knight",
-      "weaponAttack": 14,
-      "weaponItemKey": "item:tibia:sword"
+      "weaponAttack": 30,
+      "weaponItemKey": "item:tibia:two-handed-sword"
     },
     {
       "level": 35,
@@ -2071,7 +2071,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
+        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",
@@ -2083,13 +2083,13 @@
         "rationale": "Required by creature:tibia:amazon loot"
       },
       {
-        "consumer": "creature contract tests",
+        "consumer": "frozen character sheet",
         "entityKey": "item:tibia:two-handed-sword",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:hero loot"
+        "rationale": "Required by character:huntbound:knight-hero-cave, creature:tibia:hero"
       },
       {
         "consumer": "creature contract tests",

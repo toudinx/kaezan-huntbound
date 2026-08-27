@@ -23,7 +23,7 @@ const paths = {
 
 const sources: Readonly<Record<string, string>> = {
   [paths.vocation]: `<vocations><vocation id="4" name="Knight" gaincap="25" gainhp="15" gainmana="5" manamultiplier="3" attackspeed="2000" basespeed="110"><skill id="4" multiplier="1.4" /></vocation></vocations>`,
-  [paths.items]: `<items><item id="100" name="gold coin" weight="1" stackable="1" /><item id="3264" name="sword" /></items>`,
+  [paths.items]: `<items><item id="100" name="gold coin" weight="1" stackable="1" /><item id="3264" name="sword" /><item id="3265" name="two handed sword" /></items>`,
   [paths.spell]: `local combat = Combat()
 combat:setParameter(COMBAT_PARAM_TYPE, COMBAT_PHYSICALDAMAGE)
 combat:setArea(createCombatArea(AREA_SQUARE1X1))
@@ -314,12 +314,12 @@ function selection(): ContentSliceDefinition {
         stableKey: 'character:huntbound:knight-hero-cave',
         vocationKey: 'vocation:tibia:knight',
         level: 130,
-        skills: { sword: 60, magic: 0 },
-        weaponItemKey: 'item:tibia:sword',
-        weaponSourceId: '3264',
-        weaponAttack: 14,
+        skills: { sword: 90, magic: 0 },
+        weaponItemKey: 'item:tibia:two-handed-sword',
+        weaponSourceId: '3265',
+        weaponAttack: 30,
         maxHealth: 2015,
-        maxMana: 185,
+        maxMana: 645,
         spellKeys: [
           'spell:tibia:berserk',
           'spell:tibia:brutal-strike',
@@ -476,11 +476,11 @@ describe('importCanarySlice', () => {
         stableKey: 'character:huntbound:knight-hero-cave',
         vocationKey: 'vocation:tibia:knight',
         level: 130,
-        skills: { sword: 60, magic: 0 },
-        weaponItemKey: 'item:tibia:sword',
-        weaponAttack: 14,
+        skills: { sword: 90, magic: 0 },
+        weaponItemKey: 'item:tibia:two-handed-sword',
+        weaponAttack: 30,
         maxHealth: 2015,
-        maxMana: 185,
+        maxMana: 645,
         spellKeys: [
           'spell:tibia:berserk',
           'spell:tibia:brutal-strike',
@@ -520,6 +520,7 @@ describe('importCanarySlice', () => {
     expect(result.bundle.items.map((item) => item.displayName)).toEqual([
       'gold coin',
       'sword',
+      'two handed sword',
     ]);
     expect(
       result.bundle.creatures.find((creature) =>
@@ -530,6 +531,7 @@ describe('importCanarySlice', () => {
       'creature:tibia:snake',
       'item:tibia:gold-coin',
       'item:tibia:sword',
+      'item:tibia:two-handed-sword',
     ]);
     expect(
       result.bundle.slice.projections.find(

@@ -664,7 +664,7 @@
 - Display name: sword
 - Facets: identity, item
 - Consumer: frozen character sheet
-- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
+- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3264 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -685,8 +685,8 @@
 - GUID: 9bb399fd-826f-5791-8b2b-212049d6ac44
 - Display name: two handed sword
 - Facets: identity, item
-- Consumer: creature contract tests
-- Rationale: Required by creature:tibia:hero loot
+- Consumer: frozen character sheet
+- Rationale: Required by character:huntbound:knight-hero-cave, creature:tibia:hero
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3265 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -826,9 +826,9 @@
 
 - Vocation: vocation:tibia:knight
 - Level: 130
-- Skills: magic 0, sword 60
-- Weapon: item:tibia:sword attack 14
-- Vitals: health 2015, mana 185
+- Skills: magic 0, sword 90
+- Weapon: item:tibia:two-handed-sword attack 30
+- Vitals: health 2015, mana 645
 - Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
 
 ### character:huntbound:knight-venore-rotworm-cave
