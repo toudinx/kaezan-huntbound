@@ -5,11 +5,11 @@
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
-`docs/content/HUNT_BANDS.md`. Tasks 01 a 06 fechadas e integradas — a máquina do catálogo está
-inteira e o que resta é conteúdo. Elegível: **PB-10-07**. As hunts autoram em
+`docs/content/HUNT_BANDS.md`. Tasks 01 a 10 fechadas e integradas — a máquina do catálogo está
+inteira e as cinco hunts estão na `main`. As hunts autoram em
 paralelo, integram em série, e não rodam `verify` ao mesmo tempo (bloqueio B17).
 
-**Última atualização:** 2026-08-26
+**Última atualização:** 2026-08-27
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -28,7 +28,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-04 | done | `codex/pb10-04-indice-de-hunts` | econômico `xhigh` | Codex GPT-5 `xhigh` | `1acfccf` | índice gerado + sidecar determinísticos; content, architecture e hunt checks verdes; verify bloqueado apenas pela falha ambiental B16 em `apps/game` |
 | PB-10-05 | done | `codex/pb10-05-tela-hunting-places` | econômico `xhigh` | Codex GPT-5 `xhigh` | `2795b68` | tela DOM; boot por índice; `verify` e `qa:browser` verdes; orçamento informativo em 5,269/5,284 ms |
 | PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | `790f91f` | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
-| PB-10-07 | pending | `<agente>/pb10-07-orc-fortress` | econômico `xhigh` | — | — | — |
+| PB-10-07 | done | `codex/pb10-07-orc-fortress` | econômico `xhigh` | Grok 4.6 `xhigh` | `f2f9755` | Orc+Spearman no catálogo; 68/68 XML 13/33/22; 32×32×3; ficha nv 25 HP 440; verify 81/81 |
 | PB-10-08 | done | `codex/pb10-08-cyclopolis` | econômico `xhigh` | Grok 4.6 `xhigh` | `3fa4845` | Cyclops 19/19 XML; recorte 24×24×3; ficha nv 45 HP 740; armor 17 inerte; content/assets/hunt/combat/sim verdes; correctness 80/80 |
 | PB-10-09 | done | `codex/pb10-09-dragon-lair` | econômico `xhigh` | Grok 4.6 `xhigh` | `91814cb` | Dragon 31/31 XML; Ankrahmun 64×48×3; ficha nv 70 HP 1115; area r=4 fogo entra, onda omitida; content/assets/hunt/combat/sim verdes; correctness 81/81 |
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
