@@ -6,8 +6,8 @@
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
 `docs/content/HUNT_BANDS.md`. Tasks 01 a 06 fechadas e integradas — a máquina do catálogo está
-inteira e o que resta é conteúdo. Próximas elegíveis: **PB-10-07 e PB-10-08**, que **trabalham em
-paralelo e integram em série** (bloqueio B17).
+inteira e o que resta é conteúdo. Elegíveis: **PB-10-07 a PB-10-10**, as quatro escritas — autoram em
+paralelo, integram em série, e não rodam `verify` ao mesmo tempo (bloqueio B17).
 
 **Última atualização:** 2026-08-26
 
@@ -30,7 +30,8 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | `790f91f` | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
 | PB-10-07 | pending | `<agente>/pb10-07-orc-fortress` | econômico `xhigh` | — | — | — |
 | PB-10-08 | pending | `<agente>/pb10-08-cyclopolis` | econômico `xhigh` | — | — | — |
-| PB-10-09/10 | não escrita | — | econômico `xhigh` | — | — | — |
+| PB-10-09 | pending | `<agente>/pb10-09-dragon-lair` | econômico `xhigh` | — | — | — |
+| PB-10-10 | pending | `<agente>/pb10-10-hero-cave` | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -49,11 +50,14 @@ Vitest estouram timeout, sempre com `Test timed out` e nunca divergência de gol
 reprova muda a cada rodada. **Não reproduziu no fechamento das 05/06**, com a máquina em ~40–60 %:
 `verify` chegou em `build` e `qa:browser` pela primeira vez desde a PB-10-02.
 
-**B17 — aberto por desenho, não é defeito.** As tasks de hunt (07–10) **trabalham em paralelo e
-integram em série**: cruzam-se em duas fontes (`pb-01-contract-coverage.json`, `huntRegistry.ts`) e em
-dois artefatos **gerados** (`generated/pb-01-contract-coverage.json` e `generated/hunts/index.json`,
-com sidecars). Artefato gerado não se edita à mão, então conflito ali se resolve **regenerando depois
-do rebase**, nunca mergeando. Paralelismo útil na prática: 2.
+**B17 — aberto por desenho, não é defeito.** As tasks de hunt (07–10) **autoram em paralelo,
+integram em série e escalonam o gate**. Integração: cruzam-se em duas fontes
+(`pb-01-contract-coverage.json`, `huntRegistry.ts`) e em dois artefatos **gerados**
+(`generated/pb-01-contract-coverage.json` e `generated/hunts/index.json`, com sidecars); conflito em
+gerado se resolve **regenerando depois do rebase**, nunca mergeando. Isso serializa em qualquer N e
+**não impõe teto de 2**. O teto real é a **máquina**: duas sessões simultâneas mediram 91 % de CPU e
+reprovaram o `tools/replay` por timeout (B16), e a suíte Playwright leva 8,4 min sozinha com a máquina
+livre. Escrever recipe é barato; `verify` é que não pode coincidir.
 
 **B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
 

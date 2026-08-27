@@ -119,9 +119,12 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 06 | Criatura conjura | kernel e IA |
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo — **sobretudo mapa** |
 
-**Fechadas: 01, 02, 03 e 04. Escritas e elegíveis: 05 e 06.** Da 07 em diante são bullets até chegar
-a vez — é a regra do `AGENTS.md` de congelar as **duas próximas**, e existe porque playbook escrito
-inteiro antecipado envelhece contra o código real.
+**Fechadas: 01 a 06 — a máquina do catálogo está inteira. Escritas e elegíveis: 07 a 10.**
+
+As quatro de conteúdo foram escritas juntas, o que é exceção à regra do `AGENTS.md` de congelar só as
+duas próximas. A exceção se justifica porque o motivo da regra não morde aqui: as quatro têm a mesma
+forma, a máquina que elas consomem está fechada e não muda mais, e **todos os dados já estão
+congelados com `sha256`** pela PB-10-02 desde 2026-08-26. Não há contra o que envelhecer.
 
 ### As tasks de hunt são, principalmente, mapa
 
@@ -130,17 +133,20 @@ congelados com `sha256` pela PB-10-02 — a curadoria acabou. O que resta em cad
 layout autorada**, e ela domina o trabalho: a da rotworm tem 3087 linhas para um 24 × 24 de dois
 andares. Os mobs são o elenco de apoio; o recorte jogável é a entrega.
 
-Bullets das quatro, até chegar a vez de cada uma:
+As quatro, e o risco de design de cada uma — que é o que muda entre elas:
 
 - **07 — Orc Fortress**, faixa 2. Consome a PB-10-06. Orc e Orc Spearman entram no catálogo; o Shaman
   já está. Snake **não** entra: `summons` é o portão das faixas 10–11.
 - **08 — Cyclopolis**, faixa 3. Só Cyclops. Nenhum portão de kernel. O `armor` 17 fica inerte até o
   PB-11.
-- **09 — Dragon Lair (Ankrahmun)**, faixa 4. **A hunt entra inteira.** O Dragon tem dois ataques de
-  fogo no Lua: o de `range` 7 + `radius` 4 é o degrau e **entra**; o de `length` 8 / `spread` 3 é onda,
-  `AbilityShape` não tem `'wave'`, e ele simplesmente **não é adicionado**. Isso não remove a hunt nem
-  a criatura — remove um ataque. Fogo entra cheio; mitigação é PB-11.
-- **10 — Hero Cave**, faixa 5. O heal é o teto do kit atual. `armor` 35 inerte até o PB-11.
+- **09 — Dragon Lair (Ankrahmun)**, faixa 4. **A hunt entra inteira.** Dos dois ataques de fogo do
+  Lua, o de `range` 7 + `radius` 4 é o degrau e **entra**; o de `length` 8 / `spread` 3 é onda,
+  `AbilityShape` não tem `'wave'`, e ele simplesmente **não é adicionado** — isso remove um ataque,
+  não a hunt nem a criatura. Risco: **a faixa virar parede**, porque sem mitigação dois blocos
+  sobrepostos tiram 280 de 1 115 HP. Recorte em câmaras.
+- **10 — Hero Cave**, faixa 5. O heal é o teto do kit. **O Hero não traz fogo** — a spec dizia que
+  sim, o Lua disse que não, e o arquivo venceu. Risco: **filtragem**, 24 Heroes entre 184 slots (13 %),
+  contra 43–67 % nas outras três.
 
 ### A 05 e a 06 rodam em paralelo
 
