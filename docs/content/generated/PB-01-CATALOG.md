@@ -3,8 +3,8 @@
 - Slice: fixture:pb-01-contract-coverage
 - Content version: pb-01-contract-coverage-v1
 - Snapshot: 157e6f9e21318bd3033eea553fe9275b429faf72
-- Roots: creature:tibia:amazon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
-- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:book, item:tibia:bow, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:chain-armor, item:tibia:corncob, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:dagger, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-tunic, item:tibia:ham, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:shamanic-hood, item:tibia:skull, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:worm
+- Roots: creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
+- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:battle-shield, item:tibia:book, item:tibia:bow, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:chain-armor, item:tibia:club-ring, item:tibia:corncob, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dagger, item:tibia:dark-helmet, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-tunic, item:tibia:halberd, item:tibia:ham, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:plate-shield, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:shamanic-hood, item:tibia:short-sword, item:tibia:skull, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:wolf-tooth-chain, item:tibia:worm
 
 ## Entities
 
@@ -18,6 +18,17 @@
 - Rationale: The root covers melee and ranged physical combat with a projectile.
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/humans/amazon.lua / 77 / 9792a709311c8281217bffa343e2c9579a8ae631bd69f9c0a8665a6d469cca7b
 - Relations: item:tibia:brown-bread, item:tibia:crystal-necklace, item:tibia:dagger, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:protective-charm, item:tibia:sabre, item:tibia:skull, item:tibia:small-ruby, item:tibia:torch
+
+### creature:tibia:cyclops
+
+- Kind: creature
+- GUID: 45e26c3c-3889-58ea-972c-0fc417050cb7
+- Display name: Cyclops
+- Facets: identity, stats, appearance, combat, loot
+- Consumer: creature contract tests
+- Rationale: The root covers the frozen heavy melee creature, appearance, combat, and loot contract.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/giants/cyclops.lua / 22 / 17ffa298767933be8c5284fe98f81dba8e27d7a384d387d85e9d243a6426707f
+- Relations: item:tibia:battle-shield, item:tibia:club-ring, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dark-helmet, item:tibia:gold-coin, item:tibia:halberd, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:meat, item:tibia:plate-shield, item:tibia:short-sword, item:tibia:wolf-tooth-chain
 
 ### creature:tibia:hero
 
@@ -74,6 +85,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3447 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:battle-shield
+
+- Kind: item
+- GUID: 492cdaa1-20b6-59ba-8ffa-634115d7b524
+- Display name: battle shield
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3413 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:book
 
 - Kind: item
@@ -127,6 +149,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:orc-shaman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3358 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:club-ring
+
+- Kind: item
+- GUID: 1fd19132-0818-512c-a2d3-6b8f0f047631
+- Display name: club ring
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3093 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:corncob
@@ -195,6 +228,28 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3008 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:cyclops-toe
+
+- Kind: item
+- GUID: 9daa9181-e1b2-540d-9e2d-e8e6bc4c516a
+- Display name: cyclops toe
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 9657 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:cyclops-trophy
+
+- Kind: item
+- GUID: 3b667f0e-6d43-5ae5-810f-f644b8df7d5a
+- Display name: cyclops trophy
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 7398 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:dagger
 
 - Kind: item
@@ -204,6 +259,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:amazon loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3267 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:dark-helmet
+
+- Kind: item
+- GUID: 3c15ad95-774f-511a-8b1f-a8d519e19901
+- Display name: dark helmet
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3384 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:fire-sword
@@ -235,7 +301,7 @@
 - Display name: gold coin
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:amazon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot
+- Rationale: Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3031 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -272,6 +338,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3563 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:halberd
+
+- Kind: item
+- GUID: 293d653c-74df-5fc4-8378-d703a159469b
+- Display name: halberd
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3269 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:ham
 
 - Kind: item
@@ -283,6 +360,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3582 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:health-potion
+
+- Kind: item
+- GUID: 70b90237-99dc-56e6-8632-873995ad461f
+- Display name: health potion
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 266 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:heavy-old-tome
 
 - Kind: item
@@ -290,7 +378,7 @@
 - Display name: heavy old tome
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:orc-shaman loot
+- Rationale: Required by creature:tibia:cyclops, creature:tibia:orc-shaman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 23986 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -345,7 +433,7 @@
 - Display name: meat
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:hero, creature:tibia:rotworm loot
+- Rationale: Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3577 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -391,6 +479,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:hero loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 2995 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:plate-shield
+
+- Kind: item
+- GUID: 27db3338-2160-528a-9e7d-7897dc71ccbf
+- Display name: plate shield
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3410 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:protective-charm
@@ -490,6 +589,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:orc-shaman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 11478 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:short-sword
+
+- Kind: item
+- GUID: a7e983ac-c95f-529b-9fe7-7a84d4a9b04a
+- Display name: short sword
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3294 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:skull
@@ -611,6 +721,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:hero loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3004 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:wolf-tooth-chain
+
+- Kind: item
+- GUID: 4c209a4e-dd6f-5eae-a00a-d162100416c3
+- Display name: wolf tooth chain
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:cyclops loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3012 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:worm

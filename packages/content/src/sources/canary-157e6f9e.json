@@ -66,6 +66,11 @@
       "purpose": "creature"
     },
     {
+      "relativePath": "data-otservbr-global/monster/giants/cyclops.lua",
+      "sha256": "17ffa298767933be8c5284fe98f81dba8e27d7a384d387d85e9d243a6426707f",
+      "purpose": "creature"
+    },
+    {
       "relativePath": "data-otservbr-global/monster/humans/amazon.lua",
       "sha256": "9792a709311c8281217bffa343e2c9579a8ae631bd69f9c0a8665a6d469cca7b",
       "purpose": "creature"

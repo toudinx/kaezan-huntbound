@@ -180,9 +180,9 @@ function readHuntCharacter(
   }
 
   const characterKey = `character:huntbound:${vocationSlug}-${huntSlug(hunt.huntId)}`;
-  const character = characters.find(
-    (candidate) => candidate.stableKey === characterKey,
-  );
+  const character =
+    characters.find((candidate) => candidate.stableKey === characterKey) ??
+    characters.find((candidate) => candidate.vocationKey === hunt.soloVocation);
   if (character === undefined) {
     throw new Error(`Generated catalog is missing character ${characterKey}`);
   }

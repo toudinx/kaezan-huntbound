@@ -7,6 +7,8 @@ import {
   validateHuntPack,
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
+import { getHuntPipelineEntry } from './huntRegistry.ts';
+import { huntPackExtraKeys } from './huntSelection.ts';
 
 function option(args: readonly string[], name: string): string | undefined {
   const index = args.indexOf(name);
@@ -38,6 +40,12 @@ export async function checkHuntPack(input: {
   if (selectionResult.data.hunt === undefined) {
     throw new Error('Hunt asset selection manifest has no hunt metadata');
   }
+  const pipelineEntry = getHuntPipelineEntry(selectionResult.data.hunt.huntId);
+  if (pipelineEntry === undefined) {
+    throw new Error(
+      `No hunt pipeline metadata for ${selectionResult.data.hunt.huntId}`,
+    );
+  }
   const region = (await readJson(input.regionPath)) as MapRegion;
   const packResult = AssetPackManifestSchema.safeParse(
     await readJson(input.packPath),
@@ -54,6 +62,7 @@ export async function checkHuntPack(input: {
     selectionResult.data.hunt,
     region,
     resolvedEntries,
+    { extraKeys: huntPackExtraKeys(pipelineEntry.assetSelection) },
   );
   if (diagnostics.length > 0) {
     throw new Error(JSON.stringify(diagnostics));

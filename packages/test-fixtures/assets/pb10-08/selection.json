@@ -1,0 +1,1075 @@
+{
+  "schemaVersion": "1",
+  "selectionId": "selection:pb-10-08-cyclopolis",
+  "packId": "asset-pack:pb-10-08-cyclopolis",
+  "contentVersion": "pb-10-08-cyclopolis@c0d57d4ba98b",
+  "buildProfiles": [
+    "test",
+    "product"
+  ],
+  "groups": [
+    {
+      "groupId": "huntbound-test-pb10-08",
+      "source": "huntbound-synthetic-fixture",
+      "sourceSnapshot": "pb10-08-cyclopolis-synthetic-v1",
+      "licenseClass": "huntbound-test",
+      "buildProfiles": [
+        "test",
+        "product"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "key": "creature:tibia:cyclops",
+      "category": "creature",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 22
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers creature:tibia:cyclops required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "effect:tibia:draw-blood",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 1
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers effect:tibia:draw-blood required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "effect:tibia:hit-area",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 10
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers effect:tibia:hit-area required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "effect:tibia:magic-blue",
+      "category": "effect",
+      "sourceIdentity": {
+        "kind": "effectId",
+        "id": 13
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers effect:tibia:magic-blue required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:battle-shield",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3413
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:battle-shield required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:cyclops-toe",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 9657
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:cyclops-toe required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:dead-rotworm",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5967
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:dead-rotworm required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:gold-coin",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3031
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:gold-coin required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:halberd",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3269
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:halberd required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:meat",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3577
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:meat required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:plate-shield",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3410
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:plate-shield required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:short-sword",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3294
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:short-sword required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "item:tibia:small-splash",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2889
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers item:tibia:small-splash required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "outfit:tibia:knight",
+      "category": "outfit",
+      "sourceIdentity": {
+        "kind": "lookType",
+        "id": 131
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers outfit:tibia:knight required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:101",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 101
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:101 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1772",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1772
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1772 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1783",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1783
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1783 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1784",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1784
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1784 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1785",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1785
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1785 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1786",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1786
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1786 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1840",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1840
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1840 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1841",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1841
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1841 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1842",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1842
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1842 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1947",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1947
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:1947 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2028",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2028
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2028 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2118",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2118
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2118 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2119",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2119
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2119 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2120",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2120
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2120 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:21477",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 21477
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:21477 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2317",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2317
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2317 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2318",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2318
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2318 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2323",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2323
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2323 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2326",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2326
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2326 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2327",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2327
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:2327 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3458",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3458
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:3458 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:373",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 373
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:373 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:374",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 374
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:374 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:375",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 375
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:375 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:376",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 376
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:376 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:377",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 377
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:377 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:378",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 378
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:378 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:379",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 379
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:379 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:380",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 380
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:380 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:381",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 381
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:381 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:382",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 382
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:382 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:383",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 383
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:383 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:384",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 384
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:384 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:390",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 390
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:390 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:391",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 391
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:391 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:429",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 429
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:429 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4805",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4805
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:4805 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4807",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4807
+      },
+      "sourceGroupId": "huntbound-test-pb10-08",
+      "consumer": "PB-10-08 Cyclopolis asset pack",
+      "rationale": "Covers tile:tibia:4807 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    }
+  ],
+  "hunt": {
+    "packKey": "pb-10-08-cyclopolis",
+    "huntId": "hunt:tibia:cyclopolis",
+    "regionSha256": "c0d57d4ba98b8b199556cca7a8939bc15de8e9ff674656110c7a8d72209fb096",
+    "keys": [
+      "tile:tibia:101",
+      "tile:tibia:373",
+      "tile:tibia:374",
+      "tile:tibia:375",
+      "tile:tibia:376",
+      "tile:tibia:377",
+      "tile:tibia:378",
+      "tile:tibia:379",
+      "tile:tibia:380",
+      "tile:tibia:381",
+      "tile:tibia:382",
+      "tile:tibia:383",
+      "tile:tibia:384",
+      "tile:tibia:390",
+      "tile:tibia:391",
+      "tile:tibia:429",
+      "tile:tibia:1772",
+      "tile:tibia:1783",
+      "tile:tibia:1784",
+      "tile:tibia:1785",
+      "tile:tibia:1786",
+      "tile:tibia:1840",
+      "tile:tibia:1841",
+      "tile:tibia:1842",
+      "tile:tibia:1947",
+      "tile:tibia:2028",
+      "tile:tibia:2118",
+      "tile:tibia:2119",
+      "tile:tibia:2120",
+      "tile:tibia:2317",
+      "tile:tibia:2318",
+      "tile:tibia:2323",
+      "tile:tibia:2326",
+      "tile:tibia:2327",
+      "tile:tibia:3458",
+      "tile:tibia:4805",
+      "tile:tibia:4807",
+      "tile:tibia:21477",
+      "creature:tibia:cyclops",
+      "outfit:tibia:knight",
+      "effect:tibia:draw-blood",
+      "item:tibia:small-splash",
+      "effect:tibia:hit-area",
+      "effect:tibia:magic-blue",
+      "item:tibia:dead-rotworm",
+      "item:tibia:gold-coin",
+      "item:tibia:meat",
+      "item:tibia:short-sword",
+      "item:tibia:cyclops-toe",
+      "item:tibia:plate-shield",
+      "item:tibia:battle-shield",
+      "item:tibia:halberd"
+    ],
+    "budget": {
+      "maxEntries": 512,
+      "maxBytes": 6291456
+    }
+  }
+}

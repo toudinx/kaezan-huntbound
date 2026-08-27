@@ -37,18 +37,26 @@ const probeErrorMessage = 'Hunt probe is not installed in the test browser.';
 
 export async function selectHunt(
   page: Page,
-  huntId = DEFAULT_HUNT_ID,
+  huntIdOrDisplayName = DEFAULT_HUNT_ID,
 ): Promise<void> {
-  const selector = page.locator(
-    `[data-testid="hunt-place-select"][data-hunt-id="${huntId}"]`,
-  );
+  const selector = huntIdOrDisplayName.startsWith('hunt:')
+    ? page.locator(
+        `[data-testid="hunt-place-select"][data-hunt-id="${huntIdOrDisplayName}"]`,
+      )
+    : page
+        .locator('[data-testid="hunt-place-card"]')
+        .filter({ hasText: huntIdOrDisplayName })
+        .locator('[data-testid="hunt-place-select"]');
   await expect(selector).toHaveCount(1, { timeout: 15_000 });
   await selector.click();
 }
 
-export async function waitForHunt(page: Page): Promise<HuntProbeState> {
+export async function waitForHunt(
+  page: Page,
+  huntIdOrDisplayName = DEFAULT_HUNT_ID,
+): Promise<HuntProbeState> {
   await page.goto('/');
-  await selectHunt(page);
+  await selectHunt(page, huntIdOrDisplayName);
   await expect(
     page.locator('#shell-root[data-assets-ready="true"]'),
   ).toHaveCount(1, { timeout: 15_000 });

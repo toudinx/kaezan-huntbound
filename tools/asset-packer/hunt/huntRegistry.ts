@@ -1,8 +1,5 @@
-import {
-  type AssetSourceGroup,
-  HUNT_PACK_HERO_CREATURE_KEY,
-  HUNT_PACK_HERO_LOOT_KEYS,
-} from '../../../packages/assets/src/index.ts';
+import type { AssetSourceGroup } from '../../../packages/assets/src/index.ts';
+import type { HuntPackAssetConfig } from './huntSelection.ts';
 
 export type HuntPipelineConfig = {
   readonly selectionPath: string;
@@ -12,8 +9,7 @@ export type HuntPipelineConfig = {
   readonly packKey: string;
   readonly personalSelectionPath: string;
   readonly consumer: string;
-  readonly creatureKey?: string;
-  readonly lootKeys?: readonly string[];
+  readonly assetSelection: HuntPackAssetConfig;
   readonly testGroup: AssetSourceGroup;
   readonly personalGroup: AssetSourceGroup;
 };
@@ -34,6 +30,19 @@ export const HUNT_PIPELINE_REGISTRY = {
     personalSelectionPath:
       'packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json',
     consumer: 'PB-04 Venore Rotworm Cave asset pack',
+    assetSelection: {
+      creature: { key: 'creature:tibia:rotworm', lookType: 26 },
+      loot: [
+        { key: 'item:tibia:gold-coin', clientId: 3031 },
+        { key: 'item:tibia:ham', clientId: 3582 },
+        { key: 'item:tibia:legion-helmet', clientId: 3374 },
+        { key: 'item:tibia:lump-of-dirt', clientId: 9692 },
+        { key: 'item:tibia:mace', clientId: 3286 },
+        { key: 'item:tibia:meat', clientId: 3577 },
+        { key: 'item:tibia:sword', clientId: 3264 },
+        { key: 'item:tibia:worm', clientId: 3492 },
+      ],
+    },
     testGroup: {
       groupId: 'huntbound-test',
       source: 'huntbound-synthetic-fixture',
@@ -58,8 +67,17 @@ export const HUNT_PIPELINE_REGISTRY = {
     personalSelectionPath:
       'packages/assets/catalog/selections/pb-10-10-hero-cave.json',
     consumer: 'PB-10-10 Hero Cave asset pack',
-    creatureKey: HUNT_PACK_HERO_CREATURE_KEY,
-    lootKeys: HUNT_PACK_HERO_LOOT_KEYS,
+    assetSelection: {
+      creature: { key: 'creature:tibia:hero', lookType: 73 },
+      loot: [
+        { key: 'item:tibia:gold-coin', clientId: 3031 },
+        { key: 'item:tibia:arrow', clientId: 3447 },
+        { key: 'item:tibia:bow', clientId: 3350 },
+        { key: 'item:tibia:green-tunic', clientId: 3563 },
+        { key: 'item:tibia:meat', clientId: 3577 },
+        { key: 'item:tibia:sniper-arrow', clientId: 7364 },
+      ],
+    },
     testGroup: {
       groupId: 'huntbound-test-pb10-10',
       source: 'huntbound-synthetic-fixture',
@@ -71,6 +89,42 @@ export const HUNT_PIPELINE_REGISTRY = {
       groupId: 'huntbound-private-assets-pb10-10',
       source: 'huntbound-private-assets',
       sourceSnapshot: 'pb10-10-private-v1',
+      licenseClass: 'cipsoft-personal',
+      buildProfiles: ['personal'],
+    },
+  },
+  'hunt:tibia:cyclopolis': {
+    selectionPath: 'packages/content/src/selections/hunts/cyclopolis.json',
+    generatedDirectory: 'packages/content/src/generated/hunts/cyclopolis',
+    assetFixtureRoot: 'packages/test-fixtures/assets/pb10-08',
+    runtimeDirectory: 'pb10-08',
+    packKey: 'pb-10-08-cyclopolis',
+    personalSelectionPath:
+      'packages/assets/catalog/selections/pb-10-08-cyclopolis.json',
+    consumer: 'PB-10-08 Cyclopolis asset pack',
+    assetSelection: {
+      creature: { key: 'creature:tibia:cyclops', lookType: 22 },
+      loot: [
+        { key: 'item:tibia:gold-coin', clientId: 3031 },
+        { key: 'item:tibia:meat', clientId: 3577 },
+        { key: 'item:tibia:short-sword', clientId: 3294 },
+        { key: 'item:tibia:cyclops-toe', clientId: 9657 },
+        { key: 'item:tibia:plate-shield', clientId: 3410 },
+        { key: 'item:tibia:battle-shield', clientId: 3413 },
+        { key: 'item:tibia:halberd', clientId: 3269 },
+      ],
+    },
+    testGroup: {
+      groupId: 'huntbound-test-pb10-08',
+      source: 'huntbound-synthetic-fixture',
+      sourceSnapshot: 'pb10-08-cyclopolis-synthetic-v1',
+      licenseClass: 'huntbound-test',
+      buildProfiles: ['test', 'product'],
+    },
+    personalGroup: {
+      groupId: 'huntbound-private-assets-pb10-08',
+      source: 'huntbound-private-assets',
+      sourceSnapshot: 'pb10-08-cyclopolis-private-v1',
       licenseClass: 'cipsoft-personal',
       buildProfiles: ['personal'],
     },

@@ -64,10 +64,11 @@ interface CandidateGroup {
 /**
  * Builds the spawn table in region-local coordinates.
  *
- * A group enters the table when its center is inside the extracted region, and
- * each of its slots survives only when its absolute position is inside too.
- * Creatures listed in `excludedCreatures` are omitted silently; any other
- * creature outside the selection is a diagnostic, never a silent import.
+ * A group enters the table when its center is inside the extracted region or
+ * when one of its selected slots is inside it. Each emitted slot still
+ * survives only when its absolute position is inside too. Creatures listed in
+ * `excludedCreatures` are omitted silently; any other creature outside the
+ * selection is a diagnostic, never a silent import.
  */
 export function buildSpawnTable(
   monsterXml: string,
@@ -140,11 +141,30 @@ export function buildSpawnTable(
       centerX === undefined ||
       centerY === undefined ||
       centerZ === undefined ||
-      radius === undefined ||
-      !insideRegion(centerX, centerY, centerZ)
+      radius === undefined
     ) {
       continue;
     }
+
+    const centerInside = insideRegion(centerX, centerY, centerZ);
+    const selectedSlotInside = asXmlElements(element.monster).some((slot) => {
+      const name = xmlAttribute(slot, 'name');
+      const offsetX = attributeInteger(slot, 'x');
+      const offsetY = attributeInteger(slot, 'y');
+      const z = attributeInteger(slot, 'z');
+      if (
+        typeof name !== 'string' ||
+        offsetX === undefined ||
+        offsetY === undefined ||
+        z === undefined ||
+        excluded.has(normalizeCreatureName(name)) ||
+        !keyByName.has(normalizeCreatureName(name))
+      ) {
+        return false;
+      }
+      return insideRegion(centerX + offsetX, centerY + offsetY, z);
+    });
+    if (!centerInside && !selectedSlotInside) continue;
     candidates.push({ centerX, centerY, centerZ, radius, element });
   }
 

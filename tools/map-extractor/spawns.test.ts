@@ -324,7 +324,7 @@ describe('buildSpawnTable', () => {
     ]);
   });
 
-  it('skips a group whose center is outside the region', () => {
+  it('skips a group whose center and selected slots are outside the region', () => {
     const built = buildSpawnTable(
       monsterXml([
         {
@@ -332,7 +332,7 @@ describe('buildSpawnTable', () => {
           centerY: MIN_Y,
           centerZ: 8,
           radius: 2,
-          slots: [{ name: 'Rotworm', x: 5, y: 0, z: 8 }],
+          slots: [{ name: 'Rotworm', x: 4, y: 0, z: 8 }],
         },
       ]),
       selection,
@@ -340,6 +340,38 @@ describe('buildSpawnTable', () => {
     );
 
     expect(built.table.groups).toEqual([]);
+    expect(built.diagnostics).toEqual([]);
+  });
+
+  it('keeps a group whose selected slot is inside when its center is outside', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X - 1,
+          centerY: MIN_Y,
+          centerZ: 8,
+          radius: 2,
+          slots: [{ name: 'Rotworm', x: 1, y: 0, z: 8 }],
+        },
+      ]),
+      selection,
+      region,
+    );
+
+    expect(built.table.groups).toMatchObject([
+      {
+        center: { x: -1, y: 0, z: 8 },
+        sourceCenter: { x: MIN_X - 1, y: MIN_Y, z: 8 },
+        slots: [
+          {
+            offsetX: 1,
+            offsetY: 0,
+            offsetZ: 0,
+            source: { x: MIN_X, y: MIN_Y, z: 8 },
+          },
+        ],
+      },
+    ]);
     expect(built.diagnostics).toEqual([]);
   });
 

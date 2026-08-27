@@ -14,6 +14,7 @@ const paths = {
   groundshaker: 'data/scripts/spells/attack/groundshaker.lua',
   whirlwindThrow: 'data/scripts/spells/attack/whirlwind_throw.lua',
   rotworm: 'data-otservbr-global/monster/vermins/rotworm.lua',
+  cyclops: 'data-otservbr-global/monster/giants/cyclops.lua',
   amazon: 'data-otservbr-global/monster/humans/amazon.lua',
   orc: 'data-otservbr-global/monster/humanoids/orc_shaman.lua',
   hero: 'data-otservbr-global/monster/humans/hero.lua',
@@ -148,6 +149,7 @@ spell:groupCooldown(2000)
 spell:vocation("knight;true", "elite knight;true")
 spell:register()`,
   [paths.rotworm]: monster('Rotworm', 26, 'gold coin'),
+  [paths.cyclops]: monster('Cyclops', 22, 'gold coin'),
   [paths.amazon]: monster('Amazon', 77, 'gold coin'),
   [paths.orc]: monster('Orc Shaman', 6, 'gold coin', true),
   [paths.hero]: monster('Hero', 73, 'gold coin'),
@@ -191,6 +193,7 @@ function selection(): ContentSliceDefinition {
       'spell:tibia:groundshaker',
       'spell:tibia:whirlwind-throw',
       'creature:tibia:rotworm',
+      'creature:tibia:cyclops',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
       'creature:tibia:hero',
@@ -233,12 +236,14 @@ function selection(): ContentSliceDefinition {
         consumer: 'spell tests',
         rationale: 'Whirlwind Throw spell is covered',
       },
-      ...['rotworm', 'amazon', 'orc-shaman', 'hero'].map((name) => ({
+      ...['rotworm', 'cyclops', 'amazon', 'orc-shaman', 'hero'].map(
+        (name) => ({
         entityKey: `creature:tibia:${name}`,
         facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
         consumer: 'creature tests',
         rationale: `${name} combat and loot are covered`,
-      })),
+        }),
+      ),
       {
         entityKey: 'creature:tibia:snake',
         facets: ['identity', 'stats', 'appearance', 'combat', 'conditions'],
@@ -253,7 +258,7 @@ function selection(): ContentSliceDefinition {
     rootSourceIds: {
       vocation: ['4'],
       spell: ['80', '61', '123', '106', '107'],
-      creature: ['26', '77', '6', '73'],
+      creature: ['26', '22', '77', '6', '73'],
     },
     dependencySourceIds: { creature: ['28'] },
     projectionPolicy: {
@@ -473,6 +478,7 @@ describe('importCanarySlice', () => {
       result.bundle.creatures.map((creature) => creature.stableKey),
     ).toEqual([
       'creature:tibia:amazon',
+      'creature:tibia:cyclops',
       'creature:tibia:hero',
       'creature:tibia:orc-shaman',
       'creature:tibia:rotworm',

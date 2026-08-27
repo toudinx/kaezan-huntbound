@@ -54,6 +54,14 @@ const metadata = {
   packKey: 'test-pack',
 };
 const consumer = 'Test hunt asset pack';
+const cyclopsAssetSelection = {
+  creature: { key: 'creature:tibia:cyclops', lookType: 22 },
+  loot: [
+    { key: 'item:tibia:gold-coin', clientId: 3031 },
+    { key: 'item:tibia:meat', clientId: 3577 },
+    { key: 'item:tibia:short-sword', clientId: 3294 },
+  ],
+} as const;
 
 describe('hunt selection generation', () => {
   it('derives metadata and tile keys from the region', () => {
@@ -178,5 +186,43 @@ describe('hunt selection generation', () => {
       category: 'object',
       sourceIdentity: { kind: 'clientId', id: 7364 },
     });
+  });
+
+  it('derives creature and loot identities from the selected hunt', () => {
+    const hunt = deriveHuntPackSelection(region(), {
+      ...metadata,
+      assetSelection: cyclopsAssetSelection,
+    });
+    const manifest = createHuntAssetSelection({
+      hunt,
+      group,
+      consumer,
+      assetSelection: cyclopsAssetSelection,
+    });
+
+    expect(hunt.keys).toContain('creature:tibia:cyclops');
+    expect(hunt.keys).not.toContain(HUNT_PACK_CREATURE_KEY);
+    expect(
+      manifest.entries
+        .filter(({ key }) =>
+          ['creature:tibia:cyclops', 'item:tibia:short-sword'].includes(key),
+        )
+        .map(({ key, category, sourceIdentity }) => ({
+          key,
+          category,
+          sourceIdentity,
+        })),
+    ).toEqual([
+      {
+        key: 'creature:tibia:cyclops',
+        category: 'creature',
+        sourceIdentity: { kind: 'lookType', id: 22 },
+      },
+      {
+        key: 'item:tibia:short-sword',
+        category: 'object',
+        sourceIdentity: { kind: 'clientId', id: 3294 },
+      },
+    ]);
   });
 });

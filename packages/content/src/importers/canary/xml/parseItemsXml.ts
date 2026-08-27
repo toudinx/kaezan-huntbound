@@ -66,6 +66,7 @@ const ignoredAttributeKeys = new Set([
   'stopduration',
   'decayTo',
   'duration',
+  'transformequipto',
   'containersize',
   'count',
   'imbuementslot',

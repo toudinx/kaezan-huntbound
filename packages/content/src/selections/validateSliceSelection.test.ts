@@ -27,6 +27,7 @@ function selectionFixture(): SelectionInput {
       'spell:tibia:groundshaker',
       'spell:tibia:whirlwind-throw',
       'creature:tibia:rotworm',
+      'creature:tibia:cyclops',
       'creature:tibia:amazon',
       'creature:tibia:orc-shaman',
       'creature:tibia:hero',
@@ -71,6 +72,7 @@ function selectionFixture(): SelectionInput {
       },
       ...[
         'creature:tibia:rotworm',
+        'creature:tibia:cyclops',
         'creature:tibia:amazon',
         'creature:tibia:orc-shaman',
         'creature:tibia:hero',
@@ -100,6 +102,7 @@ function selectionFixture(): SelectionInput {
       'data/scripts/spells/attack/groundshaker.lua',
       'data/scripts/spells/attack/whirlwind_throw.lua',
       'data-otservbr-global/monster/vermins/rotworm.lua',
+      'data-otservbr-global/monster/giants/cyclops.lua',
       'data-otservbr-global/monster/humans/amazon.lua',
       'data-otservbr-global/monster/humanoids/orc_shaman.lua',
       'data-otservbr-global/monster/humans/hero.lua',
@@ -108,7 +111,7 @@ function selectionFixture(): SelectionInput {
     rootSourceIds: {
       vocation: ['4'],
       spell: ['80', '61', '123', '106', '107'],
-      creature: ['26', '77', '6', '73'],
+      creature: ['26', '22', '77', '6', '73'],
     },
     projectionPolicy: {
       vocationFamilyKey: 'vocation-family:huntbound:knight',
@@ -167,13 +170,13 @@ function selectionFixture(): SelectionInput {
 }
 
 describe('curated slice selection', () => {
-  it('accepts the frozen ten-root selection and its dependency projection', () => {
+  it('accepts the frozen curated selection and its dependency projection', () => {
     expect(
       validateSliceSelection(asSliceDefinition(selectionFixture())),
     ).toEqual([]);
   });
 
-  it('rejects a root outside the frozen seven-root set', () => {
+  it('rejects a root outside the frozen curated set', () => {
     const selection = selectionFixture();
     selection.roots.push('creature:tibia:snake');
 

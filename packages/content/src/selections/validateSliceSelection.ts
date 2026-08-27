@@ -50,6 +50,7 @@ const expectedRoots = [
   'spell:tibia:groundshaker',
   'spell:tibia:whirlwind-throw',
   'creature:tibia:rotworm',
+  'creature:tibia:cyclops',
   'creature:tibia:amazon',
   'creature:tibia:orc-shaman',
   'creature:tibia:hero',
@@ -66,6 +67,7 @@ const expectedSourceFiles = [
   'data/scripts/spells/attack/groundshaker.lua',
   'data/scripts/spells/attack/whirlwind_throw.lua',
   'data-otservbr-global/monster/vermins/rotworm.lua',
+  'data-otservbr-global/monster/giants/cyclops.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
   'data-otservbr-global/monster/humans/hero.lua',
@@ -131,6 +133,13 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
     'combat',
     'loot',
   ],
+  'creature:tibia:cyclops': [
+    'identity',
+    'stats',
+    'appearance',
+    'combat',
+    'loot',
+  ],
   'creature:tibia:amazon': [
     'identity',
     'stats',
@@ -186,7 +195,7 @@ function validateSourceIdGroups(
   const expected: SourceIdGroups = {
     vocation: ['4'],
     spell: ['80', '61', '123', '106', '107'],
-    creature: ['26', '77', '6', '73'],
+    creature: ['26', '22', '77', '6', '73'],
   };
 
   for (const kind of ['vocation', 'spell', 'creature'] as const) {
@@ -295,7 +304,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain Knight, five combat spells, Rotworm, Amazon, Orc Shaman, and Hero as roots',
+        'Selection must contain Knight, five combat spells, Rotworm, Cyclops, Amazon, Orc Shaman, and Hero as roots',
       ),
     );
   }

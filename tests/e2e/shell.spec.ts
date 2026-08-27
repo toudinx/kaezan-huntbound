@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { selectHunt } from './support/huntDriver';
+import { selectHunt, waitForHunt } from './support/huntDriver';
 
 const shellViewports = [
   { name: 'mobile', width: 390, height: 844 },
@@ -72,10 +72,17 @@ for (const viewport of shellViewports) {
     const rotwormCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:venore-rotworm-cave"]',
     );
+    const cyclopolisCard = page.locator(
+      '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:cyclopolis"]',
+    );
     await expect(rotwormCard).toHaveCount(1);
     await expect(
       rotwormCard.locator('[data-testid="hunt-place-name"]'),
     ).toHaveText('Venore Rotworm Cave');
+    await expect(cyclopolisCard).toHaveCount(1);
+    await expect(
+      cyclopolisCard.locator('[data-testid="hunt-place-name"]'),
+    ).toHaveText('Cyclopolis');
     await selectHunt(page);
     await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
     await expect(page.locator('#game-root canvas')).toHaveCount(1);
@@ -113,6 +120,16 @@ for (const viewport of shellViewports) {
     );
   });
 }
+
+test('enters Cyclopolis with its authored Cyclops roster', async ({ page }) => {
+  const state = await waitForHunt(page, 'Cyclopolis');
+
+  expect(state.player?.position).toEqual({ x: 2, y: 4, z: 8 });
+  // SpawnTable.maxLiveActors is a global cap and includes the player.
+  expect(
+    state.actors.filter((actor) => actor.key === 'creature:tibia:cyclops'),
+  ).toHaveLength(18);
+});
 
 test('redraws the playfield after in-session viewport changes', async ({
   page,

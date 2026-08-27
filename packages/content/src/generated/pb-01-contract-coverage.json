@@ -168,6 +168,131 @@
           "damageType": "physical",
           "intervalMs": 2000,
           "kind": "melee",
+          "maxDamage": 105,
+          "minDamage": 0,
+          "name": "melee"
+        }
+      ],
+      "conditions": [],
+      "defenses": [],
+      "displayName": "Cyclops",
+      "guid": "45e26c3c-3889-58ea-972c-0fc417050cb7",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 22,
+      "loot": [
+        {
+          "chancePerHundredThousand": 190,
+          "itemKey": "item:tibia:wolf-tooth-chain",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 82000,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 47,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 90,
+          "itemKey": "item:tibia:club-ring",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1003,
+          "itemKey": "item:tibia:halberd",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 8000,
+          "itemKey": "item:tibia:short-sword",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 220,
+          "itemKey": "item:tibia:dark-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2500,
+          "itemKey": "item:tibia:plate-shield",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1400,
+          "itemKey": "item:tibia:battle-shield",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 30070,
+          "itemKey": "item:tibia:meat",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 80,
+          "itemKey": "item:tibia:cyclops-trophy",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 210,
+          "itemKey": "item:tibia:health-potion",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4930,
+          "itemKey": "item:tibia:cyclops-toe",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:heavy-old-tome",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.1,
+        "drown": 0,
+        "earth": -0.1,
+        "energy": 0.25,
+        "fire": 0,
+        "holy": 0.2,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "stableKey": "creature:tibia:cyclops",
+      "stats": {
+        "experience": 150,
+        "health": 260,
+        "speed": 95
+      },
+      "summons": []
+    },
+    {
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
           "maxDamage": 240,
           "minDamage": 0,
           "name": "melee"
@@ -697,6 +822,16 @@
       "weight": 70
     },
     {
+      "displayName": "battle shield",
+      "guid": "492cdaa1-20b6-59ba-8ffa-634115d7b524",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:battle-shield",
+      "weight": 6200
+    },
+    {
       "displayName": "book",
       "guid": "b88c6eba-dd05-56ed-9ba9-3ef19bbb6e7b",
       "includedFacets": [
@@ -745,6 +880,16 @@
       ],
       "stableKey": "item:tibia:chain-armor",
       "weight": 10000
+    },
+    {
+      "displayName": "club ring",
+      "guid": "1fd19132-0818-512c-a2d3-6b8f0f047631",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:club-ring",
+      "weight": 90
     },
     {
       "displayName": "corncob",
@@ -807,6 +952,26 @@
       "weight": 490
     },
     {
+      "displayName": "cyclops toe",
+      "guid": "9daa9181-e1b2-540d-9e2d-e8e6bc4c516a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:cyclops-toe",
+      "weight": 111
+    },
+    {
+      "displayName": "cyclops trophy",
+      "guid": "3b667f0e-6d43-5ae5-810f-f644b8df7d5a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:cyclops-trophy",
+      "weight": 500
+    },
+    {
       "displayName": "dagger",
       "guid": "62920b08-9390-59b1-b6cf-d3dd39dec5cb",
       "includedFacets": [
@@ -815,6 +980,16 @@
       ],
       "stableKey": "item:tibia:dagger",
       "weight": 950
+    },
+    {
+      "displayName": "dark helmet",
+      "guid": "3c15ad95-774f-511a-8b1f-a8d519e19901",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:dark-helmet",
+      "weight": 4600
     },
     {
       "displayName": "fire sword",
@@ -877,6 +1052,16 @@
       "weight": 930
     },
     {
+      "displayName": "halberd",
+      "guid": "293d653c-74df-5fc4-8378-d703a159469b",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:halberd",
+      "weight": 9000
+    },
+    {
       "displayName": "ham",
       "guid": "2d2e73ae-8e64-5bb2-a74e-8f208c3135a6",
       "includedFacets": [
@@ -885,6 +1070,16 @@
       ],
       "stableKey": "item:tibia:ham",
       "weight": 2000
+    },
+    {
+      "displayName": "health potion",
+      "guid": "70b90237-99dc-56e6-8632-873995ad461f",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:health-potion",
+      "weight": 270
     },
     {
       "displayName": "heavy old tome",
@@ -987,6 +1182,16 @@
       "weight": 750
     },
     {
+      "displayName": "plate shield",
+      "guid": "27db3338-2160-528a-9e7d-7897dc71ccbf",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:plate-shield",
+      "weight": 6500
+    },
+    {
       "displayName": "protective charm",
       "guid": "5a8300ad-7bff-5a20-8fb4-b3a518ca3dbf",
       "includedFacets": [
@@ -1075,6 +1280,16 @@
       ],
       "stableKey": "item:tibia:shamanic-hood",
       "weight": 90
+    },
+    {
+      "displayName": "short sword",
+      "guid": "a7e983ac-c95f-529b-9fe7-7a84d4a9b04a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:short-sword",
+      "weight": 3500
     },
     {
       "displayName": "skull",
@@ -1187,6 +1402,16 @@
       "weight": 40
     },
     {
+      "displayName": "wolf tooth chain",
+      "guid": "4c209a4e-dd6f-5eae-a00a-d162100416c3",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:wolf-tooth-chain",
+      "weight": 330
+    },
+    {
       "displayName": "worm",
       "guid": "e07a7da6-7a7c-5d43-ae97-5408ab753283",
       "includedFacets": [
@@ -1204,25 +1429,32 @@
     "dependencies": [
       "creature:tibia:snake",
       "item:tibia:arrow",
+      "item:tibia:battle-shield",
       "item:tibia:book",
       "item:tibia:bow",
       "item:tibia:broken-shamanic-staff",
       "item:tibia:brown-bread",
       "item:tibia:chain-armor",
+      "item:tibia:club-ring",
       "item:tibia:corncob",
       "item:tibia:crown-armor",
       "item:tibia:crown-helmet",
       "item:tibia:crown-legs",
       "item:tibia:crown-shield",
       "item:tibia:crystal-necklace",
+      "item:tibia:cyclops-toe",
+      "item:tibia:cyclops-trophy",
       "item:tibia:dagger",
+      "item:tibia:dark-helmet",
       "item:tibia:fire-sword",
       "item:tibia:girlish-hair-decoration",
       "item:tibia:gold-coin",
       "item:tibia:grapes",
       "item:tibia:great-health-potion",
       "item:tibia:green-tunic",
+      "item:tibia:halberd",
       "item:tibia:ham",
+      "item:tibia:health-potion",
       "item:tibia:heavy-old-tome",
       "item:tibia:legion-helmet",
       "item:tibia:lump-of-dirt",
@@ -1233,6 +1465,7 @@
       "item:tibia:orc-leather",
       "item:tibia:orc-tooth",
       "item:tibia:piggy-bank",
+      "item:tibia:plate-shield",
       "item:tibia:protective-charm",
       "item:tibia:red-piece-of-cloth",
       "item:tibia:red-rose",
@@ -1242,6 +1475,7 @@
       "item:tibia:scroll",
       "item:tibia:scroll-of-heroic-deeds",
       "item:tibia:shamanic-hood",
+      "item:tibia:short-sword",
       "item:tibia:skull",
       "item:tibia:small-notebook",
       "item:tibia:small-ruby",
@@ -1253,6 +1487,7 @@
       "item:tibia:wand-of-decay",
       "item:tibia:war-hammer",
       "item:tibia:wedding-ring",
+      "item:tibia:wolf-tooth-chain",
       "item:tibia:worm"
     ],
     "dependencyMode": "reachable-only",
@@ -1271,6 +1506,18 @@
           "loot"
         ],
         "rationale": "The root covers melee and ranged physical combat with a projectile."
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "creature:tibia:cyclops",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot contract."
       },
       {
         "consumer": "Hero Cave hunt and creature contract tests",
@@ -1331,6 +1578,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:battle-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:book",
         "facets": [
           "identity",
@@ -1373,6 +1629,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:club-ring",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1430,12 +1695,39 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:cyclops-toe",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:cyclops-trophy",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:dagger",
         "facets": [
           "identity",
           "item"
         ],
         "rationale": "Required by creature:tibia:amazon loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:dark-helmet",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1462,7 +1754,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:amazon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1493,6 +1785,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:halberd",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:ham",
         "facets": [
           "identity",
@@ -1502,12 +1803,21 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:health-potion",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:heavy-old-tome",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:orc-shaman loot"
+        "rationale": "Required by creature:tibia:cyclops, creature:tibia:orc-shaman loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1552,7 +1862,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:hero, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:rotworm loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1589,6 +1899,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:plate-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1670,6 +1989,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:orc-shaman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:short-sword",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
       },
       {
         "consumer": "creature contract tests",
@@ -1772,6 +2100,15 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:wolf-tooth-chain",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:cyclops loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:worm",
         "facets": [
           "identity",
@@ -1836,6 +2173,7 @@
     ],
     "roots": [
       "creature:tibia:amazon",
+      "creature:tibia:cyclops",
       "creature:tibia:hero",
       "creature:tibia:orc-shaman",
       "creature:tibia:rotworm",

@@ -167,6 +167,7 @@ async function writeTestArtifacts(
     hunt,
     group: entry.testGroup,
     consumer: entry.consumer,
+    assetSelection: entry.assetSelection,
   });
   await writeSourceFixture(selection, join(testRoot, 'source'), check);
   const sourceLock = await lockFor({
@@ -197,6 +198,7 @@ async function writePersonalArtifacts(
     hunt,
     group: entry.personalGroup,
     consumer: entry.consumer,
+    assetSelection: entry.assetSelection,
   });
   const sourceLock = await lockFor({
     sourceRoot,
@@ -240,8 +242,7 @@ export async function generateHuntArtifacts(
   const hunt = deriveHuntPackSelection(region, {
     huntId: entry.huntId,
     packKey: entry.packKey,
-    creatureKey: entry.creatureKey,
-    lootKeys: entry.lootKeys,
+    assetSelection: entry.assetSelection,
   });
 
   if (options.profile === 'test') {
@@ -256,6 +257,7 @@ export async function generateHuntArtifacts(
         hunt,
         group: entry.personalGroup,
         consumer: entry.consumer,
+        assetSelection: entry.assetSelection,
       }),
       options.check,
     );

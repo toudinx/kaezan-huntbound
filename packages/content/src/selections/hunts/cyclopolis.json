@@ -1,0 +1,61 @@
+{
+  "key": "hunt:tibia:cyclopolis",
+  "displayName": "Cyclopolis",
+  "sourceUrl": "https://tibiaroute.com/br/hunting-places/Cyclopolis",
+  "source": {
+    "map": "data-otservbr-global/world/otservbr.otbm",
+    "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+  },
+  "layout": "../../layouts/hunts/cyclopolis.json",
+  "recommendedLevel": 45,
+  "soloVocation": "vocation:tibia:knight",
+  "band": 3,
+  "region": {
+    "minX": 33250,
+    "minY": 31680,
+    "maxX": 33320,
+    "maxY": 31740,
+    "floors": [8, 9, 10]
+  },
+  "creatures": ["creature:tibia:cyclops"],
+  "excludedCreatures": [
+    {
+      "name": "Cyclops Drone",
+      "reason": "ranged attack repeats the PB-10 band 2 step",
+      "count": 4
+    },
+    {
+      "name": "Cyclops Smith",
+      "reason": "drunk is not represented in the kernel",
+      "count": 1
+    },
+    {
+      "name": "Skeleton",
+      "reason": "noise outside the frozen PB-10-08 Cyclops selection",
+      "count": 6
+    },
+    {
+      "name": "Wereboar",
+      "reason": "noise outside the frozen PB-10-08 Cyclops selection",
+      "count": 4
+    },
+    {
+      "name": "Werebadger",
+      "reason": "noise outside the frozen PB-10-08 Cyclops selection",
+      "count": 2
+    },
+    {
+      "name": "Fire Elemental",
+      "reason": "noise outside the frozen PB-10-08 Cyclops selection",
+      "count": 1
+    }
+  ],
+  "expectedSpawnGroups": 18,
+  "expectedSpawnSlots": 19,
+  "expectedDroppedTransitions": 0,
+  "budget": {
+    "maxFloors": 3,
+    "maxWidth": 96,
+    "maxHeight": 96
+  }
+}

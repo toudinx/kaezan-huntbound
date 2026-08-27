@@ -10,6 +10,7 @@
     "spell:tibia:groundshaker",
     "spell:tibia:whirlwind-throw",
     "creature:tibia:rotworm",
+    "creature:tibia:cyclops",
     "creature:tibia:amazon",
     "creature:tibia:orc-shaman",
     "creature:tibia:hero"
@@ -59,6 +60,12 @@
       "rationale": "The root covers melee, defense, and mixed ID/name loot resolution."
     },
     {
+      "entityKey": "creature:tibia:cyclops",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "creature contract tests",
+      "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot contract."
+    },
+    {
       "entityKey": "creature:tibia:amazon",
       "facets": ["identity", "stats", "appearance", "combat", "loot"],
       "consumer": "creature contract tests",
@@ -96,6 +103,7 @@
     "data/scripts/spells/attack/groundshaker.lua",
     "data/scripts/spells/attack/whirlwind_throw.lua",
     "data-otservbr-global/monster/vermins/rotworm.lua",
+    "data-otservbr-global/monster/giants/cyclops.lua",
     "data-otservbr-global/monster/humans/amazon.lua",
     "data-otservbr-global/monster/humanoids/orc_shaman.lua",
     "data-otservbr-global/monster/humans/hero.lua",
@@ -104,7 +112,7 @@
   "rootSourceIds": {
     "vocation": ["4"],
     "spell": ["80", "61", "123", "106", "107"],
-    "creature": ["26", "77", "6", "73"]
+    "creature": ["26", "22", "77", "6", "73"]
   },
   "dependencySourceIds": {
     "creature": ["28"]

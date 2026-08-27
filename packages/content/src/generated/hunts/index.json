@@ -2,6 +2,109 @@
   "schemaVersion": 1,
   "hunts": [
     {
+      "huntId": "hunt:tibia:cyclopolis",
+      "runtimeDirectory": "pb10-08",
+      "displayName": "Cyclopolis",
+      "band": 3,
+      "recommendedLevel": 45,
+      "soloVocation": "vocation:tibia:knight",
+      "sourceUrl": "https://tibiaroute.com/br/hunting-places/Cyclopolis",
+      "maxLiveActors": 19,
+      "experiencePerHour": 114000,
+      "creatures": [
+        {
+          "creatureKey": "creature:tibia:cyclops",
+          "displayName": "Cyclops",
+          "slotCount": 19,
+          "health": 260,
+          "experience": 150,
+          "lookType": 22,
+          "respawnTicks": 1800,
+          "experiencePerHour": 114000,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 82000,
+              "minCount": 1,
+              "maxCount": 47
+            },
+            {
+              "itemKey": "item:tibia:meat",
+              "chancePerHundredThousand": 30070,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:short-sword",
+              "chancePerHundredThousand": 8000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:cyclops-toe",
+              "chancePerHundredThousand": 4930,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:plate-shield",
+              "chancePerHundredThousand": 2500,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:battle-shield",
+              "chancePerHundredThousand": 1400,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:halberd",
+              "chancePerHundredThousand": 1003,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:heavy-old-tome",
+              "chancePerHundredThousand": 1000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:dark-helmet",
+              "chancePerHundredThousand": 220,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:health-potion",
+              "chancePerHundredThousand": 210,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:wolf-tooth-chain",
+              "chancePerHundredThousand": 190,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:club-ring",
+              "chancePerHundredThousand": 90,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:cyclops-trophy",
+              "chancePerHundredThousand": 80,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "huntId": "hunt:tibia:hero-cave",
       "runtimeDirectory": "pb10-10-hero-cave",
       "displayName": "Hero Cave",

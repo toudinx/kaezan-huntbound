@@ -100,6 +100,10 @@ export interface HuntPackResolvedEntry {
   readonly bytes: number;
 }
 
+export interface HuntPackValidationOptions {
+  readonly extraKeys?: readonly string[];
+}
+
 function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
@@ -264,13 +268,16 @@ export function validateHuntPack(
   selection: HuntPackSelection,
   region: MapRegion,
   resolvedEntries: readonly HuntPackResolvedEntry[],
+  options: HuntPackValidationOptions = {},
 ): readonly HuntPackDiagnostic[] {
   const diagnostics: HuntPackDiagnostic[] = [];
   const expectedKeys = [
     ...deriveHuntPackKeys(region),
-    HUNT_PACK_OUTFIT_KEY,
-    ...HUNT_PACK_COMBAT_KEYS,
-    ...selectedDynamicKeys(selection),
+    ...(options.extraKeys ?? [
+      HUNT_PACK_OUTFIT_KEY,
+      ...HUNT_PACK_COMBAT_KEYS,
+      ...selectedDynamicKeys(selection),
+    ]),
   ];
   const expectedSet = new Set<string>(expectedKeys);
   const selectedSet = new Set(selection.keys);

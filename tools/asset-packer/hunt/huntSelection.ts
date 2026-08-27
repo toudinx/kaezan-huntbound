@@ -8,6 +8,7 @@ import {
   HUNT_PACK_CREATURE_KEY,
   HUNT_PACK_DEAD_ROTWORM_KEY,
   HUNT_PACK_HERO_CREATURE_KEY,
+  HUNT_PACK_HERO_LOOT_KEYS,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
   HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
@@ -24,19 +25,105 @@ export const HUNT_PACK_BUDGET = {
   maxBytes: 6 * 1024 * 1024,
 } as const;
 
+export type HuntPackAssetConfig = {
+  readonly creature: {
+    readonly key: string;
+    readonly lookType: number;
+  };
+  readonly loot: readonly {
+    readonly key: string;
+    readonly clientId: number;
+  }[];
+};
+
+const defaultAssetConfig: HuntPackAssetConfig = {
+  creature: { key: HUNT_PACK_CREATURE_KEY, lookType: 26 },
+  loot: [
+    { key: 'item:tibia:gold-coin', clientId: 3031 },
+    { key: 'item:tibia:ham', clientId: 3582 },
+    { key: 'item:tibia:legion-helmet', clientId: 3374 },
+    { key: 'item:tibia:lump-of-dirt', clientId: 9692 },
+    { key: 'item:tibia:mace', clientId: 3286 },
+    { key: 'item:tibia:meat', clientId: 3577 },
+    { key: 'item:tibia:sword', clientId: 3264 },
+    { key: 'item:tibia:worm', clientId: 3492 },
+  ],
+};
+
 export type HuntPackMetadata = {
   readonly huntId: string;
   readonly packKey: string;
   readonly creatureKey?: string;
   readonly lootKeys?: readonly string[];
+  readonly assetSelection?: HuntPackAssetConfig;
 };
+
+export function huntPackExtraKeys(
+  assetSelection: HuntPackAssetConfig = defaultAssetConfig,
+): readonly string[] {
+  return [
+    assetSelection.creature.key,
+    HUNT_PACK_OUTFIT_KEY,
+    ...HUNT_PACK_COMBAT_KEYS,
+    ...assetSelection.loot.map(({ key }) => key),
+  ];
+}
+
+const knownLootClientIds: ReadonlyMap<string, number> = new Map([
+  ['item:tibia:gold-coin', 3031],
+  ['item:tibia:ham', 3582],
+  ['item:tibia:legion-helmet', 3374],
+  ['item:tibia:lump-of-dirt', 9692],
+  ['item:tibia:mace', 3286],
+  ['item:tibia:meat', 3577],
+  ['item:tibia:sword', 3264],
+  ['item:tibia:worm', 3492],
+  ['item:tibia:arrow', 3447],
+  ['item:tibia:bow', 3350],
+  ['item:tibia:green-tunic', 3563],
+  ['item:tibia:sniper-arrow', 7364],
+]);
+
+function assetSelectionForMetadata(
+  metadata: HuntPackMetadata,
+): HuntPackAssetConfig {
+  if (metadata.assetSelection !== undefined) {
+    return metadata.assetSelection;
+  }
+
+  const creatureKey = metadata.creatureKey ?? HUNT_PACK_CREATURE_KEY;
+  const lookType =
+    creatureKey === HUNT_PACK_HERO_CREATURE_KEY
+      ? 73
+      : creatureKey === HUNT_PACK_CREATURE_KEY
+        ? 26
+        : undefined;
+  if (lookType === undefined) {
+    throw new Error(`Unsupported hunt creature key ${creatureKey}`);
+  }
+
+  const lootKeys =
+    metadata.lootKeys ??
+    (creatureKey === HUNT_PACK_HERO_CREATURE_KEY
+      ? HUNT_PACK_HERO_LOOT_KEYS
+      : HUNT_PACK_LOOT_KEYS);
+  return {
+    creature: { key: creatureKey, lookType },
+    loot: lootKeys.map((key) => {
+      const clientId = knownLootClientIds.get(key);
+      if (clientId === undefined) {
+        throw new Error(`Unsupported hunt loot key ${key}`);
+      }
+      return { key, clientId };
+    }),
+  };
+}
 
 export function deriveHuntPackSelection(
   region: MapRegion,
   metadata: HuntPackMetadata,
 ): HuntPackSelection {
-  const creatureKey = metadata.creatureKey ?? HUNT_PACK_CREATURE_KEY;
-  const lootKeys = metadata.lootKeys ?? HUNT_PACK_LOOT_KEYS;
+  const assetSelection = assetSelectionForMetadata(metadata);
   const selection: HuntPackSelection = {
     packKey: metadata.packKey,
     huntId: metadata.huntId,
@@ -44,10 +131,7 @@ export function deriveHuntPackSelection(
     keys: [
       ...new Set([
         ...deriveHuntPackKeys(region),
-        creatureKey,
-        HUNT_PACK_OUTFIT_KEY,
-        ...HUNT_PACK_COMBAT_KEYS,
-        ...lootKeys,
+        ...huntPackExtraKeys(assetSelection),
       ]),
     ],
     budget: HUNT_PACK_BUDGET,
@@ -56,6 +140,7 @@ export function deriveHuntPackSelection(
     selection,
     region,
     selection.keys.map((key) => ({ key, bytes: 0 })),
+    { extraKeys: huntPackExtraKeys(assetSelection) },
   );
   if (diagnostics.length > 0) {
     throw new Error(
@@ -65,7 +150,10 @@ export function deriveHuntPackSelection(
   return selection;
 }
 
-function identityForKey(key: string): {
+function identityForKey(
+  key: string,
+  assetSelection: HuntPackAssetConfig,
+): {
   readonly category: 'outfit' | 'creature' | 'object' | 'effect' | 'missile';
   readonly sourceIdentity:
     | { readonly kind: 'lookType'; readonly id: number }
@@ -74,10 +162,13 @@ function identityForKey(key: string): {
     | { readonly kind: 'missileId'; readonly id: number };
   readonly pivot: { readonly x: number; readonly y: number };
 } {
-  if (key === HUNT_PACK_CREATURE_KEY) {
+  if (key === assetSelection.creature.key) {
     return {
       category: 'creature',
-      sourceIdentity: { kind: 'lookType', id: 26 },
+      sourceIdentity: {
+        kind: 'lookType',
+        id: assetSelection.creature.lookType,
+      },
       pivot: { x: 0.5, y: 1 },
     };
   }
@@ -131,21 +222,9 @@ function identityForKey(key: string): {
     };
   }
 
-  const lootClientIds: ReadonlyMap<string, number> = new Map([
-    ['item:tibia:gold-coin', 3031],
-    ['item:tibia:ham', 3582],
-    ['item:tibia:legion-helmet', 3374],
-    ['item:tibia:lump-of-dirt', 9692],
-    ['item:tibia:mace', 3286],
-    ['item:tibia:meat', 3577],
-    ['item:tibia:sword', 3264],
-    ['item:tibia:worm', 3492],
-    ['item:tibia:arrow', 3447],
-    ['item:tibia:bow', 3350],
-    ['item:tibia:green-tunic', 3563],
-    ['item:tibia:sniper-arrow', 7364],
-  ]);
-  const lootClientId = lootClientIds.get(key);
+  const lootClientId =
+    assetSelection.loot.find((loot) => loot.key === key)?.clientId ??
+    knownLootClientIds.get(key);
   if (lootClientId !== undefined) {
     return {
       category: 'object',
@@ -169,11 +248,13 @@ export function createHuntAssetSelection(input: {
   readonly hunt: HuntPackSelection;
   readonly group: AssetSourceGroup;
   readonly consumer: string;
+  readonly assetSelection?: HuntPackAssetConfig;
 }): AssetSelectionManifest {
+  const assetSelection = input.assetSelection ?? defaultAssetConfig;
   const entries = [...input.hunt.keys]
     .sort((left, right) => left.localeCompare(right))
     .map((key) => {
-      const identity = identityForKey(key);
+      const identity = identityForKey(key, assetSelection);
       return {
         key,
         category: identity.category,
