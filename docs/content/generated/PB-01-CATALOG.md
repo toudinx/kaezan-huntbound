@@ -25,8 +25,8 @@
 - GUID: 45e26c3c-3889-58ea-972c-0fc417050cb7
 - Display name: Cyclops
 - Facets: identity, stats, appearance, combat, loot
-- Consumer: creature contract tests
-- Rationale: The root covers the frozen heavy melee creature, appearance, combat, and loot contract.
+- Consumer: Cyclopolis hunt and creature contract tests
+- Rationale: The root covers the frozen heavy melee creature, appearance, combat, and loot. Lua armor 17 is provenance only and stays inert until PB-11.
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/giants/cyclops.lua / 22 / 17ffa298767933be8c5284fe98f81dba8e27d7a384d387d85e9d243a6426707f
 - Relations: item:tibia:battle-shield, item:tibia:club-ring, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dark-helmet, item:tibia:gold-coin, item:tibia:halberd, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:meat, item:tibia:plate-shield, item:tibia:short-sword, item:tibia:wolf-tooth-chain
 
@@ -664,7 +664,7 @@
 - Display name: sword
 - Facets: identity, item
 - Consumer: frozen character sheet
-- Rationale: Required by character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
+- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3264 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -812,6 +812,15 @@
 - Relations: none
 
 ## Characters
+
+### character:huntbound:knight-cyclopolis
+
+- Vocation: vocation:tibia:knight
+- Level: 45
+- Skills: magic 0, sword 60
+- Weapon: item:tibia:sword attack 14
+- Vitals: health 740, mana 185
+- Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
 
 ### character:huntbound:knight-hero-cave
 

@@ -1,6 +1,26 @@
 {
   "characters": [
     {
+      "level": 45,
+      "maxHealth": 740,
+      "maxMana": 185,
+      "skills": {
+        "magic": 0,
+        "sword": 60
+      },
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ],
+      "stableKey": "character:huntbound:knight-cyclopolis",
+      "vocationKey": "vocation:tibia:knight",
+      "weaponAttack": 14,
+      "weaponItemKey": "item:tibia:sword"
+    },
+    {
       "level": 130,
       "maxHealth": 2015,
       "maxMana": 185,
@@ -1508,7 +1528,7 @@
         "rationale": "The root covers melee and ranged physical combat with a projectile."
       },
       {
-        "consumer": "creature contract tests",
+        "consumer": "Cyclopolis hunt and creature contract tests",
         "entityKey": "creature:tibia:cyclops",
         "facets": [
           "identity",
@@ -1517,7 +1537,7 @@
           "combat",
           "loot"
         ],
-        "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot contract."
+        "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot. Lua armor 17 is provenance only and stays inert until PB-11."
       },
       {
         "consumer": "Hero Cave hunt and creature contract tests",
@@ -2051,7 +2071,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
+        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-hero-cave, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",

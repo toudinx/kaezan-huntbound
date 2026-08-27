@@ -77,6 +77,8 @@ describe.skipIf(sourceRoot === undefined)(
         firstBundle.creatures.map((creature) => creature.stableKey),
       ).toEqual([
         'creature:tibia:amazon',
+        'creature:tibia:cyclops',
+        'creature:tibia:hero',
         'creature:tibia:orc-shaman',
         'creature:tibia:rotworm',
         'creature:tibia:snake',

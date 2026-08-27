@@ -62,8 +62,8 @@
     {
       "entityKey": "creature:tibia:cyclops",
       "facets": ["identity", "stats", "appearance", "combat", "loot"],
-      "consumer": "creature contract tests",
-      "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot contract."
+      "consumer": "Cyclopolis hunt and creature contract tests",
+      "rationale": "The root covers the frozen heavy melee creature, appearance, combat, and loot. Lua armor 17 is provenance only and stays inert until PB-11."
     },
     {
       "entityKey": "creature:tibia:amazon",
@@ -141,6 +141,24 @@
       "weaponSourceId": "3264",
       "weaponAttack": 14,
       "maxHealth": 590,
+      "maxMana": 185,
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ]
+    },
+    {
+      "stableKey": "character:huntbound:knight-cyclopolis",
+      "vocationKey": "vocation:tibia:knight",
+      "level": 45,
+      "skills": { "sword": 60, "magic": 0 },
+      "weaponItemKey": "item:tibia:sword",
+      "weaponSourceId": "3264",
+      "weaponAttack": 14,
+      "maxHealth": 740,
       "maxMana": 185,
       "spellKeys": [
         "spell:tibia:berserk",

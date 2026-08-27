@@ -236,14 +236,12 @@ function selection(): ContentSliceDefinition {
         consumer: 'spell tests',
         rationale: 'Whirlwind Throw spell is covered',
       },
-      ...['rotworm', 'cyclops', 'amazon', 'orc-shaman', 'hero'].map(
-        (name) => ({
+      ...['rotworm', 'cyclops', 'amazon', 'orc-shaman', 'hero'].map((name) => ({
         entityKey: `creature:tibia:${name}`,
         facets: ['identity', 'stats', 'appearance', 'combat', 'loot'],
         consumer: 'creature tests',
         rationale: `${name} combat and loot are covered`,
-        }),
-      ),
+      })),
       {
         entityKey: 'creature:tibia:snake',
         facets: ['identity', 'stats', 'appearance', 'combat', 'conditions'],
@@ -285,6 +283,24 @@ function selection(): ContentSliceDefinition {
         weaponSourceId: '3264',
         weaponAttack: 14,
         maxHealth: 590,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
+      {
+        stableKey: 'character:huntbound:knight-cyclopolis',
+        vocationKey: 'vocation:tibia:knight',
+        level: 45,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponSourceId: '3264',
+        weaponAttack: 14,
+        maxHealth: 740,
         maxMana: 185,
         spellKeys: [
           'spell:tibia:berserk',
@@ -439,6 +455,23 @@ describe('importCanarySlice', () => {
       'spell:tibia:wound-cleansing',
     ]);
     expect(result.bundle.characters).toEqual([
+      {
+        stableKey: 'character:huntbound:knight-cyclopolis',
+        vocationKey: 'vocation:tibia:knight',
+        level: 45,
+        skills: { sword: 60, magic: 0 },
+        weaponItemKey: 'item:tibia:sword',
+        weaponAttack: 14,
+        maxHealth: 740,
+        maxMana: 185,
+        spellKeys: [
+          'spell:tibia:berserk',
+          'spell:tibia:brutal-strike',
+          'spell:tibia:wound-cleansing',
+          'spell:tibia:groundshaker',
+          'spell:tibia:whirlwind-throw',
+        ],
+      },
       {
         stableKey: 'character:huntbound:knight-hero-cave',
         vocationKey: 'vocation:tibia:knight',

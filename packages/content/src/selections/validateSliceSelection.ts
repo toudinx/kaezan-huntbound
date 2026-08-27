@@ -100,6 +100,24 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     ],
   },
   {
+    stableKey: 'character:huntbound:knight-cyclopolis',
+    vocationKey: 'vocation:tibia:knight',
+    level: 45,
+    skills: { sword: 60, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponSourceId: '3264',
+    weaponAttack: 14,
+    maxHealth: 740,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ],
+  },
+  {
     stableKey: 'character:huntbound:knight-hero-cave',
     vocationKey: 'vocation:tibia:knight',
     level: 130,
@@ -405,7 +423,7 @@ function validateFrozenCharacters(
     return [
       selectionDiagnostic(
         'selection.character-mismatch',
-        'Character sheets must match the frozen PB-05 Knight loadouts',
+        'Character sheets must match the frozen hunt Knight loadouts',
       ),
     ];
   }

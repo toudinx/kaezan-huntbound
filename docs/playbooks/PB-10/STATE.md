@@ -6,7 +6,7 @@
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
 `docs/content/HUNT_BANDS.md`. Tasks 01 a 06 fechadas e integradas — a máquina do catálogo está
-inteira e o que resta é conteúdo. Elegíveis: **PB-10-07 a PB-10-10**, as quatro escritas — autoram em
+inteira e o que resta é conteúdo. Elegíveis: **PB-10-07 e PB-10-09**. As hunts autoram em
 paralelo, integram em série, e não rodam `verify` ao mesmo tempo (bloqueio B17).
 
 **Última atualização:** 2026-08-26
@@ -29,7 +29,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-05 | done | `codex/pb10-05-tela-hunting-places` | econômico `xhigh` | Codex GPT-5 `xhigh` | `2795b68` | tela DOM; boot por índice; `verify` e `qa:browser` verdes; orçamento informativo em 5,269/5,284 ms |
 | PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | `790f91f` | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
 | PB-10-07 | pending | `<agente>/pb10-07-orc-fortress` | econômico `xhigh` | — | — | — |
-| PB-10-08 | pending | `<agente>/pb10-08-cyclopolis` | econômico `xhigh` | — | — | — |
+| PB-10-08 | done | `codex/pb10-08-cyclopolis` | econômico `xhigh` | Grok 4.6 `xhigh` | `3fa4845` | Cyclops 19/19 XML; recorte 24×24×3; ficha nv 45 HP 740; armor 17 inerte; content/assets/hunt/combat/sim verdes; correctness 80/80 |
 | PB-10-09 | pending | `<agente>/pb10-09-dragon-lair` | econômico `xhigh` | — | — | — |
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
 

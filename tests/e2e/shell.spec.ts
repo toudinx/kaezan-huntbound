@@ -67,13 +67,16 @@ for (const viewport of shellViewports) {
       page.locator('[data-testid="hunting-places-screen"]'),
     ).toHaveCount(1);
     await expect(page.locator('[data-testid="hunt-place-card"]')).toHaveCount(
-      2,
+      3,
     );
     const rotwormCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:venore-rotworm-cave"]',
     );
     const cyclopolisCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:cyclopolis"]',
+    );
+    const heroCard = page.locator(
+      '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:hero-cave"]',
     );
     await expect(rotwormCard).toHaveCount(1);
     await expect(
@@ -83,6 +86,10 @@ for (const viewport of shellViewports) {
     await expect(
       cyclopolisCard.locator('[data-testid="hunt-place-name"]'),
     ).toHaveText('Cyclopolis');
+    await expect(heroCard).toHaveCount(1);
+    await expect(
+      heroCard.locator('[data-testid="hunt-place-name"]'),
+    ).toHaveText('Hero Cave');
     await selectHunt(page);
     await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1);
     await expect(page.locator('#game-root canvas')).toHaveCount(1);
@@ -125,6 +132,9 @@ test('enters Cyclopolis with its authored Cyclops roster', async ({ page }) => {
   const state = await waitForHunt(page, 'Cyclopolis');
 
   expect(state.player?.position).toEqual({ x: 2, y: 4, z: 8 });
+  await expect(
+    page.locator('[data-testid="combat-player-health"]'),
+  ).toHaveAttribute('aria-valuemax', '740');
   // SpawnTable.maxLiveActors is a global cap and includes the player.
   expect(
     state.actors.filter((actor) => actor.key === 'creature:tibia:cyclops'),
