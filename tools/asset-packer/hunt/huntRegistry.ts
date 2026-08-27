@@ -168,6 +168,51 @@ export const HUNT_PIPELINE_REGISTRY = {
       buildProfiles: ['personal'],
     },
   },
+  'hunt:tibia:orc-fortress': {
+    selectionPath: 'packages/content/src/selections/hunts/orc-fortress.json',
+    generatedDirectory: 'packages/content/src/generated/hunts/orc-fortress',
+    assetFixtureRoot: 'packages/test-fixtures/assets/pb10',
+    runtimeDirectory: 'pb10',
+    packKey: 'pb-10-orc-fortress',
+    personalSelectionPath:
+      'packages/assets/catalog/selections/pb-10-orc-fortress.json',
+    consumer: 'PB-10 Orc Fortress asset pack',
+    assetSelection: {
+      creature: { key: 'creature:tibia:orc', lookType: 5 },
+      extraCreatures: [
+        { key: 'creature:tibia:orc-spearman', lookType: 50 },
+        { key: 'creature:tibia:orc-shaman', lookType: 6 },
+      ],
+      loot: [
+        { key: 'item:tibia:gold-coin', clientId: 3031 },
+        { key: 'item:tibia:meat', clientId: 3577 },
+        { key: 'item:tibia:studded-armor', clientId: 3378 },
+        { key: 'item:tibia:studded-shield', clientId: 3426 },
+        { key: 'item:tibia:sabre', clientId: 3273 },
+        { key: 'item:tibia:spear', clientId: 3277 },
+        { key: 'item:tibia:studded-legs', clientId: 3362 },
+        { key: 'item:tibia:studded-helmet', clientId: 3376 },
+        { key: 'item:tibia:corncob', clientId: 3597 },
+        { key: 'item:tibia:broken-shamanic-staff', clientId: 11452 },
+        { key: 'item:tibia:chain-armor', clientId: 3358 },
+        { key: 'item:tibia:shamanic-hood', clientId: 11478 },
+      ],
+    },
+    testGroup: {
+      groupId: 'huntbound-test',
+      source: 'huntbound-synthetic-fixture',
+      sourceSnapshot: 'pb10-synthetic-v1',
+      licenseClass: 'huntbound-test',
+      buildProfiles: ['test', 'product'],
+    },
+    personalGroup: {
+      groupId: 'huntbound-private-assets-pb10',
+      source: 'huntbound-private-assets',
+      sourceSnapshot: 'pb10-private-v1',
+      licenseClass: 'cipsoft-personal',
+      buildProfiles: ['personal'],
+    },
+  },
 } as const satisfies Readonly<Record<string, HuntPipelineConfig>>;
 
 export type HuntPipelineEntry = HuntPipelineConfig & {

@@ -36,6 +36,48 @@ describe('generated hunt artifacts', () => {
     expect(selection.groups[0]?.buildProfiles).toContain('test');
   });
 
+  it('keeps the Orc Fortress extras aligned with its per-hunt selection', async () => {
+    const selection = AssetSelectionManifestSchema.parse(
+      await readJson('packages/test-fixtures/assets/pb10/selection.json'),
+    );
+
+    expect(selection.hunt?.packKey).toBe(
+      HUNT_PIPELINE_REGISTRY['hunt:tibia:orc-fortress'].packKey,
+    );
+    expect(selection.hunt?.keys).toEqual(
+      expect.arrayContaining([
+        'creature:tibia:orc',
+        'creature:tibia:orc-spearman',
+        'creature:tibia:orc-shaman',
+        'item:tibia:spear',
+        'item:tibia:shamanic-hood',
+      ]),
+    );
+    expect(
+      selection.entries.find((entry) => entry.key === 'creature:tibia:orc'),
+    ).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 5 },
+    });
+    expect(
+      selection.entries.find(
+        (entry) => entry.key === 'creature:tibia:orc-spearman',
+      ),
+    ).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 50 },
+    });
+    expect(
+      selection.entries.find(
+        (entry) => entry.key === 'creature:tibia:orc-shaman',
+      ),
+    ).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 6 },
+    });
+    expect(selection.entries).toHaveLength(selection.hunt?.keys.length ?? 0);
+  });
+
   it('keeps source locks complete and the synthetic fixture deterministic', async () => {
     const sourceLock = AssetSourceLockSchema.parse(
       await readJson('packages/test-fixtures/assets/pb04/source-lock.json'),

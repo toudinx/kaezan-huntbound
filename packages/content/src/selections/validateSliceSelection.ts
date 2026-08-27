@@ -52,6 +52,8 @@ const expectedRoots = [
   'creature:tibia:rotworm',
   'creature:tibia:cyclops',
   'creature:tibia:amazon',
+  'creature:tibia:orc',
+  'creature:tibia:orc-spearman',
   'creature:tibia:orc-shaman',
   'creature:tibia:dragon',
   'creature:tibia:hero',
@@ -70,6 +72,8 @@ const expectedSourceFiles = [
   'data-otservbr-global/monster/vermins/rotworm.lua',
   'data-otservbr-global/monster/giants/cyclops.lua',
   'data-otservbr-global/monster/humans/amazon.lua',
+  'data-otservbr-global/monster/humanoids/orc.lua',
+  'data-otservbr-global/monster/humanoids/orc_spearman.lua',
   'data-otservbr-global/monster/humanoids/orc_shaman.lua',
   'data-otservbr-global/monster/dragons/dragon.lua',
   'data-otservbr-global/monster/humans/hero.lua',
@@ -109,6 +113,24 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     weaponSourceId: '3264',
     weaponAttack: 14,
     maxHealth: 590,
+    maxMana: 185,
+    spellKeys: [
+      'spell:tibia:berserk',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:wound-cleansing',
+      'spell:tibia:groundshaker',
+      'spell:tibia:whirlwind-throw',
+    ],
+  },
+  {
+    stableKey: 'character:huntbound:knight-orc-fortress',
+    vocationKey: 'vocation:tibia:knight',
+    level: 25,
+    skills: { sword: 60, magic: 0 },
+    weaponItemKey: 'item:tibia:sword',
+    weaponSourceId: '3264',
+    weaponAttack: 14,
+    maxHealth: 440,
     maxMana: 185,
     spellKeys: [
       'spell:tibia:berserk',
@@ -202,6 +224,20 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
     'combat',
     'loot',
   ],
+  'creature:tibia:orc': [
+    'identity',
+    'stats',
+    'appearance',
+    'combat',
+    'loot',
+  ],
+  'creature:tibia:orc-spearman': [
+    'identity',
+    'stats',
+    'appearance',
+    'combat',
+    'loot',
+  ],
   'creature:tibia:orc-shaman': [
     'identity',
     'stats',
@@ -257,7 +293,7 @@ function validateSourceIdGroups(
   const expected: SourceIdGroups = {
     vocation: ['4'],
     spell: ['80', '61', '123', '106', '107'],
-    creature: ['26', '22', '77', '6', '34', '73'],
+    creature: ['26', '22', '77', '5', '50', '6', '34', '73'],
   };
 
   for (const kind of ['vocation', 'spell', 'creature'] as const) {
@@ -366,7 +402,7 @@ export function validateSliceSelection(
     diagnostics.push(
       selectionDiagnostic(
         'selection.root-set-mismatch',
-        'Selection must contain Knight, five combat spells, Rotworm, Cyclops, Amazon, Orc Shaman, Dragon, and Hero as roots',
+        'Selection must contain Knight, five combat spells, Rotworm, Cyclops, Amazon, Orc, Orc Spearman, Orc Shaman, Dragon, and Hero as roots',
       ),
     );
   }

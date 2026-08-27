@@ -19,6 +19,7 @@
       "!packages/assets/catalog/selections/pb-10-09-dragon-lair.json",
       "!packages/assets/catalog/selections/pb-10-10-hero-cave.json",
       "!packages/assets/catalog/selections/pb-10-08-cyclopolis.json",
+      "!packages/assets/catalog/selections/pb-10-orc-fortress.json",
       "!packages/test-fixtures/assets/pb02/expected",
       "!packages/test-fixtures/assets/pb04/expected",
       "!packages/test-fixtures/assets/pb04/source",
@@ -28,6 +29,7 @@
       "!packages/test-fixtures/assets/pb10-08/expected",
       "!packages/test-fixtures/assets/pb10-08/source",
       "!packages/test-fixtures/assets/pb10-08/selection.json",
+      "!packages/test-fixtures/assets/pb10",
       "!packages/test-fixtures/simulation/pb03",
       "!packages/test-fixtures/hunt",
       "!packages/test-fixtures/save"

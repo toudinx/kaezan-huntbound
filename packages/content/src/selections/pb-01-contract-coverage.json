@@ -12,6 +12,8 @@
     "creature:tibia:rotworm",
     "creature:tibia:cyclops",
     "creature:tibia:amazon",
+    "creature:tibia:orc",
+    "creature:tibia:orc-spearman",
     "creature:tibia:orc-shaman",
     "creature:tibia:dragon",
     "creature:tibia:hero"
@@ -73,6 +75,18 @@
       "rationale": "The root covers melee and ranged physical combat with a projectile."
     },
     {
+      "entityKey": "creature:tibia:orc",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "PB-10 Orc Fortress hunt",
+      "rationale": "The root covers the selected Orc Fortress melee creature, defenses, appearance, and loot."
+    },
+    {
+      "entityKey": "creature:tibia:orc-spearman",
+      "facets": ["identity", "stats", "appearance", "combat", "loot"],
+      "consumer": "PB-10 Orc Fortress hunt",
+      "rationale": "The root covers the selected Orc Fortress ranged creature, appearance, combat, and loot."
+    },
+    {
       "entityKey": "creature:tibia:orc-shaman",
       "facets": ["identity", "stats", "appearance", "combat", "loot"],
       "consumer": "creature contract tests",
@@ -112,6 +126,8 @@
     "data-otservbr-global/monster/vermins/rotworm.lua",
     "data-otservbr-global/monster/giants/cyclops.lua",
     "data-otservbr-global/monster/humans/amazon.lua",
+    "data-otservbr-global/monster/humanoids/orc.lua",
+    "data-otservbr-global/monster/humanoids/orc_spearman.lua",
     "data-otservbr-global/monster/humanoids/orc_shaman.lua",
     "data-otservbr-global/monster/dragons/dragon.lua",
     "data-otservbr-global/monster/humans/hero.lua",
@@ -120,7 +136,7 @@
   "rootSourceIds": {
     "vocation": ["4"],
     "spell": ["80", "61", "123", "106", "107"],
-    "creature": ["26", "22", "77", "6", "34", "73"]
+    "creature": ["26", "22", "77", "5", "50", "6", "34", "73"]
   },
   "dependencySourceIds": {
     "creature": ["28"]
@@ -149,6 +165,24 @@
       "weaponSourceId": "3264",
       "weaponAttack": 14,
       "maxHealth": 590,
+      "maxMana": 185,
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ]
+    },
+    {
+      "stableKey": "character:huntbound:knight-orc-fortress",
+      "vocationKey": "vocation:tibia:knight",
+      "level": 25,
+      "skills": { "sword": 60, "magic": 0 },
+      "weaponItemKey": "item:tibia:sword",
+      "weaponSourceId": "3264",
+      "weaponAttack": 14,
+      "maxHealth": 440,
       "maxMana": 185,
       "spellKeys": [
         "spell:tibia:berserk",

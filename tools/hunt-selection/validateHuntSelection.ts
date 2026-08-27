@@ -253,7 +253,7 @@ function catalogKeyByName(
     const name = key.split(':').at(-1);
     return name === undefined
       ? []
-      : [[normalizeCreatureName(name), key] as const];
+      : [[normalizeCreatureName(name.replaceAll('-', ' ')), key] as const];
   });
   return new Map(entries);
 }

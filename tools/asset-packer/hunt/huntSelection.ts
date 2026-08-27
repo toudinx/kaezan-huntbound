@@ -27,11 +27,14 @@ export const HUNT_PACK_BUDGET = {
   maxBytes: 6 * 1024 * 1024,
 } as const;
 
+export type HuntPackCreatureAsset = {
+  readonly key: string;
+  readonly lookType: number;
+};
+
 export type HuntPackAssetConfig = {
-  readonly creature: {
-    readonly key: string;
-    readonly lookType: number;
-  };
+  readonly creature: HuntPackCreatureAsset;
+  readonly extraCreatures?: readonly HuntPackCreatureAsset[];
   readonly loot: readonly {
     readonly key: string;
     readonly clientId: number;
@@ -65,6 +68,7 @@ export function huntPackExtraKeys(
 ): readonly string[] {
   return [
     assetSelection.creature.key,
+    ...(assetSelection.extraCreatures ?? []).map((creature) => creature.key),
     HUNT_PACK_OUTFIT_KEY,
     ...HUNT_PACK_COMBAT_KEYS,
     ...assetSelection.loot.map(({ key }) => key),
@@ -184,6 +188,16 @@ function identityForKey(
         kind: 'lookType',
         id: assetSelection.creature.lookType,
       },
+      pivot: { x: 0.5, y: 1 },
+    };
+  }
+  const extraCreature = assetSelection.extraCreatures?.find(
+    (creature) => creature.key === key,
+  );
+  if (extraCreature !== undefined) {
+    return {
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: extraCreature.lookType },
       pivot: { x: 0.5, y: 1 },
     };
   }

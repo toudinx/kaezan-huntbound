@@ -437,6 +437,235 @@
       ]
     },
     {
+      "huntId": "hunt:tibia:orc-fortress",
+      "runtimeDirectory": "pb10",
+      "displayName": "Orc Fortress",
+      "band": 2,
+      "recommendedLevel": 25,
+      "soloVocation": "vocation:tibia:knight",
+      "sourceUrl": "https://tibiaroute.com/br/hunting-places/Orc-Fortress",
+      "maxLiveActors": 64,
+      "experiencePerHour": 150549,
+      "creatures": [
+        {
+          "creatureKey": "creature:tibia:orc",
+          "displayName": "Orc",
+          "slotCount": 13,
+          "health": 70,
+          "experience": 25,
+          "lookType": 5,
+          "respawnTicks": 1800,
+          "experiencePerHour": 12235,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 84810,
+              "minCount": 1,
+              "maxCount": 14
+            },
+            {
+              "itemKey": "item:tibia:meat",
+              "chancePerHundredThousand": 10160,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:studded-armor",
+              "chancePerHundredThousand": 7860,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:studded-shield",
+              "chancePerHundredThousand": 7300,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:sabre",
+              "chancePerHundredThousand": 5850,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:axe",
+              "chancePerHundredThousand": 4960,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:studded-helmet",
+              "chancePerHundredThousand": 2950,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:heavy-old-tome",
+              "chancePerHundredThousand": 1000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-leather",
+              "chancePerHundredThousand": 590,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-tooth",
+              "chancePerHundredThousand": 210,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        },
+        {
+          "creatureKey": "creature:tibia:orc-shaman",
+          "displayName": "Orc Shaman",
+          "slotCount": 22,
+          "health": 115,
+          "experience": 110,
+          "lookType": 6,
+          "respawnTicks": 1800,
+          "experiencePerHour": 91105,
+          "loot": [
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 90000,
+              "minCount": 1,
+              "maxCount": 5
+            },
+            {
+              "itemKey": "item:tibia:corncob",
+              "chancePerHundredThousand": 10600,
+              "minCount": 1,
+              "maxCount": 2
+            },
+            {
+              "itemKey": "item:tibia:broken-shamanic-staff",
+              "chancePerHundredThousand": 10300,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:chain-armor",
+              "chancePerHundredThousand": 8750,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:shamanic-hood",
+              "chancePerHundredThousand": 6860,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:spear",
+              "chancePerHundredThousand": 4850,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-leather",
+              "chancePerHundredThousand": 4300,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-tooth",
+              "chancePerHundredThousand": 2100,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:heavy-old-tome",
+              "chancePerHundredThousand": 1000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:wand-of-decay",
+              "chancePerHundredThousand": 1000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:book",
+              "chancePerHundredThousand": 520,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        },
+        {
+          "creatureKey": "creature:tibia:orc-spearman",
+          "displayName": "Orc Spearman",
+          "slotCount": 33,
+          "health": 105,
+          "experience": 38,
+          "lookType": 50,
+          "respawnTicks": 1800,
+          "experiencePerHour": 47209,
+          "loot": [
+            {
+              "itemKey": "item:tibia:meat",
+              "chancePerHundredThousand": 30200,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:gold-coin",
+              "chancePerHundredThousand": 25050,
+              "minCount": 1,
+              "maxCount": 11
+            },
+            {
+              "itemKey": "item:tibia:spear",
+              "chancePerHundredThousand": 17440,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:studded-legs",
+              "chancePerHundredThousand": 10000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:studded-helmet",
+              "chancePerHundredThousand": 9000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:machete",
+              "chancePerHundredThousand": 3000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-leather",
+              "chancePerHundredThousand": 2300,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:heavy-old-tome",
+              "chancePerHundredThousand": 1000,
+              "minCount": 1,
+              "maxCount": 1
+            },
+            {
+              "itemKey": "item:tibia:orc-tooth",
+              "chancePerHundredThousand": 150,
+              "minCount": 1,
+              "maxCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "huntId": "hunt:tibia:venore-rotworm-cave",
       "runtimeDirectory": "pb04",
       "displayName": "Venore Rotworm Cave",

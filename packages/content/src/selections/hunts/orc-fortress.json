@@ -1,0 +1,90 @@
+{
+  "key": "hunt:tibia:orc-fortress",
+  "displayName": "Orc Fortress",
+  "sourceUrl": "https://tibiaroute.com/br/hunting-places/Orc-Fortress",
+  "source": {
+    "map": "data-otservbr-global/world/otservbr.otbm",
+    "spawns": "data-otservbr-global/world/otservbr-monster.xml"
+  },
+  "layout": "../../layouts/hunts/orc-fortress.json",
+  "recommendedLevel": 25,
+  "soloVocation": "vocation:tibia:knight",
+  "band": 2,
+  "region": {
+    "minX": 32896,
+    "minY": 31713,
+    "maxX": 32960,
+    "maxY": 31780,
+    "floors": [6, 7, 8]
+  },
+  "creatures": [
+    "creature:tibia:orc",
+    "creature:tibia:orc-spearman",
+    "creature:tibia:orc-shaman"
+  ],
+  "excludedCreatures": [
+    {
+      "name": "Orc Warrior",
+      "reason": "present in the box but outside the frozen band 2 creature selection",
+      "count": 24
+    },
+    {
+      "name": "Orc Berserker",
+      "reason": "present in the box but outside the frozen band 2 creature selection",
+      "count": 36
+    },
+    {
+      "name": "Orc Leader",
+      "reason": "present in the box but outside the frozen band 2 creature selection",
+      "count": 9
+    },
+    {
+      "name": "Orc Warlord",
+      "reason": "present in the box but outside the frozen band 2 creature selection",
+      "count": 4
+    },
+    {
+      "name": "Pig",
+      "reason": "fauna excluded from the Orc Fortress hunt",
+      "count": 4
+    },
+    {
+      "name": "Wolf",
+      "reason": "fauna excluded from the Orc Fortress hunt",
+      "count": 4
+    },
+    {
+      "name": "Chicken",
+      "reason": "fauna excluded from the Orc Fortress hunt",
+      "count": 2
+    },
+    {
+      "name": "War Wolf",
+      "reason": "fauna excluded from the Orc Fortress hunt",
+      "count": 3
+    },
+    {
+      "name": "Orc Rider",
+      "reason": "noise creature excluded from the Orc Fortress hunt",
+      "count": 1
+    },
+    {
+      "name": "Cyclops",
+      "reason": "noise creature excluded from the Orc Fortress hunt",
+      "count": 1
+    },
+    {
+      "name": "Bonelord",
+      "reason": "noise creature excluded from the Orc Fortress hunt",
+      "count": 1
+    }
+  ],
+  "expectedSpawnGroups": 33,
+  "expectedSpawnSlots": 68,
+  "expectedDroppedTransitions": 0,
+  "budget": {
+    "maxFloors": 3,
+    "maxWidth": 96,
+    "maxHeight": 96
+  }
+}

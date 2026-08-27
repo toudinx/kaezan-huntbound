@@ -76,6 +76,16 @@
       "purpose": "creature"
     },
     {
+      "relativePath": "data-otservbr-global/monster/humanoids/orc.lua",
+      "sha256": "fc649f2e6dd8c264f9d6537e2f001c7869e7418276aef14ce538a5676f09c086",
+      "purpose": "creature"
+    },
+    {
+      "relativePath": "data-otservbr-global/monster/humanoids/orc_spearman.lua",
+      "sha256": "70ecf85eb75432c161b1537e7e4c9db429d204cbb749cb4e4fc7f1a71b9b58d0",
+      "purpose": "creature"
+    },
+    {
       "relativePath": "data-otservbr-global/monster/humanoids/orc_shaman.lua",
       "sha256": "cf3fee52b211b9f4b18dc7da2bfbf257e816542a320491b3817a883cfbe17864",
       "purpose": "creature"

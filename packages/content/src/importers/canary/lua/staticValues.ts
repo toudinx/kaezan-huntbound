@@ -61,6 +61,7 @@ const symbolicConstants: Readonly<Record<string, string>> = {
   CONST_ANI_ARROW: 'arrow',
   CONST_ANI_ENERGYBALL: 'energyball',
   CONST_ANI_FIRE: 'fire',
+  CONST_ANI_SPEAR: 'spear',
   CONST_ANI_THROWINGKNIFE: 'throwingknife',
   CONST_ANI_WEAPONTYPE: 'CONST_ANI_WEAPONTYPE',
   CONST_ME_FIREAREA: 'CONST_ME_FIREAREA',

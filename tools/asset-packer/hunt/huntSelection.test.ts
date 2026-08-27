@@ -65,6 +65,21 @@ const cyclopsAssetSelection = {
   ],
 } as const;
 
+const orcFortressAssetSelection = {
+  creature: { key: 'creature:tibia:orc', lookType: 5 },
+  extraCreatures: [
+    { key: 'creature:tibia:orc-spearman', lookType: 50 },
+    { key: 'creature:tibia:orc-shaman', lookType: 6 },
+  ],
+  loot: [
+    { key: 'item:tibia:gold-coin', clientId: 3031 },
+    { key: 'item:tibia:meat', clientId: 3577 },
+    { key: 'item:tibia:studded-armor', clientId: 3378 },
+    { key: 'item:tibia:spear', clientId: 3277 },
+    { key: 'item:tibia:shamanic-hood', clientId: 11478 },
+  ],
+} as const;
+
 describe('hunt selection generation', () => {
   it('derives metadata and tile keys from the region', () => {
     const selection = deriveHuntPackSelection(region(), metadata);
@@ -257,6 +272,57 @@ describe('hunt selection generation', () => {
     expect(entries.get('item:tibia:dragon-s-tail')).toMatchObject({
       category: 'object',
       sourceIdentity: { kind: 'clientId', id: 11457 },
+    });
+  });
+
+  it('maps every Orc Fortress creature lookType and loot clientId', () => {
+    const hunt = deriveHuntPackSelection(region(), {
+      ...metadata,
+      assetSelection: orcFortressAssetSelection,
+    });
+    const manifest = createHuntAssetSelection({
+      hunt,
+      group,
+      consumer,
+      assetSelection: orcFortressAssetSelection,
+    });
+    const entries = new Map(
+      manifest.entries.map((entry) => [entry.key, entry]),
+    );
+
+    expect(hunt.keys).toEqual(
+      expect.arrayContaining([
+        'creature:tibia:orc',
+        'creature:tibia:orc-spearman',
+        'creature:tibia:orc-shaman',
+        'item:tibia:spear',
+        'item:tibia:shamanic-hood',
+      ]),
+    );
+    expect(hunt.keys).not.toContain(HUNT_PACK_CREATURE_KEY);
+    expect(entries.get('creature:tibia:orc')).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 5 },
+    });
+    expect(entries.get('creature:tibia:orc-spearman')).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 50 },
+    });
+    expect(entries.get('creature:tibia:orc-shaman')).toMatchObject({
+      category: 'creature',
+      sourceIdentity: { kind: 'lookType', id: 6 },
+    });
+    expect(entries.get('item:tibia:studded-armor')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3378 },
+    });
+    expect(entries.get('item:tibia:spear')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 3277 },
+    });
+    expect(entries.get('item:tibia:shamanic-hood')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 11478 },
     });
   });
 });

@@ -7,6 +7,7 @@ const harness = vi.hoisted(() => ({
   viewModelCalls: [] as unknown[][],
   restoredSnapshots: [] as unknown[],
   shellSnapshots: [] as { phase: string; message: string }[],
+  selectedHuntId: undefined as string | undefined,
   bridge: undefined as
     | {
         getSnapshot(): { phase: string; message: string };
@@ -83,13 +84,15 @@ vi.mock('./ui/HuntingPlaces', () => ({
     onSelect: (hunt: unknown) => void,
   ) => {
     harness.events.push('hunting');
+    const preferredHuntId =
+      harness.selectedHuntId ?? 'hunt:tibia:venore-rotworm-cave';
     const hunt =
       index.hunts.find(
         (candidate) =>
           typeof candidate === 'object' &&
           candidate !== null &&
           (candidate as { readonly huntId?: unknown }).huntId ===
-            'hunt:tibia:venore-rotworm-cave',
+            preferredHuntId,
       ) ?? index.hunts[0];
     if (hunt !== undefined) onSelect(hunt);
     return { destroy: () => undefined };
@@ -252,6 +255,7 @@ describe('main asset bootstrap', () => {
     harness.viewModelCalls.length = 0;
     harness.restoredSnapshots.length = 0;
     harness.shellSnapshots.length = 0;
+    harness.selectedHuntId = undefined;
     harness.bridge = undefined;
   });
 
@@ -275,7 +279,8 @@ describe('main asset bootstrap', () => {
       document: roots.document,
       window: roots.window,
       createAssetRuntime: (input: { profile: string; catalogUrl: string }) => {
-        const label = input.catalogUrl.includes('/pb04/') ? 'hunt' : 'root';
+        const label =
+          input.catalogUrl === '/assets/test/catalog.json' ? 'root' : 'hunt';
         harness.events.push(`runtime:${label}`);
         const runtime = createRuntime(harness.events, label);
         if (label === 'hunt') huntRuntime = runtime;
@@ -365,6 +370,32 @@ describe('main asset bootstrap', () => {
     expect(harness.events.indexOf('restoreSnapshot')).toBeLessThan(
       harness.events.indexOf('shell'),
     );
+  });
+
+  it('boots Orc Fortress with the shared Knight vocation character', async () => {
+    harness.selectedHuntId = 'hunt:tibia:orc-fortress';
+    const roots = createRoots();
+    const main = await loadBootstrapApp();
+    vi.stubGlobal('document', roots.document);
+    vi.stubGlobal('window', roots.window);
+    const bootstrapApp = main.bootstrapApp as unknown as (
+      overrides: Record<string, unknown>,
+    ) => Promise<void>;
+
+    await bootstrapApp({
+      document: roots.document,
+      window: roots.window,
+      createAssetRuntime: (input: { catalogUrl: string }) =>
+        createRuntime(
+          harness.events,
+          input.catalogUrl === '/assets/test/catalog.json' ? 'root' : 'hunt',
+        ),
+      createSaveSession: () => createTestSaveSession(),
+    });
+    await vi.waitFor(() => expect(harness.events).toContain('game'));
+
+    expect(harness.shellSnapshots.at(-1)?.phase).not.toBe('error');
+    expect(harness.viewModelCalls).toHaveLength(1);
   });
 
   it('mounts the shell before reporting an invalid hunt bootstrap', async () => {

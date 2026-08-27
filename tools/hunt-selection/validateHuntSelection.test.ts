@@ -344,4 +344,21 @@ describe('validateHuntSelection', () => {
       result.diagnostics.filter((item) => item.code === 'HUNT_SOURCE_INVALID'),
     ).toEqual([]);
   });
+
+  it('resolves catalog creature keys with kebab-case names', () => {
+    const result = validateHuntSelection(
+      selection({
+        creatures: ['creature:tibia:orc-spearman'],
+        region: { minX: 100, minY: 200, maxX: 100, maxY: 200, floors: [8] },
+        expectedSpawnGroups: 1,
+        expectedSpawnSlots: 1,
+      }),
+      `<monsters>${group(100, 200, 8, [slot('Orc Spearman', 0, 0, 8)])}</monsters>`,
+      ['creature:tibia:orc-spearman'],
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.creatureNames).toEqual(['Orc Spearman']);
+    expect(result.diagnostics).toEqual([]);
+  });
 });

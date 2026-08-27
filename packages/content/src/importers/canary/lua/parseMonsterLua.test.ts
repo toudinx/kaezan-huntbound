@@ -140,6 +140,17 @@ describe('parseCanaryMonsterLua', () => {
     ]);
   });
 
+  it('maps the Canary spear projectile used by Orc Spearman', () => {
+    const result = parseCanaryMonsterLua(
+      amazonFixture.replace('CONST_ANI_ARROW', 'CONST_ANI_SPEAR'),
+    );
+
+    expect(result.ok ? result.value.attacks : []).toEqual([
+      expect.objectContaining({ kind: 'melee' }),
+      expect.objectContaining({ kind: 'ranged', projectile: 'spear' }),
+    ]);
+  });
+
   it('maps area damage, healing defense, summon, elements and immunities', () => {
     const result = parseCanaryMonsterLua(orcShamanFixture);
 
