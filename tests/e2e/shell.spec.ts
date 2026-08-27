@@ -72,6 +72,9 @@ for (const viewport of shellViewports) {
     const rotwormCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:venore-rotworm-cave"]',
     );
+    const orcFortressCard = page.locator(
+      '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:orc-fortress"]',
+    );
     const cyclopolisCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:cyclopolis"]',
     );
@@ -85,6 +88,10 @@ for (const viewport of shellViewports) {
     await expect(
       rotwormCard.locator('[data-testid="hunt-place-name"]'),
     ).toHaveText('Venore Rotworm Cave');
+    await expect(orcFortressCard).toHaveCount(1);
+    await expect(
+      orcFortressCard.locator('[data-testid="hunt-place-name"]'),
+    ).toHaveText('Orc Fortress');
     await expect(cyclopolisCard).toHaveCount(1);
     await expect(
       cyclopolisCard.locator('[data-testid="hunt-place-name"]'),

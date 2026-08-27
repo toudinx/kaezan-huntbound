@@ -224,13 +224,7 @@ const expectedProjectionFacets: Readonly<Record<string, readonly string[]>> = {
     'combat',
     'loot',
   ],
-  'creature:tibia:orc': [
-    'identity',
-    'stats',
-    'appearance',
-    'combat',
-    'loot',
-  ],
+  'creature:tibia:orc': ['identity', 'stats', 'appearance', 'combat', 'loot'],
   'creature:tibia:orc-spearman': [
     'identity',
     'stats',

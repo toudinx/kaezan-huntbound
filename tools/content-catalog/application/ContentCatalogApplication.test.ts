@@ -93,7 +93,9 @@ describe.skipIf(sourceRoot === undefined)(
           'creature:tibia:cyclops',
           'creature:tibia:dragon',
           'creature:tibia:hero',
+          'creature:tibia:orc',
           'creature:tibia:orc-shaman',
+          'creature:tibia:orc-spearman',
           'creature:tibia:rotworm',
           'creature:tibia:snake',
         ]);

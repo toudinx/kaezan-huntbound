@@ -4,18 +4,16 @@
   "packId": "asset-pack:pb-10-orc-fortress",
   "contentVersion": "pb-10-orc-fortress@c234068fcec4",
   "buildProfiles": [
-    "test",
-    "product"
+    "personal"
   ],
   "groups": [
     {
-      "groupId": "huntbound-test",
-      "source": "huntbound-synthetic-fixture",
-      "sourceSnapshot": "pb10-synthetic-v1",
-      "licenseClass": "huntbound-test",
+      "groupId": "huntbound-private-assets-pb10",
+      "source": "huntbound-private-assets",
+      "sourceSnapshot": "pb10-private-v1",
+      "licenseClass": "cipsoft-personal",
       "buildProfiles": [
-        "test",
-        "product"
+        "personal"
       ]
     }
   ],
@@ -27,7 +25,7 @@
         "kind": "lookType",
         "id": 5
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers creature:tibia:orc required by the frozen hunt selection.",
       "presentation": {
@@ -46,7 +44,7 @@
         "kind": "lookType",
         "id": 6
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers creature:tibia:orc-shaman required by the frozen hunt selection.",
       "presentation": {
@@ -65,7 +63,7 @@
         "kind": "lookType",
         "id": 50
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers creature:tibia:orc-spearman required by the frozen hunt selection.",
       "presentation": {
@@ -84,7 +82,7 @@
         "kind": "effectId",
         "id": 1
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers effect:tibia:draw-blood required by the frozen hunt selection.",
       "presentation": {
@@ -103,7 +101,7 @@
         "kind": "effectId",
         "id": 10
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers effect:tibia:hit-area required by the frozen hunt selection.",
       "presentation": {
@@ -122,7 +120,7 @@
         "kind": "effectId",
         "id": 13
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers effect:tibia:magic-blue required by the frozen hunt selection.",
       "presentation": {
@@ -141,7 +139,7 @@
         "kind": "clientId",
         "id": 11452
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:broken-shamanic-staff required by the frozen hunt selection.",
       "presentation": {
@@ -160,7 +158,7 @@
         "kind": "clientId",
         "id": 3358
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:chain-armor required by the frozen hunt selection.",
       "presentation": {
@@ -179,7 +177,7 @@
         "kind": "clientId",
         "id": 3597
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:corncob required by the frozen hunt selection.",
       "presentation": {
@@ -198,7 +196,7 @@
         "kind": "clientId",
         "id": 5967
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:dead-rotworm required by the frozen hunt selection.",
       "presentation": {
@@ -217,7 +215,7 @@
         "kind": "clientId",
         "id": 3031
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:gold-coin required by the frozen hunt selection.",
       "presentation": {
@@ -236,7 +234,7 @@
         "kind": "clientId",
         "id": 3577
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:meat required by the frozen hunt selection.",
       "presentation": {
@@ -255,7 +253,7 @@
         "kind": "clientId",
         "id": 3273
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:sabre required by the frozen hunt selection.",
       "presentation": {
@@ -274,7 +272,7 @@
         "kind": "clientId",
         "id": 11478
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:shamanic-hood required by the frozen hunt selection.",
       "presentation": {
@@ -293,7 +291,7 @@
         "kind": "clientId",
         "id": 2889
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:small-splash required by the frozen hunt selection.",
       "presentation": {
@@ -312,7 +310,7 @@
         "kind": "clientId",
         "id": 3277
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:spear required by the frozen hunt selection.",
       "presentation": {
@@ -331,7 +329,7 @@
         "kind": "clientId",
         "id": 3378
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:studded-armor required by the frozen hunt selection.",
       "presentation": {
@@ -350,7 +348,7 @@
         "kind": "clientId",
         "id": 3376
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:studded-helmet required by the frozen hunt selection.",
       "presentation": {
@@ -369,7 +367,7 @@
         "kind": "clientId",
         "id": 3362
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:studded-legs required by the frozen hunt selection.",
       "presentation": {
@@ -388,7 +386,7 @@
         "kind": "clientId",
         "id": 3426
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers item:tibia:studded-shield required by the frozen hunt selection.",
       "presentation": {
@@ -407,7 +405,7 @@
         "kind": "lookType",
         "id": 131
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers outfit:tibia:knight required by the frozen hunt selection.",
       "presentation": {
@@ -426,7 +424,7 @@
         "kind": "clientId",
         "id": 101
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:101 required by the frozen hunt selection.",
       "presentation": {
@@ -445,7 +443,7 @@
         "kind": "clientId",
         "id": 103
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:103 required by the frozen hunt selection.",
       "presentation": {
@@ -464,7 +462,7 @@
         "kind": "clientId",
         "id": 104
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:104 required by the frozen hunt selection.",
       "presentation": {
@@ -483,7 +481,7 @@
         "kind": "clientId",
         "id": 1086
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1086 required by the frozen hunt selection.",
       "presentation": {
@@ -502,7 +500,7 @@
         "kind": "clientId",
         "id": 1100
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1100 required by the frozen hunt selection.",
       "presentation": {
@@ -521,7 +519,7 @@
         "kind": "clientId",
         "id": 1101
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1101 required by the frozen hunt selection.",
       "presentation": {
@@ -540,7 +538,7 @@
         "kind": "clientId",
         "id": 1102
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1102 required by the frozen hunt selection.",
       "presentation": {
@@ -559,7 +557,7 @@
         "kind": "clientId",
         "id": 1103
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1103 required by the frozen hunt selection.",
       "presentation": {
@@ -578,7 +576,7 @@
         "kind": "clientId",
         "id": 1104
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1104 required by the frozen hunt selection.",
       "presentation": {
@@ -597,7 +595,7 @@
         "kind": "clientId",
         "id": 1106
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1106 required by the frozen hunt selection.",
       "presentation": {
@@ -616,7 +614,7 @@
         "kind": "clientId",
         "id": 1107
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1107 required by the frozen hunt selection.",
       "presentation": {
@@ -635,7 +633,7 @@
         "kind": "clientId",
         "id": 1108
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1108 required by the frozen hunt selection.",
       "presentation": {
@@ -654,7 +652,7 @@
         "kind": "clientId",
         "id": 1110
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1110 required by the frozen hunt selection.",
       "presentation": {
@@ -673,7 +671,7 @@
         "kind": "clientId",
         "id": 1111
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1111 required by the frozen hunt selection.",
       "presentation": {
@@ -692,7 +690,7 @@
         "kind": "clientId",
         "id": 1112
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1112 required by the frozen hunt selection.",
       "presentation": {
@@ -711,7 +709,7 @@
         "kind": "clientId",
         "id": 1113
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1113 required by the frozen hunt selection.",
       "presentation": {
@@ -730,7 +728,7 @@
         "kind": "clientId",
         "id": 1114
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1114 required by the frozen hunt selection.",
       "presentation": {
@@ -749,7 +747,7 @@
         "kind": "clientId",
         "id": 1115
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1115 required by the frozen hunt selection.",
       "presentation": {
@@ -768,7 +766,7 @@
         "kind": "clientId",
         "id": 1116
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1116 required by the frozen hunt selection.",
       "presentation": {
@@ -787,7 +785,7 @@
         "kind": "clientId",
         "id": 1117
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1117 required by the frozen hunt selection.",
       "presentation": {
@@ -806,7 +804,7 @@
         "kind": "clientId",
         "id": 1118
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1118 required by the frozen hunt selection.",
       "presentation": {
@@ -825,7 +823,7 @@
         "kind": "clientId",
         "id": 1119
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1119 required by the frozen hunt selection.",
       "presentation": {
@@ -844,7 +842,7 @@
         "kind": "clientId",
         "id": 1121
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1121 required by the frozen hunt selection.",
       "presentation": {
@@ -863,7 +861,7 @@
         "kind": "clientId",
         "id": 1125
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1125 required by the frozen hunt selection.",
       "presentation": {
@@ -882,7 +880,7 @@
         "kind": "clientId",
         "id": 1126
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1126 required by the frozen hunt selection.",
       "presentation": {
@@ -901,7 +899,7 @@
         "kind": "clientId",
         "id": 1128
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1128 required by the frozen hunt selection.",
       "presentation": {
@@ -920,7 +918,7 @@
         "kind": "clientId",
         "id": 1294
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1294 required by the frozen hunt selection.",
       "presentation": {
@@ -939,7 +937,7 @@
         "kind": "clientId",
         "id": 1295
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1295 required by the frozen hunt selection.",
       "presentation": {
@@ -958,7 +956,7 @@
         "kind": "clientId",
         "id": 1296
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1296 required by the frozen hunt selection.",
       "presentation": {
@@ -977,7 +975,7 @@
         "kind": "clientId",
         "id": 1297
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1297 required by the frozen hunt selection.",
       "presentation": {
@@ -996,7 +994,7 @@
         "kind": "clientId",
         "id": 1298
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1298 required by the frozen hunt selection.",
       "presentation": {
@@ -1015,7 +1013,7 @@
         "kind": "clientId",
         "id": 1299
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1299 required by the frozen hunt selection.",
       "presentation": {
@@ -1034,7 +1032,7 @@
         "kind": "clientId",
         "id": 1300
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1300 required by the frozen hunt selection.",
       "presentation": {
@@ -1053,7 +1051,7 @@
         "kind": "clientId",
         "id": 1302
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1302 required by the frozen hunt selection.",
       "presentation": {
@@ -1072,7 +1070,7 @@
         "kind": "clientId",
         "id": 1303
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1303 required by the frozen hunt selection.",
       "presentation": {
@@ -1091,7 +1089,7 @@
         "kind": "clientId",
         "id": 1595
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1595 required by the frozen hunt selection.",
       "presentation": {
@@ -1110,7 +1108,7 @@
         "kind": "clientId",
         "id": 1596
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1596 required by the frozen hunt selection.",
       "presentation": {
@@ -1129,7 +1127,7 @@
         "kind": "clientId",
         "id": 1634
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1634 required by the frozen hunt selection.",
       "presentation": {
@@ -1148,7 +1146,7 @@
         "kind": "clientId",
         "id": 1635
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1635 required by the frozen hunt selection.",
       "presentation": {
@@ -1167,7 +1165,7 @@
         "kind": "clientId",
         "id": 1792
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1792 required by the frozen hunt selection.",
       "presentation": {
@@ -1186,7 +1184,7 @@
         "kind": "clientId",
         "id": 1793
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1793 required by the frozen hunt selection.",
       "presentation": {
@@ -1205,7 +1203,7 @@
         "kind": "clientId",
         "id": 1852
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1852 required by the frozen hunt selection.",
       "presentation": {
@@ -1224,7 +1222,7 @@
         "kind": "clientId",
         "id": 1854
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1854 required by the frozen hunt selection.",
       "presentation": {
@@ -1243,7 +1241,7 @@
         "kind": "clientId",
         "id": 1855
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1855 required by the frozen hunt selection.",
       "presentation": {
@@ -1262,7 +1260,7 @@
         "kind": "clientId",
         "id": 1856
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1856 required by the frozen hunt selection.",
       "presentation": {
@@ -1281,7 +1279,7 @@
         "kind": "clientId",
         "id": 1857
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1857 required by the frozen hunt selection.",
       "presentation": {
@@ -1300,7 +1298,7 @@
         "kind": "clientId",
         "id": 1858
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1858 required by the frozen hunt selection.",
       "presentation": {
@@ -1319,7 +1317,7 @@
         "kind": "clientId",
         "id": 1865
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1865 required by the frozen hunt selection.",
       "presentation": {
@@ -1338,7 +1336,7 @@
         "kind": "clientId",
         "id": 1866
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1866 required by the frozen hunt selection.",
       "presentation": {
@@ -1357,7 +1355,7 @@
         "kind": "clientId",
         "id": 1867
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1867 required by the frozen hunt selection.",
       "presentation": {
@@ -1376,7 +1374,7 @@
         "kind": "clientId",
         "id": 1893
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1893 required by the frozen hunt selection.",
       "presentation": {
@@ -1395,7 +1393,7 @@
         "kind": "clientId",
         "id": 1895
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1895 required by the frozen hunt selection.",
       "presentation": {
@@ -1414,7 +1412,7 @@
         "kind": "clientId",
         "id": 1896
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1896 required by the frozen hunt selection.",
       "presentation": {
@@ -1433,7 +1431,7 @@
         "kind": "clientId",
         "id": 1897
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1897 required by the frozen hunt selection.",
       "presentation": {
@@ -1452,7 +1450,7 @@
         "kind": "clientId",
         "id": 1898
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1898 required by the frozen hunt selection.",
       "presentation": {
@@ -1471,7 +1469,7 @@
         "kind": "clientId",
         "id": 1900
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1900 required by the frozen hunt selection.",
       "presentation": {
@@ -1490,7 +1488,7 @@
         "kind": "clientId",
         "id": 1948
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:1948 required by the frozen hunt selection.",
       "presentation": {
@@ -1509,7 +1507,7 @@
         "kind": "clientId",
         "id": 2118
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2118 required by the frozen hunt selection.",
       "presentation": {
@@ -1528,7 +1526,7 @@
         "kind": "clientId",
         "id": 2119
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2119 required by the frozen hunt selection.",
       "presentation": {
@@ -1547,7 +1545,7 @@
         "kind": "clientId",
         "id": 2152
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2152 required by the frozen hunt selection.",
       "presentation": {
@@ -1566,7 +1564,7 @@
         "kind": "clientId",
         "id": 2162
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2162 required by the frozen hunt selection.",
       "presentation": {
@@ -1585,7 +1583,7 @@
         "kind": "clientId",
         "id": 2163
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2163 required by the frozen hunt selection.",
       "presentation": {
@@ -1604,7 +1602,7 @@
         "kind": "clientId",
         "id": 2164
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2164 required by the frozen hunt selection.",
       "presentation": {
@@ -1623,7 +1621,7 @@
         "kind": "clientId",
         "id": 2166
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2166 required by the frozen hunt selection.",
       "presentation": {
@@ -1642,7 +1640,7 @@
         "kind": "clientId",
         "id": 2168
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2168 required by the frozen hunt selection.",
       "presentation": {
@@ -1661,7 +1659,7 @@
         "kind": "clientId",
         "id": 21935
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:21935 required by the frozen hunt selection.",
       "presentation": {
@@ -1680,7 +1678,7 @@
         "kind": "clientId",
         "id": 2317
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2317 required by the frozen hunt selection.",
       "presentation": {
@@ -1699,7 +1697,7 @@
         "kind": "clientId",
         "id": 240
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:240 required by the frozen hunt selection.",
       "presentation": {
@@ -1718,7 +1716,7 @@
         "kind": "clientId",
         "id": 241
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:241 required by the frozen hunt selection.",
       "presentation": {
@@ -1737,7 +1735,7 @@
         "kind": "clientId",
         "id": 244
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:244 required by the frozen hunt selection.",
       "presentation": {
@@ -1756,7 +1754,7 @@
         "kind": "clientId",
         "id": 248
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:248 required by the frozen hunt selection.",
       "presentation": {
@@ -1775,7 +1773,7 @@
         "kind": "clientId",
         "id": 2489
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2489 required by the frozen hunt selection.",
       "presentation": {
@@ -1794,7 +1792,7 @@
         "kind": "clientId",
         "id": 2490
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2490 required by the frozen hunt selection.",
       "presentation": {
@@ -1813,7 +1811,7 @@
         "kind": "clientId",
         "id": 2491
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2491 required by the frozen hunt selection.",
       "presentation": {
@@ -1832,7 +1830,7 @@
         "kind": "clientId",
         "id": 2492
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2492 required by the frozen hunt selection.",
       "presentation": {
@@ -1851,7 +1849,7 @@
         "kind": "clientId",
         "id": 250
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:250 required by the frozen hunt selection.",
       "presentation": {
@@ -1870,7 +1868,7 @@
         "kind": "clientId",
         "id": 2515
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2515 required by the frozen hunt selection.",
       "presentation": {
@@ -1889,7 +1887,7 @@
         "kind": "clientId",
         "id": 2516
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2516 required by the frozen hunt selection.",
       "presentation": {
@@ -1908,7 +1906,7 @@
         "kind": "clientId",
         "id": 2519
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2519 required by the frozen hunt selection.",
       "presentation": {
@@ -1927,7 +1925,7 @@
         "kind": "clientId",
         "id": 2523
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2523 required by the frozen hunt selection.",
       "presentation": {
@@ -1946,7 +1944,7 @@
         "kind": "clientId",
         "id": 2535
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2535 required by the frozen hunt selection.",
       "presentation": {
@@ -1965,7 +1963,7 @@
         "kind": "clientId",
         "id": 265
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:265 required by the frozen hunt selection.",
       "presentation": {
@@ -1984,7 +1982,7 @@
         "kind": "clientId",
         "id": 2738
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2738 required by the frozen hunt selection.",
       "presentation": {
@@ -2003,7 +2001,7 @@
         "kind": "clientId",
         "id": 2740
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2740 required by the frozen hunt selection.",
       "presentation": {
@@ -2022,7 +2020,7 @@
         "kind": "clientId",
         "id": 2741
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2741 required by the frozen hunt selection.",
       "presentation": {
@@ -2041,7 +2039,7 @@
         "kind": "clientId",
         "id": 2742
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2742 required by the frozen hunt selection.",
       "presentation": {
@@ -2060,7 +2058,7 @@
         "kind": "clientId",
         "id": 2743
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2743 required by the frozen hunt selection.",
       "presentation": {
@@ -2079,7 +2077,7 @@
         "kind": "clientId",
         "id": 2744
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2744 required by the frozen hunt selection.",
       "presentation": {
@@ -2098,7 +2096,7 @@
         "kind": "clientId",
         "id": 2928
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2928 required by the frozen hunt selection.",
       "presentation": {
@@ -2117,7 +2115,7 @@
         "kind": "clientId",
         "id": 2929
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2929 required by the frozen hunt selection.",
       "presentation": {
@@ -2136,7 +2134,7 @@
         "kind": "clientId",
         "id": 2931
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:2931 required by the frozen hunt selection.",
       "presentation": {
@@ -2155,7 +2153,7 @@
         "kind": "clientId",
         "id": 304
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:304 required by the frozen hunt selection.",
       "presentation": {
@@ -2174,7 +2172,7 @@
         "kind": "clientId",
         "id": 307
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:307 required by the frozen hunt selection.",
       "presentation": {
@@ -2193,7 +2191,7 @@
         "kind": "clientId",
         "id": 308
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:308 required by the frozen hunt selection.",
       "presentation": {
@@ -2212,7 +2210,7 @@
         "kind": "clientId",
         "id": 309
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:309 required by the frozen hunt selection.",
       "presentation": {
@@ -2231,7 +2229,7 @@
         "kind": "clientId",
         "id": 310
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:310 required by the frozen hunt selection.",
       "presentation": {
@@ -2250,7 +2248,7 @@
         "kind": "clientId",
         "id": 3105
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3105 required by the frozen hunt selection.",
       "presentation": {
@@ -2269,7 +2267,7 @@
         "kind": "clientId",
         "id": 3108
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3108 required by the frozen hunt selection.",
       "presentation": {
@@ -2288,7 +2286,7 @@
         "kind": "clientId",
         "id": 311
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:311 required by the frozen hunt selection.",
       "presentation": {
@@ -2307,7 +2305,7 @@
         "kind": "clientId",
         "id": 3112
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3112 required by the frozen hunt selection.",
       "presentation": {
@@ -2326,7 +2324,7 @@
         "kind": "clientId",
         "id": 3114
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3114 required by the frozen hunt selection.",
       "presentation": {
@@ -2345,7 +2343,7 @@
         "kind": "clientId",
         "id": 3115
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3115 required by the frozen hunt selection.",
       "presentation": {
@@ -2364,7 +2362,7 @@
         "kind": "clientId",
         "id": 312
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:312 required by the frozen hunt selection.",
       "presentation": {
@@ -2383,7 +2381,7 @@
         "kind": "clientId",
         "id": 3127
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3127 required by the frozen hunt selection.",
       "presentation": {
@@ -2402,7 +2400,7 @@
         "kind": "clientId",
         "id": 313
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:313 required by the frozen hunt selection.",
       "presentation": {
@@ -2421,7 +2419,7 @@
         "kind": "clientId",
         "id": 314
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:314 required by the frozen hunt selection.",
       "presentation": {
@@ -2440,7 +2438,7 @@
         "kind": "clientId",
         "id": 315
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:315 required by the frozen hunt selection.",
       "presentation": {
@@ -2459,7 +2457,7 @@
         "kind": "clientId",
         "id": 3614
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3614 required by the frozen hunt selection.",
       "presentation": {
@@ -2478,7 +2476,7 @@
         "kind": "clientId",
         "id": 3615
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3615 required by the frozen hunt selection.",
       "presentation": {
@@ -2497,7 +2495,7 @@
         "kind": "clientId",
         "id": 3616
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3616 required by the frozen hunt selection.",
       "presentation": {
@@ -2516,7 +2514,7 @@
         "kind": "clientId",
         "id": 3617
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3617 required by the frozen hunt selection.",
       "presentation": {
@@ -2535,7 +2533,7 @@
         "kind": "clientId",
         "id": 3619
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3619 required by the frozen hunt selection.",
       "presentation": {
@@ -2554,7 +2552,7 @@
         "kind": "clientId",
         "id": 3621
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3621 required by the frozen hunt selection.",
       "presentation": {
@@ -2573,7 +2571,7 @@
         "kind": "clientId",
         "id": 3622
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3622 required by the frozen hunt selection.",
       "presentation": {
@@ -2592,7 +2590,7 @@
         "kind": "clientId",
         "id": 3623
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3623 required by the frozen hunt selection.",
       "presentation": {
@@ -2611,7 +2609,7 @@
         "kind": "clientId",
         "id": 3624
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3624 required by the frozen hunt selection.",
       "presentation": {
@@ -2630,7 +2628,7 @@
         "kind": "clientId",
         "id": 3627
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3627 required by the frozen hunt selection.",
       "presentation": {
@@ -2649,7 +2647,7 @@
         "kind": "clientId",
         "id": 3628
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3628 required by the frozen hunt selection.",
       "presentation": {
@@ -2668,7 +2666,7 @@
         "kind": "clientId",
         "id": 3630
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3630 required by the frozen hunt selection.",
       "presentation": {
@@ -2687,7 +2685,7 @@
         "kind": "clientId",
         "id": 3631
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3631 required by the frozen hunt selection.",
       "presentation": {
@@ -2706,7 +2704,7 @@
         "kind": "clientId",
         "id": 3633
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3633 required by the frozen hunt selection.",
       "presentation": {
@@ -2725,7 +2723,7 @@
         "kind": "clientId",
         "id": 3636
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3636 required by the frozen hunt selection.",
       "presentation": {
@@ -2744,7 +2742,7 @@
         "kind": "clientId",
         "id": 3681
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3681 required by the frozen hunt selection.",
       "presentation": {
@@ -2763,7 +2761,7 @@
         "kind": "clientId",
         "id": 3682
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3682 required by the frozen hunt selection.",
       "presentation": {
@@ -2782,7 +2780,7 @@
         "kind": "clientId",
         "id": 3723
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3723 required by the frozen hunt selection.",
       "presentation": {
@@ -2801,7 +2799,7 @@
         "kind": "clientId",
         "id": 3892
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:3892 required by the frozen hunt selection.",
       "presentation": {
@@ -2820,7 +2818,7 @@
         "kind": "clientId",
         "id": 407
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:407 required by the frozen hunt selection.",
       "presentation": {
@@ -2839,7 +2837,7 @@
         "kind": "clientId",
         "id": 408
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:408 required by the frozen hunt selection.",
       "presentation": {
@@ -2858,7 +2856,7 @@
         "kind": "clientId",
         "id": 411
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:411 required by the frozen hunt selection.",
       "presentation": {
@@ -2877,7 +2875,7 @@
         "kind": "clientId",
         "id": 413
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:413 required by the frozen hunt selection.",
       "presentation": {
@@ -2896,7 +2894,7 @@
         "kind": "clientId",
         "id": 4394
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4394 required by the frozen hunt selection.",
       "presentation": {
@@ -2915,7 +2913,7 @@
         "kind": "clientId",
         "id": 4395
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4395 required by the frozen hunt selection.",
       "presentation": {
@@ -2934,7 +2932,7 @@
         "kind": "clientId",
         "id": 4396
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4396 required by the frozen hunt selection.",
       "presentation": {
@@ -2953,7 +2951,7 @@
         "kind": "clientId",
         "id": 4397
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4397 required by the frozen hunt selection.",
       "presentation": {
@@ -2972,7 +2970,7 @@
         "kind": "clientId",
         "id": 4398
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4398 required by the frozen hunt selection.",
       "presentation": {
@@ -2991,7 +2989,7 @@
         "kind": "clientId",
         "id": 4399
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4399 required by the frozen hunt selection.",
       "presentation": {
@@ -3010,7 +3008,7 @@
         "kind": "clientId",
         "id": 4400
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4400 required by the frozen hunt selection.",
       "presentation": {
@@ -3029,7 +3027,7 @@
         "kind": "clientId",
         "id": 4401
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4401 required by the frozen hunt selection.",
       "presentation": {
@@ -3048,7 +3046,7 @@
         "kind": "clientId",
         "id": 4402
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4402 required by the frozen hunt selection.",
       "presentation": {
@@ -3067,7 +3065,7 @@
         "kind": "clientId",
         "id": 4403
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4403 required by the frozen hunt selection.",
       "presentation": {
@@ -3086,7 +3084,7 @@
         "kind": "clientId",
         "id": 4404
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4404 required by the frozen hunt selection.",
       "presentation": {
@@ -3105,7 +3103,7 @@
         "kind": "clientId",
         "id": 4405
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4405 required by the frozen hunt selection.",
       "presentation": {
@@ -3124,7 +3122,7 @@
         "kind": "clientId",
         "id": 4406
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4406 required by the frozen hunt selection.",
       "presentation": {
@@ -3143,7 +3141,7 @@
         "kind": "clientId",
         "id": 4407
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4407 required by the frozen hunt selection.",
       "presentation": {
@@ -3162,7 +3160,7 @@
         "kind": "clientId",
         "id": 4408
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4408 required by the frozen hunt selection.",
       "presentation": {
@@ -3181,7 +3179,7 @@
         "kind": "clientId",
         "id": 4409
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4409 required by the frozen hunt selection.",
       "presentation": {
@@ -3200,7 +3198,7 @@
         "kind": "clientId",
         "id": 4410
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4410 required by the frozen hunt selection.",
       "presentation": {
@@ -3219,7 +3217,7 @@
         "kind": "clientId",
         "id": 4415
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4415 required by the frozen hunt selection.",
       "presentation": {
@@ -3238,7 +3236,7 @@
         "kind": "clientId",
         "id": 4416
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4416 required by the frozen hunt selection.",
       "presentation": {
@@ -3257,7 +3255,7 @@
         "kind": "clientId",
         "id": 4417
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4417 required by the frozen hunt selection.",
       "presentation": {
@@ -3276,7 +3274,7 @@
         "kind": "clientId",
         "id": 4418
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4418 required by the frozen hunt selection.",
       "presentation": {
@@ -3295,7 +3293,7 @@
         "kind": "clientId",
         "id": 4419
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4419 required by the frozen hunt selection.",
       "presentation": {
@@ -3314,7 +3312,7 @@
         "kind": "clientId",
         "id": 4420
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4420 required by the frozen hunt selection.",
       "presentation": {
@@ -3333,7 +3331,7 @@
         "kind": "clientId",
         "id": 4421
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4421 required by the frozen hunt selection.",
       "presentation": {
@@ -3352,7 +3350,7 @@
         "kind": "clientId",
         "id": 4422
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4422 required by the frozen hunt selection.",
       "presentation": {
@@ -3371,7 +3369,7 @@
         "kind": "clientId",
         "id": 4423
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4423 required by the frozen hunt selection.",
       "presentation": {
@@ -3390,7 +3388,7 @@
         "kind": "clientId",
         "id": 4424
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4424 required by the frozen hunt selection.",
       "presentation": {
@@ -3409,7 +3407,7 @@
         "kind": "clientId",
         "id": 4425
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4425 required by the frozen hunt selection.",
       "presentation": {
@@ -3428,7 +3426,7 @@
         "kind": "clientId",
         "id": 4426
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4426 required by the frozen hunt selection.",
       "presentation": {
@@ -3447,7 +3445,7 @@
         "kind": "clientId",
         "id": 4427
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4427 required by the frozen hunt selection.",
       "presentation": {
@@ -3466,7 +3464,7 @@
         "kind": "clientId",
         "id": 4457
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4457 required by the frozen hunt selection.",
       "presentation": {
@@ -3485,7 +3483,7 @@
         "kind": "clientId",
         "id": 4459
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4459 required by the frozen hunt selection.",
       "presentation": {
@@ -3504,7 +3502,7 @@
         "kind": "clientId",
         "id": 4468
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4468 required by the frozen hunt selection.",
       "presentation": {
@@ -3523,7 +3521,7 @@
         "kind": "clientId",
         "id": 4503
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4503 required by the frozen hunt selection.",
       "presentation": {
@@ -3542,7 +3540,7 @@
         "kind": "clientId",
         "id": 4504
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4504 required by the frozen hunt selection.",
       "presentation": {
@@ -3561,7 +3559,7 @@
         "kind": "clientId",
         "id": 4505
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4505 required by the frozen hunt selection.",
       "presentation": {
@@ -3580,7 +3578,7 @@
         "kind": "clientId",
         "id": 4506
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4506 required by the frozen hunt selection.",
       "presentation": {
@@ -3599,7 +3597,7 @@
         "kind": "clientId",
         "id": 4507
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4507 required by the frozen hunt selection.",
       "presentation": {
@@ -3618,7 +3616,7 @@
         "kind": "clientId",
         "id": 4508
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4508 required by the frozen hunt selection.",
       "presentation": {
@@ -3637,7 +3635,7 @@
         "kind": "clientId",
         "id": 4509
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4509 required by the frozen hunt selection.",
       "presentation": {
@@ -3656,7 +3654,7 @@
         "kind": "clientId",
         "id": 4510
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4510 required by the frozen hunt selection.",
       "presentation": {
@@ -3675,7 +3673,7 @@
         "kind": "clientId",
         "id": 4511
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4511 required by the frozen hunt selection.",
       "presentation": {
@@ -3694,7 +3692,7 @@
         "kind": "clientId",
         "id": 4512
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4512 required by the frozen hunt selection.",
       "presentation": {
@@ -3713,7 +3711,7 @@
         "kind": "clientId",
         "id": 4513
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4513 required by the frozen hunt selection.",
       "presentation": {
@@ -3732,7 +3730,7 @@
         "kind": "clientId",
         "id": 4515
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4515 required by the frozen hunt selection.",
       "presentation": {
@@ -3751,7 +3749,7 @@
         "kind": "clientId",
         "id": 4516
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4516 required by the frozen hunt selection.",
       "presentation": {
@@ -3770,7 +3768,7 @@
         "kind": "clientId",
         "id": 4517
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4517 required by the frozen hunt selection.",
       "presentation": {
@@ -3789,7 +3787,7 @@
         "kind": "clientId",
         "id": 4518
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4518 required by the frozen hunt selection.",
       "presentation": {
@@ -3808,7 +3806,7 @@
         "kind": "clientId",
         "id": 4519
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4519 required by the frozen hunt selection.",
       "presentation": {
@@ -3827,7 +3825,7 @@
         "kind": "clientId",
         "id": 4520
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4520 required by the frozen hunt selection.",
       "presentation": {
@@ -3846,7 +3844,7 @@
         "kind": "clientId",
         "id": 4521
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4521 required by the frozen hunt selection.",
       "presentation": {
@@ -3865,7 +3863,7 @@
         "kind": "clientId",
         "id": 4522
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4522 required by the frozen hunt selection.",
       "presentation": {
@@ -3884,7 +3882,7 @@
         "kind": "clientId",
         "id": 4523
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4523 required by the frozen hunt selection.",
       "presentation": {
@@ -3903,7 +3901,7 @@
         "kind": "clientId",
         "id": 4524
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4524 required by the frozen hunt selection.",
       "presentation": {
@@ -3922,7 +3920,7 @@
         "kind": "clientId",
         "id": 4525
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4525 required by the frozen hunt selection.",
       "presentation": {
@@ -3941,7 +3939,7 @@
         "kind": "clientId",
         "id": 4526
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4526 required by the frozen hunt selection.",
       "presentation": {
@@ -3960,7 +3958,7 @@
         "kind": "clientId",
         "id": 4527
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4527 required by the frozen hunt selection.",
       "presentation": {
@@ -3979,7 +3977,7 @@
         "kind": "clientId",
         "id": 4528
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4528 required by the frozen hunt selection.",
       "presentation": {
@@ -3998,7 +3996,7 @@
         "kind": "clientId",
         "id": 4529
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4529 required by the frozen hunt selection.",
       "presentation": {
@@ -4017,7 +4015,7 @@
         "kind": "clientId",
         "id": 4530
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4530 required by the frozen hunt selection.",
       "presentation": {
@@ -4036,7 +4034,7 @@
         "kind": "clientId",
         "id": 4531
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4531 required by the frozen hunt selection.",
       "presentation": {
@@ -4055,7 +4053,7 @@
         "kind": "clientId",
         "id": 4532
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4532 required by the frozen hunt selection.",
       "presentation": {
@@ -4074,7 +4072,7 @@
         "kind": "clientId",
         "id": 4533
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4533 required by the frozen hunt selection.",
       "presentation": {
@@ -4093,7 +4091,7 @@
         "kind": "clientId",
         "id": 4534
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4534 required by the frozen hunt selection.",
       "presentation": {
@@ -4112,7 +4110,7 @@
         "kind": "clientId",
         "id": 4535
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4535 required by the frozen hunt selection.",
       "presentation": {
@@ -4131,7 +4129,7 @@
         "kind": "clientId",
         "id": 4536
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4536 required by the frozen hunt selection.",
       "presentation": {
@@ -4150,7 +4148,7 @@
         "kind": "clientId",
         "id": 4537
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4537 required by the frozen hunt selection.",
       "presentation": {
@@ -4169,7 +4167,7 @@
         "kind": "clientId",
         "id": 4538
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4538 required by the frozen hunt selection.",
       "presentation": {
@@ -4188,7 +4186,7 @@
         "kind": "clientId",
         "id": 4539
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4539 required by the frozen hunt selection.",
       "presentation": {
@@ -4207,7 +4205,7 @@
         "kind": "clientId",
         "id": 4540
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4540 required by the frozen hunt selection.",
       "presentation": {
@@ -4226,7 +4224,7 @@
         "kind": "clientId",
         "id": 4541
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4541 required by the frozen hunt selection.",
       "presentation": {
@@ -4245,7 +4243,7 @@
         "kind": "clientId",
         "id": 4542
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4542 required by the frozen hunt selection.",
       "presentation": {
@@ -4264,7 +4262,7 @@
         "kind": "clientId",
         "id": 4543
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4543 required by the frozen hunt selection.",
       "presentation": {
@@ -4283,7 +4281,7 @@
         "kind": "clientId",
         "id": 4544
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4544 required by the frozen hunt selection.",
       "presentation": {
@@ -4302,7 +4300,7 @@
         "kind": "clientId",
         "id": 4545
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4545 required by the frozen hunt selection.",
       "presentation": {
@@ -4321,7 +4319,7 @@
         "kind": "clientId",
         "id": 4546
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4546 required by the frozen hunt selection.",
       "presentation": {
@@ -4340,7 +4338,7 @@
         "kind": "clientId",
         "id": 4547
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4547 required by the frozen hunt selection.",
       "presentation": {
@@ -4359,7 +4357,7 @@
         "kind": "clientId",
         "id": 4548
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4548 required by the frozen hunt selection.",
       "presentation": {
@@ -4378,7 +4376,7 @@
         "kind": "clientId",
         "id": 4549
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4549 required by the frozen hunt selection.",
       "presentation": {
@@ -4397,7 +4395,7 @@
         "kind": "clientId",
         "id": 4550
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4550 required by the frozen hunt selection.",
       "presentation": {
@@ -4416,7 +4414,7 @@
         "kind": "clientId",
         "id": 4551
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4551 required by the frozen hunt selection.",
       "presentation": {
@@ -4435,7 +4433,7 @@
         "kind": "clientId",
         "id": 4552
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4552 required by the frozen hunt selection.",
       "presentation": {
@@ -4454,7 +4452,7 @@
         "kind": "clientId",
         "id": 4553
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4553 required by the frozen hunt selection.",
       "presentation": {
@@ -4473,7 +4471,7 @@
         "kind": "clientId",
         "id": 4554
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4554 required by the frozen hunt selection.",
       "presentation": {
@@ -4492,7 +4490,7 @@
         "kind": "clientId",
         "id": 4555
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4555 required by the frozen hunt selection.",
       "presentation": {
@@ -4511,7 +4509,7 @@
         "kind": "clientId",
         "id": 4559
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4559 required by the frozen hunt selection.",
       "presentation": {
@@ -4530,7 +4528,7 @@
         "kind": "clientId",
         "id": 4560
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4560 required by the frozen hunt selection.",
       "presentation": {
@@ -4549,7 +4547,7 @@
         "kind": "clientId",
         "id": 4561
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4561 required by the frozen hunt selection.",
       "presentation": {
@@ -4568,7 +4566,7 @@
         "kind": "clientId",
         "id": 4562
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4562 required by the frozen hunt selection.",
       "presentation": {
@@ -4587,7 +4585,7 @@
         "kind": "clientId",
         "id": 4563
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4563 required by the frozen hunt selection.",
       "presentation": {
@@ -4606,7 +4604,7 @@
         "kind": "clientId",
         "id": 4564
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4564 required by the frozen hunt selection.",
       "presentation": {
@@ -4625,7 +4623,7 @@
         "kind": "clientId",
         "id": 4565
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4565 required by the frozen hunt selection.",
       "presentation": {
@@ -4644,7 +4642,7 @@
         "kind": "clientId",
         "id": 4566
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4566 required by the frozen hunt selection.",
       "presentation": {
@@ -4663,7 +4661,7 @@
         "kind": "clientId",
         "id": 4567
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4567 required by the frozen hunt selection.",
       "presentation": {
@@ -4682,7 +4680,7 @@
         "kind": "clientId",
         "id": 4568
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4568 required by the frozen hunt selection.",
       "presentation": {
@@ -4701,7 +4699,7 @@
         "kind": "clientId",
         "id": 4569
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4569 required by the frozen hunt selection.",
       "presentation": {
@@ -4720,7 +4718,7 @@
         "kind": "clientId",
         "id": 4570
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4570 required by the frozen hunt selection.",
       "presentation": {
@@ -4739,7 +4737,7 @@
         "kind": "clientId",
         "id": 4572
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4572 required by the frozen hunt selection.",
       "presentation": {
@@ -4758,7 +4756,7 @@
         "kind": "clientId",
         "id": 4577
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4577 required by the frozen hunt selection.",
       "presentation": {
@@ -4777,7 +4775,7 @@
         "kind": "clientId",
         "id": 4579
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4579 required by the frozen hunt selection.",
       "presentation": {
@@ -4796,7 +4794,7 @@
         "kind": "clientId",
         "id": 4582
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4582 required by the frozen hunt selection.",
       "presentation": {
@@ -4815,7 +4813,7 @@
         "kind": "clientId",
         "id": 4584
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4584 required by the frozen hunt selection.",
       "presentation": {
@@ -4834,7 +4832,7 @@
         "kind": "clientId",
         "id": 4585
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4585 required by the frozen hunt selection.",
       "presentation": {
@@ -4853,7 +4851,7 @@
         "kind": "clientId",
         "id": 4586
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4586 required by the frozen hunt selection.",
       "presentation": {
@@ -4872,7 +4870,7 @@
         "kind": "clientId",
         "id": 4587
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4587 required by the frozen hunt selection.",
       "presentation": {
@@ -4891,7 +4889,7 @@
         "kind": "clientId",
         "id": 4588
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4588 required by the frozen hunt selection.",
       "presentation": {
@@ -4910,7 +4908,7 @@
         "kind": "clientId",
         "id": 4589
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4589 required by the frozen hunt selection.",
       "presentation": {
@@ -4929,7 +4927,7 @@
         "kind": "clientId",
         "id": 4590
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4590 required by the frozen hunt selection.",
       "presentation": {
@@ -4948,7 +4946,7 @@
         "kind": "clientId",
         "id": 4591
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4591 required by the frozen hunt selection.",
       "presentation": {
@@ -4967,7 +4965,7 @@
         "kind": "clientId",
         "id": 4592
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4592 required by the frozen hunt selection.",
       "presentation": {
@@ -4986,7 +4984,7 @@
         "kind": "clientId",
         "id": 4593
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4593 required by the frozen hunt selection.",
       "presentation": {
@@ -5005,7 +5003,7 @@
         "kind": "clientId",
         "id": 4594
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4594 required by the frozen hunt selection.",
       "presentation": {
@@ -5024,7 +5022,7 @@
         "kind": "clientId",
         "id": 4595
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4595 required by the frozen hunt selection.",
       "presentation": {
@@ -5043,7 +5041,7 @@
         "kind": "clientId",
         "id": 4596
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4596 required by the frozen hunt selection.",
       "presentation": {
@@ -5062,7 +5060,7 @@
         "kind": "clientId",
         "id": 4597
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4597 required by the frozen hunt selection.",
       "presentation": {
@@ -5081,7 +5079,7 @@
         "kind": "clientId",
         "id": 4598
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4598 required by the frozen hunt selection.",
       "presentation": {
@@ -5100,7 +5098,7 @@
         "kind": "clientId",
         "id": 4599
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4599 required by the frozen hunt selection.",
       "presentation": {
@@ -5119,7 +5117,7 @@
         "kind": "clientId",
         "id": 4600
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4600 required by the frozen hunt selection.",
       "presentation": {
@@ -5138,7 +5136,7 @@
         "kind": "clientId",
         "id": 4601
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4601 required by the frozen hunt selection.",
       "presentation": {
@@ -5157,7 +5155,7 @@
         "kind": "clientId",
         "id": 4602
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4602 required by the frozen hunt selection.",
       "presentation": {
@@ -5176,7 +5174,7 @@
         "kind": "clientId",
         "id": 4633
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4633 required by the frozen hunt selection.",
       "presentation": {
@@ -5195,7 +5193,7 @@
         "kind": "clientId",
         "id": 4634
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4634 required by the frozen hunt selection.",
       "presentation": {
@@ -5214,7 +5212,7 @@
         "kind": "clientId",
         "id": 4635
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4635 required by the frozen hunt selection.",
       "presentation": {
@@ -5233,7 +5231,7 @@
         "kind": "clientId",
         "id": 4636
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4636 required by the frozen hunt selection.",
       "presentation": {
@@ -5252,7 +5250,7 @@
         "kind": "clientId",
         "id": 4638
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4638 required by the frozen hunt selection.",
       "presentation": {
@@ -5271,7 +5269,7 @@
         "kind": "clientId",
         "id": 4639
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4639 required by the frozen hunt selection.",
       "presentation": {
@@ -5290,7 +5288,7 @@
         "kind": "clientId",
         "id": 4640
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4640 required by the frozen hunt selection.",
       "presentation": {
@@ -5309,7 +5307,7 @@
         "kind": "clientId",
         "id": 4641
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4641 required by the frozen hunt selection.",
       "presentation": {
@@ -5328,7 +5326,7 @@
         "kind": "clientId",
         "id": 4642
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4642 required by the frozen hunt selection.",
       "presentation": {
@@ -5347,7 +5345,7 @@
         "kind": "clientId",
         "id": 4643
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4643 required by the frozen hunt selection.",
       "presentation": {
@@ -5366,7 +5364,7 @@
         "kind": "clientId",
         "id": 4644
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4644 required by the frozen hunt selection.",
       "presentation": {
@@ -5385,7 +5383,7 @@
         "kind": "clientId",
         "id": 4656
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4656 required by the frozen hunt selection.",
       "presentation": {
@@ -5404,7 +5402,7 @@
         "kind": "clientId",
         "id": 4657
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4657 required by the frozen hunt selection.",
       "presentation": {
@@ -5423,7 +5421,7 @@
         "kind": "clientId",
         "id": 4658
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4658 required by the frozen hunt selection.",
       "presentation": {
@@ -5442,7 +5440,7 @@
         "kind": "clientId",
         "id": 4659
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4659 required by the frozen hunt selection.",
       "presentation": {
@@ -5461,7 +5459,7 @@
         "kind": "clientId",
         "id": 4660
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4660 required by the frozen hunt selection.",
       "presentation": {
@@ -5480,7 +5478,7 @@
         "kind": "clientId",
         "id": 4661
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4661 required by the frozen hunt selection.",
       "presentation": {
@@ -5499,7 +5497,7 @@
         "kind": "clientId",
         "id": 4662
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4662 required by the frozen hunt selection.",
       "presentation": {
@@ -5518,7 +5516,7 @@
         "kind": "clientId",
         "id": 4663
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4663 required by the frozen hunt selection.",
       "presentation": {
@@ -5537,7 +5535,7 @@
         "kind": "clientId",
         "id": 4664
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4664 required by the frozen hunt selection.",
       "presentation": {
@@ -5556,7 +5554,7 @@
         "kind": "clientId",
         "id": 4666
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4666 required by the frozen hunt selection.",
       "presentation": {
@@ -5575,7 +5573,7 @@
         "kind": "clientId",
         "id": 4667
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:4667 required by the frozen hunt selection.",
       "presentation": {
@@ -5594,7 +5592,7 @@
         "kind": "clientId",
         "id": 5296
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5296 required by the frozen hunt selection.",
       "presentation": {
@@ -5613,7 +5611,7 @@
         "kind": "clientId",
         "id": 5298
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5298 required by the frozen hunt selection.",
       "presentation": {
@@ -5632,7 +5630,7 @@
         "kind": "clientId",
         "id": 5299
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5299 required by the frozen hunt selection.",
       "presentation": {
@@ -5651,7 +5649,7 @@
         "kind": "clientId",
         "id": 5597
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5597 required by the frozen hunt selection.",
       "presentation": {
@@ -5670,7 +5668,7 @@
         "kind": "clientId",
         "id": 5598
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5598 required by the frozen hunt selection.",
       "presentation": {
@@ -5689,7 +5687,7 @@
         "kind": "clientId",
         "id": 5599
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5599 required by the frozen hunt selection.",
       "presentation": {
@@ -5708,7 +5706,7 @@
         "kind": "clientId",
         "id": 5600
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5600 required by the frozen hunt selection.",
       "presentation": {
@@ -5727,7 +5725,7 @@
         "kind": "clientId",
         "id": 5605
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5605 required by the frozen hunt selection.",
       "presentation": {
@@ -5746,7 +5744,7 @@
         "kind": "clientId",
         "id": 5606
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5606 required by the frozen hunt selection.",
       "presentation": {
@@ -5765,7 +5763,7 @@
         "kind": "clientId",
         "id": 5607
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5607 required by the frozen hunt selection.",
       "presentation": {
@@ -5784,7 +5782,7 @@
         "kind": "clientId",
         "id": 5608
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5608 required by the frozen hunt selection.",
       "presentation": {
@@ -5803,7 +5801,7 @@
         "kind": "clientId",
         "id": 5768
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5768 required by the frozen hunt selection.",
       "presentation": {
@@ -5822,7 +5820,7 @@
         "kind": "clientId",
         "id": 5769
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5769 required by the frozen hunt selection.",
       "presentation": {
@@ -5841,7 +5839,7 @@
         "kind": "clientId",
         "id": 5800
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:5800 required by the frozen hunt selection.",
       "presentation": {
@@ -5860,7 +5858,7 @@
         "kind": "clientId",
         "id": 618
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:618 required by the frozen hunt selection.",
       "presentation": {
@@ -5879,7 +5877,7 @@
         "kind": "clientId",
         "id": 6217
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6217 required by the frozen hunt selection.",
       "presentation": {
@@ -5898,7 +5896,7 @@
         "kind": "clientId",
         "id": 6218
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6218 required by the frozen hunt selection.",
       "presentation": {
@@ -5917,7 +5915,7 @@
         "kind": "clientId",
         "id": 6373
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6373 required by the frozen hunt selection.",
       "presentation": {
@@ -5936,7 +5934,7 @@
         "kind": "clientId",
         "id": 6374
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6374 required by the frozen hunt selection.",
       "presentation": {
@@ -5955,7 +5953,7 @@
         "kind": "clientId",
         "id": 6375
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6375 required by the frozen hunt selection.",
       "presentation": {
@@ -5974,7 +5972,7 @@
         "kind": "clientId",
         "id": 6376
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6376 required by the frozen hunt selection.",
       "presentation": {
@@ -5993,7 +5991,7 @@
         "kind": "clientId",
         "id": 6377
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6377 required by the frozen hunt selection.",
       "presentation": {
@@ -6012,7 +6010,7 @@
         "kind": "clientId",
         "id": 6378
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6378 required by the frozen hunt selection.",
       "presentation": {
@@ -6031,7 +6029,7 @@
         "kind": "clientId",
         "id": 6379
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6379 required by the frozen hunt selection.",
       "presentation": {
@@ -6050,7 +6048,7 @@
         "kind": "clientId",
         "id": 6380
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6380 required by the frozen hunt selection.",
       "presentation": {
@@ -6069,7 +6067,7 @@
         "kind": "clientId",
         "id": 6381
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6381 required by the frozen hunt selection.",
       "presentation": {
@@ -6088,7 +6086,7 @@
         "kind": "clientId",
         "id": 6382
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6382 required by the frozen hunt selection.",
       "presentation": {
@@ -6107,7 +6105,7 @@
         "kind": "clientId",
         "id": 6383
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6383 required by the frozen hunt selection.",
       "presentation": {
@@ -6126,7 +6124,7 @@
         "kind": "clientId",
         "id": 6384
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6384 required by the frozen hunt selection.",
       "presentation": {
@@ -6145,7 +6143,7 @@
         "kind": "clientId",
         "id": 6385
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6385 required by the frozen hunt selection.",
       "presentation": {
@@ -6164,7 +6162,7 @@
         "kind": "clientId",
         "id": 6388
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6388 required by the frozen hunt selection.",
       "presentation": {
@@ -6183,7 +6181,7 @@
         "kind": "clientId",
         "id": 6475
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6475 required by the frozen hunt selection.",
       "presentation": {
@@ -6202,7 +6200,7 @@
         "kind": "clientId",
         "id": 6476
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6476 required by the frozen hunt selection.",
       "presentation": {
@@ -6221,7 +6219,7 @@
         "kind": "clientId",
         "id": 6477
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6477 required by the frozen hunt selection.",
       "presentation": {
@@ -6240,7 +6238,7 @@
         "kind": "clientId",
         "id": 6479
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6479 required by the frozen hunt selection.",
       "presentation": {
@@ -6259,7 +6257,7 @@
         "kind": "clientId",
         "id": 6481
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6481 required by the frozen hunt selection.",
       "presentation": {
@@ -6278,7 +6276,7 @@
         "kind": "clientId",
         "id": 6482
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:6482 required by the frozen hunt selection.",
       "presentation": {
@@ -6297,7 +6295,7 @@
         "kind": "clientId",
         "id": 7137
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:7137 required by the frozen hunt selection.",
       "presentation": {
@@ -6316,7 +6314,7 @@
         "kind": "clientId",
         "id": 7767
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:7767 required by the frozen hunt selection.",
       "presentation": {
@@ -6335,7 +6333,7 @@
         "kind": "clientId",
         "id": 7791
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:7791 required by the frozen hunt selection.",
       "presentation": {
@@ -6354,7 +6352,7 @@
         "kind": "clientId",
         "id": 7896
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:7896 required by the frozen hunt selection.",
       "presentation": {
@@ -6373,7 +6371,7 @@
         "kind": "clientId",
         "id": 7897
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:7897 required by the frozen hunt selection.",
       "presentation": {
@@ -6392,7 +6390,7 @@
         "kind": "clientId",
         "id": 970
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:970 required by the frozen hunt selection.",
       "presentation": {
@@ -6411,7 +6409,7 @@
         "kind": "clientId",
         "id": 971
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:971 required by the frozen hunt selection.",
       "presentation": {
@@ -6430,7 +6428,7 @@
         "kind": "clientId",
         "id": 972
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:972 required by the frozen hunt selection.",
       "presentation": {
@@ -6449,7 +6447,7 @@
         "kind": "clientId",
         "id": 973
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:973 required by the frozen hunt selection.",
       "presentation": {
@@ -6468,7 +6466,7 @@
         "kind": "clientId",
         "id": 974
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:974 required by the frozen hunt selection.",
       "presentation": {
@@ -6487,7 +6485,7 @@
         "kind": "clientId",
         "id": 975
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:975 required by the frozen hunt selection.",
       "presentation": {
@@ -6506,7 +6504,7 @@
         "kind": "clientId",
         "id": 976
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:976 required by the frozen hunt selection.",
       "presentation": {
@@ -6525,7 +6523,7 @@
         "kind": "clientId",
         "id": 977
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:977 required by the frozen hunt selection.",
       "presentation": {
@@ -6544,7 +6542,7 @@
         "kind": "clientId",
         "id": 978
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:978 required by the frozen hunt selection.",
       "presentation": {
@@ -6563,7 +6561,7 @@
         "kind": "clientId",
         "id": 992
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:992 required by the frozen hunt selection.",
       "presentation": {
@@ -6582,7 +6580,7 @@
         "kind": "clientId",
         "id": 993
       },
-      "sourceGroupId": "huntbound-test",
+      "sourceGroupId": "huntbound-private-assets-pb10",
       "consumer": "PB-10 Orc Fortress asset pack",
       "rationale": "Covers tile:tibia:993 required by the frozen hunt selection.",
       "presentation": {
