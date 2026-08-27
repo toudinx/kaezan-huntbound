@@ -31,7 +31,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-07 | pending | `<agente>/pb10-07-orc-fortress` | econômico `xhigh` | — | — | — |
 | PB-10-08 | pending | `<agente>/pb10-08-cyclopolis` | econômico `xhigh` | — | — | — |
 | PB-10-09 | pending | `<agente>/pb10-09-dragon-lair` | econômico `xhigh` | — | — | — |
-| PB-10-10 | pending | `<agente>/pb10-10-hero-cave` | econômico `xhigh` | — | — | — |
+| PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
 
 ## Bloqueios
 
