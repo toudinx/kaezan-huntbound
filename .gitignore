@@ -19,6 +19,8 @@ personal-assets/
 apps/game/public/assets/personal/
 apps/game/public/assets/product/
 apps/game/public/assets/test/
+# Pack-time pin of the live private export; not a per-hunt git artifact.
+packages/test-fixtures/assets/**/personal-source-lock.json
 
 # Logs and tool caches
 *.log

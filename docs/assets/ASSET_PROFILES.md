@@ -59,10 +59,12 @@ corepack pnpm assets:hunt:personal:check
 ```
 
 `assets:hunt:personal:check` is the step that detects stale personal packs: it rebuilds the
-source locks against the private export, materializes every registered pack, and runs `checkHuntPack`
-so a declared hunt key that the export cannot resolve fails with `HUNT_ASSET_KEY_MISSING`. It is not
-part of `check` or `verify` because it depends on art that is not in Git and would fail on a
-clean clone.
+source locks against the live private export, materializes every registered pack, and runs
+`checkHuntPack` so a declared hunt key that the export cannot resolve fails with
+`HUNT_ASSET_KEY_MISSING`. Those locks are local pack-time artifacts, not versioned fixtures — pinning
+the whole private manifest per hunt would dirty every earlier hunt whenever a later one adds a
+sprite. The command is not part of `check` or `verify` because it depends on art that is not in Git
+and would fail on a clean clone.
 
 `build-profile` accepts only `HUNTBOUND_PERSONAL_ASSET_SOURCE` through `--source-root-env`, requires
 an absolute existing directory, verifies the frozen source lock, never serializes the source root,

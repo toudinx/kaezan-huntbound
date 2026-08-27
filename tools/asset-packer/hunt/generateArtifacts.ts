@@ -211,7 +211,7 @@ async function writePersonalArtifacts(
   await writeOrCheck(
     join(testRoot, 'personal-source-lock.json'),
     canonicalJson(sourceLock),
-    check,
+    false,
   );
 }
 
