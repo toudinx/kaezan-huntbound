@@ -6,8 +6,8 @@
 > `hunt-content-pipeline`. Execute uma task card por chat. O formato, o handoff e o ciclo automático
 > de integração e limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 a 04 fecharam e estão integradas; a
-próxima é **PB-10-05**.
+**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 a 10 fecharam e estão integradas; a
+próxima é **PB-10-11**.
 
 **Goal:** o jogo deixa de ter *uma* hunt compilada e passa a ter um **catálogo navegável**: você abre
 o jogo, olha as hunts disponíveis com faixa de nível, criaturas, exp e loot, escolhe uma e entra.
@@ -118,8 +118,19 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 05 | A tela de hunting places | `apps/game`, DOM fora do canvas |
 | 06 | Criatura conjura | kernel e IA |
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo — **sobretudo mapa** |
+| 11 | A `main` volta a ficar verde | investigação — **o B19** |
+| 12 | O corpo é da espécie que morreu | importador, contrato, packer e `apps/game` — **o B20** |
 
-**Fechadas: 01 a 06 — a máquina do catálogo está inteira. Escritas e elegíveis: 07 a 10.**
+**Fechadas: 01 a 10 — a máquina do catálogo está inteira e as cinco hunts estão na `main`. Escritas e
+elegíveis: 11 e 12.**
+
+As duas últimas nasceram do **aceite**: o usuário jogou em 2026-08-30, aprovou as cavernas e apontou o
+corpo errado. Elas fecham o playbook, e a **12 é a task de fechamento** — é ela que roda o `verify`
+completo, conforme a revisão de processo de 2026-08-30 no `docs/06`.
+
+O que ele apontou junto e **não** virou task daqui: as faixas 2 a 5 não são concluíveis, porque
+`finish('completed')` não é chamado em lugar nenhum e a mitigação está desligada pela decisão
+congelada 6. Isso é o **PB-11** inteiro, e está registrado como B21 no `STATE.md`.
 
 As quatro de conteúdo foram escritas juntas, o que é exceção à regra do `AGENTS.md` de congelar só as
 duas próximas. A exceção se justifica porque o motivo da regra não morde aqui: as quatro têm a mesma

@@ -9,7 +9,8 @@
 inteira e as cinco hunts estão na `main`. As hunts autoram em
 paralelo, integram em série, e não rodam `verify` ao mesmo tempo (bloqueio B17).
 
-**Última atualização:** 2026-08-27
+**Última atualização:** 2026-08-30 — o usuário jogou e aprovou as cavernas; o aceite abriu dois
+defeitos (B19 já aberto, B20 novo) e as tasks 11 e 12 fecham o playbook.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -32,6 +33,8 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-08 | done | `codex/pb10-08-cyclopolis` | econômico `xhigh` | Grok 4.6 `xhigh` | `3fa4845` | Cyclops 19/19 XML; recorte 24×24×3; ficha nv 45 HP 740; armor 17 inerte; content/assets/hunt/combat/sim verdes; correctness 80/80 |
 | PB-10-09 | done | `codex/pb10-09-dragon-lair` | econômico `xhigh` | Grok 4.6 `xhigh` | `c0b9750` | Dragon 31/31 XML; ficha nv 70 HP 1115; area r=4 fogo entra, onda omitida. **Mapa refeito em 2026-08-30**: a receita era caixa fabricada 64×48×3 com `ground: 101` em toda célula; agora 3 `copy-rect` 24×24 do mapa real, paleta 48→200, pack 65→217, andáveis 431/237/235 conectados |
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
+| PB-10-11 | pending | `<agente>/pb10-11-main-verde` | frontier `xhigh` | — | — | fecha o B19 pela causa; remove o fallback silencioso de `readHuntCharacter` |
+| PB-10-12 | pending | `<agente>/pb10-12-corpo-por-especie` | econômico `xhigh` | — | — | fecha o B20; **task de fechamento** — roda o `verify` completo |
 
 ## Bloqueios
 
@@ -74,15 +77,33 @@ célula. `Locate`/`DecodeSheet` batem com o `spriteappearances.cpp`. Ou seja, n�
 decodificação nem de montagem — a causa continua desconhecida e não vale re-derivar o alinhamento.
 **Orc é lookType 5 e sai deitado; Hero 73 sai certo.**
 
-**B19 — aberto, `main` vermelha desde `3fa4845`.** `tests/e2e/haste-play.spec.ts:171` reprova com
-`The player never accepted two consecutive cardinal steps`, na Venore Rotworm Cave. Bisect: passa em
-`87e12e0`, reprova em `3fa4845` e em `c551e84`, três vezes seguidas isolada — não é o B11/B14. A
-linha de evidência da PB-10-08 registra `correctness 80/80`; o gate hoje dá 79/1. Suspeita a
-investigar: ordem de blueprint mudando o consumo do stream de RNG da IA. Junto, o fallback por
-vocação em `readHuntCharacter` (`apps/game/src/main.ts:182`) faz hunt sem ficha própria pegar em
+**B19 — aberto, `main` vermelha desde `3fa4845`. Endereçado pela PB-10-11.**
+`tests/e2e/haste-play.spec.ts:171` reprova com `The player never accepted two consecutive cardinal
+steps`, na Venore Rotworm Cave. Bisect: passa em `87e12e0`, reprova em `3fa4845` e em `c551e84`, três
+vezes seguidas isolada — não é o B11/B14. O gate hoje dá 79/1. **Campo estreitado em 2026-08-30:** os
+artefatos gerados da rotworm são byte a byte os mesmos entre os dois commits, o `spawns.ts` mudou sem
+efeito sobre eles e o `huntDriver` manteve o caminho do `DEFAULT_HUNT_ID` — o que mudou foi o
+`pb-01-contract-coverage.json`, **global e compartilhado**, com +344 linhas de Cyclops. Hipótese: a
+ordem de blueprint derivada do catálogo desloca o stream de RNG da IA, e os goldens não veem porque
+replayam cenário próprio. Se confirmada, **cada hunt nova quebra as anteriores**. Junto, o fallback
+por vocação em `readHuntCharacter` (`apps/game/src/main.ts:186`) faz hunt sem ficha própria pegar em
 silêncio a primeira ficha de knight do catálogo em vez de estourar.
 
-**B4 — aberto, decisão do usuário, herdado.** Cinco branches antigas fora da `main` sem triagem.
+**B20 — aberto, reportado pelo usuário jogando em 2026-08-30. Endereçado pela PB-10-12.** O corpo de
+qualquer criatura morta é um rotworm morto: `CombatDecorations.ts:155` usa sempre
+`HUNT_PACK_DEAD_ROTWORM_KEY`, que está em `HUNT_PACK_COMBAT_KEYS` e resolve `clientId` 5967 fixo em
+`huntSelection.ts:253` — nenhum pack carrega outro corpo. `monster.corpse` existe em toda Lua e é
+descartado por `ignoredMonsterFields` em `parseMonsterLua.ts:73`. Os sete `objects/<id>.png` já
+existem no export pessoal; não é B18.
+
+**B21 — aberto, sem task escrita.** As faixas 2 a 5 não são concluíveis: `finish('completed')` não é
+chamado em nenhum ponto do código de produção — só `finish('abandoned')` no `pagehide`
+(`apps/game/src/main.ts:482`) — e a mitigação está desligada por decisão congelada 6 (`armor`
+inerte, `resistances` não lidos, sem poção). **É o escopo do PB-11**, não deste playbook. Registrado
+aqui porque foi descoberto no aceite do PB-10.
+
+**B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
+antigas não existem mais.
 
 ## Decisões congeladas
 
