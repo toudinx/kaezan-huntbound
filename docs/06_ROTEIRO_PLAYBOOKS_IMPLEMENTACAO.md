@@ -72,6 +72,18 @@ contagem de arquivos, linhas ou minutos.
 |                                PB-14 | Gacha cosmético                    | banner, pulls, garantia, duplicatas e tokens                                                                                            |
 |                                PB-15 | Helper mínimo                      | cura, alvo, ações e loot como módulos desligáveis                                                                                       |
 |                                PB-16 | Playtest e performance             | browser QA, screenshots, métricas e orçamento de assets                                                                                 |
+|   [PB-17](playbooks/PB-17/README.md) | O cockpit                          | ícones de magia do Tibia com cooldown legível, mochila, minimapa que localiza e log de combate — **criado em 2026-08-30 e elegível; roda a seguir** |
+
+**Inserção de 2026-08-30 — PB-17, e por que ele não é o PB-13.** O usuário pediu um playbook que
+melhore o que já existe, com o cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do
+Tibia. Ele entrou como **PB-17** e não como PB-13 de propósito: PB-13 e PB-15 já são citados por nome
+em task cards fechadas do PB-08, e renumerar tornaria essas referências históricas erradas para
+economizar nada. **O número é identidade, a ordem é declarada aqui** — é a mesma regra que já põe o
+PB-10 antes do PB-09.
+
+A ordem de execução a partir daqui é **PB-10-12, depois PB-17, depois PB-09**. O PB-17 é de
+apresentação pura: não toca kernel, não muda golden, e sua fronteira com PB-09, PB-11, PB-13 e PB-15
+está tabelada em `docs/playbooks/PB-17/README.md`.
 
 **Renumeração de 2026-08-24.** O PB-08 original — "o loop de farm do Knight" — foi replanejado e
 dissolvido em cinco playbooks: a classe ficou no PB-08, e progressão, criaturas, loot e modulação

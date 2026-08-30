@@ -9,6 +9,7 @@ monster.description = "a fixture rotbeast"
 monster.experience = 61
 monster.outfit = { lookType = 9026 }
 monster.raceId = 9026
+monster.corpse = 5967
 monster.health = 140
 monster.speed = 83
 monster.flags = { summonable = false, attackable = true, hostile = true }
@@ -99,6 +100,7 @@ describe('parseCanaryMonsterLua', () => {
         displayName: 'Fixture Rotbeast',
         stats: { health: 140, experience: 61, speed: 83 },
         lookType: 9026,
+        corpseItemId: 5967,
         attacks: [
           expect.objectContaining({
             kind: 'melee',
