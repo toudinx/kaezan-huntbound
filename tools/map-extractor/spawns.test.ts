@@ -264,6 +264,25 @@ describe('buildSpawnTable', () => {
     expect(built.diagnostics).toEqual([]);
   });
 
+  it('matches a kebab-case creature key against the spaced XML name', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X,
+          centerY: MIN_Y,
+          centerZ: 8,
+          radius: 2,
+          slots: [{ name: 'Orc Spearman', x: 0, y: 0, z: 8 }],
+        },
+      ]),
+      { ...selection, creatures: ['creature:tibia:orc-spearman'] },
+      region,
+    );
+
+    expect(built.diagnostics).toEqual([]);
+    expect(built.table.groups[0]?.slots[0]?.blueprintId).toBe('orc-spearman');
+  });
+
   it('reports a creature that is neither selected nor excluded', () => {
     const built = buildSpawnTable(
       monsterXml([
