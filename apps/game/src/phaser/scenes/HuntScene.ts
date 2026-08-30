@@ -373,7 +373,9 @@ export class HuntScene extends Phaser.Scene {
         events,
         actorPositions,
         actorBlueprintIds,
-        targetDetailsByBlueprint: this.options.targetDetailsByBlueprint,
+        ...(this.options.targetDetailsByBlueprint === undefined
+          ? {}
+          : { targetDetailsByBlueprint: this.options.targetDetailsByBlueprint }),
         onUnresolvedAsset: (key) => this.unresolvedAssets.noteMissing(key),
         playerPosition: playerBefore === undefined ? null : { ...playerBefore },
       });
