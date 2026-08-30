@@ -6,15 +6,15 @@ alwaysApply: false
 
 # Quando testar
 
-**Subir primeiro, melhorar depois.** A suíte pesada é do usuário; o agente escreve o teste pequeno.
+**Subir primeiro, melhorar depois.** O browser é do usuário; o agente escreve o teste pequeno.
 
 Escreva o teste que prova que a coisa que você acabou de escrever funciona — no kernel e em contrato
 ele vem antes do código (vermelho pela razão certa), porque o playtest não vê o tick 400. Em geral
 esse teste é o caminho mais rápido para você mesmo convergir.
 
-Não escreva: cobertura de casos que ninguém reportou, e2e para o que uma sessão de dois minutos
-mostra, ou qualquer suíte. Não rode `test`, `qa:browser`, `verify` nem `qa:budgets` — são do usuário,
-e vermelho neles vira `PB-NN-FIX-MM`, não bloqueio.
+Não escreva cobertura de caso que ninguém reportou nem e2e para o que uma sessão de dois minutos
+mostra. `corepack pnpm test` (51 s) é seu e roda quando o comportamento mudou; `qa:browser`, `verify`
+e `qa:budgets` são do usuário, e vermelho neles vira `PB-NN-FIX-MM`, não bloqueio.
 
 Isto é um piloto. Não existe entrega 100% na primeira integração.
 
@@ -45,5 +45,5 @@ detectar mudança de comportamento não intencional.
 
 # Execução
 
-- O golden da área, quando o kernel mudou. Não a suíte Vitest inteira "por garantia".
+- O golden da área, quando o kernel mudou, mais `test` se o comportamento mudou.
 - `qa:browser` e `verify` são do usuário. `playwright test` direto não builda.

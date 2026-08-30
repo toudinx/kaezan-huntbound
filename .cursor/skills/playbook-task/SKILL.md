@@ -41,8 +41,8 @@ vermelho, não empilhe.
 Rode para **saber se quebrou**, nunca para produzir prova, e nunca duas vezes. Card antiga que exige
 `verify` + `qa:browser` + os `--check`: execute a linha da tabela, não a card.
 
-`test` (51 s), `qa:browser` (4,6 min), `verify` (~6 min) e `qa:budgets` **são do usuário** — não rode
-nem espere. A última task do playbook roda `corepack pnpm build`.
+`qa:browser` (4,6 min), `verify` (~6 min) e `qa:budgets` **são do usuário** — não rode nem espere.
+A última task do playbook roda `corepack pnpm build`.
 
 ## 4. Fechar
 

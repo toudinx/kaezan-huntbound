@@ -142,7 +142,7 @@ main e pare. Não peça confirmação para commitar. Não inicie a próxima task
 
 Só quando o `README.md` do playbook declarar paths disjuntos. Cada chat usa worktree e branch
 isolados, conforme `AGENTS.md`; verificações que disputem porta ou fixture mutável são serializadas,
-e nenhuma delas roda suíte pesada — ela é do usuário.
+e nenhuma delas roda o browser — ele é do usuário.
 
 Se você está rodando as tasks em sequência — o caso normal — não existe worktree, não existe branch.
 
@@ -151,8 +151,8 @@ Se você está rodando as tasks em sequência — o caso normal — não existe 
 Fecha quando **o usuário joga e aprova**. É o único aceite normativo.
 
 A última task roda `corepack pnpm build` — 5 segundos que provam que compila e sobe, que era a única
-coisa que `verify` protegia ali. `test`, `qa:browser`, `verify` e `qa:budgets` são do usuário e rodam
-quando ele quiser. Aprovado, o `STATE.md` recebe `closed`; apontado, vira `PB-NN-FIX-MM`.
+coisa que `verify` protegia ali. `qa:browser`, `verify` e `qa:budgets` são do usuário e rodam quando
+ele quiser. Aprovado, o `STATE.md` recebe `closed`; apontado, vira `PB-NN-FIX-MM`.
 
 Auditoria independente é opcional, roda **depois** do aceite, endereça um commit por hash, não exige
 árvore limpa e gera task de backlog em vez de veredito. Nenhum playbook espera o fechamento formal de
@@ -163,7 +163,7 @@ outro: o que o próximo precisa é código integrado na `main`, confirmável por
 - Card que prescreve a implementação, ou que passa de 40 linhas.
 - Duplicar a card num prompt copiável.
 - Rodar gate para produzir prova em vez de para saber se quebrou.
-- Rodar `test`, `verify` ou `qa:browser` — são do usuário; polir até zero bug antes do playtest.
+- Rodar `verify` ou `qa:browser` — são do usuário; polir até zero bug antes do playtest.
 - Reler o próprio diff atrás de melhorias depois que a funcionalidade roda e o gate está verde.
 - Worktree ou branch numa task que roda sozinha em sequência.
 - Um único chat para planejar, implementar e depurar o playbook inteiro.

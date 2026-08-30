@@ -49,8 +49,8 @@ O playbook em execução e seu estado estão em `docs/playbooks/<PB-ID>/STATE.md
 
 ## Gates
 
-Política: **subir primeiro, melhorar depois.** Seu trabalho é a implementação; a suíte pesada é do
-usuário. Você roda o que custa segundos e diz algo que ele não veria jogando — nada além disso.
+Política: **subir primeiro, melhorar depois.** Seu trabalho é a implementação. Você roda o que é
+barato e diz algo que o usuário não veria jogando; o browser é dele.
 
 Custos medidos em 2026-08-30, máquina livre. Eles estão na tabela para você **não deliberar**: o gate
 da sua linha custa menos que reler o próprio diff.
@@ -63,17 +63,21 @@ da sua linha custa menos que reler o próprio diff.
 | `packages/simulation`, `packages/contracts` | replay divergente no tick 400 | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` | 1,3–3,1 s |
 | `packages/content` ou gerador | artefato gerado diferente da fonte | `content:check` | 8,1 s |
 | `packages/assets` ou packer | pack/sidecar divergente | `assets:check` | 7,6 s |
+| mudou comportamento em TypeScript, em qualquer pacote ou app | regressão de unidade | `corepack pnpm test` | 51 s |
 | última task do playbook | crash antes de o usuário sentar | `corepack pnpm build` | 5,1 s |
 
-Um diff que cruza duas linhas roda as duas. Um diff mecânico que cruza 200 arquivos sem mudar
-comportamento (rename, mover módulo) é provado por `typecheck` — é exatamente para isso que ele
-existe, e nenhuma suíte acrescenta informação sobre ele.
+Um diff que cruza duas linhas roda as duas — a de `test` acumula com as outras sempre que houver
+mudança de comportamento.
 
-### O que é do usuário, não seu
+Um diff mecânico que cruza 200 arquivos **sem** mudar comportamento (rename, mover módulo) é provado
+por `typecheck` — é exatamente para isso que ele existe, e nem `test` nem qualquer suíte acrescenta
+informação sobre ele.
 
-**Não rode, não peça, não espere:** `corepack pnpm test` (51 s), `qa:browser` (4,6 min),
-`verify` (~6 min) e `qa:budgets`. São dele, rodam quando ele quiser, e um vermelho ali vira
-`PB-NN-FIX-MM` — nunca bloqueia a sua task nem a próxima.
+### O browser é do usuário, não seu
+
+**Não rode, não peça, não espere:** `qa:browser` (4,6 min), `verify` (~6 min) e `qa:budgets`. São
+dele, rodam quando ele quiser, e um vermelho ali vira `PB-NN-FIX-MM` — nunca bloqueia a sua task nem
+a próxima.
 
 O fechamento do playbook roda `build`, não `verify`: 5 segundos provam que compila e sobe, que era a
 única coisa que `verify` protegia ali. Se ele quiser as 82 specs de browser, ele roda.
@@ -134,8 +138,8 @@ O tempo da task vai para **arquitetura, padrão do arquivo vizinho e a funcional
   vezes — uma na spec e outra no editor — e você paga as duas.
 - **Escreva o teste pequeno, nunca a suíte.** Um teste que prova que a coisa que você acabou de
   escrever funciona é bem-vindo — em geral é o caminho mais rápido para você mesmo convergir, e no
-  kernel ele vem antes do código. O que não é seu: cobrir casos que ninguém reportou, testar o que
-  o usuário vê em dois minutos jogando, e qualquer suíte pesada. Essa é dele.
+  kernel ele vem antes do código. O que não é seu: cobrir casos que ninguém reportou, e escrever e2e
+  de browser para o que o usuário vê em dois minutos jogando.
 - **Não polir até zero bug.** É o playtest que aponta. Rodar a suíte de novo para caçar o que o
   usuário acharia jogando é exatamente o gasto que este processo existe para eliminar.
 - Correção pequena necessária ao aceite fica na task. Problema independente vira linha no `STATE.md`
@@ -252,8 +256,8 @@ Uma task = um chat. O formato está em `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS
 1. Leia a task card, o `STATE.md` do playbook e **apenas** o que a card listar. Não carregue skills
    de plugin (Superpowers e afins) a menos que a card as nomeie.
 2. Implemente. Arquitetura, padrão do vizinho, funcionalidade jogável.
-3. Rode **só o gate do raio do seu diff** — segundos, uma vez. `test`, `qa:browser` e `verify` são
-   do usuário.
+3. Rode **só o gate do raio do seu diff**, uma vez. `qa:browser`, `verify` e `qa:budgets` são do
+   usuário.
 4. Commite na `main`. A narrativa do que foi feito vai na mensagem de commit — o Git já guarda, data
    e associa ao diff.
 5. Atualize **só a linha da task** no `STATE.md`.

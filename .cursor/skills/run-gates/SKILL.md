@@ -5,7 +5,7 @@ description: Escolher o gate mínimo do Kaezan Huntbound pelo raio do diff - seg
 
 # Gates do Kaezan Huntbound
 
-**Subir primeiro, melhorar depois.** Seu trabalho é a implementação. A suíte pesada é do usuário.
+**Subir primeiro, melhorar depois.** Seu trabalho é a implementação. O browser é do usuário.
 
 Custos medidos em 2026-08-30, máquina livre, para você **não deliberar**: o gate da sua linha custa
 menos do que reler o próprio diff.
@@ -18,15 +18,17 @@ menos do que reler o próprio diff.
 | `packages/simulation`, `packages/contracts` | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` | 1,3–3,1 s |
 | `packages/content` ou gerador | `content:check` | 8,1 s |
 | `packages/assets` ou packer | `assets:check` | 7,6 s |
+| mudou comportamento em TypeScript, em qualquer pacote ou app | `corepack pnpm test` | 51 s |
 | última task do playbook | `corepack pnpm build` | 5,1 s |
 
-Diff que cruza duas linhas roda as duas. Diff mecânico em muitos arquivos sem mudança de
-comportamento (rename, mover módulo) é provado por `typecheck` — nenhuma suíte acrescenta informação.
+Diff que cruza duas linhas roda as duas — `test` acumula com as outras sempre que houver mudança de
+comportamento. Diff mecânico em muitos arquivos **sem** mudança de comportamento (rename, mover
+módulo) é provado por `typecheck`: nem `test` nem qualquer suíte acrescenta informação.
 
 ## O que é do usuário
 
-**Não rode, não peça, não espere:** `test` (51 s), `qa:browser` (4,6 min), `verify` (~6 min),
-`qa:budgets`. Vermelho ali vira `PB-NN-FIX-MM` e nunca bloqueia sua task nem a próxima.
+**Não rode, não peça, não espere:** `qa:browser` (4,6 min), `verify` (~6 min), `qa:budgets`.
+Vermelho ali vira `PB-NN-FIX-MM` e nunca bloqueia sua task nem a próxima.
 
 O fechamento do playbook roda `build`, não `verify`: 5 segundos provam que compila e sobe, que era a
 única coisa que `verify` protegia ali.

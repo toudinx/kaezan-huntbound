@@ -14,8 +14,8 @@ feature **jogável**. Aceite é o usuário abrindo o jogo e apontando o erro —
 existe primeira integração 100%: bug no playtest vira `PB-NN-FIX-MM`.
 
 O default é editar, rodar a linha do seu raio na tabela de gates — segundos, uma vez — e commitar na
-`main`. **A suíte pesada é do usuário:** `test`, `qa:browser`, `verify` e `qa:budgets` não são seus.
-Escreva o teste pequeno que prova que funciona, nunca a suíte. Branch e worktree só quando o playbook
+`main`. **O browser é do usuário:** `qa:browser`, `verify` e `qa:budgets` não são seus. `test` (51 s) é seu
+e roda quando o comportamento mudou. Escreva o teste pequeno que prova que funciona, nunca a suíte. Branch e worktree só quando o playbook
 declarar duas tasks paralelas ao mesmo tempo.
 
 Funcionalidade rodando e gate verde: **pare**. Não releia o diff atrás de melhorias.
