@@ -27,6 +27,8 @@ corrigida.
 - O tempo vai para arquitetura, padrão do arquivo vizinho e a funcionalidade jogável.
 - **A card diz o quê e onde.** Se ela trouxer um desenho pronto, ele é sugestão; o código real vence.
 - TDD só no kernel e em contrato. HUD, layout, mapa e conteúdo entregam jogável.
+- **Escreva o teste pequeno, nunca a suíte.** O que prova que a coisa funciona é bem-vindo, e no
+  kernel vem antes do código; cobrir caso que ninguém reportou, não.
 - Não antecipe a próxima task. Não polia até zero bug — quem aponta é o playtest.
 - Correção pequena necessária ao aceite fica na task. Problema independente vira linha no `STATE.md`.
 - Preserve decisões congeladas: contrato, schema, identidade e escopo não se redesenham aqui.
@@ -36,10 +38,11 @@ corrigida.
 Só o do raio do seu diff — a tabela está em `AGENTS.md` e na skill `run-gates`. Pare no primeiro
 vermelho, não empilhe.
 
-Rode para **saber se quebrou**, nunca para produzir prova. Card antiga que exige `verify` +
-`qa:browser` + os `--check` numa task de HUD ou conteúdo: execute a linha da tabela, não a card.
+Rode para **saber se quebrou**, nunca para produzir prova, e nunca duas vezes. Card antiga que exige
+`verify` + `qa:browser` + os `--check`: execute a linha da tabela, não a card.
 
-`corepack pnpm verify` só na última task do playbook.
+`test` (51 s), `qa:browser` (4,6 min), `verify` (~6 min) e `qa:budgets` **são do usuário** — não rode
+nem espere. A última task do playbook roda `corepack pnpm build`.
 
 ## 4. Fechar
 
@@ -51,7 +54,9 @@ A narrativa do que foi feito vai na **mensagem de commit**; no `STATE.md`, só a
 ## 5. Relatar
 
 Um parágrafo: o que mudou, o gate que rodou, o que olhar no jogo com `corepack pnpm dev` de pé.
-Depois pare — não inicie a próxima task.
+
+Depois **pare**. Funcionalidade rodando + gate verde = acabou. Não releia o diff atrás de melhorias,
+não rode gate de novo, não escreva teste para caso não reportado, não inicie a próxima task.
 
 Estas três linhas precisam responder vazio:
 

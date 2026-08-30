@@ -60,8 +60,9 @@ commite numa branch e diga o que falta; se nem isso, registre bloqueio no `STATE
 
 # Fechamento e auditoria
 
-Fecha quando **o usuário joga e aprova**. Cada task entrega jogável e `dev` de pé; só a última roda
-`verify`. Bug no playtest vira `PB-NN-FIX-MM` — não é falha de ter integrado cedo.
+Fecha quando **o usuário joga e aprova**. Cada task entrega jogável e `dev` de pé; a última roda
+`build` (5 s). `test`, `qa:browser`, `verify` e `qa:budgets` são do usuário. Bug no playtest vira
+`PB-NN-FIX-MM` — não é falha de ter integrado cedo.
 
 Auditoria roda **depois** do aceite, é opcional, endereça um commit por hash, não exige árvore limpa
 e gera task de backlog em vez de veredito. `qa:budgets` é informativo: registre o número.
@@ -75,7 +76,7 @@ integrado, ou quando a mesma causa bloquear dois ciclos vermelho/verde.
 # Antipadrões
 
 Card que prescreve implementação ou passa de 40 linhas; prompt copiável duplicando a card; rodar gate
-para produzir prova; `verify`/`qa:browser` em toda task; worktree numa task que roda sozinha; um chat
+para produzir prova; rodar `test`/`verify`/`qa:browser`; worktree numa task que roda sozinha; um chat
 para o playbook inteiro; `STATE.md` como diário; deixar decisão ou bloqueio só no relatório; absorver
 problema independente na task corrente; supor que o próximo agente terá acesso a esta conversa;
 bloquear task no veredito de auditoria; orçamento de tempo de parede como gate de merge.

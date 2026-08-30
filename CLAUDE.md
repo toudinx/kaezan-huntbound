@@ -13,10 +13,12 @@ reescrever o kernel não pagam a mesma conta. O tempo vai para arquitetura, qual
 feature **jogável**. Aceite é o usuário abrindo o jogo e apontando o erro — não uma suíte verde. Não
 existe primeira integração 100%: bug no playtest vira `PB-NN-FIX-MM`.
 
-O default é editar, rodar a linha do seu raio na tabela de gates, e commitar na `main`. Branch e
-worktree só quando o playbook declarar duas tasks paralelas ao mesmo tempo. `verify` e `qa:browser`
-só na **última** task do playbook. TDD só no kernel e em contrato. Rode gate para saber se quebrou,
-nunca para produzir prova.
+O default é editar, rodar a linha do seu raio na tabela de gates — segundos, uma vez — e commitar na
+`main`. **A suíte pesada é do usuário:** `test`, `qa:browser`, `verify` e `qa:budgets` não são seus.
+Escreva o teste pequeno que prova que funciona, nunca a suíte. Branch e worktree só quando o playbook
+declarar duas tasks paralelas ao mesmo tempo.
+
+Funcionalidade rodando e gate verde: **pare**. Não releia o diff atrás de melhorias.
 
 Detalhe: `AGENTS.md` § Gates e a skill `run-gates`.
 

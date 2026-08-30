@@ -49,36 +49,56 @@ O playbook em execução e seu estado estão em `docs/playbooks/<PB-ID>/STATE.md
 
 ## Gates
 
-Pare no primeiro vermelho. Não empilhe. A skill `run-gates` escolhe a linha; ela é esta tabela.
+Política: **subir primeiro, melhorar depois.** Seu trabalho é a implementação; a suíte pesada é do
+usuário. Você roda o que custa segundos e diz algo que ele não veria jogando — nada além disso.
 
-| Raio do diff | O playtest é cego a | Gate |
-|---|---|---|
-| doc, nome, string, config, comentário | formatação | `biome check .` |
-| `apps/game`, HUD, mapa, hunt nova | **nada que o usuário não veja jogando** | `biome check .` + `typecheck` se a assinatura mudou. `dev` de pé e uma frase do que olhar. **Sem Playwright.** |
-| import ou manifesto | dependência ilegal | `architecture:check` |
-| `packages/simulation`, `packages/contracts` | replay divergente no tick 400 | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` |
-| `packages/content` ou gerador | artefato gerado diferente da fonte | `content:check` |
-| `packages/assets` ou packer | pack/sidecar divergente | `assets:check` |
-| última task do playbook | crash antes de o usuário sentar | `corepack pnpm verify` **uma vez** |
+Custos medidos em 2026-08-30, máquina livre. Eles estão na tabela para você **não deliberar**: o gate
+da sua linha custa menos que reler o próprio diff.
+
+| Raio do diff | O playtest é cego a | Gate | Custo |
+|---|---|---|---:|
+| doc, nome, string, config, comentário | formatação | `biome check .` | 1,8 s |
+| `apps/game`, HUD, mapa, hunt nova | **nada que o usuário não veja jogando** | `biome check .`, mais `typecheck` se a assinatura mudou. `dev` de pé e uma frase do que olhar. | 1,8 s (+2,9 s) |
+| import ou manifesto | dependência ilegal | `architecture:check` | 1,4 s |
+| `packages/simulation`, `packages/contracts` | replay divergente no tick 400 | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` | 1,3–3,1 s |
+| `packages/content` ou gerador | artefato gerado diferente da fonte | `content:check` | 8,1 s |
+| `packages/assets` ou packer | pack/sidecar divergente | `assets:check` | 7,6 s |
+| última task do playbook | crash antes de o usuário sentar | `corepack pnpm build` | 5,1 s |
 
 Um diff que cruza duas linhas roda as duas. Um diff mecânico que cruza 200 arquivos sem mudar
 comportamento (rename, mover módulo) é provado por `typecheck` — é exatamente para isso que ele
 existe, e nenhuma suíte acrescenta informação sobre ele.
 
-`biome check .` sempre antes de commitar. `verify` **já inclui** `biome`, `check` e `qa:browser`:
-nunca liste `verify` junto de um subconjunto dele, e nunca rode um subconjunto depois dele.
+### O que é do usuário, não seu
+
+**Não rode, não peça, não espere:** `corepack pnpm test` (51 s), `qa:browser` (4,6 min),
+`verify` (~6 min) e `qa:budgets`. São dele, rodam quando ele quiser, e um vermelho ali vira
+`PB-NN-FIX-MM` — nunca bloqueia a sua task nem a próxima.
+
+O fechamento do playbook roda `build`, não `verify`: 5 segundos provam que compila e sobe, que era a
+única coisa que `verify` protegia ali. Se ele quiser as 82 specs de browser, ele roda.
+
+Isso vale inclusive quando a card antiga exige `verify`, `qa:browser` ou "saída fresca colada no
+relatório". A card está desatualizada; execute a linha da tabela.
 
 ### O que não é gate
 
 - **Nunca rode um gate para produzir prova.** Rode para saber se quebrou. Vermelho: conserte.
-  Verde: commite. Colar saída fresca no relatório não é entrega, é trabalho inventado.
-- `corepack pnpm qa:budgets` é **informativo**. Roda no fechamento do playbook, o número vai para o
-  `STATE.md`, vermelho vira task de performance no backlog e **nunca** bloqueia merge. B5 do PB-05
-  estourou `5000 ms` em `11,7 ms` e travou um playbook inteiro.
+  Verde: commite. Colar saída no relatório não é entrega, é trabalho inventado.
+- **Não rode o mesmo gate duas vezes.** Verde não fica mais verde na segunda.
 - Auditoria independente roda **depois** do aceite do usuário, é opcional, endereça um commit por
   hash e gera task de backlog — nunca portão.
 
 Nenhum resultado de gate se afirma sem a saída fresca do comando.
+
+### Pare no primeiro jogável
+
+Aqui é onde as horas foram parar — não nos gates, que somados dão 3% de uma task de três horas.
+
+Depois que a funcionalidade roda e o gate da sua linha está verde, **acabou**. Não releia o próprio
+diff procurando o que melhorar, não rode o gate de novo, não escreva teste para um caso que ninguém
+reportou, não antecipe a próxima task, não produza relatório longo. Um ou dois bugs no playtest são
+o ciclo normal e são mais baratos que a hora que você gastaria tentando evitá-los.
 
 ## Branch, worktree e integração
 
@@ -112,9 +132,10 @@ O tempo da task vai para **arquitetura, padrão do arquivo vizinho e a funcional
 - **A task card diz o quê e onde, nunca como.** Se ela trouxer um desenho pronto, ele é sugestão; o
   código real vence. Card que prescreve sete camadas e uma assinatura de tipo implementou a task duas
   vezes — uma na spec e outra no editor — e você paga as duas.
-- **TDD só no kernel e em contrato.** HUD, layout, mapa e conteúdo não pedem teste vermelho primeiro:
-  o usuário vê em dois minutos. Teste automático existe para o que a sessão de jogo **não vê** —
-  determinismo do kernel, fronteira de pacote, identidade de artefato gerado.
+- **Escreva o teste pequeno, nunca a suíte.** Um teste que prova que a coisa que você acabou de
+  escrever funciona é bem-vindo — em geral é o caminho mais rápido para você mesmo convergir, e no
+  kernel ele vem antes do código. O que não é seu: cobrir casos que ninguém reportou, testar o que
+  o usuário vê em dois minutos jogando, e qualquer suíte pesada. Essa é dele.
 - **Não polir até zero bug.** É o playtest que aponta. Rodar a suíte de novo para caçar o que o
   usuário acharia jogando é exatamente o gasto que este processo existe para eliminar.
 - Correção pequena necessária ao aceite fica na task. Problema independente vira linha no `STATE.md`
@@ -183,11 +204,12 @@ explica.
    `apps/game/public/assets`; ache com `Get-NetTCPConnection -LocalPort 5173,4173 -State Listen`,
    derrube, rode, **suba de volta** e avise se era o usuário jogando. **Intermitente** — antivírus ou
    indexador; passa na segunda tentativa. Rode de novo antes de teorizar.
-3. **Um Playwright por host.** Dois saturam CPU e disputam a preview. Porta ocupada por outra sessão:
-   `PLAYWRIGHT_PREVIEW_PORT`. Specs de budget usam `baseURL`; não hardcode `http://127.0.0.1:4173`.
-4. **Gate lento é sintoma de máquina ocupada antes de ser sintoma de código lento.** Uma sessão
-   abandonada deixou `qa:browser` vivo por horas e `tools/replay` reprovou por timeout — 642 s contra
-   73 s com a máquina livre. Liste o que está rodando antes de teorizar, e derrube o que você subiu:
+3. **Playwright e gate lento são do usuário, mas se você esbarrar:** um Playwright por host — dois
+   saturam CPU e disputam a preview; porta ocupada resolve-se com `PLAYWRIGHT_PREVIEW_PORT`, nunca
+   com `http://127.0.0.1:4173` hardcoded. E gate lento é sintoma de máquina ocupada antes de ser
+   sintoma de código lento: uma sessão abandonada deixou `qa:browser` vivo por horas e `tools/replay`
+   reprovou por timeout, 642 s contra 73 s com a máquina livre. Liste antes de teorizar, e derrube o
+   que **você** subiu:
 
    ```bash
    Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*kaezan-huntbound*' }
@@ -230,12 +252,13 @@ Uma task = um chat. O formato está em `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS
 1. Leia a task card, o `STATE.md` do playbook e **apenas** o que a card listar. Não carregue skills
    de plugin (Superpowers e afins) a menos que a card as nomeie.
 2. Implemente. Arquitetura, padrão do vizinho, funcionalidade jogável.
-3. Rode **só o gate do raio do seu diff**.
+3. Rode **só o gate do raio do seu diff** — segundos, uma vez. `test`, `qa:browser` e `verify` são
+   do usuário.
 4. Commite na `main`. A narrativa do que foi feito vai na mensagem de commit — o Git já guarda, data
    e associa ao diff.
 5. Atualize **só a linha da task** no `STATE.md`.
-6. Relate em um parágrafo: o que mudou, o gate que rodou, o que olhar no jogo. Depois pare — não
-   inicie a próxima task.
+6. Relate em **um parágrafo**: o que mudou, o gate que rodou, o que olhar no jogo. Depois pare — não
+   releia o próprio diff atrás de melhorias, não rode gate de novo, não inicie a próxima task.
 
 Uma task só terminou quando estas três linhas respondem vazio:
 

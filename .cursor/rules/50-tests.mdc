@@ -6,9 +6,15 @@ alwaysApply: false
 
 # Quando testar
 
-TDD (vermelho pela razão certa, depois o código) vale para **kernel e contrato** — o playtest não
-vê o tick 400. HUD, layout, hunt e conteúdo não pedem teste primeiro: o usuário joga e aponta.
-Não escreva e2e para "cobrir" o que uma sessão de dois minutos mostra.
+**Subir primeiro, melhorar depois.** A suíte pesada é do usuário; o agente escreve o teste pequeno.
+
+Escreva o teste que prova que a coisa que você acabou de escrever funciona — no kernel e em contrato
+ele vem antes do código (vermelho pela razão certa), porque o playtest não vê o tick 400. Em geral
+esse teste é o caminho mais rápido para você mesmo convergir.
+
+Não escreva: cobertura de casos que ninguém reportou, e2e para o que uma sessão de dois minutos
+mostra, ou qualquer suíte. Não rode `test`, `qa:browser`, `verify` nem `qa:budgets` — são do usuário,
+e vermelho neles vira `PB-NN-FIX-MM`, não bloqueio.
 
 Isto é um piloto. Não existe entrega 100% na primeira integração.
 
@@ -40,4 +46,4 @@ detectar mudança de comportamento não intencional.
 # Execução
 
 - O golden da área, quando o kernel mudou. Não a suíte Vitest inteira "por garantia".
-- `qa:browser` só no fechamento do playbook (`verify`). `playwright test` direto não builda.
+- `qa:browser` e `verify` são do usuário. `playwright test` direto não builda.
