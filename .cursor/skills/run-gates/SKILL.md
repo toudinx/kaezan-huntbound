@@ -1,63 +1,45 @@
 ---
 name: run-gates
-description: Escolher e executar os gates certos do Kaezan Huntbound para uma mudança, na ordem mais barata, e interpretar as falhas. Use antes de declarar qualquer task concluída ou quando um gate falhar.
+description: Escolher o gate mínimo do Kaezan Huntbound pelo raio do diff - só o que uma sessão de jogo não vê. Use antes de commitar ou quando um gate falhar.
 ---
 
 # Gates do Kaezan Huntbound
 
-## Ordem barata primeiro
+O custo é proporcional ao raio do diff. Pare no primeiro vermelho. Não empilhe.
 
-Rode do mais rápido para o mais caro; pare no primeiro vermelho e conserte antes de seguir.
-
-1. `biome check .` — formatação e lint.
-2. `corepack pnpm typecheck` — TS de todos os pacotes.
-3. `corepack pnpm architecture:check` — fronteiras de import e manifesto.
-4. `corepack pnpm test` — Vitest, testes de fronteira e suítes dos tools.
-5. Gates de domínio conforme a área tocada (tabela abaixo).
-6. `corepack pnpm build`.
-7. `corepack pnpm qa:browser` — builda e roda Playwright, projeto `correctness`.
-
-Fechamento de task: `corepack pnpm verify` (já inclui `biome check .`).
-
-`corepack pnpm qa:budgets` roda `boot-budget` e `hunt-budget` e é **informativo**: registre o número
-no relatório e siga. Vermelho ali vira dívida de performance no backlog, nunca bloqueio de merge.
-
-## Qual gate para qual mudança
-
-| Você mexeu em | Gate obrigatório |
+| Raio do diff | Gate |
 |---|---|
-| `packages/simulation`, `packages/contracts` | `architecture:check`, `simulation:check`, `hunt:check` |
-| `packages/content`, tools de conteúdo | `content:check` (inclui rebuild, validate, generate --check, sidecars) |
-| `packages/assets`, `tools/asset-packer` | `assets:check` |
-| `apps/game` | `build` e depois `qa:browser` |
-| fixtures, goldens | `simulation:check`, `hunt:check` |
-| só documentação | `format:check` |
-| performance de boot ou de walk | `qa:budgets` (informativo) |
+| doc, nome, string, config, comentário | `biome check .` |
+| `apps/game`, HUD, mapa, hunt nova | `biome check .` + `typecheck` se a assinatura mudou; `dev` de pé. **Sem Playwright.** |
+| import ou manifesto | `architecture:check` |
+| `packages/simulation`, `packages/contracts` | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` |
+| `packages/content` ou gerador | `content:check` |
+| `packages/assets` ou packer | `assets:check` |
+| última task do playbook | `corepack pnpm verify` **uma vez** |
 
-## Armadilha nº 1: budget vermelho não é código quebrado
+Diff que cruza duas linhas roda as duas. Diff mecânico em muitos arquivos sem mudança de
+comportamento (rename, mover módulo) é provado por `typecheck` — nenhuma suíte acrescenta informação.
 
-`boot-budget` e `hunt-budget` medem tempo de parede nesta máquina. Uma máquina ocupada os reprova sem
-que nada tenha mudado — B5 do PB-05 estourou `5000 ms` em `11,7 ms` e travou o gate global por um
-playbook inteiro. Eles saíram do `qa:browser` para o `qa:budgets` justamente por isso. Não os trate
-como falha de correção, e não afrouxe o teto para "consertar".
+`verify` **já é** `biome` + `check` + `qa:browser`. Nunca liste `verify` junto de um subconjunto
+dele, nunca rode um subconjunto depois dele, nunca o repita no mesmo commit.
 
-## Armadilha nº 2: Playwright serve bundle velho
+## Rode para saber, não para provar
 
-`playwright test` direto **não** builda; ele serve `dist/game`. Use `qa:browser`, ou rode
-`corepack pnpm build` antes. Se o browser contradiz o código, suspeite do bundle antes da aplicação.
+Vermelho: conserte. Verde: commite. Colar saída fresca no relatório não é entrega.
 
-## Interpretando falhas
+Card antiga que exige `verify` + `qa:browser` + os `--check` numa task de HUD ou conteúdo: execute a
+linha da tabela acima, não a card.
 
-- **`architecture:check`** aponta arquivo, linha, import e regra violada. Conserte no import ou no
-  manifesto que introduziu a violação — não afrouxe `dependency-policy.json` sem decisão registrada.
-- **`--check` de gerador** falhando significa que o artefato versionado diverge da geração atual.
-  Regenere pelo CLI; se a divergência for inesperada, investigue a entrada antes de aceitar a saída.
-- **Golden de replay divergente** é mudança de comportamento. Prove que é intencional e registre;
-  nunca regrave para passar.
-- **`assets:*:personal:check`** falha sem `HUNTBOUND_PERSONAL_ASSET_SOURCE` configurado. Isso é
-  limitação de ambiente: relate como tal, não como aprovação.
+## Não são gate
 
-## Regra final
+- `qa:budgets` é informativo: número no `STATE.md`, vermelho vira task de backlog, nunca bloqueio.
+- Auditoria independente roda depois do aceite do usuário e gera task, não veredito.
 
-Nenhum resultado de gate pode ser afirmado sem a saída fresca do comando nesta sessão. Cole o
-comando e o resultado no relatório da task.
+## Falhas
+
+- Golden divergente é mudança de comportamento. Não regrave para passar.
+- EPERM no `assets:stage:test`, porta 4173 ocupada, timeout de replay sem divergência: ambiente, não
+  kernel. Confira listener e processo órfão antes de teorizar (`AGENTS.md` § Armadilhas).
+- Um Playwright por host. Porta ocupada por outra sessão: `PLAYWRIGHT_PREVIEW_PORT`.
+
+Nenhum resultado se afirma sem a saída fresca do comando.

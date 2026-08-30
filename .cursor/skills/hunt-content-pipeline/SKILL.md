@@ -30,9 +30,11 @@ corepack pnpm content:tileflags:check  # regenera tile-flags e compara
 corepack pnpm hunt:extract             # extrai a região (use --check para validar sem gravar)
 corepack pnpm content:generate         # catálogo gerado (content:generate:check valida)
 corepack pnpm content:check            # cadeia de conteúdo inteira, incluindo sidecars
-corepack pnpm assets:check             # packs, profiles e artefatos de asset
-corepack pnpm hunt:check               # replay golden das hunts
+corepack pnpm assets:check             # se o pack mudou
 ```
+
+`hunt:check` só se um golden **existente** puder ter se movido. Hunt nova não deve mover replay.
+Não rode `verify` nem Playwright. Deixe `dev` de pé.
 
 ## Regras
 
@@ -56,6 +58,6 @@ outra, compare a região relevante primeiro e registre a equivalência na task.
 
 ## Depois de regenerar
 
-Rode o `--check` da própria etapa **e** `content:check`, `assets:check` e `hunt:check`. Um artefato
+Rode o `--check` da própria etapa e `content:check`. `assets:check` se o pack mudou. Um artefato
 regenerado que muda um golden de replay é mudança de comportamento: justifique na task e no
-`STATE.md` antes de aceitar.
+`STATE.md` antes de aceitar. Sem `verify`.

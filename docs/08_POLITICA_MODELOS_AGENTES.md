@@ -11,7 +11,7 @@ Escolher modelo e effort pelo risco residual da tarefa. GPT-5.6 Luna é o execut
 implementações gerais quando arquitetura, decisões e aceite já estão congelados. Os modelos frontier
 — GPT-5.6 Sol, Claude Opus 5 via Claude Code e Grok 4.6 via Cursor — entram por escalonamento quando
 a tarefa exige novo julgamento, permanece bloqueada ou é uma auditoria independente. Modelo sugerido
-não substitui testes, evidência fresca, revisão nem critérios de aceite.
+não substitui o playtest, o gate da área nem os critérios de aceite.
 
 ## Camada frontier
 
@@ -45,7 +45,7 @@ Uma implementação é **geral e bem especificada** quando todas as condições 
 - resolve um único comportamento ou fronteira coesa;
 - aplica arquitetura, schema, persistência e políticas já congelados sem precisar redesenhá-los;
 - possui paths e critérios objetivos já conhecidos;
-- permite red-green e verificação completa dentro da própria task;
+- no kernel/contrato, permite red-green; no resto, entrega jogável verificável pelo usuário;
 - opera somente sobre estado local reconstruível ou possui rollback/gates objetivos que limitam o
   impacto da falha;
 - ambiguidades relevantes possuem condição de parada e rota explícita de escalonamento.
@@ -107,24 +107,22 @@ Indisponibilidade nunca transforma uma task complexa em pequena.
 
 ## Contrato das task cards
 
-Toda task deve declarar perto do cabeçalho:
+A card tem **teto de 40 linhas** e seis seções (`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`). Classe da
+tarefa, modelo sugerido, effort, validador e rota de skills **saíram do cabeçalho**: quem abre o chat
+escolhe modelo e effort na hora, por este documento, e registra no `STATE.md` o que **efetivamente**
+usou. Um campo que só era copiado da card para o `STATE.md` não decidia nada.
 
-- `Classe da tarefa`;
-- `Modelo sugerido` e effort;
-- `Validador sugerido`;
-- skills/rotas necessárias;
-- se pode executar em paralelo e sob quais dependências.
+A card declara paralelismo apenas quando ele existe — o `README.md` do playbook é quem nomeia as
+tasks que rodam ao mesmo tempo, e só elas usam branch e worktree.
 
-Toda task deve terminar com `## Prompt copiável para novo chat`: um bloco completo, sem placeholders,
-que possa ser copiado sem depender da conversa anterior. O prompt inclui workspace, path da task,
-modelo/effort, skills, escopo, verificação, handoff, commit, branch-base, modo de integração,
-verificação pós-integração, limpeza de worktree/branch e proibição de iniciar a próxima task.
+A card **não** carrega prompt copiável: ele é o bloco genérico de três linhas de
+`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`, igual para toda task, do qual só o path muda. Duplicar a
+card dentro dela mesma mantinha dois textos que envelheciam separados.
 
-Integração local rotineira e limpeza dos recursos temporários criados pelo executor fazem parte da
-autorização normal da task e não exigem uma segunda confirmação do usuário. Serial ou paralela: o
-executor usa `git merge --ff-only` na `main`, verifica o resultado integrado e remove worktree e
-branch. Não preserve a branch para um integrador. Conflito, teste vermelho, árvore suja ou
-fast-forward impossível preservam o estado e impedem declarar a task concluída.
+Commitar na `main` é a autorização normal da task e não exige segunda confirmação. Branch, worktree e
+`git merge --ff-only` só existem quando o `README.md` do playbook declara duas tasks paralelas
+rodando ao mesmo tempo. Conflito ou árvore suja preservam o estado e impedem declarar a task
+concluída.
 
 ## Avaliação contínua
 

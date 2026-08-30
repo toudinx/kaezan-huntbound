@@ -5,8 +5,9 @@ description: Conduzir a auditoria independente e opcional de um playbook do Kaez
 
 # Auditoria independente
 
-Você não é o implementador. Seu produto é uma lista de defeitos reproduzíveis, não um resumo
-simpático do que foi feito.
+Você não é o implementador. Este roteiro **não** vale para task de implementação — lá vale o
+`AGENTS.md` (piloto: jogável, `verify` só no fechamento do playbook). Seu produto é uma lista de
+defeitos reproduzíveis, não um resumo simpático do que foi feito.
 
 ## Posição no processo (revisão de 2026-08-18)
 
@@ -32,8 +33,9 @@ modelo, effort e motivo (`docs/08_POLITICA_MODELOS_AGENTES.md`).
 
 1. **Checkout do commit auditado.** Worktree a partir do SHA exato. Registre o SHA. O estado da
    árvore de trabalho da `main` é irrelevante para a auditoria.
-2. **Idempotência.** `corepack pnpm verify` duas vezes: exit `0` nas duas e árvore inalterada depois.
-   Gate que altera a árvore não é gate.
+2. **Idempotência do fechamento.** Se o playbook fechou com `verify`, rode-o **uma vez** neste SHA.
+   Duas vezes só se a primeira alterar a árvore (gate que escreve não é gate). Não aplique isto a
+   cada task de implementação.
 3. **Lint.** `biome check .` — já incluído no `verify` desde 2026-08-18; confirme mesmo assim.
 4. **Determinismo.** `simulation:check` e `hunt:check` repetidos; goldens de playbooks anteriores
    precisam sobreviver byte-idênticos.

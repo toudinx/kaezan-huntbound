@@ -1,5 +1,5 @@
 ---
-description: Formato de playbook, task card, STATE.md e ciclo de integração
+description: Formato de playbook, task card, STATE.md e ciclo de conclusão
 globs: docs/playbooks/**,docs/superpowers/**
 alwaysApply: false
 ---
@@ -8,76 +8,74 @@ alwaysApply: false
 
 ```text
 docs/playbooks/<PB-ID>/
-  README.md    mapa: objetivo, escopo, decisões congeladas, aceite, tabela de tasks, paralelismo
-  STATE.md     handoff operacional entre chats e modelos
+  README.md    objetivo, escopo, decisões congeladas, tabela de tasks, o que é paralelo
+  STATE.md     status por task — teto de 60 linhas
   tasks/<PB-ID>-NN-<slug>.md
-  artifacts/   relatórios de aceite e auditoria
 ```
 
-Especificações e planos ficam em `docs/superpowers/specs/` e `docs/superpowers/plans/`, nomeados
+Specs e planos ficam em `docs/superpowers/specs/` e `docs/superpowers/plans/`, nomeados
 `AAAA-MM-DD-<slug>.md`.
+
+# Para que o playbook existe
+
+Serializar e paralelizar tasks em chats separados; trocar de plataforma sem carregar histórico; rodar
+N tasks seguidas sem o usuário presente; e não escrever prompt a cada task. **Não** é controle de
+qualidade — quem valida é o usuário jogando. Regra que não serve a um desses quatro motivos não entra.
 
 # Task card
 
-Toda task card declara, no mínimo: objetivo, resultado esperado, dependências, **leitura mínima**,
-decisões congeladas, escopo permitido, fora de escopo, instruções, verificação, critérios de aceite,
-condições de parada, persistência do handoff, commit, ciclo de conclusão (branch-base, branch
-temporária, worktree, modo de integração, verificação pós-integração, limpeza), relatório final e um
-**prompt copiável sem placeholders**. O contrato completo está em
+**Teto de 40 linhas**, seis seções: objetivo, onde (paths), fora de escopo, decisões congeladas,
+gate (uma linha da tabela de `AGENTS.md`), o que olhar no jogo. Contrato completo em
 `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-Perto do cabeçalho a task declara ainda classe da tarefa, modelo/effort sugerido, validador sugerido,
-skills necessárias e se pode rodar em paralelo (`docs/08_POLITICA_MODELOS_AGENTES.md`).
+**A card diz o quê e onde, nunca como.** Card que traz camadas numeradas, assinatura de tipo pronta e
+decisão de fallback implementou a task em prosa — o projeto paga duas vezes, e a segunda é a cara. Se
+você sabe o desenho a ponto de escrevê-lo, escreva o código. Localizar uma causa em `arquivo.ts:155`
+é bem-vindo; a solução, não.
 
-Task é dividida por **fronteira de problema**, nunca por quantidade de arquivos. Uma task coesa que
-toca muitos arquivos é melhor que três fragmentos que deixam o workspace quebrado.
+Não entram na card: prompt copiável, Definition of Done com checkbox, "cole a saída fresca", classe
+da tarefa, modelo/effort, validador, leitura mínima numerada, ciclo de conclusão, riscos conhecidos.
+
+Task é dividida por **fronteira de problema**, nunca por quantidade de arquivos.
+
+Escreva quantas cards você pretende rodar seguidas. A regra das "duas à frente" existia porque a card
+tinha 253 linhas e envelhecia; uma de 40 que diz objetivo e path não envelhece.
 
 # STATE.md
 
-Teto de **60 linhas**. Só estado: status por task, próxima elegível, commit integrado de cada task,
-bloqueios abertos, decisões congeladas **por referência**. Decisão durável vai para ADR/spec.
+Teto de **60 linhas**. Só estado: status por task, commit integrado, bloqueios abertos e o dado que
+os remove. Decisão durável vai para ADR/spec, por referência.
 
-Não entra: saída de gate, justificativa de vermelho conhecido, relato de tentativa, histórico de
-auditoria. Isso vai na mensagem de commit da task — o Git já guarda, data e associa ao diff.
-
-# Profundidade de escrita
-
-Playbook novo nasce com spec congelada, `README.md` completo e as **duas primeiras** task cards. O
-resto fica como bullets no `README.md` até chegar a vez.
-
-# Fechamento e auditoria
-
-Playbook fecha quando **o usuário joga e aprova**. A última task de implementação entrega
-`corepack pnpm verify` verde e `corepack pnpm dev` de pé, mais uma nota curta do que olhar.
-
-Auditoria independente roda **depois** do aceite, é opcional, gera task de correção em vez de
-veredito, e nunca é pré-requisito do playbook seguinte. Auditoria endereça **um commit por hash** e
-não exige `git status` limpo.
-
-`corepack pnpm qa:budgets` é informativo: registre o número, não bloqueie merge com ele.
-
-# Ambiguidade
-
-Comportamento com mais de uma leitura razoável não é motivo para parar. Escolha a opção mais simples
-e mais fácil de reverter, registre em uma linha no commit e siga. Pare só para: destruir ou migrar
-dado sem rollback, mudar contrato público/schema/golden já integrado, ou a mesma causa bloquear dois
-ciclos vermelho/verde.
+Não entra: saída de gate, justificativa de vermelho, relato de tentativa, histórico de auditoria.
+Isso vai na mensagem de commit — o Git já guarda, data e associa ao diff.
 
 # Ciclo de conclusão
 
-Executar a task já autoriza integrar e limpar. Sempre `git merge --ff-only` na `main`, inclusive em
-task paralela — não preserve a branch para um integrador. Não peça confirmação para fast-forward
-local nem para remover a worktree que você criou. Detalhe operacional na skill `worktree-cycle`.
+**Commite na `main`.** Sem branch, sem worktree, sem fast-forward: uma task por chat, em sequência,
+não tem com o que colidir. Branch e worktree só quando o `README.md` declarar duas tasks paralelas
+rodando ao mesmo tempo — o procedimento está em `AGENTS.md`.
 
-Se `--ff-only` falhar, houver conflito, teste vermelho, árvore suja ou dúvida sobre path: a task não
-terminou. Preserve worktree e branch, registre o estado, reporte o impedimento. Não crie merge
-commit, não faça rebase, não force deleção.
+Nenhuma branch além da `main` sobrevive ao fim de uma sessão. Se algo não puder ser integrado,
+commite numa branch e diga o que falta; se nem isso, registre bloqueio no `STATE.md`.
+
+# Fechamento e auditoria
+
+Fecha quando **o usuário joga e aprova**. Cada task entrega jogável e `dev` de pé; só a última roda
+`verify`. Bug no playtest vira `PB-NN-FIX-MM` — não é falha de ter integrado cedo.
+
+Auditoria roda **depois** do aceite, é opcional, endereça um commit por hash, não exige árvore limpa
+e gera task de backlog em vez de veredito. `qa:budgets` é informativo: registre o número.
+
+# Ambiguidade
+
+Não é motivo para parar. Escolha a opção mais simples e mais fácil de reverter, registre em uma linha
+no commit e siga. Pare só para: destruir ou migrar dado sem rollback, mudar contrato/schema/golden já
+integrado, ou quando a mesma causa bloquear dois ciclos vermelho/verde.
 
 # Antipadrões
 
-Um chat para o playbook inteiro; fragmentar mudança coesa para cumprir limite artificial; repetir o
-contexto mestre quando referência precisa basta; marcar task concluída sem verificação fresca; deixar
-decisão ou bloqueio só no relatório do chat; absorver problema independente na task corrente; supor
-que o próximo agente terá acesso a esta conversa; escrever o playbook inteiro em task cards antes de
-a primeira rodar; bloquear uma task no veredito de uma auditoria; exigir árvore limpa para auditar;
-usar orçamento de tempo de parede como gate de merge; transformar `STATE.md` em diário.
+Card que prescreve implementação ou passa de 40 linhas; prompt copiável duplicando a card; rodar gate
+para produzir prova; `verify`/`qa:browser` em toda task; worktree numa task que roda sozinha; um chat
+para o playbook inteiro; `STATE.md` como diário; deixar decisão ou bloqueio só no relatório; absorver
+problema independente na task corrente; supor que o próximo agente terá acesso a esta conversa;
+bloquear task no veredito de auditoria; orçamento de tempo de parede como gate de merge.

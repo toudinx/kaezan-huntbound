@@ -4,11 +4,13 @@ globs: **/*.test.ts,tests/**,packages/test-fixtures/**,vitest.config.ts,tools/**
 alwaysApply: false
 ---
 
-# Ordem
+# Quando testar
 
-Teste antes da implementação sempre que a mudança tiver comportamento testável. Veja o teste
-vermelho, e veja-o falhar **pela razão certa**, antes de escrever o código. Task de auditoria,
-documentação ou spike pode usar outra evidência, mas ela precisa estar declarada na task card.
+TDD (vermelho pela razão certa, depois o código) vale para **kernel e contrato** — o playtest não
+vê o tick 400. HUD, layout, hunt e conteúdo não pedem teste primeiro: o usuário joga e aponta.
+Não escreva e2e para "cobrir" o que uma sessão de dois minutos mostra.
+
+Isto é um piloto. Não existe entrega 100% na primeira integração.
 
 # Proibido mascarar falha
 
@@ -37,7 +39,5 @@ detectar mudança de comportamento não intencional.
 
 # Execução
 
-- `corepack pnpm test` cobre Vitest, os testes de fronteira em `tools/architecture` e as suítes dos
-  tools (replay, tile-flags, map-extractor) — cada um com seu próprio `vitest.config.ts`.
-- Suíte de browser: `corepack pnpm qa:browser` (builda antes). Nunca conclua a partir de
-  `playwright test` sobre bundle velho.
+- O golden da área, quando o kernel mudou. Não a suíte Vitest inteira "por garantia".
+- `qa:browser` só no fechamento do playbook (`verify`). `playwright test` direto não builda.

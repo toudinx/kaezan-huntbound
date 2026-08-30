@@ -29,8 +29,9 @@ O kernel é headless, de tick fixo e reprodutível byte a byte em Node e no Chro
   chaves de objeto sem ordem definida.
 - Eventos saem em ordem determinística. Comando inválido é rejeitado pelo contrato, não tratado no
   meio da regra.
-- Toda mudança de comportamento precisa passar por `corepack pnpm simulation:check` e
-  `corepack pnpm hunt:check`.
+- Toda mudança de comportamento do kernel passa pelo golden que pode ter se movido
+  (`simulation:check` / `hunt:check` / `combat:check`). Não rode `verify` nem `qa:browser` — o
+  playtest valida o jogo.
 
 Se um golden divergir, a pergunta é "o que mudou de comportamento e isso é intencional?" — nunca
 "como faço o golden aceitar isso?". Regenerar golden exige justificativa registrada na task e no

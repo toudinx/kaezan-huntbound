@@ -1,322 +1,173 @@
 # Padrão de playbooks e tasks portáveis
 
-**Status:** aceito  
-**Aplica-se a:** PB-00 e todos os playbooks futuros  
-**Objetivo:** permitir que cada etapa seja executada em um chat novo, com troca livre entre Codex,
-Claude Code ou outro agente competente, sem carregar todo o histórico conversacional.
+**Status:** aceito
+**Aplica-se a:** todos os playbooks
+**Política de modelos:** `08_POLITICA_MODELOS_AGENTES.md`
 
-**Política transversal de modelos:** `08_POLITICA_MODELOS_AGENTES.md`.
+## Para que o playbook existe
 
-## Decisão central
+Quatro motivos concretos, e nenhum deles é controle de qualidade:
 
-Um playbook não é um prompt monolítico. Ele é um índice de execução composto por **tasks coesas**.
-Cada task corresponde, por padrão, a um prompt/chat independente e deixa no workspace toda a
-evidência necessária para a próxima execução.
+1. **Serializar e paralelizar em chats separados**, para que um único agente não implemente tudo.
+2. **Trocar de plataforma livremente** — Claude Code, Codex, Cursor — sem carregar histórico de chat.
+3. **Rodar N tasks seguidas sem o usuário presente**, para ele validar tudo depois, de uma vez.
+4. **Não escrever prompt a cada task concluída.** O objetivo já está no disco.
 
-A memória do projeto vive em documentação, código, testes, artefatos de verificação e commits. Ela
-não pode depender do histórico de um chat nem de lembranças específicas de um modelo.
+Toda regra abaixo serve a um desses quatro. Regra que não serve a nenhum foi removida — e uma regra
+nova só entra se você conseguir dizer qual dos quatro ela protege.
 
-## Unidade correta de decomposição
+Quem faz controle de qualidade é o usuário jogando. Os gates cobrem só o que uma sessão de jogo não
+vê, e estão em `AGENTS.md`.
 
-Tasks são divididas por **fronteira de problema**, e não por quantidade de arquivos, linhas ou tempo
-estimado.
-
-Uma task pode criar ou alterar muitos arquivos quando isso for necessário para entregar um resultado
-coeso. Inicializar um repositório, criar o workspace base ou introduzir um pacote vertical pode
-legitimamente tocar configurações, código, testes e documentação no mesmo prompt.
-
-Manter o trabalho na mesma task quando:
-
-- há um único problema claramente delimitado;
-- os arquivos mudam juntos para produzir um estado íntegro;
-- separar deixaria o workspace quebrado ou criaria handoffs artificiais;
-- os critérios de aceite só fazem sentido para o conjunto;
-- o contexto necessário continua específico e administrável.
-
-Dividir em tasks diferentes quando:
-
-- existem problemas ou resultados que podem ser validados independentemente;
-- uma decisão ainda desconhecida bloqueia a parte seguinte;
-- a execução começa a misturar arquitetura, conteúdo, UI, infraestrutura ou correções sem uma
-  dependência imediata entre elas;
-- partes posteriores podem falhar ou mudar sem invalidar o que já foi concluído;
-- o agente precisaria carregar documentação ou código demais e não relacionado ao objetivo atual;
-- outra skill, especialidade, modelo ou nível de esforço é mais apropriado para uma parte;
-- o prompt acumula vários ciclos independentes de investigar, decidir, implementar e verificar.
-
-Não existe limite normativo de arquivos por task. Uma task pequena não é necessariamente melhor;
-uma task **coesa, limitada e retomável** é melhor.
-
-## Estrutura canônica de um playbook
-
-Cada novo playbook deve preferir esta estrutura:
+## Estrutura
 
 ```text
 docs/playbooks/<PB-ID>/
-  README.md
-  STATE.md
-  tasks/
-    <PB-ID>-01-<slug>.md
-    <PB-ID>-02-<slug>.md
-    ...
+  README.md    objetivo, escopo, decisões congeladas, tabela de tasks, o que é paralelo
+  STATE.md     status por task — teto de 60 linhas
+  tasks/<PB-ID>-NN-<slug>.md
 ```
 
-### `README.md`
+## A task card
 
-É o mapa do playbook. Deve conter:
+**Teto de 40 linhas.** Se passou disso, ou a task é grande demais e deve ser dividida, ou você está
+escrevendo a implementação em vez da task.
 
-- objetivo e resultado final;
-- escopo e exclusões;
-- decisões congeladas;
-- critérios finais de aceite;
-- tabela ordenada das tasks;
-- dependências e oportunidades de paralelismo;
-- arquivos normativos que vencem em caso de conflito.
+Seis seções, nesta ordem. Nada além delas:
 
-### `STATE.md`
+```markdown
+# PB-NN-MM — Título
 
-É o handoff persistente entre chats e modelos, e tem **teto de 60 linhas**. Registra estado, não
-história:
+**Objetivo.** Uma ou duas frases: qual problema limitado some ao fim disto.
 
-- status de cada task: `pending`, `in_progress`, `done` ou `blocked`;
-- próxima task elegível;
+**Onde.** Os arquivos ou diretórios que devem mudar. Path, não desenho.
+
+**Fora de escopo.** Os problemas vizinhos que pertencem a outra task.
+
+**Decisões congeladas.** Só o que o executor não pode redesenhar, por referência à spec ou ADR.
+Vazio é uma resposta válida e comum.
+
+**Gate.** A linha da tabela de `AGENTS.md` correspondente ao raio deste diff. Uma linha.
+
+**O que olhar no jogo.** Como reproduzir em dois minutos com `corepack pnpm dev` de pé.
+```
+
+Se o playbook já for coberto por uma rule de `.cursor/rules/`, a card não repete o conteúdo dela.
+
+### A card diz o quê e onde, nunca como
+
+Esta é a regra que mais economiza tempo, e a que foi mais violada.
+
+Uma card que traz as camadas numeradas, a assinatura do tipo pronta e a decisão de fallback já
+implementou a task — em prosa, numa sessão de modelo frontier que não aparece no cronômetro. Depois
+um segundo modelo relê tudo e reconstrói o mesmo desenho. O projeto é pago duas vezes e a segunda
+paga é a cara.
+
+Se você sabe o desenho a ponto de escrevê-lo, escreva o **código**, não a card. Se não sabe, a card
+não deve fingir que sabe: diga o objetivo e o path, e deixe o executor ler o código.
+
+Localizar uma causa já achada é diferente e é bem-vindo: `arquivo.ts:155` numa linha economiza uma
+investigação inteira. O que não entra é a solução.
+
+### O que não entra na card
+
+Removidos porque custavam tempo e não protegiam nenhum dos quatro motivos:
+
+- **Prompt copiável.** Era a card inteira duplicada em caixa alta, mantida em dois lugares que
+  envelheciam separados. O prompt é o bloco de três linhas no fim deste documento, igual para toda
+  task; a única coisa que muda é o path.
+- **Definition of Done com checkbox.** Vira lista de comprovação e faz o executor rodar gates para
+  produzir evidência em vez de para saber se quebrou. O aceite é o usuário jogando.
+- **"Cole a saída fresca no relatório."** Idem.
+- **Classe da tarefa, modelo/effort sugerido, validador sugerido, rota de skills.** Modelo e effort
+  são escolhidos por quem abre o chat, na hora, conforme `08_POLITICA_MODELOS_AGENTES.md`.
+- **Leitura mínima numerada com oito itens.** "Onde" já diz o que ler.
+- **Ciclo de conclusão, branch-base, worktree, modo de integração.** Está em `AGENTS.md` e é o mesmo
+  para toda task: commite na `main`.
+- **Riscos conhecidos.** Vira a card prescrevendo a solução pela porta dos fundos.
+
+## Decomposição
+
+Tasks são divididas por **fronteira de problema**, nunca por número de arquivos. Uma task coesa que
+toca muitos arquivos é melhor que três fragmentos que deixam o workspace quebrado.
+
+Manter junto quando: é um problema só, os arquivos mudam juntos para produzir um estado íntegro, e
+separar criaria handoff artificial.
+
+Dividir quando: partes podem ser validadas independentemente, uma decisão desconhecida bloqueia a
+seguinte, ou o executor precisaria carregar contexto não relacionado.
+
+## Quantas cards escrever antes de executar
+
+**Quantas você quiser rodar seguidas.** Se o plano é deixar dez tasks rodando enquanto você está na
+rua, as dez precisam existir antes.
+
+Isto era proibido, e a proibição fazia sentido quando a card tinha 253 linhas e desenhava a
+implementação: dez dessas envelheciam contra o código real e viravam manutenção de documento. Uma
+card de 40 linhas que diz objetivo, path e fora de escopo não envelhece — o objetivo não muda porque
+a implementação descobriu algo.
+
+O que continua valendo: se uma task descobrir que muda o objetivo de outra, corrija aquela card em
+uma linha e siga. Não pare o playbook para replanejar.
+
+## `STATE.md`
+
+Teto de **60 linhas**. Só estado, nunca história:
+
+- status por task: `pending`, `in_progress`, `done`, `blocked`;
 - commit integrado de cada task;
-- bloqueios abertos e o dado necessário para removê-los;
-- decisões congeladas **por referência** à spec ou ADR que as contém.
+- bloqueios abertos e o dado que os remove.
 
-O que **não** entra: transcrição de saída de gate, justificativa de vermelho conhecido, relato de
-tentativa, histórico de rodadas de auditoria, evidência detalhada. Tudo isso vai na mensagem de
-commit da task — o Git já guarda, já data e já associa ao diff, sem custo de manutenção. O
-`STATE.md` do PB-05 chegou a 1039 linhas por acumular esse material e passou a ser lido por ninguém.
+Não entra: saída de gate, justificativa de vermelho, relato de tentativa, histórico de auditoria. Vai
+na mensagem de commit — o Git já guarda, data e associa ao diff. O `STATE.md` do PB-05 chegou a 1039
+linhas por acumular isso e passou a ser lido por ninguém.
 
-O `STATE.md` não substitui ADRs, specs nem documentação técnica. Decisões duráveis devem ser
-registradas na fonte apropriada e apenas referenciadas nele.
+Depois de rodar N tasks sem acompanhar, o que o usuário lê ao voltar é `git log --oneline` e o jogo
+de pé. O `STATE.md` diz só onde parou.
 
-### Profundidade de escrita antecipada
+## Prompt para executar uma task
 
-Um playbook novo nasce com a spec congelada, o `README.md` completo e as **duas primeiras** task
-cards escritas. As demais existem como bullets na tabela do `README.md` e viram task card quando a
-anterior fecha.
-
-O motivo é concreto: dez task cards escritas antes da primeira linha de código descrevem um sistema
-que ainda não existe, envelhecem contra o que a implementação descobre, e a manutenção delas compete
-com a implementação. PB-06 foi escrito inteiro antes de executar e o resultado foi um deadlock
-documental, não um avanço.
-
-### `tasks/*.md`
-
-Cada arquivo é uma task card e também a especificação do prompt daquela execução. A task deve ser
-autossuficiente por referências: ela não precisa repetir todo o contexto do projeto, mas deve apontar
-exatamente o que o agente precisa ler.
-
-## Contrato obrigatório de uma task card
-
-Cada task deve declarar:
-
-1. **ID e título.**
-2. **Objetivo da execução.** Qual problema limitado será resolvido.
-3. **Resultado esperado.** Estado observável que deve existir ao final.
-4. **Dependências.** Tasks, decisões ou artefatos que precisam estar concluídos.
-5. **Leitura mínima.** A própria task, `STATE.md` e somente os arquivos realmente relevantes.
-6. **Decisões congeladas.** O que o agente não pode redesenhar.
-7. **Escopo permitido.** Áreas que podem ser alteradas; paths exatos quando já forem conhecidos.
-8. **Fora de escopo.** Problemas próximos que pertencem a outras tasks.
-9. **Instruções de execução.** Passos suficientes para eliminar ambiguidade, sem prescrever detalhes
-   irrelevantes que o agente pode descobrir no workspace.
-10. **Verificação.** Testes, builds, inspeções, screenshots ou medições obrigatórias.
-11. **Critérios de aceite.** Condições objetivas para considerar a task concluída.
-12. **Condições de parada.** Decisões novas, inconsistências ou riscos que exigem bloquear e relatar.
-13. **Persistência do handoff.** Atualização exigida em `STATE.md` e em ADR/spec quando aplicável.
-14. **Commit.** Resultado deve ser versionado quando já existir repositório Git; a task de
-    inicialização do repositório cria o primeiro baseline.
-15. **Ciclo de conclusão.** Branch-base, branch temporária, worktree, modo de integração, verificação
-    pós-integração e limpeza devem estar explícitos. Uma task serial concluída integra seu commit,
-    verifica o resultado e remove worktree e branch temporárias sem exigir nova confirmação do
-    usuário.
-16. **Relatório final.** Resumo de mudanças, verificações, integração, limpeza, desvios e próxima
-    task elegível.
-17. **Prompt copiável.** Bloco final sem placeholders, pronto para abrir a task em um chat novo, com
-    workspace, path da task, modelo/effort, skills, escopo, verificações, handoff, commit, integração
-    e limpeza.
-
-Testes devem preceder a implementação quando a mudança tiver comportamento testável. Tasks de
-auditoria, documentação, infraestrutura inicial ou spikes podem usar outra evidência apropriada, que
-deve estar explicitamente definida na task card.
-
-## Protocolo de execução: um prompt por task
-
-1. Abrir um chat novo no agente escolhido.
-2. Informar o workspace e o path da task card.
-3. Mandar o agente ler `STATE.md` e apenas as referências listadas na task.
-4. Executar somente aquela task; não antecipar a seguinte por conveniência.
-5. Verificar os critérios de aceite com evidência fresca.
-6. Atualizar o handoff persistente.
-7. Criar o commit previsto, se Git já estiver disponível.
-8. Integrar automaticamente a task serial no branch-base pelo modo declarado, sem pedir ao usuário
-   que faça o fast-forward rotineiro.
-9. Repetir no resultado integrado as verificações exigidas pela task.
-10. Remover a worktree concluída, executar `git worktree prune` e apagar com segurança a branch
-    temporária já integrada.
-11. Encerrar o chat com um relatório curto e iniciar a próxima task em outro chat.
-
-Uma correção pequena descoberta durante a execução pode permanecer na mesma task quando for
-necessária para alcançar seu critério de aceite. Um problema independente deve ser registrado como
-nova task, sem expandir silenciosamente o prompt atual.
-
-## Ciclo automático de integração e limpeza
-
-Executar uma task autoriza seu ciclo normal de conclusão. O agente não pede uma segunda confirmação
-para integrar localmente um commit aprovado, avançar o branch-base por fast-forward ou remover os
-recursos temporários que ele próprio criou.
-
-O fluxo padrão, serial ou paralelo, é:
+Igual para toda task. Só o path muda:
 
 ```text
-git status --porcelain=v1 --untracked-files=all
-git switch <branch-base-concreto>
-git merge --ff-only <branch-temporaria-concreta>
-<comando-concreto-de-verificacao-integrada>
-git worktree remove <path-absoluto-validado-da-worktree>
-git worktree prune
-git branch -d <branch-temporaria-concreta>
+Trabalhe em C:\Kaezan\kaezan-huntbound.
+
+Execute integralmente e somente: <PATH-DA-TASK-CARD>
+
+Leia AGENTS.md e o STATE.md do playbook. Implemente, rode só o gate do raio do seu diff, commite na
+main e pare. Não peça confirmação para commitar. Não inicie a próxima task.
 ```
-
-Os marcadores acima são notação para autores do padrão. O prompt copiável de cada task deve trazer
-nomes, paths e comandos reais, sem placeholders.
-
-A limpeza só ocorre depois de confirmar que a worktree está limpa, que o commit existe e que o path
-resolvido corresponde à worktree temporária registrada. A branch temporária só é apagada depois que
-o resultado integrado passa nas verificações e contém o commit esperado, ou uma equivalência de
-patch explicitamente comprovada por uma integração autorizada.
-
-Se `--ff-only` falhar, houver conflito, teste vermelho, árvore suja, branch-base inesperado ou dúvida
-sobre o path, a task ainda não terminou. O agente preserva worktree e branch, registra o estado e
-reporta o impedimento; não cria merge commit, não faz rebase e não força deleção por conta própria.
-
-Worktrees usadas por pull request permanecem enquanto houver revisão pendente. Ambientes cujo host
-administra a worktree usam o mecanismo nativo de saída e não apagam diretórios pertencentes à
-plataforma.
-
-## Portabilidade entre agentes e modelos
-
-O conteúdo funcional da task deve ser neutro em relação ao fornecedor. Instruções específicas de
-Codex, Claude Code ou skills ficam em um adaptador curto, sem alterar objetivo, escopo ou aceite.
-
-Para permitir troca de agente entre quaisquer duas tasks:
-
-- não usar frases como “continue de onde paramos” sem apontar o estado persistido;
-- não depender de anexos ou decisões presentes apenas no chat anterior;
-- registrar versões, comandos e paths descobertos durante a execução;
-- manter contratos e decisões duráveis em arquivos normativos;
-- exigir inspeção do estado real do workspace antes de editar;
-- preferir critérios executáveis a descrições subjetivas de conclusão;
-- registrar todo desvio aprovado da task original.
-
-A escolha de modelo e effort é feita por task conforme `08_POLITICA_MODELOS_AGENTES.md`. Cada task
-declara classe, modelo sugerido, validador sugerido e fallback. A revisão crítica prefere modelo
-diferente do implementador. Ausência do modelo recomendado deve ser registrada, sem reduzir gates.
 
 ## Tasks paralelas
 
-Tasks só podem executar em paralelo quando o `README.md` do playbook declarar paths e dependências
-independentes. Cada chat usa worktree e branch isolados. Verificações que disputem porta, banco,
-fixture mutável ou output compartilhado são serializadas. `STATE.md` e `README.md` entram no commit
-da task; duas paralelas que os toquem serializam o fast-forward.
+Só quando o `README.md` do playbook declarar paths disjuntos. Cada chat usa worktree e branch
+isolados, conforme `AGENTS.md`; verificações que disputem porta ou fixture mutável são serializadas,
+e **não** se roda `verify` de duas ao mesmo tempo.
 
-Ao concluir a implementação paralela, cada executor commita, faz `git merge --ff-only` na `main`,
-repete a verificação no resultado integrado e só então remove worktree e branch. Se duas paralelas
-terminarem juntas, a segunda espera o fast-forward da primeira. `--ff-only` que falha é parada, não
-motivo para deixar a branch “para o integrador”. `STATE.md` e `README.md` entram no mesmo commit da
-task; conflito aí também é `--ff-only` que falha.
+Se você está rodando as tasks em sequência — o caso normal — não existe worktree, não existe branch.
 
-## Prompt mínimo para executar uma task
+## Fechamento do playbook
 
-```text
-Trabalhe no workspace <PATH-ABSOLUTO>.
+Fecha quando **o usuário joga e aprova**. É o único aceite normativo.
 
-Execute integralmente e somente a task:
-<PATH-DA-TASK-CARD>
+A última task roda `corepack pnpm verify` uma vez, para o usuário não gastar a sessão num crash, e
+registra o número do `qa:budgets`. Aprovado, o `STATE.md` recebe `closed`; apontado, vira
+`PB-NN-FIX-MM`.
 
-Leia o STATE.md do playbook e apenas os arquivos adicionais indicados pela task.
-Inspecione o estado real do workspace antes de editar. Preserve decisões congeladas e não antecipe
-tasks posteriores.
+Auditoria independente é opcional, roda **depois** do aceite, endereça um commit por hash, não exige
+árvore limpa e gera task de backlog em vez de veredito. Nenhum playbook espera o fechamento formal de
+outro: o que o próximo precisa é código integrado na `main`, confirmável por `git log`.
 
-Implemente o escopo, execute todas as verificações, atualize o handoff persistente e produza o commit
-solicitado quando Git estiver disponível. Conclua também a integração e a limpeza declaradas na task
-sem pedir confirmação adicional para o fast-forward rotineiro. Serial ou paralela: `git merge
---ff-only` na `main`, verificar o resultado integrado, apagar worktree e branch.
+## Antipadrões
 
-Se uma decisão não coberta, inconsistência ou risco impedir a conclusão segura, pare, registre o
-bloqueio e informe exatamente o que precisa ser decidido. Não amplie o escopo silenciosamente.
-```
-
-Skills ou modos específicos do agente podem ser acrescentados antes desse bloco, mas não substituem
-a task card como fonte de verdade.
-
-Cada task card contém sua própria versão preenchida desse prompt. O bloco genérico acima serve apenas
-como referência para autores de playbooks e não deve ser entregue ao executor com placeholders.
-
-## Fechamento de playbook
-
-O playbook fecha quando **o usuário joga e aprova**. É o único aceite normativo.
-
-A última task de implementação termina com `corepack pnpm verify` verde e uma entrega jogável: o
-agente deixa `corepack pnpm dev` funcionando e escreve, em até cinco linhas, o que olhar e como
-reproduzir. O usuário joga, aprova ou aponta o que está errado. Aprovado, o `STATE.md` recebe
-`closed` com a data e o commit; apontado, vira uma task `PB-NN-FIX-MM`.
-
-`corepack pnpm qa:budgets` roda nesse momento e seu resultado é **registrado**, não exigido.
-
-### Auditoria independente
-
-Continua existindo e continua sendo feita por modelo diferente do implementador, mas:
-
-- roda **depois** do aceite do usuário, não antes;
-- é **opcional** — decidida caso a caso, tipicamente quando o playbook mexeu em kernel, contrato,
-  golden ou persistência;
-- não emite veredito bloqueante. O que ela encontra vira task de correção priorizada no backlog;
-- **não é pré-requisito do playbook seguinte.** O que o próximo playbook precisa do anterior é
-  código integrado na `main` e `verify` verde, verificável por `git log` e por gate fresco.
-
-Uma auditoria nunca exige árvore de trabalho vazia. Ela audita **um commit**, identificado por hash.
-Exigir `git status` limpo transforma qualquer trabalho paralelo não relacionado em bloqueio — foi
-exatamente o que travou PB-05-12 contra PB-06 em 2026-08-18.
-
-## Checklist para criar um novo playbook
-
-- [ ] O playbook referencia este padrão como diretriz transversal.
-- [ ] O resultado final e o fora de escopo estão explícitos.
-- [ ] As tasks foram separadas por problemas, decisões e gates reais, não por número de arquivos.
-- [ ] Cada task pode começar em um chat limpo.
-- [ ] Cada task declara leitura mínima e não exige carregar toda a documentação.
-- [ ] Dependências e possíveis paralelismos estão explícitos.
-- [ ] Toda task possui evidência de conclusão adequada ao tipo de trabalho.
-- [ ] Toda task declara modelo/effort, validador e prompt copiável sem placeholders.
-- [ ] Toda task declara branch-base, integração, verificação pós-integração e limpeza.
-- [ ] O protocolo remove worktrees concluídas e branches temporárias já integradas.
-- [ ] Tasks paralelas distinguem a remoção imediata da worktree da remoção posterior da branch.
-- [ ] `STATE.md` permite trocar de agente sem reconstruir o histórico e cabe em 60 linhas.
-- [ ] Nenhuma decisão importante existe apenas dentro dos prompts.
-- [ ] Só a spec, o `README.md` e as duas primeiras task cards foram escritos antes de executar.
-- [ ] O fechamento previsto é o usuário jogando, e a entrega final é jogável por `corepack pnpm dev`.
-- [ ] Nenhuma task depende do veredito de uma auditoria para começar.
-
-## Antipadrões proibidos
-
-- Um único chat para planejar, implementar e depurar todo o playbook.
-- Fragmentar uma mudança coesa apenas para cumprir limite de arquivos ou linhas.
-- Repetir o contexto mestre inteiro em todo prompt quando referências precisas bastam.
-- Marcar task como concluída sem verificação fresca.
-- Deixar decisões, comandos ou bloqueios apenas no relatório do chat.
-- Permitir que uma task absorva problemas independentes encontrados no caminho.
-- Presumir que o próximo agente será o mesmo modelo ou terá acesso à conversa anterior.
-- Encerrar uma task serial pedindo ao usuário que faça um fast-forward rotineiro.
-- Deixar worktree concluída ou branch temporária integrada para limpeza manual posterior.
-- Apagar worktree suja, branch não integrada ou qualquer path que não tenha sido validado.
-- Escrever o playbook inteiro em task cards antes de a primeira delas rodar.
-- Exigir árvore de trabalho vazia para auditar; auditoria endereça um commit por hash.
-- Bloquear uma task no veredito de uma auditoria, ou um playbook no fechamento formal de outro.
-- Usar um orçamento de tempo de parede medido na máquina de desenvolvimento como gate de merge.
-- Transformar o `STATE.md` em diário: saída de gate, tentativa e justificativa vão no commit.
-- Parar a implementação porque um comportamento admite mais de uma leitura razoável. Escolha a mais
-  simples, registre em uma linha e siga.
+- Card que prescreve a implementação, ou que passa de 40 linhas.
+- Duplicar a card num prompt copiável.
+- Rodar gate para produzir prova em vez de para saber se quebrou.
+- Rodar `verify` ou `qa:browser` em toda task; polir até zero bug antes do playtest.
+- Worktree ou branch numa task que roda sozinha em sequência.
+- Um único chat para planejar, implementar e depurar o playbook inteiro.
+- Transformar `STATE.md` em diário.
+- Deixar decisão ou bloqueio só no relatório do chat.
+- Absorver problema independente na task corrente.
+- Supor que o próximo agente terá acesso a esta conversa.
+- Parar porque um comportamento admite mais de uma leitura razoável.

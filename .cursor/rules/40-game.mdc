@@ -21,7 +21,8 @@ alwaysApply: false
 reconstrói. Qualquer edição em `apps/game/src/**` é invisível para o browser até rodar
 `corepack pnpm build`.
 
-- `corepack pnpm qa:browser` e `corepack pnpm verify` buildam antes. Use esses.
+- `corepack pnpm qa:browser` e `corepack pnpm verify` buildam antes. Use-os **só no fechamento do
+  playbook**. Task de HUD ou hunt: `dev` de pé; o usuário joga.
 - `playwright test` direto **não** builda. Se usar, builde manualmente antes — inclusive depois de
   reverter qualquer experimento de mutação.
 - Quando um sintoma no browser contradisser o código que você está lendo, confira a idade do bundle

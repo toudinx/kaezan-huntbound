@@ -19,23 +19,30 @@ entregue a um agente ou modelo diferente.
 
 Cada playbook deve:
 
-- entregar software executável e verificável por conta própria;
+- entregar software executável e jogável por conta própria;
 - listar paths exatos de arquivos que cria, modifica e testa;
-- começar por teste falhando, implementar o mínimo e terminar com verificação fresca;
+- no kernel e em contrato, começar pelo teste que prova o comportamento; no resto, entregar jogável
+  e deixar o playtest apontar;
 - preservar simulação fora de Phaser e UI densa fora do canvas;
 - usar apenas conteúdo presente no snapshot local congelado;
-- incluir fixture mínima, golden hash ou screenshot quando aplicável;
+- incluir fixture mínima ou golden hash **quando o playtest for cego** (replay de kernel);
 - não antecipar sistemas de playbooks posteriores;
-- **terminar jogável**: `corepack pnpm verify` verde e `corepack pnpm dev` de pé, para que o aceite
-  seja o usuário jogando.
+- **terminar jogável**: `corepack pnpm dev` de pé e o que olhar. `corepack pnpm verify` **uma vez**,
+  na última task, para o usuário não sentar num crash. Aceite é o usuário jogando.
 
-**Revisão de processo de 2026-08-18.** Três regras mudaram depois de o fluxo travar entre PB-05 e
-PB-06 por motivo puramente documental:
+**Revisão de processo de 2026-08-30.** O V0 é piloto: implementação rápida, um ou dois bugs na
+primeira integração, correção depois. `verify`/`qa:browser` em toda task e TDD de HUD/conteúdo saíram
+do processo — custavam ~1 h por feature sem substituir o playtest.
 
-1. **Escreva duas tasks à frente, não o playbook inteiro.** Spec congelada, `README.md` completo e as
-   duas primeiras task cards. O resto fica como bullets até chegar a vez.
+**Revisão de 2026-08-18.** Três regras mudaram depois de o fluxo travar entre PB-05 e PB-06 por
+motivo puramente documental:
+
+1. **Escreva quantas cards você pretende rodar seguidas.** Revisto em 2026-08-30: a regra antiga era
+   "duas à frente", e ela existia porque a card tinha 253 linhas e desenhava a implementação — dez
+   dessas envelheciam contra o código. Uma card de 40 linhas que diz objetivo e path não envelhece,
+   e rodar N tasks sem o usuário presente exige que as N existam antes.
 2. **Nenhum playbook espera o fechamento formal de outro.** A dependência real é código integrado na
-   `main` com `verify` verde, verificável por `git log` e por gate fresco.
+   `main`, verificável por `git log`.
 3. **Orçamento de tempo não bloqueia merge.** `boot-budget` e `hunt-budget` rodam em
    `corepack pnpm qa:budgets`, são registrados e viram dívida priorizada, não portão.
 

@@ -34,4 +34,5 @@ Toda geração tem `--check` correspondente:
   falham por ambiente ausente, o que **não** é motivo para relaxar o gate.
 
 Adicionar asset significa: atualizar a seleção, atualizar o `source-lock`, regenerar, rodar o
-`--check`. Não copie arquivo direto para dentro de um pack.
+`--check`. Não copie arquivo direto para dentro de um pack. Não rode `verify` nem Playwright para
+fechar pack — `assets:check` (e `dev` de pé se a mudança é visível).

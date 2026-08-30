@@ -5,11 +5,10 @@ ordem abaixo vence.
 
 ## Entrada dos agentes
 
-`AGENTS.md` na raiz do repositório é a instrução compartilhada por Cursor, Codex e Claude Code
-(que chega até ele por `CLAUDE.md`). Ele resume esta ordem de autoridade, os gates e as regras
-invioláveis; regras com escopo por diretório ficam em `.cursor/rules/*.mdc` e procedimentos longos em
-`.cursor/skills/<nome>/SKILL.md`. Nenhum desses arquivos cria direção nova: em conflito, os
-documentos normativos abaixo vencem.
+`AGENTS.md` na raiz é a instrução compartilhada por Cursor, Codex e Claude Code (`CLAUDE.md` só
+reexporta). Piloto: entregue jogável; aceite é o usuário jogando; `verify` só no fechamento do
+playbook. Regras por diretório em `.cursor/rules/*.mdc`; procedimentos em `.cursor/skills/`. Em
+conflito, os documentos normativos abaixo vencem.
 
 ## Fonte normativa
 

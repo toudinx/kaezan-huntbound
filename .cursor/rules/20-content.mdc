@@ -35,5 +35,6 @@ falha se o resultado versionado divergir. Depois de regenerar, rode `corepack pn
   `docs/content/CANARY_LUA_MAPPING.md` e `docs/content/MAP_REGION_CONTRACT.md`. Preserve as regras de
   origem em vez de reinterpretá-las.
 
-Gates de conteúdo: `content:check`, `hunt:selection:check`, `hunt:sources:check`,
-`hunt:extract:check`, `content:tileflags:check`.
+Gates de conteúdo: `content:check` (e o `--check` da etapa que você regenerou). Não rode `verify`
+nem Playwright. Hunt nova não deve mover golden de replay; se `hunt:check` ficar vermelho, a causa
+não é o conteúdo — investigue antes de regenerar golden.

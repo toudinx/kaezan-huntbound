@@ -1,80 +1,68 @@
 ---
 name: playbook-task
-description: Executar uma task card de playbook do Kaezan Huntbound ponta a ponta - leitura mínima, TDD, verificação, STATE.md, commit, integração e limpeza. Use quando receber um path de docs/playbooks/**/tasks/*.md ou quando a instrução for executar uma task de PB.
+description: Executar uma task card de playbook do Kaezan Huntbound ponta a ponta - leitura mínima, implementação jogável, o gate do raio do diff, commit na main. Use quando receber um path de docs/playbooks/**/tasks/*.md ou quando a instrução for executar uma task de PB.
 ---
 
 # Executar uma task de playbook
 
-Uma task = um chat. A task card é a fonte de verdade, não a conversa.
+Uma task = um chat. A card é a fonte de verdade, não a conversa. `AGENTS.md` tem o resto.
 
-## 1. Contexto mínimo
+Isto é um piloto. O aceite é o usuário jogando; bug no playtest vira `PB-NN-FIX-MM`, não outra hora
+de suíte. **O custo do processo é proporcional ao raio do diff** — um rename e uma mudança de kernel
+não pagam a mesma conta.
 
-Leia, nesta ordem:
+## 1. Antes de editar
 
-1. a task card indicada;
-2. `docs/playbooks/<PB-ID>/STATE.md`;
-3. **apenas** os arquivos listados na leitura mínima da task.
+`git status`. Árvore suja ou branch fora da `main` é sua primeira tarefa: leia o diff, rode o gate,
+commite. Integrar já é autorização normal da task que gerou aquilo.
 
-Não carregue `docs/` inteiro. Se a task não citar um arquivo e você precisar dele, leia — e registre
-essa dependência no relatório final para a task card ser corrigida depois.
+Leia a card, o `STATE.md` do playbook e **apenas** os paths que a card citar. Não carregue skills de
+plugin (Superpowers e afins) a menos que a card as nomeie.
 
-Confirme na task: classe da tarefa, modelo/effort sugerido, se é serial ou paralela, branch-base,
-branch temporária e modo de integração.
+Se precisar de um arquivo que a card não citou, leia — e diga isso no relatório para a card ser
+corrigida.
 
-## 2. Inspecionar antes de editar
+## 2. Implementar
 
-Verifique o estado real do workspace: `git status --porcelain=v1 --untracked-files=all` limpo, branch
-correto, e o que a task assume como pronto realmente está pronto. Estado divergente do `STATE.md` é
-condição de parada, não algo a "ajustar de passagem".
+- O tempo vai para arquitetura, padrão do arquivo vizinho e a funcionalidade jogável.
+- **A card diz o quê e onde.** Se ela trouxer um desenho pronto, ele é sugestão; o código real vence.
+- TDD só no kernel e em contrato. HUD, layout, mapa e conteúdo entregam jogável.
+- Não antecipe a próxima task. Não polia até zero bug — quem aponta é o playtest.
+- Correção pequena necessária ao aceite fica na task. Problema independente vira linha no `STATE.md`.
+- Preserve decisões congeladas: contrato, schema, identidade e escopo não se redesenham aqui.
 
-## 3. Implementar
+## 3. Gate
 
-- Teste antes da implementação quando o comportamento for testável. Veja o vermelho pela razão certa.
-- Preserve decisões congeladas: contrato, schema, política de identidade, allowlist e escopo não se
-  redesenham dentro de uma task de implementação.
-- Correção pequena e necessária para o critério de aceite fica na task. Problema independente vira
-  registro no `STATE.md` ou nova task — nunca expansão silenciosa.
-- Não antecipe a próxima task.
+Só o do raio do seu diff — a tabela está em `AGENTS.md` e na skill `run-gates`. Pare no primeiro
+vermelho, não empilhe.
 
-## 4. Verificar
+Rode para **saber se quebrou**, nunca para produzir prova. Card antiga que exige `verify` +
+`qa:browser` + os `--check` numa task de HUD ou conteúdo: execute a linha da tabela, não a card.
 
-Rode exatamente as verificações exigidas pela task. Use a skill `run-gates` para escolher os
-focados. `corepack pnpm verify` já inclui `biome check .`. Guarde comando e saída: eles vão para o
-relatório. `qa:budgets` é informativo — registre o número, não bloqueie por ele.
+`corepack pnpm verify` só na última task do playbook.
 
-## 5. Persistir o handoff
+## 4. Fechar
 
-Atualize **só a linha da task** na tabela do `STATE.md`, mais a próxima elegível e os bloqueios
-abertos. O arquivo tem teto de 60 linhas.
+Commite na `main`. Sem branch, sem worktree — eles só existem quando o `README.md` declara duas
+tasks paralelas rodando ao mesmo tempo.
 
-Comandos, exit codes, hashes, contagens, tentativas, desvios e o modelo/effort usados vão na
-**mensagem de commit** da task, não no `STATE.md` — o Git já guarda, data e associa ao diff. Decisão
-durável vai para ADR ou spec e é só referenciada.
+A narrativa do que foi feito vai na **mensagem de commit**; no `STATE.md`, só a linha da task.
 
-## 6. Fechar
+## 5. Relatar
 
-Commit, `git merge --ff-only` na `main`, verificação pós-integração e limpeza de worktree/branch.
-Serial ou paralela: o executor integra. Não deixe a branch para um integrador. Isso já está
-autorizado pela task; não peça confirmação. O procedimento está na skill `worktree-cycle`.
+Um parágrafo: o que mudou, o gate que rodou, o que olhar no jogo com `corepack pnpm dev` de pé.
+Depois pare — não inicie a próxima task.
 
-## 7. Relatar
+Estas três linhas precisam responder vazio:
 
-Resumo de mudanças, verificações com comando e resultado, integração, limpeza, desvios e próxima task
-elegível. Depois pare — não inicie a próxima task.
+```bash
+git status --porcelain && git branch --no-merged main && git worktree list
+```
 
 ## Ambiguidade não é parada
 
-Comportamento com mais de uma leitura plausível acontece o tempo todo numa implementação. Escolha a
-opção mais simples e mais fácil de reverter, registre a escolha em uma linha no commit e siga. Se
-estiver errada, o jogo mostra, e reverter uma decisão pequena custa menos que uma ida e volta.
+Escolha a opção mais simples e mais fácil de reverter, registre em uma linha no commit e siga.
 
-## Condições de parada
-
-Pare, preserve o estado e reporte só quando: for destruir ou migrar dado já salvo sem rollback; for
-necessário mudar contrato público, schema ou golden já integrado; a mesma causa bloquear dois ciclos
-vermelho/verde seguidos; o `--ff-only` falhar ou a árvore ficar suja.
-
-Não pare por: falta de veredito de auditoria, playbook anterior sem fechamento formal, orçamento de
-tempo vermelho, ou `git status` sujo com arquivos que não são da sua task.
-
-Registre o bloqueio no `STATE.md` em uma linha e o detalhe no relatório do chat.
+Pare só quando: for destruir dado salvo sem rollback; for mudar contrato, schema ou golden já
+integrado; ou a mesma causa bloquear dois ciclos vermelho/verde. Não pare por suíte incompleta,
+orçamento vermelho ou playbook anterior sem fechamento formal.
