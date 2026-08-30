@@ -59,9 +59,11 @@ gerado se resolve **regenerando depois do rebase**, nunca mergeando. Isso serial
 reprovaram o `tools/replay` por timeout (B16), e a suíte Playwright leva 8,4 min sozinha com a máquina
 livre. Escrever recipe é barato; `verify` é que não pode coincidir.
 
-**B18 — aberto, bloqueia a PB-10-07. Não é código deste repositório.** Todo outfit de **32×32**
-do export pessoal sai cisalhado ~1 px por linha e aparece deitado na diagonal: conferidos os
-lookTypes 73, 5, 25 e 40. Os de 64×64 saem certos (Rotworm 26, knight 131, 1.118 no total; o
+**B18 — aberto, bloqueia a PB-10-07. Não é código deste repositório.** Outfit de **32×32** do
+export pessoal sai cisalhado ~1 px por linha e aparece deitado na diagonal: conferidos os lookTypes
+5, 25 e 40 no re-export de 2026-08-30. **Não é universal** — o Hero 73 sai correto nesse mesmo
+export e o Hero Cave renderiza limpo; a leitura anterior de que 73 também estava cisalhado era
+errada. Os de 64×64 saem certos (Rotworm 26, Cyclops 22, Dragon 34, knight 131, 1.118 no total; o
 manifesto tem 79 em 32×32 contra 1.118 em 64×64). O packer copia o PNG byte a byte, então o jogo
 desenha o arquivo como ele é. Reproduzido fora do jogo decodificando a folha CIP com a mesma lógica
 de header do extractor: o cisalhamento já está na folha, e o header dela é normal (384×384, 32 bpp,
