@@ -87,7 +87,10 @@ efeito sobre eles e o `huntDriver` manteve o caminho do `DEFAULT_HUNT_ID` — o 
 ordem de blueprint derivada do catálogo desloca o stream de RNG da IA, e os goldens não veem porque
 replayam cenário próprio. Se confirmada, **cada hunt nova quebra as anteriores**. Junto, o fallback
 por vocação em `readHuntCharacter` (`apps/game/src/main.ts:186`) faz hunt sem ficha própria pegar em
-silêncio a primeira ficha de knight do catálogo em vez de estourar.
+silêncio a primeira ficha de knight do catálogo em vez de estourar. **Não reproduziu em `819d858`
+(2026-08-30):** `haste-play.spec.ts:171` passou em 5,3 s nas duas rodadas completas do dia, uma
+delas 82/82. Isso não fecha o B19 — não houve bisect novo — mas o gate deixou de ser 79/1, e a
+PB-10-11 deve confirmar o sintoma antes de perseguir a causa.
 
 **B20 — aberto, reportado pelo usuário jogando em 2026-08-30. Endereçado pela PB-10-12.** O corpo de
 qualquer criatura morta é um rotworm morto: `CombatDecorations.ts:155` usa sempre
@@ -101,6 +104,17 @@ chamado em nenhum ponto do código de produção — só `finish('abandoned')` n
 (`apps/game/src/main.ts:482`) — e a mitigação está desligada por decisão congelada 6 (`armor`
 inerte, `resistances` não lidos, sem poção). **É o escopo do PB-11**, não deste playbook. Registrado
 aqui porque foi descoberto no aceite do PB-10.
+
+**B22 — aberto, ambiental, não é código. Família do B11/B14/B16.** O worker do Playwright cai com
+`code=3221225477` (`0xC0000005`, access violation) em `save-driver.spec.ts:213`, derrubando os 7
+specs seguintes do arquivo: 74 passed / 1 failed / 7 did not run. **Nenhuma asserção reprova** — é o
+processo que morre. Reproduziu em 2 de 3 rodadas de `qa:browser` em 2026-08-30, sempre na posição 75
+de 82, depois de ~4,5 min de Chromium. **Não reproduz isolado:** o arquivo passa 8/8 três vezes
+seguidas em ~4,4 s. Sinal de instabilidade de processo em corrida longa, não de defeito do spec —
+por isso vira linha aqui e **não** task de correção: um agente atrás disso caçaria um bug que não
+reproduz. Vale reabrir como task se passar a reproduzir isolado ou a atingir outro arquivo. Mesmo
+dia, `assets:check` saiu com exit 139 numa execução e verde em 7,6 s na seguinte, o que inclina para
+a máquina.
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.
