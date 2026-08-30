@@ -38,6 +38,14 @@ histórico.
 Carregar os cinco packs de hunt no atlas para ter retrato é a saída errada. A PB-18-03 escolhe outra
 e registra qual.
 
+**B24 — aberto, achado em 2026-08-30 ao escrever este playbook. É conteúdo, não é da PB-18.** A
+Venore Rotworm Cave é a faixa 1, recomenda **nível 8** no índice gerado, e a ficha que ela entrega é
+de **nível 35 com 590 HP** — a única das cinco em que ficha e nível recomendado divergem (orc 25/25,
+cyclopolis 45/45, dragon 70/70, hero 130/130). A ficha é anterior à escada congelada pela PB-10-02 e
+nunca foi reconciliada. Efeito prático: a primeira hunt do jogo é jogada com um personagem quatro
+vezes mais forte do que ela pede. A porta da PB-18-02 vai **exibir** isso; corrigir é task de
+conteúdo, e a decisão de qual dos dois números vale é do usuário.
+
 **B18 — aberto, herdado, e relevante aqui.** Outfits de 32 × 32 do export pessoal saem cisalhados;
 Orc (lookType 5) é um deles, Hero (73) não. Retrato de criatura na porta vai **exibir** esse defeito
 onde ele hoje passa despercebido. Não é regressão da PB-18-03, e não é dela consertar.

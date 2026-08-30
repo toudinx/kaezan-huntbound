@@ -100,7 +100,9 @@ detalhada em `docs/playbooks/PB-08/README.md`, seção "O princípio de design".
 **Consequência de escopo, ainda não decidida:** a regra 1 cria obsolescência entre faixas — conteúdo
 antigo morre quando o jogador o ultrapassa. A resposta prevista é sincronização de nível e de gear
 (`docs/playbooks/PB-12/README.md`), que **não existe no Tibia** e portanto exigirá emenda própria a
-esta seção antes de ser implementada.
+esta seção antes de ser implementada. **A emenda está escrita e aguarda decisão** em
+`docs/09_EMENDA_ADR05_SINCRONIZACAO_DE_FAIXA.md`; enquanto o status dela for "proposta", este
+parágrafo continua valendo como está.
 
 **Recusado nesta data:** dividir o Knight em vocações por tipo de arma. A fantasia de sword/axe/club
 e de uma mão contra duas entrega-se como eixo de build dentro da vocação — `vocations.xml` já traz

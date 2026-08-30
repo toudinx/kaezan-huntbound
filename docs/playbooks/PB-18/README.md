@@ -53,9 +53,12 @@ tela.
 **O Huntbound já faz level sync. Ele só não conta a ninguém.**
 
 Não existe um personagem que progride: existe **uma ficha por hunt**, resolvida em
-`apps/game/src/hunt/readHuntCharacter.ts` e lançando se faltar. Venore Rotworm Cave entra em nível 8
-com 185 HP; Cyclopolis, em 45 com 740; Dragon Lair, em 70 com 1115. Escolher a hunt **é** escolher o
-nível, a arma e quais das nove ações estão desbloqueadas — e nada na tela diz isso.
+`apps/game/src/hunt/readHuntCharacter.ts` e lançando se faltar. Conferido no catálogo gerado em
+2026-08-30: Orc Fortress entra em nível 25 com 440 HP; Cyclopolis, em 45 com 740; Dragon Lair, em 70
+com 1115; Hero Cave, em 130 com 2015 HP e uma two-handed sword. **As nove ações são as mesmas em
+todas** — o kit tem uma banda só, `minLevel: 1, maxLevel: null`, como manda a regra 4 da curadoria.
+O que muda é nível, HP, mana, arma e skill. Escolher a hunt **é** escolher com que personagem se
+joga — e nada na tela diz isso.
 
 Isso muda o enquadramento inteiro. A porta do WAKFU não é decoração: é a tela onde o jogo admite o
 que a escolha significa. O PB-18 não acrescenta level sync ao Huntbound — ele **torna visível o que

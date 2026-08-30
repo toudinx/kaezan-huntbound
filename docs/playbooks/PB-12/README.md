@@ -37,6 +37,12 @@ Decisão vinculante 1 da `docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`: *"Toda m
 deve existir no Canary/Tibia ou ser uma extensão Huntbound listada explicitamente neste
 documento."*
 
+**A emenda já está escrita e aguarda decisão do dono:**
+`docs/09_EMENDA_ADR05_SINCRONIZACAO_DE_FAIXA.md`. Ela autoriza a sincronização de faixa com cinco
+propriedades vinculantes, rejeita explicitamente o caminho oposto (escalar a hunt ao jogador) e deixa
+o dial de dificuldade fora, para emenda própria depois do PB-11. Aceitá-la é uma edição; até lá este
+playbook não é elegível.
+
 **Level sync não existe no Tibia.** Diferente de tudo que está no PB-08 — stances, taunt, magias, kit
 — este playbook não pode começar sem que a extensão seja listada por escrito na seção "Extensões
 Huntbound permitidas".

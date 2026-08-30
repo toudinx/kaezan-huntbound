@@ -17,15 +17,28 @@ jogo já faz em silêncio.
 
 Não existe um personagem que progride. Existe **uma ficha por hunt**:
 `apps/game/src/hunt/readHuntCharacter.ts` resolve `character:huntbound:knight-<hunt>` e **lança** se
-faltar — a PB-10-11 removeu de propósito o fallback por vocação. Venore Rotworm Cave entra em nível 8
-com 185 HP e uma sword; Cyclopolis, em 45 com 740; Dragon Lair, em 70 com 1115.
+faltar — a PB-10-11 removeu de propósito o fallback por vocação.
 
-**Escolher a hunt é escolher o nível, a arma e quais das nove ações estão desbloqueadas.** As bandas
-de kit já existem no contrato (`CharacterKitBand`, com `minLevel`/`maxLevel`), então quais ações
-abrem naquele nível é dado disponível, não estimativa.
+Conferido no catálogo gerado em 2026-08-30, e é o dado que a porta vai imprimir:
 
-Nada na tela diz isso hoje. O jogador entra na Dragon Lair e descobre no meio da hunt que está com
-outro personagem.
+| Hunt | Nível | HP | Mana | Arma | Sword |
+|---|---:|---:|---:|---|---:|
+| Venore Rotworm Cave | 35 | 590 | 185 | sword | 60 |
+| Orc Fortress | 25 | 440 | 185 | sword | 60 |
+| Cyclopolis | 45 | 740 | 185 | sword | 60 |
+| Dragon Lair | 70 | 1115 | 185 | sword | 60 |
+| Hero Cave | 130 | 2015 | 645 | two-handed sword | 90 |
+
+**Escolher a hunt é escolher o personagem.** O que **não** muda é o kit: `pb-05-knight-combat.json`
+declara uma banda só, `minLevel: 1, maxLevel: null`, então as nove ações são as mesmas em toda hunt —
+é a regra 4 da curadoria ("nenhuma ação é trancada por level") funcionando. Diga isso também: que a
+rotação não muda é informação, não omissão.
+
+Nada na tela diz nada disso hoje. O jogador entra na Dragon Lair e descobre no meio da hunt que está
+com outro personagem.
+
+**A linha 1 da tabela é um defeito, não um dado.** Ver B24 no `STATE.md`: a rotworm recomenda nível 8
+no índice e entrega uma ficha de 35. Imprima o que existe; consertar conteúdo não é desta task.
 
 ## O que entra
 

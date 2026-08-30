@@ -21,6 +21,10 @@ conflito, os documentos normativos abaixo vencem.
 6. `BASE_CONTEXTO_KAEZAN_HUNTBOUND(1).md` — contexto mestre atualizado para agentes.
 7. `01_GUIA_DE_EXECUCAO.md` — resumo rápido de controle.
 
+**Emenda pendente:** `09_EMENDA_ADR05_SINCRONIZACAO_DE_FAIXA.md` propõe listar a sincronização de
+faixa entre as extensões Huntbound da ADR-05. **Não é direção vigente** enquanto o status dela for
+"proposta"; é pré-requisito declarado do PB-12.
+
 ## Evidência histórica
 
 - `C03_auditoria_arena_fable.md` — auditoria do Arena Fable sob a hipótese Godot.
