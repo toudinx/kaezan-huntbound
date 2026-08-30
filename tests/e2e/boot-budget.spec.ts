@@ -182,7 +182,7 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
     let readinessError: unknown = null;
 
     try {
-      await page.goto('http://127.0.0.1:4173/', {
+      await page.goto('/', {
         timeout: navigationTimeoutMs,
       });
       await selectHunt(page);
@@ -299,7 +299,7 @@ test('reaches the actionable shell within the Fast 4G budget', async ({
 
     for (const timing of cdpSocketTimings) {
       console.log(
-        `[boot-socket] ${timing.url.replace('http://127.0.0.1:4173', '')} ` +
+        `[boot-socket] ${timing.url.replace(new URL(page.url()).origin, '')} ` +
           `requestTime=${timing.requestTimeMs.toFixed(1)}ms ` +
           `serverHeaders=${timing.headersStartMs?.toFixed(1) ?? 'none'}ms ` +
           `releasedHeaders=${timing.headersEndMs?.toFixed(1) ?? 'none'}ms ` +

@@ -72,7 +72,7 @@ test('holds the ADR-001 boot and walk budgets on a cold cache', async ({
       connectionType: 'cellular4g',
     });
 
-    await page.goto('http://127.0.0.1:4173/', { timeout: 30_000 });
+    await page.goto('/', { timeout: 30_000 });
     await selectHunt(page);
     await expect(page.locator('[data-shell-ready="true"]')).toHaveCount(1, {
       timeout: 30_000,

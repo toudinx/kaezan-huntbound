@@ -1,5 +1,13 @@
 import { defineConfig } from '@playwright/test';
 
+import {
+  parsePreviewPort,
+  previewOrigin,
+} from './tests/e2e/support/previewPort.ts';
+
+const previewPort = parsePreviewPort();
+const previewUrl = previewOrigin(previewPort);
+
 // Budget specs measure wall-clock time on the developer machine. They detect
 // regressions, but a shared machine under load makes them report failures that
 // no code change caused, so they live in their own project and never gate a
@@ -27,7 +35,7 @@ export default defineConfig({
   ],
   retries: 0,
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: previewUrl,
     browserName: 'chromium',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
@@ -37,9 +45,8 @@ export default defineConfig({
     { name: 'budgets', testIgnore: helperTests, testMatch: budgetSpecs },
   ],
   webServer: {
-    command:
-      'corepack pnpm --filter @huntbound/game exec vite preview --mode test --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
+    command: `corepack pnpm --filter @huntbound/game exec vite preview --mode test --host 127.0.0.1 --port ${previewPort} --strictPort`,
+    url: previewUrl,
     reuseExistingServer: false,
     timeout: 120_000,
   },
