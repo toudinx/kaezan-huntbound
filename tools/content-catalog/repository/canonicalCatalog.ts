@@ -453,7 +453,14 @@ export function facetPayloadHash(
       case 'stats':
         return 'stats' in entity ? entity.stats : {};
       case 'appearance':
-        return 'lookType' in entity ? { lookType: entity.lookType } : {};
+        return 'lookType' in entity
+          ? {
+              lookType: entity.lookType,
+              ...(entity.corpseItemId === undefined
+                ? {}
+                : { corpseItemId: entity.corpseItemId }),
+            }
+          : {};
       case 'combat':
         return 'attacks' in entity
           ? {

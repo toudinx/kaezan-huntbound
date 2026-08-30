@@ -51,7 +51,10 @@ import {
   type CombatTargetSelection,
   createCombatTargetSelection,
 } from '../../hunt/CombatTargeting';
-import { DEFAULT_COMBAT_ABILITIES } from '../../hunt/CombatViewModel';
+import {
+  type CombatTargetDetails,
+  DEFAULT_COMBAT_ABILITIES,
+} from '../../hunt/CombatViewModel';
 import {
   CREATURE_HEALTH_BAR_BACKDROP_ALPHA,
   CREATURE_HEALTH_BAR_BACKDROP_COLOR,
@@ -154,6 +157,7 @@ export interface HuntSceneOptions {
   readonly driver: HuntSimulationDriver;
   readonly abilities?: readonly AbilityDefinition[];
   readonly conditions?: readonly ScenarioConditionDefinition[];
+  readonly targetDetailsByBlueprint?: ReadonlyMap<string, CombatTargetDetails>;
   readonly tileSize?: number;
 }
 
@@ -349,6 +353,11 @@ export class HuntScene extends Phaser.Scene {
           .actors()
           .map((actor) => [actor.entityId, { ...actor.position }] as const),
       );
+      const actorBlueprintIds = new Map(
+        presentation
+          .actors()
+          .map((actor) => [actor.entityId, actor.blueprintId] as const),
+      );
       const playerBeforeActor = presentation
         .actors()
         .find(
@@ -363,6 +372,9 @@ export class HuntScene extends Phaser.Scene {
       this.combatDecorations.handle({
         events,
         actorPositions,
+        actorBlueprintIds,
+        targetDetailsByBlueprint: this.options.targetDetailsByBlueprint,
+        onUnresolvedAsset: (key) => this.unresolvedAssets.noteMissing(key),
         playerPosition: playerBefore === undefined ? null : { ...playerBefore },
       });
       this.combatImpulses.handle({

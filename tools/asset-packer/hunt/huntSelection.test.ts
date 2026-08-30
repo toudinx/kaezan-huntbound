@@ -57,7 +57,11 @@ const metadata = {
 };
 const consumer = 'Test hunt asset pack';
 const cyclopsAssetSelection = {
-  creature: { key: 'creature:tibia:cyclops', lookType: 22 },
+  creature: {
+    key: 'creature:tibia:cyclops',
+    lookType: 22,
+    corpse: { key: 'item:tibia:dead-cyclops', clientId: 5962 },
+  },
   loot: [
     { key: 'item:tibia:gold-coin', clientId: 3031 },
     { key: 'item:tibia:meat', clientId: 3577 },
@@ -66,10 +70,22 @@ const cyclopsAssetSelection = {
 } as const;
 
 const orcFortressAssetSelection = {
-  creature: { key: 'creature:tibia:orc', lookType: 5 },
+  creature: {
+    key: 'creature:tibia:orc',
+    lookType: 5,
+    corpse: { key: 'item:tibia:dead-orc', clientId: 5966 },
+  },
   extraCreatures: [
-    { key: 'creature:tibia:orc-spearman', lookType: 50 },
-    { key: 'creature:tibia:orc-shaman', lookType: 6 },
+    {
+      key: 'creature:tibia:orc-spearman',
+      lookType: 50,
+      corpse: { key: 'item:tibia:dead-orc-spearman', clientId: 5996 },
+    },
+    {
+      key: 'creature:tibia:orc-shaman',
+      lookType: 6,
+      corpse: { key: 'item:tibia:dead-orc-shaman', clientId: 5978 },
+    },
   ],
   loot: [
     { key: 'item:tibia:gold-coin', clientId: 3031 },
@@ -217,12 +233,21 @@ describe('hunt selection generation', () => {
       assetSelection: cyclopsAssetSelection,
     });
 
-    expect(hunt.keys).toContain('creature:tibia:cyclops');
+    expect(hunt.keys).toEqual(
+      expect.arrayContaining([
+        'creature:tibia:cyclops',
+        'item:tibia:dead-cyclops',
+      ]),
+    );
     expect(hunt.keys).not.toContain(HUNT_PACK_CREATURE_KEY);
     expect(
       manifest.entries
         .filter(({ key }) =>
-          ['creature:tibia:cyclops', 'item:tibia:short-sword'].includes(key),
+          [
+            'creature:tibia:cyclops',
+            'item:tibia:dead-cyclops',
+            'item:tibia:short-sword',
+          ].includes(key),
         )
         .map(({ key, category, sourceIdentity }) => ({
           key,
@@ -234,6 +259,11 @@ describe('hunt selection generation', () => {
         key: 'creature:tibia:cyclops',
         category: 'creature',
         sourceIdentity: { kind: 'lookType', id: 22 },
+      },
+      {
+        key: 'item:tibia:dead-cyclops',
+        category: 'object',
+        sourceIdentity: { kind: 'clientId', id: 5962 },
       },
       {
         key: 'item:tibia:short-sword',
@@ -295,6 +325,9 @@ describe('hunt selection generation', () => {
         'creature:tibia:orc',
         'creature:tibia:orc-spearman',
         'creature:tibia:orc-shaman',
+        'item:tibia:dead-orc',
+        'item:tibia:dead-orc-spearman',
+        'item:tibia:dead-orc-shaman',
         'item:tibia:spear',
         'item:tibia:shamanic-hood',
       ]),
@@ -311,6 +344,18 @@ describe('hunt selection generation', () => {
     expect(entries.get('creature:tibia:orc-shaman')).toMatchObject({
       category: 'creature',
       sourceIdentity: { kind: 'lookType', id: 6 },
+    });
+    expect(entries.get('item:tibia:dead-orc')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 5966 },
+    });
+    expect(entries.get('item:tibia:dead-orc-spearman')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 5996 },
+    });
+    expect(entries.get('item:tibia:dead-orc-shaman')).toMatchObject({
+      category: 'object',
+      sourceIdentity: { kind: 'clientId', id: 5978 },
     });
     expect(entries.get('item:tibia:studded-armor')).toMatchObject({
       category: 'object',

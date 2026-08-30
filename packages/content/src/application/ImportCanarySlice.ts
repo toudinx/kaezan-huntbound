@@ -240,6 +240,9 @@ function creatureDefinition(
     aliases: [],
     stats: dto.stats,
     lookType: dto.lookType,
+    ...(dto.corpseItemId === undefined
+      ? {}
+      : { corpseItemId: dto.corpseItemId }),
     attacks: dto.attacks.map((attack) =>
       attack.kind === 'area' ? { ...attack, shape: 'square' as const } : attack,
     ) as CatalogCreatureDefinition['attacks'],

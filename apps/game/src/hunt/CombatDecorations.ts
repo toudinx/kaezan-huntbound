@@ -2,7 +2,6 @@ import {
   type AssetKey,
   createAssetKey,
   HUNT_PACK_BLOOD_EFFECT_KEY,
-  HUNT_PACK_DEAD_ROTWORM_KEY,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
 } from '../../../../packages/assets/src/index.ts';
 import {
@@ -50,6 +49,12 @@ export interface CombatDecoration {
 export interface CombatDecorationInput {
   readonly events: readonly SimulationEvent[];
   readonly actorPositions: ReadonlyMap<EntityId, GridPosition>;
+  readonly actorBlueprintIds?: ReadonlyMap<EntityId, string>;
+  readonly targetDetailsByBlueprint?: ReadonlyMap<
+    string,
+    { readonly corpseAssetKey?: string | null }
+  >;
+  readonly onUnresolvedAsset?: (key: string) => void;
   readonly playerPosition: GridPosition | null;
 }
 
@@ -144,17 +149,37 @@ export function createCombatDecorations(
   };
 
   return {
-    handle: ({ events, actorPositions, playerPosition }) => {
+    handle: ({
+      events,
+      actorPositions,
+      actorBlueprintIds,
+      targetDetailsByBlueprint,
+      onUnresolvedAsset,
+      playerPosition,
+    }) => {
       for (const event of events) {
         const createdAtMs = event.tick * TICK_DURATION_MS;
         switch (event.payload.type) {
           case 'actor/died': {
             const position = copyPosition(event.payload.position);
             deathPositions.set(event.payload.entityId, position);
-            add('corpse', createdAtMs, CORPSE_TTL_MS, {
-              key: createAssetKey(HUNT_PACK_DEAD_ROTWORM_KEY),
-              position,
-            });
+            const blueprintId = actorBlueprintIds?.get(event.payload.entityId);
+            const targetDetails =
+              blueprintId === undefined
+                ? undefined
+                : targetDetailsByBlueprint?.get(blueprintId);
+            const corpseAssetKey = targetDetails?.corpseAssetKey;
+            if (corpseAssetKey !== undefined && corpseAssetKey !== null) {
+              add('corpse', createdAtMs, CORPSE_TTL_MS, {
+                key: createAssetKey(corpseAssetKey),
+                position,
+              });
+            } else if (
+              targetDetails !== undefined &&
+              blueprintId !== undefined
+            ) {
+              onUnresolvedAsset?.(`item:tibia:dead-${blueprintId}`);
+            }
             add('blood', createdAtMs, BLOOD_TTL_MS, {
               key: createAssetKey(HUNT_PACK_BLOOD_EFFECT_KEY),
               position,

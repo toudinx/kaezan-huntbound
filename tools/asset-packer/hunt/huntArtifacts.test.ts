@@ -130,8 +130,8 @@ describe('generated hunt artifacts', () => {
     expect(selection.hunt?.packKey).toBe(
       HUNT_PIPELINE_REGISTRY['hunt:tibia:dragon-lair'].packKey,
     );
-    expect(selection.hunt?.keys).toHaveLength(65);
-    expect(selection.entries).toHaveLength(65);
+    expect(selection.hunt?.keys).toHaveLength(217);
+    expect(selection.entries).toHaveLength(217);
     expect(
       selection.entries.find((entry) => entry.key === 'creature:tibia:dragon'),
     ).toMatchObject({
@@ -152,7 +152,7 @@ describe('generated hunt artifacts', () => {
       await readJson('packages/test-fixtures/assets/pb10-09/source-lock.json'),
     );
 
-    expect(sourceLock.files).toHaveLength(65);
+    expect(sourceLock.files).toHaveLength(217);
     expect(sourceLock.files.every((file) => file.byteLength === 68)).toBe(true);
     expect(sourceLock.sourceSnapshot).toBe('pb10-09-synthetic-v1');
   });

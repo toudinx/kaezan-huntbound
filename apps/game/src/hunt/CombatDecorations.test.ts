@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createAssetKey,
   HUNT_PACK_BLOOD_EFFECT_KEY,
+  HUNT_PACK_DEAD_ROTWORM_KEY,
   HUNT_PACK_HIT_AREA_EFFECT_KEY,
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
 } from '../../../../packages/assets/src/index.ts';
@@ -49,6 +50,10 @@ describe('CombatDecorations', () => {
         }),
       ],
       actorPositions: new Map(),
+      actorBlueprintIds: new Map([[2 as EntityId, 'rotworm']]),
+      targetDetailsByBlueprint: new Map([
+        ['rotworm', { corpseAssetKey: HUNT_PACK_DEAD_ROTWORM_KEY }],
+      ]),
       playerPosition: position(5, 5),
     });
 
@@ -56,6 +61,7 @@ describe('CombatDecorations', () => {
       expect.arrayContaining([
         expect.objectContaining({
           kind: 'corpse',
+          key: createAssetKey(HUNT_PACK_DEAD_ROTWORM_KEY),
           position: deathPosition,
           blocksMovement: false,
           expiresAtMs: 10 * 50 + CORPSE_TTL_MS,
@@ -122,6 +128,34 @@ describe('CombatDecorations', () => {
         }),
       ]),
     );
+  });
+
+  it('skips a missing species corpse and reports its unresolved key', () => {
+    const decorations = createCombatDecorations();
+    const unresolved: string[] = [];
+
+    decorations.handle({
+      events: [
+        event(10, {
+          type: 'actor/died',
+          entityId: 2 as EntityId,
+          killerEntityId: 1 as EntityId,
+          position: position(6, 5),
+        }),
+      ],
+      actorPositions: new Map(),
+      actorBlueprintIds: new Map([[2 as EntityId, 'cyclops']]),
+      targetDetailsByBlueprint: new Map([
+        ['cyclops', { corpseAssetKey: null }],
+      ]),
+      onUnresolvedAsset: (key) => unresolved.push(key),
+      playerPosition: position(5, 5),
+    });
+
+    expect(decorations.current().some((entry) => entry.kind === 'corpse')).toBe(
+      false,
+    );
+    expect(unresolved).toEqual(['item:tibia:dead-cyclops']);
   });
 
   it('plans hit-area impact on the target from combat/attacked', () => {

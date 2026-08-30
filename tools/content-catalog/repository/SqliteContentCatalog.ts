@@ -295,6 +295,7 @@ export class SqliteContentCatalog
           readonly experience: number;
           readonly speed: number;
           readonly look_type: number;
+          readonly corpse_item_id: number | null;
         };
         const attacks = this.database
           .prepare(
@@ -357,6 +358,9 @@ export class SqliteContentCatalog
             speed: creature.speed,
           },
           lookType: creature.look_type,
+          ...(creature.corpse_item_id === null
+            ? {}
+            : { corpseItemId: creature.corpse_item_id }),
           attacks: attacks.map((attack) => {
             const base = {
               kind: attack.kind,
@@ -813,7 +817,7 @@ export class SqliteContentCatalog
     for (const creature of bundle.creatures) {
       this.database
         .prepare(
-          'INSERT INTO creatures (slice_key, entity_guid, health, experience, speed, look_type) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
+          'INSERT INTO creatures (slice_key, entity_guid, health, experience, speed, look_type, corpse_item_id) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
         )
         .run(
           bundle.slice.key,
@@ -822,6 +826,7 @@ export class SqliteContentCatalog
           creature.stats.experience,
           creature.stats.speed,
           creature.lookType,
+          creature.corpseItemId ?? null,
         );
     }
     for (const item of bundle.items) {
@@ -840,7 +845,7 @@ export class SqliteContentCatalog
     for (const creature of bundle.creatures) {
       this.database
         .prepare(
-          'INSERT INTO creatures (slice_key, entity_guid, health, experience, speed, look_type) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
+          'INSERT INTO creatures (slice_key, entity_guid, health, experience, speed, look_type, corpse_item_id) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
         )
         .run(
           bundle.slice.key,
@@ -849,6 +854,7 @@ export class SqliteContentCatalog
           creature.stats.experience,
           creature.stats.speed,
           creature.lookType,
+          creature.corpseItemId ?? null,
         );
       for (const [ordinal, attack] of creature.attacks.entries()) {
         this.database

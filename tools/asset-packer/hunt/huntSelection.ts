@@ -30,6 +30,10 @@ export const HUNT_PACK_BUDGET = {
 export type HuntPackCreatureAsset = {
   readonly key: string;
   readonly lookType: number;
+  readonly corpse?: {
+    readonly key: string;
+    readonly clientId: number;
+  };
 };
 
 export type HuntPackAssetConfig = {
@@ -42,7 +46,11 @@ export type HuntPackAssetConfig = {
 };
 
 const defaultAssetConfig: HuntPackAssetConfig = {
-  creature: { key: HUNT_PACK_CREATURE_KEY, lookType: 26 },
+  creature: {
+    key: HUNT_PACK_CREATURE_KEY,
+    lookType: 26,
+    corpse: { key: HUNT_PACK_DEAD_ROTWORM_KEY, clientId: 5967 },
+  },
   loot: [
     { key: 'item:tibia:gold-coin', clientId: 3031 },
     { key: 'item:tibia:ham', clientId: 3582 },
@@ -66,11 +74,17 @@ export type HuntPackMetadata = {
 export function huntPackExtraKeys(
   assetSelection: HuntPackAssetConfig = defaultAssetConfig,
 ): readonly string[] {
+  const creatures = [
+    assetSelection.creature,
+    ...(assetSelection.extraCreatures ?? []),
+  ];
   return [
-    assetSelection.creature.key,
-    ...(assetSelection.extraCreatures ?? []).map((creature) => creature.key),
+    ...creatures.map((creature) => creature.key),
     HUNT_PACK_OUTFIT_KEY,
     ...HUNT_PACK_COMBAT_KEYS,
+    ...creatures.flatMap((creature) =>
+      creature.corpse === undefined ? [] : [creature.corpse.key],
+    ),
     ...assetSelection.loot.map(({ key }) => key),
   ];
 }
@@ -118,6 +132,10 @@ function assetSelectionForMetadata(
   if (lookType === undefined) {
     throw new Error(`Unsupported hunt creature key ${creatureKey}`);
   }
+  const corpse =
+    creatureKey === HUNT_PACK_CREATURE_KEY
+      ? defaultAssetConfig.creature.corpse
+      : undefined;
 
   const lootKeys =
     metadata.lootKeys ??
@@ -127,7 +145,11 @@ function assetSelectionForMetadata(
         ? HUNT_PACK_DRAGON_LOOT_KEYS
         : HUNT_PACK_LOOT_KEYS);
   return {
-    creature: { key: creatureKey, lookType },
+    creature: {
+      key: creatureKey,
+      lookType,
+      ...(corpse === undefined ? {} : { corpse }),
+    },
     loot: lootKeys.map((key) => {
       const clientId = knownLootClientIds.get(key);
       if (clientId === undefined) {
@@ -250,10 +272,14 @@ function identityForKey(
       pivot: { x: 0.5, y: 0.5 },
     };
   }
-  if (key === HUNT_PACK_DEAD_ROTWORM_KEY) {
+  const corpse = [
+    assetSelection.creature,
+    ...(assetSelection.extraCreatures ?? []),
+  ].find((creature) => creature.corpse?.key === key)?.corpse;
+  if (corpse !== undefined) {
     return {
       category: 'object',
-      sourceIdentity: { kind: 'clientId', id: 5967 },
+      sourceIdentity: { kind: 'clientId', id: corpse.clientId },
       pivot: { x: 0.5, y: 1 },
     };
   }

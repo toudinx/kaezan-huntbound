@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb10-10-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "d0e40e36fbb10a020101e9663f7403b8fb73503aca880b7fe28a0b918f34a05f",
-    "byteLength": 45330
+    "sha256": "2d49260e72e5e47876da100de02322ffa216a8c0359efdf99d297df019d41bc7",
+    "byteLength": 45332
   },
   "files": [
     {
@@ -75,13 +75,13 @@
       "byteLength": 68
     },
     {
-      "key": "item:tibia:dead-rotworm",
+      "key": "item:tibia:dead-hero",
       "category": "object",
       "sourceIdentity": {
         "kind": "clientId",
-        "id": 5967
+        "id": 18134
       },
-      "path": "objects/5967.png",
+      "path": "objects/18134.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

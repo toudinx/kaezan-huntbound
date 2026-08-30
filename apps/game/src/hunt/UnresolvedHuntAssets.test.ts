@@ -45,8 +45,8 @@ describe('createUnresolvedHuntAssetTracker', () => {
         .sort((left, right) => left.localeCompare(right)),
     );
     expect(second).toEqual(first);
-    expect(first).toContain(HUNT_PACK_DEAD_ROTWORM_KEY);
     expect(first).toContain(HUNT_PACK_BLOOD_EFFECT_KEY);
+    expect(first).not.toContain(HUNT_PACK_DEAD_ROTWORM_KEY);
     expect(first).not.toContain(HUNT_PACK_MAGIC_BLUE_EFFECT_KEY);
   });
 });

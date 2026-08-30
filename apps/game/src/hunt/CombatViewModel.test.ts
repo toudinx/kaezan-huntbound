@@ -301,6 +301,7 @@ function runtimeFixture(): RuntimeContentBundle {
         ],
         stats: { health: 65, experience: 40, speed: 100 },
         lookType: 26,
+        corpseItemId: 5967,
         attacks: [],
         defenses: [],
         conditions: [],
@@ -993,6 +994,15 @@ describe('CombatViewModel', () => {
     expect(viewModel.snapshot().playerPosture).toEqual({
       abilityId: 'blood-rage',
       label: 'Blood Rage',
+    });
+  });
+
+  it('carries the catalog corpse into target details by blueprint', () => {
+    const viewModel = createHuntCombatViewModel(runtimeFixture());
+
+    expect(viewModel.targetDetailsByBlueprint.get('rotworm')).toMatchObject({
+      assetKey: 'creature:tibia:rotworm',
+      corpseAssetKey: 'item:tibia:dead-rotworm',
     });
   });
 });

@@ -547,6 +547,7 @@ export async function bootstrapApp(
         driver: activeDriver,
         abilities: scenario.abilities,
         conditions: scenario.conditions,
+        targetDetailsByBlueprint: combatViewModel.targetDetailsByBlueprint,
       });
       const viewportFactory =
         overrides.createViewportController ?? createViewportController;

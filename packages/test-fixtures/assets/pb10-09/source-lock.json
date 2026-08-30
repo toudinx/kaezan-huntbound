@@ -4,7 +4,7 @@
   "sourceSnapshot": "pb10-09-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "5825167ba6c5aad5585d18568e2d4802f3b37946c959c8e01ea762356d709543",
+    "sha256": "04447b906a515c46299c756cea969786b09f3367b67c112b65bfaaa8ad57344d",
     "byteLength": 90126
   },
   "files": [
@@ -86,13 +86,13 @@
       "byteLength": 68
     },
     {
-      "key": "item:tibia:dead-rotworm",
+      "key": "item:tibia:dead-dragon",
       "category": "object",
       "sourceIdentity": {
         "kind": "clientId",
-        "id": 5967
+        "id": 5973
       },
-      "path": "objects/5967.png",
+      "path": "objects/5973.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

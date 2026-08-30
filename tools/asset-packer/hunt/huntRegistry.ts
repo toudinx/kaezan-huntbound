@@ -31,7 +31,11 @@ export const HUNT_PIPELINE_REGISTRY = {
       'packages/assets/catalog/selections/pb-04-venore-rotworm-cave.json',
     consumer: 'PB-04 Venore Rotworm Cave asset pack',
     assetSelection: {
-      creature: { key: 'creature:tibia:rotworm', lookType: 26 },
+      creature: {
+        key: 'creature:tibia:rotworm',
+        lookType: 26,
+        corpse: { key: 'item:tibia:dead-rotworm', clientId: 5967 },
+      },
       loot: [
         { key: 'item:tibia:gold-coin', clientId: 3031 },
         { key: 'item:tibia:ham', clientId: 3582 },
@@ -68,7 +72,11 @@ export const HUNT_PIPELINE_REGISTRY = {
       'packages/assets/catalog/selections/pb-10-08-cyclopolis.json',
     consumer: 'PB-10-08 Cyclopolis asset pack',
     assetSelection: {
-      creature: { key: 'creature:tibia:cyclops', lookType: 22 },
+      creature: {
+        key: 'creature:tibia:cyclops',
+        lookType: 22,
+        corpse: { key: 'item:tibia:dead-cyclops', clientId: 5962 },
+      },
       loot: [
         { key: 'item:tibia:gold-coin', clientId: 3031 },
         { key: 'item:tibia:meat', clientId: 3577 },
@@ -104,7 +112,11 @@ export const HUNT_PIPELINE_REGISTRY = {
       'packages/assets/catalog/selections/pb-10-09-dragon-lair.json',
     consumer: 'PB-10-09 Dragon Lair asset pack',
     assetSelection: {
-      creature: { key: 'creature:tibia:dragon', lookType: 34 },
+      creature: {
+        key: 'creature:tibia:dragon',
+        lookType: 34,
+        corpse: { key: 'item:tibia:dead-dragon', clientId: 5973 },
+      },
       loot: [
         { key: 'item:tibia:gold-coin', clientId: 3031 },
         { key: 'item:tibia:dragon-ham', clientId: 3583 },
@@ -143,7 +155,11 @@ export const HUNT_PIPELINE_REGISTRY = {
       'packages/assets/catalog/selections/pb-10-10-hero-cave.json',
     consumer: 'PB-10-10 Hero Cave asset pack',
     assetSelection: {
-      creature: { key: 'creature:tibia:hero', lookType: 73 },
+      creature: {
+        key: 'creature:tibia:hero',
+        lookType: 73,
+        corpse: { key: 'item:tibia:dead-hero', clientId: 18134 },
+      },
       loot: [
         { key: 'item:tibia:gold-coin', clientId: 3031 },
         { key: 'item:tibia:arrow', clientId: 3447 },
@@ -178,10 +194,25 @@ export const HUNT_PIPELINE_REGISTRY = {
       'packages/assets/catalog/selections/pb-10-orc-fortress.json',
     consumer: 'PB-10 Orc Fortress asset pack',
     assetSelection: {
-      creature: { key: 'creature:tibia:orc', lookType: 5 },
+      creature: {
+        key: 'creature:tibia:orc',
+        lookType: 5,
+        corpse: { key: 'item:tibia:dead-orc', clientId: 5966 },
+      },
       extraCreatures: [
-        { key: 'creature:tibia:orc-spearman', lookType: 50 },
-        { key: 'creature:tibia:orc-shaman', lookType: 6 },
+        {
+          key: 'creature:tibia:orc-spearman',
+          lookType: 50,
+          corpse: {
+            key: 'item:tibia:dead-orc-spearman',
+            clientId: 5996,
+          },
+        },
+        {
+          key: 'creature:tibia:orc-shaman',
+          lookType: 6,
+          corpse: { key: 'item:tibia:dead-orc-shaman', clientId: 5978 },
+        },
       ],
       loot: [
         { key: 'item:tibia:gold-coin', clientId: 3031 },

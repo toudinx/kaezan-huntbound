@@ -4,7 +4,7 @@
   "sourceSnapshot": "pb10-08-cyclopolis-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "45d3da35bcdd37b34163e16500726c8101d500899b4e913c0723e6e85cc3b353",
+    "sha256": "1b53be5514a1a42687981f3564b6bfbb873f6fde6e1029232f3673b0eb9a501f",
     "byteLength": 21647
   },
   "files": [
@@ -75,13 +75,13 @@
       "byteLength": 68
     },
     {
-      "key": "item:tibia:dead-rotworm",
+      "key": "item:tibia:dead-cyclops",
       "category": "object",
       "sourceIdentity": {
         "kind": "clientId",
-        "id": 5967
+        "id": 5962
       },
-      "path": "objects/5967.png",
+      "path": "objects/5962.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

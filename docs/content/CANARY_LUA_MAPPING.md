@@ -53,6 +53,7 @@ Source form: `Game.createMonsterType` followed by assignments to `monster`, endi
 | healing entry in `monster.defenses` | `defenses[]` | `minDamage/maxDamage` become non-negative `minAmount/maxAmount`; chance/interval normalized as actions | Healing action |
 | `monster.summon.summons[]` | `summons[]` | ID or name reference, positive count, chance in basis points | Reachable creature dependency |
 | `monster.loot[]` ID/name | `lootRefs[]` | One explicit `{sourceId}` or `{sourceName}` per entry; source order preserved | Later item resolution |
+| `monster.corpse` | `corpseItemId` | Non-negative client item ID | Species-specific corpse object |
 | `loot.chance` and count fields | validation-only at this DTO boundary | Chance must remain integer `0..100000`; `100000 = 100%`; counts must be positive and ordered | Prevent invalid loot data without widening the public ref DTO |
 | `monster.elements[]` | `elements` | Keys normalized from combat constants; source percent divided by 100 (`50 -> 0.5`) | Resistance projection |
 | `monster.immunities[]` | `immunities[]` | Only entries with boolean `condition = true`; source type preserved | Condition immunity projection |
@@ -67,7 +68,7 @@ Bestiary race constants (`BESTY_RACE_HUMAN`, `BESTY_RACE_HUMANOID`, `BESTY_RACE_
 
 These forms are recognized and statically validated but are not copied into metadata:
 
-- `description`, `events`, `maxHealth`, `race`, `corpse`, and `manaCost`;
+- `description`, `events`, `maxHealth`, `race`, and `manaCost`;
 - `Bestiary`, including class, race, unlock values, stars, and textual `Locations`;
 - `changeTarget`, `strategiesTarget`, `flags`, `light`, and `voices`;
 - scalar `defense`, `armor`, and `mitigation` entries in `monster.defenses`;

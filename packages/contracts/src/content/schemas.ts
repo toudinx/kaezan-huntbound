@@ -351,6 +351,7 @@ export const CreatureDefinitionSchema = EntityIdentitySchema.extend({
     })
     .strict(),
   lookType: nonNegativeInteger,
+  corpseItemId: nonNegativeInteger.optional(),
   attacks: z.array(CreatureAttackDefinitionSchema).readonly(),
   defenses: z.array(CreatureDefenseActionSchema).readonly(),
   conditions: z.array(ConditionDefinitionSchema).readonly(),

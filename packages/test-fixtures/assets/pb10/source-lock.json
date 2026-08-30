@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb10-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "bab9098f4b022e31b9e161e1c90a9e8e9c905c9a0b92a2e8c0165c91f214aa75",
-    "byteLength": 143611
+    "sha256": "47b3e5772b85f43d414dfdc09a3cef780c68d379a4d7f14e6c9baf6f32857112",
+    "byteLength": 144441
   },
   "files": [
     {
@@ -108,13 +108,35 @@
       "byteLength": 68
     },
     {
-      "key": "item:tibia:dead-rotworm",
+      "key": "item:tibia:dead-orc",
       "category": "object",
       "sourceIdentity": {
         "kind": "clientId",
-        "id": 5967
+        "id": 5966
       },
-      "path": "objects/5967.png",
+      "path": "objects/5966.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:dead-orc-shaman",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5978
+      },
+      "path": "objects/5978.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "item:tibia:dead-orc-spearman",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5996
+      },
+      "path": "objects/5996.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

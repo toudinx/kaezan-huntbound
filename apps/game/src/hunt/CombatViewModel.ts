@@ -47,6 +47,7 @@ export interface CombatTargetDetails {
   readonly blueprintId: string;
   readonly displayName: string;
   readonly assetKey: string | null;
+  readonly corpseAssetKey?: string | null;
   readonly resistances: readonly ElementResistance[];
 }
 
@@ -123,6 +124,7 @@ export interface CombatViewState {
 }
 
 export interface CombatViewModel {
+  readonly targetDetailsByBlueprint: ReadonlyMap<string, CombatTargetDetails>;
   handle(events: readonly SimulationEvent[]): void;
   restoreBag(bag: readonly RunBagEntry[]): void;
   restoreSnapshot(snapshot: SimulationSnapshot): void;
@@ -188,6 +190,9 @@ export function createCombatViewModel(
   options: CombatViewModelOptions,
 ): CombatViewModel {
   const conditions = options.conditions ?? EMPTY_CONDITIONS;
+  const targetDetailsByBlueprint = new Map(
+    options.targetDetailsByBlueprint ?? [],
+  );
   const actorsById = new Map<EntityId, MutableVitals>();
   const targetSelection = createCombatTargetSelection({
     playerEntityId: options.playerEntityId,
@@ -570,7 +575,7 @@ export function createCombatViewModel(
     if (entityId === null) return null;
     const actor = actorFor(entityId);
     if (actor === undefined) return null;
-    const authored = options.targetDetailsByBlueprint?.get(actor.blueprintId);
+    const authored = targetDetailsByBlueprint.get(actor.blueprintId);
     if (authored !== undefined) {
       return {
         ...authored,
@@ -700,6 +705,7 @@ export function createCombatViewModel(
   };
 
   return {
+    targetDetailsByBlueprint,
     handle,
     restoreBag: (entries) => {
       bag = entries.map((entry) => ({ ...entry }));
@@ -1053,6 +1059,10 @@ export function createHuntCombatViewModel(
       blueprintId,
       displayName: creature.displayName,
       assetKey: creature.stableKey,
+      corpseAssetKey:
+        creature.corpseItemId === undefined
+          ? null
+          : `item:tibia:dead-${blueprintId}`,
       resistances: blueprintById.get(blueprintId)?.resistances ?? [],
     });
   }
@@ -1090,6 +1100,7 @@ export function createDefaultCombatViewModel(
           blueprintId: 'rotworm',
           displayName: 'Rotworm',
           assetKey: 'creature:tibia:rotworm',
+          corpseAssetKey: 'item:tibia:dead-rotworm',
           resistances: [],
         },
       ],

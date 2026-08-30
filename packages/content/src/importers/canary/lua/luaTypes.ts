@@ -51,6 +51,7 @@ export interface CanaryCreatureDto {
     readonly speed: number;
   };
   readonly lookType: number;
+  readonly corpseItemId?: number;
   readonly attacks: readonly CanaryAttackDto[];
   readonly defenses: readonly CanaryDefenseDto[];
   readonly conditions: readonly CanaryConditionDto[];

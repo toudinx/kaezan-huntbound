@@ -73,6 +73,7 @@ contagem de arquivos, linhas ou minutos.
 |                                PB-15 | Helper mínimo                      | cura, alvo, ações e loot como módulos desligáveis                                                                                       |
 |                                PB-16 | Playtest e performance             | browser QA, screenshots, métricas e orçamento de assets                                                                                 |
 |   [PB-17](playbooks/PB-17/README.md) | O cockpit                          | ícones de magia do Tibia com cooldown legível, mochila, minimapa que localiza e log de combate — **criado em 2026-08-30 e elegível; roda a seguir** |
+|   [PB-18](playbooks/PB-18/README.md) | A porta                            | a seleção de hunt no formato da porta de dungeon do WAKFU: atlas, preview, a ficha que a hunt escolhe e volta ao atlas sem F5 — **criado em 2026-08-30 e elegível** |
 
 **Inserção de 2026-08-30 — PB-17, e por que ele não é o PB-13.** O usuário pediu um playbook que
 melhore o que já existe, com o cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do
@@ -81,9 +82,21 @@ em task cards fechadas do PB-08, e renumerar tornaria essas referências histór
 economizar nada. **O número é identidade, a ordem é declarada aqui** — é a mesma regra que já põe o
 PB-10 antes do PB-09.
 
-A ordem de execução a partir daqui é **PB-10-12, depois PB-17, depois PB-09**. O PB-17 é de
-apresentação pura: não toca kernel, não muda golden, e sua fronteira com PB-09, PB-11, PB-13 e PB-15
-está tabelada em `docs/playbooks/PB-17/README.md`.
+A ordem de execução a partir daqui é **PB-10-12, depois PB-17, depois PB-18, depois PB-09**. O PB-17
+é de apresentação pura: não toca kernel, não muda golden, e sua fronteira com PB-09, PB-11, PB-13 e
+PB-15 está tabelada em `docs/playbooks/PB-17/README.md`.
+
+**Inserção de 2026-08-30 — PB-18, a porta.** Mesmo pedido, outra tela: a seleção de hunt no formato
+da porta de dungeon do WAKFU, que o item 8 do escopo mínimo de
+`docs/research/wakfu/01_modular_dungeons.md` §12 chama de "tela de preview na porta". **Só a porta e
+o preview entram** — a modulação de nível e o dial de dificuldade são mecânica, são o PB-12, e o
+PB-12 exige emenda à ADR-05. O PB-18 deixa o assento do dial pronto e mais nada.
+
+O enquadramento vem de um fato do código, não da pesquisa: **o Huntbound já faz level sync e não
+conta a ninguém**. Não há personagem que progride — há uma ficha por hunt, resolvida por
+`readHuntCharacter` (nível 8 na rotworm, 45 na Cyclopolis, 70 na Dragon Lair). Escolher a hunt é
+escolher o nível, a arma e as ações desbloqueadas, e a tela não diz isso. Tornar visível o que já
+acontece é apresentação e não encosta na ADR-05.
 
 **Renumeração de 2026-08-24.** O PB-08 original — "o loop de farm do Knight" — foi replanejado e
 dissolvido em cinco playbooks: a classe ficou no PB-08, e progressão, criaturas, loot e modulação

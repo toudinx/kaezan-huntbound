@@ -70,7 +70,6 @@ const allowedMonsterFields = new Set([
 const ignoredMonsterFields = new Set([
   'Bestiary',
   'changeTarget',
-  'corpse',
   'description',
   'events',
   'flags',
@@ -1081,6 +1080,9 @@ export function parseCanaryMonsterLua(
     diagnostics,
     { min: 0 },
   );
+  const corpseItemId = fields.has('corpse')
+    ? readInteger(fields.get('corpse'), 'corpse', diagnostics, { min: 0 })
+    : undefined;
   if (sourceIdValue === undefined && fields.get('raceId') === undefined) {
     pushDiagnostic(
       diagnostics,
@@ -1159,6 +1161,7 @@ export function parseCanaryMonsterLua(
         speed: speed as number,
       },
       lookType: lookType as number,
+      ...(corpseItemId === undefined ? {} : { corpseItemId }),
       attacks,
       defenses,
       conditions,

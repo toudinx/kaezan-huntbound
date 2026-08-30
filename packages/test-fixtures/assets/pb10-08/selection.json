@@ -135,15 +135,15 @@
       }
     },
     {
-      "key": "item:tibia:dead-rotworm",
+      "key": "item:tibia:dead-cyclops",
       "category": "object",
       "sourceIdentity": {
         "kind": "clientId",
-        "id": 5967
+        "id": 5962
       },
       "sourceGroupId": "huntbound-test-pb10-08",
       "consumer": "PB-10-08 Cyclopolis asset pack",
-      "rationale": "Covers item:tibia:dead-rotworm required by the frozen hunt selection.",
+      "rationale": "Covers item:tibia:dead-cyclops required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1058,7 +1058,7 @@
       "item:tibia:small-splash",
       "effect:tibia:hit-area",
       "effect:tibia:magic-blue",
-      "item:tibia:dead-rotworm",
+      "item:tibia:dead-cyclops",
       "item:tibia:gold-coin",
       "item:tibia:meat",
       "item:tibia:short-sword",
