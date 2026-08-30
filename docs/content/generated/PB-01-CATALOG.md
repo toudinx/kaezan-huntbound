@@ -3,8 +3,8 @@
 - Slice: fixture:pb-01-contract-coverage
 - Content version: pb-01-contract-coverage-v1
 - Snapshot: 157e6f9e21318bd3033eea553fe9275b429faf72
-- Roots: creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
-- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:battle-shield, item:tibia:book, item:tibia:bow, item:tibia:broadsword, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:burst-arrow, item:tibia:chain-armor, item:tibia:club-ring, item:tibia:corncob, item:tibia:crossbow, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dagger, item:tibia:dark-helmet, item:tibia:double-axe, item:tibia:dragon-ham, item:tibia:dragon-hammer, item:tibia:dragon-s-tail, item:tibia:dragon-shield, item:tibia:dragonbone-staff, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-dragon-leather, item:tibia:green-dragon-scale, item:tibia:green-tunic, item:tibia:halberd, item:tibia:ham, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:life-crystal, item:tibia:longsword, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:plate-legs, item:tibia:plate-shield, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:serpent-sword, item:tibia:shamanic-hood, item:tibia:short-sword, item:tibia:skull, item:tibia:small-diamond, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:steel-helmet, item:tibia:steel-shield, item:tibia:strong-health-potion, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:wand-of-inferno, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:wolf-tooth-chain, item:tibia:worm
+- Roots: creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman, creature:tibia:rotworm, spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:groundshaker, spell:tibia:whirlwind-throw, spell:tibia:wound-cleansing, vocation:tibia:knight
+- Dependencies: creature:tibia:snake, item:tibia:arrow, item:tibia:axe, item:tibia:battle-shield, item:tibia:book, item:tibia:bow, item:tibia:broadsword, item:tibia:broken-shamanic-staff, item:tibia:brown-bread, item:tibia:burst-arrow, item:tibia:chain-armor, item:tibia:club-ring, item:tibia:corncob, item:tibia:crossbow, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:crystal-necklace, item:tibia:cyclops-toe, item:tibia:cyclops-trophy, item:tibia:dagger, item:tibia:dark-helmet, item:tibia:double-axe, item:tibia:dragon-ham, item:tibia:dragon-hammer, item:tibia:dragon-s-tail, item:tibia:dragon-shield, item:tibia:dragonbone-staff, item:tibia:fire-sword, item:tibia:girlish-hair-decoration, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-dragon-leather, item:tibia:green-dragon-scale, item:tibia:green-tunic, item:tibia:halberd, item:tibia:ham, item:tibia:health-potion, item:tibia:heavy-old-tome, item:tibia:legion-helmet, item:tibia:life-crystal, item:tibia:longsword, item:tibia:lump-of-dirt, item:tibia:lyre, item:tibia:mace, item:tibia:machete, item:tibia:meat, item:tibia:might-ring, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:piggy-bank, item:tibia:plate-legs, item:tibia:plate-shield, item:tibia:protective-charm, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:sabre, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:serpent-sword, item:tibia:shamanic-hood, item:tibia:short-sword, item:tibia:skull, item:tibia:small-diamond, item:tibia:small-notebook, item:tibia:small-ruby, item:tibia:sniper-arrow, item:tibia:spear, item:tibia:steel-helmet, item:tibia:steel-shield, item:tibia:strong-health-potion, item:tibia:studded-armor, item:tibia:studded-helmet, item:tibia:studded-legs, item:tibia:studded-shield, item:tibia:sword, item:tibia:torch, item:tibia:two-handed-sword, item:tibia:wand-of-decay, item:tibia:wand-of-inferno, item:tibia:war-hammer, item:tibia:wedding-ring, item:tibia:wolf-tooth-chain, item:tibia:worm
 
 ## Entities
 
@@ -52,6 +52,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/humans/hero.lua / 73 / 8c7add3d9e2baf5ab0e91934588d0e59f3b309a48d46d2f181605297220cb089
 - Relations: item:tibia:arrow, item:tibia:bow, item:tibia:crown-armor, item:tibia:crown-helmet, item:tibia:crown-legs, item:tibia:crown-shield, item:tibia:fire-sword, item:tibia:gold-coin, item:tibia:grapes, item:tibia:great-health-potion, item:tibia:green-tunic, item:tibia:lyre, item:tibia:meat, item:tibia:might-ring, item:tibia:piggy-bank, item:tibia:red-piece-of-cloth, item:tibia:red-rose, item:tibia:rope, item:tibia:scarf, item:tibia:scroll, item:tibia:scroll-of-heroic-deeds, item:tibia:small-notebook, item:tibia:sniper-arrow, item:tibia:two-handed-sword, item:tibia:war-hammer, item:tibia:wedding-ring
 
+### creature:tibia:orc
+
+- Kind: creature
+- GUID: 73bf7bad-3f26-5e8f-9e1e-2b58173b3300
+- Display name: Orc
+- Facets: identity, stats, appearance, combat, loot
+- Consumer: PB-10 Orc Fortress hunt
+- Rationale: The root covers the selected Orc Fortress melee creature, defenses, appearance, and loot.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/humanoids/orc.lua / 5 / fc649f2e6dd8c264f9d6537e2f001c7869e7418276aef14ce538a5676f09c086
+- Relations: item:tibia:axe, item:tibia:gold-coin, item:tibia:heavy-old-tome, item:tibia:meat, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:sabre, item:tibia:studded-armor, item:tibia:studded-helmet, item:tibia:studded-shield
+
 ### creature:tibia:orc-shaman
 
 - Kind: creature
@@ -62,6 +73,17 @@
 - Rationale: The root covers elemental, area, healing, summon, and loot forms.
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/humanoids/orc_shaman.lua / 6 / cf3fee52b211b9f4b18dc7da2bfbf257e816542a320491b3817a883cfbe17864
 - Relations: creature:tibia:snake, item:tibia:book, item:tibia:broken-shamanic-staff, item:tibia:chain-armor, item:tibia:corncob, item:tibia:gold-coin, item:tibia:heavy-old-tome, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:shamanic-hood, item:tibia:spear, item:tibia:wand-of-decay
+
+### creature:tibia:orc-spearman
+
+- Kind: creature
+- GUID: 1ff76234-9455-5865-9cf3-fb61d95f3dbb
+- Display name: Orc Spearman
+- Facets: identity, stats, appearance, combat, loot
+- Consumer: PB-10 Orc Fortress hunt
+- Rationale: The root covers the selected Orc Fortress ranged creature, appearance, combat, and loot.
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data-otservbr-global/monster/humanoids/orc_spearman.lua / 50 / 70ecf85eb75432c161b1537e7e4c9db429d204cbb749cb4e4fc7f1a71b9b58d0
+- Relations: item:tibia:gold-coin, item:tibia:heavy-old-tome, item:tibia:machete, item:tibia:meat, item:tibia:orc-leather, item:tibia:orc-tooth, item:tibia:spear, item:tibia:studded-helmet, item:tibia:studded-legs
 
 ### creature:tibia:rotworm
 
@@ -94,6 +116,17 @@
 - Consumer: creature contract tests
 - Rationale: Required by creature:tibia:hero loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3447 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:axe
+
+- Kind: item
+- GUID: 506ce82f-8e1e-52a2-9f94-5470e45dc84a
+- Display name: axe
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3274 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
 ### item:tibia:battle-shield
@@ -411,7 +444,7 @@
 - Display name: gold coin
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot
+- Rationale: Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman, creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3031 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -510,7 +543,7 @@
 - Display name: heavy old tome
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:cyclops, creature:tibia:orc-shaman loot
+- Rationale: Required by creature:tibia:cyclops, creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 23986 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -580,6 +613,17 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3286 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:machete
+
+- Kind: item
+- GUID: 18160bae-520c-5a9e-91c3-bd28d86a8077
+- Display name: machete
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc-spearman loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3308 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:meat
 
 - Kind: item
@@ -587,7 +631,7 @@
 - Display name: meat
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:rotworm loot
+- Rationale: Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc, creature:tibia:orc-spearman, creature:tibia:rotworm loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3577 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -609,7 +653,7 @@
 - Display name: orc leather
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:orc-shaman loot
+- Rationale: Required by creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 11479 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -620,7 +664,7 @@
 - Display name: orc tooth
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:orc-shaman loot
+- Rationale: Required by creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 10196 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -708,7 +752,7 @@
 - Display name: sabre
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:amazon loot
+- Rationale: Required by creature:tibia:amazon, creature:tibia:orc loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3273 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -840,7 +884,7 @@
 - Display name: spear
 - Facets: identity, item
 - Consumer: creature contract tests
-- Rationale: Required by creature:tibia:orc-shaman loot
+- Rationale: Required by creature:tibia:orc-shaman, creature:tibia:orc-spearman loot
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3277 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -877,6 +921,50 @@
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 236 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
+### item:tibia:studded-armor
+
+- Kind: item
+- GUID: 1b8eb516-3578-536d-8dca-b4b12bd239a3
+- Display name: studded armor
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3378 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:studded-helmet
+
+- Kind: item
+- GUID: 61783ef5-0d81-5a6e-bd01-ae08625dcba4
+- Display name: studded helmet
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc, creature:tibia:orc-spearman loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3376 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:studded-legs
+
+- Kind: item
+- GUID: afbeb0dd-743b-5397-930f-05376b2445a1
+- Display name: studded legs
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc-spearman loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3362 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
+### item:tibia:studded-shield
+
+- Kind: item
+- GUID: 7b552e76-614d-5669-b3eb-1a9f8bf5bfec
+- Display name: studded shield
+- Facets: identity, item
+- Consumer: creature contract tests
+- Rationale: Required by creature:tibia:orc loot
+- Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3426 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
+- Relations: none
+
 ### item:tibia:sword
 
 - Kind: item
@@ -884,7 +972,7 @@
 - Display name: sword
 - Facets: identity, item
 - Consumer: frozen character sheet
-- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
+- Rationale: Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-orc-fortress, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm
 - Source: 157e6f9e21318bd3033eea553fe9275b429faf72 / data/items/items.xml / 3264 / b339e0ab5f7eec1d766aa2c09c1c0e74a2747e2a4e70a72e1b74f159f7b80ed8
 - Relations: none
 
@@ -1069,6 +1157,15 @@
 - Skills: magic 0, sword 90
 - Weapon: item:tibia:two-handed-sword attack 30
 - Vitals: health 2015, mana 645
+- Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
+
+### character:huntbound:knight-orc-fortress
+
+- Vocation: vocation:tibia:knight
+- Level: 25
+- Skills: magic 0, sword 60
+- Weapon: item:tibia:sword attack 14
+- Vitals: health 440, mana 185
 - Active spells: spell:tibia:berserk, spell:tibia:brutal-strike, spell:tibia:wound-cleansing, spell:tibia:groundshaker, spell:tibia:whirlwind-throw
 
 ### character:huntbound:knight-venore-rotworm-cave

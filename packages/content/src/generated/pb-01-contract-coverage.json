@@ -61,6 +61,26 @@
       "weaponItemKey": "item:tibia:two-handed-sword"
     },
     {
+      "level": 25,
+      "maxHealth": 440,
+      "maxMana": 185,
+      "skills": {
+        "magic": 0,
+        "sword": 60
+      },
+      "spellKeys": [
+        "spell:tibia:berserk",
+        "spell:tibia:brutal-strike",
+        "spell:tibia:wound-cleansing",
+        "spell:tibia:groundshaker",
+        "spell:tibia:whirlwind-throw"
+      ],
+      "stableKey": "character:huntbound:knight-orc-fortress",
+      "vocationKey": "vocation:tibia:knight",
+      "weaponAttack": 14,
+      "weaponItemKey": "item:tibia:sword"
+    },
+    {
       "level": 35,
       "maxHealth": 590,
       "maxMana": 185,
@@ -753,6 +773,113 @@
           "damageType": "physical",
           "intervalMs": 2000,
           "kind": "melee",
+          "maxDamage": 35,
+          "minDamage": 0,
+          "name": "melee"
+        }
+      ],
+      "conditions": [],
+      "defenses": [],
+      "displayName": "Orc",
+      "guid": "73bf7bad-3f26-5e8f-9e1e-2b58173b3300",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 5,
+      "loot": [
+        {
+          "chancePerHundredThousand": 84810,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 14,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 5850,
+          "itemKey": "item:tibia:sabre",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 4960,
+          "itemKey": "item:tibia:axe",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2950,
+          "itemKey": "item:tibia:studded-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 7860,
+          "itemKey": "item:tibia:studded-armor",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 7300,
+          "itemKey": "item:tibia:studded-shield",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10160,
+          "itemKey": "item:tibia:meat",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 210,
+          "itemKey": "item:tibia:orc-tooth",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 590,
+          "itemKey": "item:tibia:orc-leather",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:heavy-old-tome",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.1,
+        "drown": 0,
+        "earth": -0.1,
+        "energy": 0.2,
+        "fire": 0,
+        "holy": 0.1,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "stableKey": "creature:tibia:orc",
+      "stats": {
+        "experience": 25,
+        "health": 70,
+        "speed": 75
+      },
+      "summons": []
+    },
+    {
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
           "maxDamage": 15,
           "minDamage": 0,
           "name": "melee"
@@ -896,6 +1023,118 @@
           "creatureKey": "creature:tibia:snake"
         }
       ]
+    },
+    {
+      "attacks": [
+        {
+          "chanceBasisPoints": 10000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "melee",
+          "maxDamage": 25,
+          "minDamage": 0,
+          "name": "melee"
+        },
+        {
+          "chanceBasisPoints": 2000,
+          "damageType": "physical",
+          "intervalMs": 2000,
+          "kind": "ranged",
+          "maxDamage": 30,
+          "minDamage": 0,
+          "name": "combat",
+          "projectile": "spear",
+          "rangeTiles": 7
+        }
+      ],
+      "conditions": [],
+      "defenses": [],
+      "displayName": "Orc Spearman",
+      "guid": "1ff76234-9455-5865-9cf3-fb61d95f3dbb",
+      "immunities": [],
+      "includedFacets": [
+        "identity",
+        "stats",
+        "appearance",
+        "combat",
+        "loot"
+      ],
+      "lookType": 50,
+      "loot": [
+        {
+          "chancePerHundredThousand": 25050,
+          "itemKey": "item:tibia:gold-coin",
+          "maxCount": 11,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 17440,
+          "itemKey": "item:tibia:spear",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 3000,
+          "itemKey": "item:tibia:machete",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 10000,
+          "itemKey": "item:tibia:studded-legs",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 9000,
+          "itemKey": "item:tibia:studded-helmet",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 30200,
+          "itemKey": "item:tibia:meat",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 150,
+          "itemKey": "item:tibia:orc-tooth",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 2300,
+          "itemKey": "item:tibia:orc-leather",
+          "maxCount": 1,
+          "minCount": 1
+        },
+        {
+          "chancePerHundredThousand": 1000,
+          "itemKey": "item:tibia:heavy-old-tome",
+          "maxCount": 1,
+          "minCount": 1
+        }
+      ],
+      "resistances": {
+        "death": -0.1,
+        "drown": 0,
+        "earth": -0.1,
+        "energy": 0.2,
+        "fire": 0,
+        "holy": 0.2,
+        "ice": 0,
+        "lifeDrain": 0,
+        "manaDrain": 0,
+        "physical": 0
+      },
+      "stableKey": "creature:tibia:orc-spearman",
+      "stats": {
+        "experience": 38,
+        "health": 105,
+        "speed": 88
+      },
+      "summons": []
     },
     {
       "attacks": [
@@ -1055,6 +1294,16 @@
       ],
       "stableKey": "item:tibia:arrow",
       "weight": 70
+    },
+    {
+      "displayName": "axe",
+      "guid": "506ce82f-8e1e-52a2-9f94-5470e45dc84a",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:axe",
+      "weight": 4000
     },
     {
       "displayName": "battle shield",
@@ -1497,6 +1746,16 @@
       "weight": 3800
     },
     {
+      "displayName": "machete",
+      "guid": "18160bae-520c-5a9e-91c3-bd28d86a8077",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:machete",
+      "weight": 1650
+    },
+    {
       "displayName": "meat",
       "guid": "b7e65ad4-e993-56d3-b107-9fb3bbfc9ef1",
       "includedFacets": [
@@ -1767,6 +2026,46 @@
       "weight": 290
     },
     {
+      "displayName": "studded armor",
+      "guid": "1b8eb516-3578-536d-8dca-b4b12bd239a3",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:studded-armor",
+      "weight": 7100
+    },
+    {
+      "displayName": "studded helmet",
+      "guid": "61783ef5-0d81-5a6e-bd01-ae08625dcba4",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:studded-helmet",
+      "weight": 2450
+    },
+    {
+      "displayName": "studded legs",
+      "guid": "afbeb0dd-743b-5397-930f-05376b2445a1",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:studded-legs",
+      "weight": 2600
+    },
+    {
+      "displayName": "studded shield",
+      "guid": "7b552e76-614d-5669-b3eb-1a9f8bf5bfec",
+      "includedFacets": [
+        "identity",
+        "item"
+      ],
+      "stableKey": "item:tibia:studded-shield",
+      "weight": 5800
+    },
+    {
       "displayName": "sword",
       "guid": "bf749ad4-7f98-5777-8b65-39a515150871",
       "includedFacets": [
@@ -1864,6 +2163,7 @@
     "dependencies": [
       "creature:tibia:snake",
       "item:tibia:arrow",
+      "item:tibia:axe",
       "item:tibia:battle-shield",
       "item:tibia:book",
       "item:tibia:bow",
@@ -1908,6 +2208,7 @@
       "item:tibia:lump-of-dirt",
       "item:tibia:lyre",
       "item:tibia:mace",
+      "item:tibia:machete",
       "item:tibia:meat",
       "item:tibia:might-ring",
       "item:tibia:orc-leather",
@@ -1935,6 +2236,10 @@
       "item:tibia:steel-helmet",
       "item:tibia:steel-shield",
       "item:tibia:strong-health-potion",
+      "item:tibia:studded-armor",
+      "item:tibia:studded-helmet",
+      "item:tibia:studded-legs",
+      "item:tibia:studded-shield",
       "item:tibia:sword",
       "item:tibia:torch",
       "item:tibia:two-handed-sword",
@@ -1999,6 +2304,18 @@
         "rationale": "The root covers dual melee/ranged physical combat, healing, armor provenance, and loot."
       },
       {
+        "consumer": "PB-10 Orc Fortress hunt",
+        "entityKey": "creature:tibia:orc",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers the selected Orc Fortress melee creature, defenses, appearance, and loot."
+      },
+      {
         "consumer": "creature contract tests",
         "entityKey": "creature:tibia:orc-shaman",
         "facets": [
@@ -2009,6 +2326,18 @@
           "loot"
         ],
         "rationale": "The root covers elemental, area, healing, summon, and loot forms."
+      },
+      {
+        "consumer": "PB-10 Orc Fortress hunt",
+        "entityKey": "creature:tibia:orc-spearman",
+        "facets": [
+          "identity",
+          "stats",
+          "appearance",
+          "combat",
+          "loot"
+        ],
+        "rationale": "The root covers the selected Orc Fortress ranged creature, appearance, combat, and loot."
       },
       {
         "consumer": "creature contract tests",
@@ -2042,6 +2371,15 @@
           "item"
         ],
         "rationale": "Required by creature:tibia:hero loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:axe",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2302,7 +2640,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc-shaman, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:cyclops, creature:tibia:dragon, creature:tibia:hero, creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman, creature:tibia:rotworm loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2383,7 +2721,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:cyclops, creature:tibia:orc-shaman loot"
+        "rationale": "Required by creature:tibia:cyclops, creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2441,12 +2779,21 @@
       },
       {
         "consumer": "creature contract tests",
+        "entityKey": "item:tibia:machete",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-spearman loot"
+      },
+      {
+        "consumer": "creature contract tests",
         "entityKey": "item:tibia:meat",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:rotworm loot"
+        "rationale": "Required by creature:tibia:cyclops, creature:tibia:hero, creature:tibia:orc, creature:tibia:orc-spearman, creature:tibia:rotworm loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2464,7 +2811,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:orc-shaman loot"
+        "rationale": "Required by creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2473,7 +2820,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:orc-shaman loot"
+        "rationale": "Required by creature:tibia:orc, creature:tibia:orc-shaman, creature:tibia:orc-spearman loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2545,7 +2892,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:amazon loot"
+        "rationale": "Required by creature:tibia:amazon, creature:tibia:orc loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2653,7 +3000,7 @@
           "identity",
           "item"
         ],
-        "rationale": "Required by creature:tibia:orc-shaman loot"
+        "rationale": "Required by creature:tibia:orc-shaman, creature:tibia:orc-spearman loot"
       },
       {
         "consumer": "creature contract tests",
@@ -2683,13 +3030,49 @@
         "rationale": "Required by creature:tibia:dragon loot"
       },
       {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:studded-armor",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:studded-helmet",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc, creature:tibia:orc-spearman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:studded-legs",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc-spearman loot"
+      },
+      {
+        "consumer": "creature contract tests",
+        "entityKey": "item:tibia:studded-shield",
+        "facets": [
+          "identity",
+          "item"
+        ],
+        "rationale": "Required by creature:tibia:orc loot"
+      },
+      {
         "consumer": "frozen character sheet",
         "entityKey": "item:tibia:sword",
         "facets": [
           "identity",
           "item"
         ],
-        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
+        "rationale": "Required by character:huntbound:knight-cyclopolis, character:huntbound:knight-dragon-lair, character:huntbound:knight-orc-fortress, character:huntbound:knight-venore-rotworm-cave, creature:tibia:rotworm"
       },
       {
         "consumer": "creature contract tests",
@@ -2823,7 +3206,9 @@
       "creature:tibia:cyclops",
       "creature:tibia:dragon",
       "creature:tibia:hero",
+      "creature:tibia:orc",
       "creature:tibia:orc-shaman",
+      "creature:tibia:orc-spearman",
       "creature:tibia:rotworm",
       "spell:tibia:berserk",
       "spell:tibia:brutal-strike",
