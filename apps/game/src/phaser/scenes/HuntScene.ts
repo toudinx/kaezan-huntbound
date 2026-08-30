@@ -439,6 +439,11 @@ export class HuntScene extends Phaser.Scene {
 
     this.publishReady();
     this.options.bridge.publishTick(this.options.driver.tick);
+    // Phaser's `time` includes HuntScene.preload. The driver is started at 0,
+    // so the first update would otherwise dump the catch-up budget as hunt
+    // ticks and let hunters close the only two-step corridor from spawn
+    // before the player can walk.
+    this.options.driver.resyncClock?.();
   }
 
   update(time: number) {

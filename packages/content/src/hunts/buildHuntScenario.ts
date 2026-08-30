@@ -712,8 +712,12 @@ export function buildHuntScenario(
   ];
   const playerAbilityIndices = abilities.map((_, index) => index);
 
+  const orderedBlueprints = [...validatedHunt.value.blueprints].sort(
+    (left, right) => left.blueprintId.localeCompare(right.blueprintId),
+  );
+
   const creaturesByBlueprint = new Map<string, CreatureDefinition>();
-  for (const blueprint of validatedHunt.value.blueprints) {
+  for (const blueprint of orderedBlueprints) {
     if (blueprint.blueprintId === validatedHunt.value.playerBlueprintId) {
       continue;
     }
@@ -768,7 +772,7 @@ export function buildHuntScenario(
   const lootTableIndexByBlueprint = new Map<string, number | null>();
   const blueprints: ActorBlueprint[] = [];
 
-  validatedHunt.value.blueprints.forEach((source, blueprintIndex) => {
+  orderedBlueprints.forEach((source, blueprintIndex) => {
     if (source.blueprintId === validatedHunt.value.playerBlueprintId) {
       const player = composePlayer(
         source,

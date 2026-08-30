@@ -372,7 +372,7 @@ describe('main asset bootstrap', () => {
     );
   });
 
-  it('boots Orc Fortress with the shared Knight vocation character', async () => {
+  it('boots Orc Fortress with its own hunt character, not the first knight in the catalog', async () => {
     harness.selectedHuntId = 'hunt:tibia:orc-fortress';
     const roots = createRoots();
     const main = await loadBootstrapApp();
@@ -396,6 +396,12 @@ describe('main asset bootstrap', () => {
 
     expect(harness.shellSnapshots.at(-1)?.phase).not.toBe('error');
     expect(harness.viewModelCalls).toHaveLength(1);
+    const viewModelCharacter = harness.viewModelCalls[0]?.[6] as
+      | { readonly stableKey?: string }
+      | undefined;
+    expect(viewModelCharacter?.stableKey).toBe(
+      'character:huntbound:knight-orc-fortress',
+    );
   });
 
   it('mounts the shell before reporting an invalid hunt bootstrap', async () => {

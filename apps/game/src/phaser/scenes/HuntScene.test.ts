@@ -531,6 +531,7 @@ class FakeDriver implements HuntSimulationDriver {
   tick = 0 as TickIndex;
   alpha = 0;
   snapshotCalls = 0;
+  resyncClockCalls = 0;
   private readonly queue: SimulationEvent[][] = [];
 
   constructor(private currentSnapshot: SimulationSnapshot) {}
@@ -567,6 +568,10 @@ class FakeDriver implements HuntSimulationDriver {
   }
 
   restart() {}
+
+  resyncClock() {
+    this.resyncClockCalls += 1;
+  }
 }
 
 function createHarness(initialSnapshot: SimulationSnapshot) {
@@ -642,6 +647,18 @@ describe('HuntScene driver snapshot', () => {
     scene.update(270);
 
     expect(driver.snapshotCalls).toBe(2);
+  });
+
+  it('resyncs the driver clock at create so preload is not simulated as hunt time', () => {
+    const { scene, driver } = createHarness(
+      snapshot({
+        activeConditionIndices: [0],
+      }),
+    );
+
+    expect(driver.resyncClockCalls).toBe(0);
+    scene.create();
+    expect(driver.resyncClockCalls).toBe(1);
   });
 });
 

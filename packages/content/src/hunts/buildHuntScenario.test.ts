@@ -916,6 +916,78 @@ describe('buildHuntScenario combat blueprints', () => {
     });
   });
 
+  it('does not change composed rotworm combat when unused catalog creatures are listed first', () => {
+    const extra = meleeCreature(
+      'cyclops',
+      { health: 260, experience: 150, speed: 190 },
+      2000,
+      0,
+      105,
+    );
+    const baseline = build();
+    const withUnusedFirst = build(
+      syntheticHunt(),
+      character,
+      registry({
+        creatures: [extra, rotwormCreature(), wanderCreature('snake', 60)],
+      }),
+    );
+
+    expect(withUnusedFirst.scenario.blueprints).toEqual(
+      baseline.scenario.blueprints,
+    );
+    expect(withUnusedFirst.scenario.abilities).toEqual(
+      baseline.scenario.abilities,
+    );
+    expect(withUnusedFirst.scenario.lootTables).toEqual(
+      baseline.scenario.lootTables,
+    );
+  });
+
+  it('assigns creature ability indices by blueprint id, not hunt declaration order', () => {
+    const shaman = combatNeutral('orc-shaman', 3, 'wander');
+    const declaredLast = build(
+      syntheticHunt([shaman]),
+      character,
+      registry({
+        creatures: [
+          rotwormCreature(),
+          wanderCreature('snake', 60),
+          orcShamanCreature(),
+        ],
+      }),
+    );
+    const declaredFirst = build(
+      {
+        ...syntheticHunt(),
+        blueprints: [shaman, ...syntheticHunt().blueprints],
+      },
+      character,
+      registry({
+        creatures: [
+          rotwormCreature(),
+          wanderCreature('snake', 60),
+          orcShamanCreature(),
+        ],
+      }),
+    );
+
+    expect(
+      declaredFirst.scenario.abilities.map((ability) => ability.abilityId),
+    ).toEqual(
+      declaredLast.scenario.abilities.map((ability) => ability.abilityId),
+    );
+    expect(
+      declaredFirst.scenario.blueprints.map(
+        (blueprint) => blueprint.blueprintId,
+      ),
+    ).toEqual(
+      declaredLast.scenario.blueprints.map(
+        (blueprint) => blueprint.blueprintId,
+      ),
+    );
+  });
+
   it('translates orc shaman ranged, area and heal from the catalog and ignores summons', () => {
     const { scenario, abilityKeys } = build(
       syntheticHunt([combatNeutral('orc-shaman', 3, 'wander')]),

@@ -42,6 +42,7 @@ import { createSceneBridge } from './bridge/SceneBridge';
 import { createHuntCombatViewModel } from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
 import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
+import { huntSlug, readHuntCharacter } from './hunt/readHuntCharacter';
 import { installKernelProbe, installSaveProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
@@ -136,14 +137,6 @@ function readHuntIndex(): HuntIndex {
   throw new Error(diagnostic?.message ?? 'Generated hunt index is invalid.');
 }
 
-function huntSlug(huntId: string): string {
-  const slug = huntId.split(':').at(-1) ?? huntId;
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    throw new Error(`Hunt key does not end in a kebab-case slug: ${huntId}`);
-  }
-  return slug;
-}
-
 async function readHuntDefinition(
   hunt: Pick<HuntIndexEntry, 'huntId'>,
 ): Promise<HuntDefinition> {
@@ -168,26 +161,11 @@ async function readHuntDefinition(
   );
 }
 
-function readHuntCharacter(
+function resolveHuntCharacter(
   characters: readonly CharacterDefinition[],
   hunt: Pick<HuntIndexEntry, 'huntId' | 'soloVocation'>,
 ): CharacterDefinition {
-  const vocationSlug = hunt.soloVocation.split(':').at(-1);
-  if (vocationSlug === undefined || vocationSlug.length === 0) {
-    throw new Error(
-      `Hunt ${hunt.huntId} has no vocation slug for character resolution`,
-    );
-  }
-
-  const characterKey = `character:huntbound:${vocationSlug}-${huntSlug(hunt.huntId)}`;
-  const character =
-    characters.find((candidate) => candidate.stableKey === characterKey) ??
-    characters.find((candidate) => candidate.vocationKey === hunt.soloVocation);
-  if (character === undefined) {
-    throw new Error(`Generated catalog is missing character ${characterKey}`);
-  }
-
-  return readKnightCharacter(character);
+  return readKnightCharacter(readHuntCharacter(characters, hunt));
 }
 
 function readKnightCombatSelection(): {
@@ -400,7 +378,7 @@ export async function bootstrapApp(
       const hunt = await readHuntDefinition(huntEntry);
       const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
       const registry = createContentRegistry(runtime);
-      const character = readHuntCharacter(runtime.characters, huntEntry);
+      const character = resolveHuntCharacter(runtime.characters, huntEntry);
       const postures = readKnightPostures();
       const scenarioResult = buildHuntScenario(
         hunt,
