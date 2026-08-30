@@ -62,7 +62,7 @@ test('enters Dragon Lair with the Dragon roster and faixa 4 character sheet', as
   );
 
   const state = await readHuntState(page);
-  expect(state.player?.position).toEqual({ x: 14, y: 15, z: 5 });
+  expect(state.player?.position).toEqual({ x: 1, y: 6, z: 5 });
   expect(state.actors.some((actor) => actor.blueprintId === 'dragon')).toBe(
     true,
   );

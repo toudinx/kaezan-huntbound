@@ -67,7 +67,7 @@ for (const viewport of shellViewports) {
       page.locator('[data-testid="hunting-places-screen"]'),
     ).toHaveCount(1);
     await expect(page.locator('[data-testid="hunt-place-card"]')).toHaveCount(
-      4,
+      5,
     );
     const rotwormCard = page.locator(
       '[data-testid="hunt-place-card"][data-hunt-id="hunt:tibia:venore-rotworm-cave"]',
