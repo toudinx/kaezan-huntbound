@@ -28,9 +28,9 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-04 | done | `codex/pb10-04-indice-de-hunts` | econômico `xhigh` | Codex GPT-5 `xhigh` | `1acfccf` | índice gerado + sidecar determinísticos; content, architecture e hunt checks verdes; verify bloqueado apenas pela falha ambiental B16 em `apps/game` |
 | PB-10-05 | done | `codex/pb10-05-tela-hunting-places` | econômico `xhigh` | Codex GPT-5 `xhigh` | `2795b68` | tela DOM; boot por índice; `verify` e `qa:browser` verdes; orçamento informativo em 5,269/5,284 ms |
 | PB-10-06 | done | `cursor/pb10-06-criatura-conjura` | frontier `xhigh` | Grok 4.6 `xhigh` | `790f91f` | IA guarda `abilityIndices.length > 0`; shaman ranged/área/cura; goldens intactos |
-| PB-10-07 | done | `codex/pb10-07-orc-fortress` | econômico `xhigh` | Grok 4.6 `xhigh` | `f2f9755` | Orc+Spearman no catálogo; 68/68 XML 13/33/22; 32×32×3; ficha nv 25 HP 440; verify 81/81 |
+| PB-10-07 | done | `codex/pb10-07-orc-fortress` | econômico `xhigh` | Grok 4.6 `xhigh` | `760c699` | Orc+Spearman no catálogo; 68/68 XML 13/33/22; 32×32×3; ficha nv 25 HP 440; rebase de 5 hunts em 2026-08-30, gerados regenerados; correctness 81/1 (só B19) |
 | PB-10-08 | done | `codex/pb10-08-cyclopolis` | econômico `xhigh` | Grok 4.6 `xhigh` | `3fa4845` | Cyclops 19/19 XML; recorte 24×24×3; ficha nv 45 HP 740; armor 17 inerte; content/assets/hunt/combat/sim verdes; correctness 80/80 |
-| PB-10-09 | done | `codex/pb10-09-dragon-lair` | econômico `xhigh` | Grok 4.6 `xhigh` | `91814cb` | Dragon 31/31 XML; Ankrahmun 64×48×3; ficha nv 70 HP 1115; area r=4 fogo entra, onda omitida; content/assets/hunt/combat/sim verdes; correctness 81/81 |
+| PB-10-09 | done | `codex/pb10-09-dragon-lair` | econômico `xhigh` | Grok 4.6 `xhigh` | `c0b9750` | Dragon 31/31 XML; ficha nv 70 HP 1115; area r=4 fogo entra, onda omitida. **Mapa refeito em 2026-08-30**: a receita era caixa fabricada 64×48×3 com `ground: 101` em toda célula; agora 3 `copy-rect` 24×24 do mapa real, paleta 48→200, pack 65→217, andáveis 431/237/235 conectados |
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
 
 ## Bloqueios
@@ -67,7 +67,12 @@ errada. Os de 64×64 saem certos (Rotworm 26, Cyclops 22, Dragon 34, knight 131,
 manifesto tem 79 em 32×32 contra 1.118 em 64×64). O packer copia o PNG byte a byte, então o jogo
 desenha o arquivo como ele é. Reproduzido fora do jogo decodificando a folha CIP com a mesma lógica
 de header do extractor: o cisalhamento já está na folha, e o header dela é normal (384×384, 32 bpp,
-`pixoff` 122, stride 1536). Conserto e re-export vivem no `AssetExtractor`. **Orc é 32×32.**
+`pixoff` 122, stride 1536). **A geometria do extractor foi reverificada em 2026-08-30 e está
+correta**: com grade de 32 px sobre a folha decodificada cada célula traz uma criatura inteira, e
+ovelhas e morcegos da mesma folha saem limpos; o atlas exportado também está alinhado célula a
+célula. `Locate`/`DecodeSheet` batem com o `spriteappearances.cpp`. Ou seja, não é cisalhamento de
+decodificação nem de montagem — a causa continua desconhecida e não vale re-derivar o alinhamento.
+**Orc é lookType 5 e sai deitado; Hero 73 sai certo.**
 
 **B19 — aberto, `main` vermelha desde `3fa4845`.** `tests/e2e/haste-play.spec.ts:171` reprova com
 `The player never accepted two consecutive cardinal steps`, na Venore Rotworm Cave. Bisect: passa em
