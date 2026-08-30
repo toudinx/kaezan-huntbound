@@ -64,7 +64,7 @@
     "check": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm save:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm architecture:check && corepack pnpm content:check",
     "qa:browser": "corepack pnpm build && playwright test --project=correctness",
     "qa:budgets": "corepack pnpm build && playwright test --project=budgets",
-    "verify": "biome check . && corepack pnpm assets:check && corepack pnpm simulation:check && corepack pnpm hunt:check && corepack pnpm combat:check && corepack pnpm save:check && corepack pnpm architecture:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && corepack pnpm content:check && corepack pnpm qa:browser"
+    "verify": "corepack pnpm check && corepack pnpm qa:browser"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",

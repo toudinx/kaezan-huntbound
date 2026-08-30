@@ -103,4 +103,18 @@ describe('workspace configuration', () => {
 
     expect(directDependencySpecs(rootPackage).every(isExactVersion)).toBe(true);
   });
+
+  test('verify is check plus one browser pass — qa:browser already builds', () => {
+    const root = readJson<PackageManifest>(
+      resolve(process.cwd(), 'package.json'),
+    );
+    const verify = root.scripts?.verify ?? '';
+    const qaBrowser = root.scripts?.['qa:browser'] ?? '';
+
+    expect(qaBrowser).toMatch(/(?:^|&& )corepack pnpm build(?: &&|$)/);
+    expect(verify).toBe('corepack pnpm check && corepack pnpm qa:browser');
+    expect(verify, 'verify must not build again before qa:browser').not.toMatch(
+      /build && (?:corepack pnpm )?qa:browser/,
+    );
+  });
 });
