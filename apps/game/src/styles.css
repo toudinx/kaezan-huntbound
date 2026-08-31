@@ -1041,6 +1041,32 @@ body {
 
 /* Target ------------------------------------------------------------- */
 
+/*
+ * Asset packs ship atlas sheets. The cockpit window is one source cell wide
+ * and high; the image is expanded to the full sheet and clipped back to the
+ * first cell so a panel never shows every direction, phase or stack tier.
+ */
+
+.cockpit-asset-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: var(--cockpit-atlas-cell-width) /
+    var(--cockpit-atlas-cell-height);
+  overflow: hidden;
+}
+
+.cockpit-asset-frame > .cockpit-asset-frame__image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: calc(100% * var(--cockpit-atlas-columns));
+  height: calc(100% * var(--cockpit-atlas-rows));
+  max-width: none;
+  object-fit: fill;
+  image-rendering: pixelated;
+}
+
 .cockpit-target {
   flex: 0 0 auto;
 }
@@ -1077,11 +1103,13 @@ body {
   background: rgb(20 30 47 / 86%);
 }
 
-[data-testid="combat-target-image"] {
-  display: block;
+[data-testid="combat-target-image-frame"] > .cockpit-asset-frame {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+}
+
+[data-testid="combat-target-image"] {
+  display: block;
   image-rendering: pixelated;
 }
 
@@ -1205,10 +1233,12 @@ body {
 .combat-bag-slot img {
   display: block;
   z-index: 1;
-  width: 75%;
-  height: 75%;
-  object-fit: contain;
   image-rendering: pixelated;
+}
+
+.combat-bag-slot > .cockpit-asset-frame {
+  z-index: 1;
+  width: 75%;
 }
 
 .combat-bag-slot-fallback-label {

@@ -12,7 +12,14 @@ class FakeDocument {
 class FakeElement {
   readonly children: FakeElement[] = [];
   readonly attributes = new Map<string, string>();
-  readonly style = { setProperty: (): void => undefined };
+  readonly style = {
+    properties: new Map<string, string>(),
+    setProperty: (name: string, value: string): void => {
+      this.style.properties.set(name, value);
+    },
+    getPropertyValue: (name: string): string =>
+      this.style.properties.get(name) ?? '',
+  };
   parent: FakeElement | null = null;
   textContent = '';
   className = '';
@@ -59,6 +66,48 @@ class FakeElement {
 }
 
 describe('TargetWindow', () => {
+  it('recorta o retrato para o primeiro frame do atlas', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const targetWindow = mountTargetWindow(root as unknown as HTMLElement, {
+      resolveAsset: () => ({
+        mediaUrl: 'blob:rotworm',
+        cellWidth: 64,
+        cellHeight: 64,
+        columns: 16,
+        atlasFrameCount: 36,
+      }),
+    });
+
+    targetWindow.render({
+      target: {
+        entityId: 2 as EntityId,
+        health: 45,
+        maxHealth: 65,
+        resource: 0,
+        maxResource: 0,
+      },
+      details: {
+        blueprintId: 'rotworm',
+        displayName: 'Rotworm',
+        assetKey: 'creature:tibia:rotworm',
+        resistances: [],
+      },
+    });
+
+    const image = root.querySelector(
+      '[data-testid="combat-target-image"]',
+    );
+    expect(image?.getAttribute('src')).toBe('blob:rotworm');
+    expect(image?.parent?.getAttribute('data-atlas-frame')).toBe('0');
+    expect(
+      image?.parent?.style.getPropertyValue('--cockpit-atlas-columns'),
+    ).toBe('16');
+    expect(
+      image?.parent?.style.getPropertyValue('--cockpit-atlas-rows'),
+    ).toBe('3');
+  });
+
   it('mostra — para resistência ausente sem transformar ausência em zero', () => {
     const document = new FakeDocument();
     const root = document.createElement('div');

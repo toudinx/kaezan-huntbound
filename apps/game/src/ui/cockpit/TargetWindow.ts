@@ -6,6 +6,11 @@ import type {
   CombatTargetDetails,
   CombatVitalsView,
 } from '../../hunt/CombatViewModel';
+import {
+  assetFrameSignature,
+  createAtlasFrame,
+  type ResolveCockpitAsset,
+} from './AssetFrame';
 
 export interface TargetWindowState {
   readonly target: CombatVitalsView | null;
@@ -13,9 +18,7 @@ export interface TargetWindowState {
 }
 
 export interface TargetWindowOptions {
-  readonly resolveAsset?: (
-    key: string,
-  ) => { readonly mediaUrl: string } | undefined;
+  readonly resolveAsset?: ResolveCockpitAsset;
 }
 
 export interface TargetWindow {
@@ -149,7 +152,7 @@ export function mountTargetWindow(
       details?.blueprintId ?? 'none',
       details?.displayName ?? 'none',
       details?.assetKey ?? 'none',
-      asset?.mediaUrl ?? 'unresolved',
+      assetFrameSignature(asset) || 'unresolved',
       ...(details?.resistances ?? []).map(
         (entry) => `${entry.element}:${entry.permille}`,
       ),
@@ -169,15 +172,13 @@ export function mountTargetWindow(
 
     imageFrame.replaceChildren();
     if (asset !== undefined && target !== null) {
-      const image = createElement(
-        document,
-        'img',
-        'combat-target-image',
-      ) as HTMLImageElement;
-      image.setAttribute('src', asset.mediaUrl);
-      image.setAttribute('alt', details?.displayName ?? 'Target');
-      image.setAttribute('draggable', 'false');
-      imageFrame.append(image);
+      imageFrame.append(
+        createAtlasFrame(document, asset, {
+          imageClassName: 'combat-target-image',
+          imageTestId: 'combat-target-image',
+          alt: details?.displayName ?? 'Target',
+        }),
+      );
     } else {
       imageFrame.append(imageFallback);
     }

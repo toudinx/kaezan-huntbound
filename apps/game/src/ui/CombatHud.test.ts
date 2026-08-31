@@ -429,7 +429,13 @@ describe('CombatHud', () => {
     let assetsReady = false;
     const resolveAsset = vi.fn((key: string) =>
       assetsReady && key === 'spell:tibia:berserk'
-        ? { mediaUrl: 'blob:berserk' }
+        ? {
+            mediaUrl: 'blob:berserk',
+            cellWidth: 32,
+            cellHeight: 32,
+            columns: 3,
+            atlasFrameCount: 9,
+          }
         : undefined,
     );
     const hud = mountCombatHud(root as unknown as HTMLElement, {
@@ -448,6 +454,9 @@ describe('CombatHud', () => {
     const readyCell = byTestId(root, 'combat-ability-0');
     const icon = byClass(readyCell, 'cockpit-cell__icon');
     expect(icon.getAttribute('data-asset-key')).toBe('spell:tibia:berserk');
+    expect(icon.getAttribute('data-atlas-frame')).toBe('0');
+    expect(icon.style.getPropertyValue('--cockpit-atlas-columns')).toBe('3');
+    expect(icon.style.getPropertyValue('--cockpit-atlas-rows')).toBe('3');
     expect(byClass(icon, 'cockpit-cell__icon-image').getAttribute('src')).toBe(
       'blob:berserk',
     );

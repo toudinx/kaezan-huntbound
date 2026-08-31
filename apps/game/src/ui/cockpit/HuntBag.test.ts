@@ -11,7 +11,14 @@ class FakeDocument {
 class FakeElement {
   readonly children: FakeElement[] = [];
   readonly attributes = new Map<string, string>();
-  readonly style = { setProperty: (): void => undefined };
+  readonly style = {
+    properties: new Map<string, string>(),
+    setProperty: (name: string, value: string): void => {
+      this.style.properties.set(name, value);
+    },
+    getPropertyValue: (name: string): string =>
+      this.style.properties.get(name) ?? '',
+  };
   parent: FakeElement | null = null;
   textContent = '';
   className = '';
@@ -76,7 +83,13 @@ describe('HuntBag', () => {
     const document = new FakeDocument();
     const root = document.createElement('div');
     const bag = mountHuntBag(root as unknown as HTMLElement, {
-      resolveAsset: (key) => ({ mediaUrl: `/assets/${key}.png` }),
+      resolveAsset: (key) => ({
+        mediaUrl: `/assets/${key}.png`,
+        cellWidth: 32,
+        cellHeight: 32,
+        columns: 1,
+        atlasFrameCount: 1,
+      }),
     });
 
     bag.render([{ itemKey: 'item:tibia:gold-coin', count: 1 }]);
@@ -100,11 +113,44 @@ describe('HuntBag', () => {
     expect(slot?.getAttribute('data-entering')).toBe(null);
   });
 
+  it('recorta o sprite do item para um único frame do atlas', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const bag = mountHuntBag(root as unknown as HTMLElement, {
+      resolveAsset: () => ({
+        mediaUrl: '/assets/gold-coin.png',
+        cellWidth: 32,
+        cellHeight: 32,
+        columns: 8,
+        atlasFrameCount: 8,
+      }),
+    });
+
+    bag.render([{ itemKey: 'item:tibia:gold-coin', count: 3 }]);
+
+    const image = root.querySelector(
+      '[data-testid="combat-bag-slot-image-0"]',
+    );
+    expect(image?.parent?.getAttribute('data-atlas-frame')).toBe('0');
+    expect(
+      image?.parent?.style.getPropertyValue('--cockpit-atlas-columns'),
+    ).toBe('8');
+    expect(
+      image?.parent?.style.getPropertyValue('--cockpit-atlas-rows'),
+    ).toBe('1');
+  });
+
   it('marca o slot quando o loot chega ou aumenta o stack', () => {
     const document = new FakeDocument();
     const root = document.createElement('div');
     const bag = mountHuntBag(root as unknown as HTMLElement, {
-      resolveAsset: () => ({ mediaUrl: '/assets/gold-coin.png' }),
+      resolveAsset: () => ({
+        mediaUrl: '/assets/gold-coin.png',
+        cellWidth: 32,
+        cellHeight: 32,
+        columns: 8,
+        atlasFrameCount: 8,
+      }),
     });
 
     bag.render([{ itemKey: 'item:tibia:gold-coin', count: 1 }]);

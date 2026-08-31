@@ -13,6 +13,7 @@ import { type Minimap, mountMinimap } from './cockpit/Minimap';
 import { mountTargetWindow, type TargetWindow } from './cockpit/TargetWindow';
 import { createVitalArc, type VitalArc } from './cockpit/VitalArcs';
 import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
+import type { ResolveCockpitAsset } from './cockpit/AssetFrame';
 
 /**
  * Orchestrates the cockpit's combat surfaces.
@@ -44,9 +45,7 @@ export interface CombatHudOptions {
   /** The hunt's floor links and drop-in cell, drawn as minimap landmarks. */
   readonly transitions?: readonly TransitionEntry[];
   readonly playerStart?: GridPosition;
-  readonly resolveAsset?: (
-    key: string,
-  ) => { readonly mediaUrl: string } | undefined;
+  readonly resolveAsset?: ResolveCockpitAsset;
 }
 
 function createElement(

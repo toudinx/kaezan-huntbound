@@ -3,11 +3,13 @@ import type {
   CombatAbilityView,
   CombatViewState,
 } from '../../hunt/CombatViewModel';
+import { assetFrameSignature } from './AssetFrame';
 import {
   createAbilityGlyph,
   createAbilityIcon,
   spellIconAssetKey,
 } from './AbilityGlyph';
+import type { ResolveCockpitAsset } from './AssetFrame';
 
 /**
  * The nine actions, centred under the play area.
@@ -34,9 +36,7 @@ export interface ActionDeck {
 }
 
 export interface ActionDeckOptions {
-  readonly resolveAsset?: (
-    key: string,
-  ) => { readonly mediaUrl: string } | undefined;
+  readonly resolveAsset?: ResolveCockpitAsset;
 }
 
 type SlotKind = 'attack' | 'ability' | 'posture';
@@ -351,7 +351,7 @@ export function mountActionDeck(
         const asset = options.resolveAsset?.(
           spellIconAssetKey(ability.abilityId),
         );
-        return `${ability.index}:${ability.abilityId}:${asset?.mediaUrl ?? ''}`;
+        return `${ability.index}:${ability.abilityId}:${assetFrameSignature(asset)}`;
       })
       .join('|');
 

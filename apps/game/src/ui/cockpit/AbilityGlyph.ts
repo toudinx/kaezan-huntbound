@@ -1,3 +1,8 @@
+import {
+  createAtlasFrame,
+  type CockpitAsset,
+} from './AssetFrame';
+
 /**
  * What each action does to the ground around the knight, drawn on a 5x5 grid.
  *
@@ -124,9 +129,7 @@ const SHAPES: ReadonlyMap<string, GlyphShape> = new Map([
   ],
 ]);
 
-export interface AbilityIconAsset {
-  readonly mediaUrl: string;
-}
+export type AbilityIconAsset = CockpitAsset;
 
 /** The stable manifest key delivered by PB-17-01 for one spell icon. */
 export function spellIconAssetKey(abilityId: string): string {
@@ -145,18 +148,14 @@ export function createAbilityIcon(
 ): HTMLElement | undefined {
   if (asset === undefined) return undefined;
 
-  const icon = document.createElement('span');
-  icon.className = 'cockpit-cell__icon';
+  const icon = createAtlasFrame(document, asset, {
+    frameClassName: 'cockpit-cell__icon',
+    imageClassName: 'cockpit-cell__icon-image',
+    alt: '',
+    imageAriaHidden: true,
+  });
   icon.setAttribute('aria-hidden', 'true');
   icon.setAttribute('data-asset-key', spellIconAssetKey(abilityId));
-
-  const image = document.createElement('img') as HTMLImageElement;
-  image.className = 'cockpit-cell__icon-image';
-  image.setAttribute('src', asset.mediaUrl);
-  image.setAttribute('alt', '');
-  image.setAttribute('aria-hidden', 'true');
-  image.setAttribute('draggable', 'false');
-  icon.append(image);
 
   return icon;
 }

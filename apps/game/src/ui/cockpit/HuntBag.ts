@@ -1,9 +1,12 @@
 import type { RunBagEntry } from '../../../../../packages/contracts/src/index.ts';
+import {
+  assetFrameSignature,
+  createAtlasFrame,
+  type ResolveCockpitAsset,
+} from './AssetFrame';
 
 export interface HuntBagOptions {
-  readonly resolveAsset?: (
-    key: string,
-  ) => { readonly mediaUrl: string } | undefined;
+  readonly resolveAsset?: ResolveCockpitAsset;
 }
 
 export interface HuntBag {
@@ -58,7 +61,7 @@ export function mountHuntBag(
     const signature = entries
       .map((entry) => {
         const resolved = options.resolveAsset?.(entry.itemKey);
-        return `${entry.itemKey}:${entry.count}:${resolved?.mediaUrl ?? ''}`;
+        return `${entry.itemKey}:${entry.count}:${assetFrameSignature(resolved)}`;
       })
       .join('|');
     if (signature === renderedSignature) return;
@@ -99,14 +102,11 @@ export function mountHuntBag(
         label.textContent = `${labelFromItemKey(entry.itemKey)} × ${entry.count}`;
         slot.append(label);
       } else {
-        const image = createElement(
-          document,
-          'img',
-          `combat-bag-slot-image-${index}`,
-        ) as HTMLImageElement;
-        image.setAttribute('src', asset.mediaUrl);
-        image.setAttribute('alt', labelFromItemKey(entry.itemKey));
-        image.setAttribute('draggable', 'false');
+        const imageFrame = createAtlasFrame(document, asset, {
+          imageClassName: 'combat-bag-slot-image',
+          imageTestId: `combat-bag-slot-image-${index}`,
+          alt: labelFromItemKey(entry.itemKey),
+        });
         const name = createElement(
           document,
           'span',
@@ -122,7 +122,7 @@ export function mountHuntBag(
         );
         accessibleLabel.className = 'combat-bag-slot-accessible-label';
         accessibleLabel.textContent = `${rawLabelFromItemKey(entry.itemKey)} × ${entry.count}`;
-        slot.append(image, name, accessibleLabel);
+        slot.append(imageFrame, name, accessibleLabel);
       }
 
       const count = createElement(
