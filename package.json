@@ -24,6 +24,7 @@
     "test:save": "corepack pnpm --filter @huntbound/save exec vitest run",
     "assets:test:generate:check": "node --no-warnings --experimental-transform-types tools/asset-packer/cli.ts build --check --selection packages/test-fixtures/assets/pb02/selection.json --source-lock packages/test-fixtures/assets/pb02/source-lock.json --source-root packages/test-fixtures/assets/pb02/source --output packages/test-fixtures/assets/pb02/expected/test/packs/pb-02-contract-coverage",
     "assets:hunt:artifacts:check": "node --no-warnings --experimental-transform-types tools/asset-packer/hunt/generateArtifacts.ts --check",
+    "assets:hunt:pack": "node --no-warnings --experimental-transform-types tools/asset-packer/hunt/pipeline.ts pack",
     "assets:hunt:pack:check": "node --no-warnings --experimental-transform-types tools/asset-packer/hunt/pipeline.ts pack-check",
     "assets:hunt:profile:check": "node --no-warnings --experimental-transform-types tools/asset-packer/hunt/pipeline.ts profile-check",
     "assets:hunt:check": "node --no-warnings --experimental-transform-types tools/asset-packer/hunt/pipeline.ts hunt-check",

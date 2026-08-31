@@ -83,6 +83,25 @@ async function runAssetCommand(
   }
 }
 
+export async function buildHuntPacks(): Promise<void> {
+  for (const entry of listHuntPipelineEntries()) {
+    const paths = pathsFor(entry);
+    await runAssetCommand(entry, [
+      'build-profile',
+      '--profile',
+      'test',
+      '--selection',
+      paths.testSelection,
+      '--source-lock',
+      paths.testSourceLock,
+      '--source-root',
+      paths.testSourceRoot,
+      '--output',
+      paths.testProfileRoot,
+    ]);
+  }
+}
+
 export async function checkHuntPacks(): Promise<void> {
   for (const entry of listHuntPipelineEntries()) {
     const paths = pathsFor(entry);
@@ -196,6 +215,7 @@ function requiredOption(
 }
 
 const usageText = `Usage:
+  node tools/asset-packer/hunt/pipeline.ts pack
   node tools/asset-packer/hunt/pipeline.ts pack-check
   node tools/asset-packer/hunt/pipeline.ts profile-check
   node tools/asset-packer/hunt/pipeline.ts hunt-check
@@ -207,6 +227,10 @@ export async function runHuntPipeline(
   args: readonly string[] = process.argv.slice(2),
 ): Promise<number> {
   const command = args[0];
+  if (command === 'pack' && args.length === 1) {
+    await buildHuntPacks();
+    return 0;
+  }
   if (command === 'pack-check' && args.length === 1) {
     await checkHuntPacks();
     return 0;
