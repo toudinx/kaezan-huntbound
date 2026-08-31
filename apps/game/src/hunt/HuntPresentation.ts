@@ -13,6 +13,7 @@ import type { ActorMotionSegment } from './ActorMotion';
 import { createActorMotion } from './ActorMotion';
 import {
   type GroundCompositionStats,
+  type GroundSample,
   groundCompositionStats,
   resolveGroundSample,
 } from './GroundCompositor';
@@ -56,6 +57,14 @@ export interface HuntActorDrawCommand {
 
 export type HuntDrawCommand = HuntTileDrawCommand | HuntActorDrawCommand;
 
+/** Inclusive cell bounds that the scene asks the presentation to draw. */
+export interface HuntDrawWindow {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
 export interface PresentationActorState extends PresentationActor {
   readonly previous: GridPosition;
   readonly target: GridPosition;
@@ -78,7 +87,7 @@ export interface HuntPresentation {
   setFloor(z: number): void;
   floor(): number;
   actors(): readonly PresentationActorState[];
-  drawCommands(): readonly HuntDrawCommand[];
+  drawCommands(window?: HuntDrawWindow): readonly HuntDrawCommand[];
   groundComposition(): GroundCompositionStats;
 }
 
@@ -156,39 +165,78 @@ function sortedStacks(
   return [...entries].sort((left, right) => left.i - right.i);
 }
 
+function fullDrawWindow(region: MapRegion): HuntDrawWindow {
+  return {
+    minX: 0,
+    minY: 0,
+    maxX: region.width - 1,
+    maxY: region.height - 1,
+  };
+}
+
+function normalizeDrawWindow(
+  region: MapRegion,
+  window: HuntDrawWindow | undefined,
+): HuntDrawWindow {
+  const source = window ?? fullDrawWindow(region);
+  return {
+    minX: Math.max(0, Math.ceil(source.minX)),
+    minY: Math.max(0, Math.ceil(source.minY)),
+    maxX: Math.min(region.width - 1, Math.floor(source.maxX)),
+    maxY: Math.min(region.height - 1, Math.floor(source.maxY)),
+  };
+}
+
+function windowContains(window: HuntDrawWindow, x: number, y: number): boolean {
+  return (
+    x >= window.minX && x <= window.maxX && y >= window.minY && y <= window.maxY
+  );
+}
+
 export function buildFloorDrawCommands(
   region: MapRegion,
   z: number,
   actors: readonly PresentationActor[],
+  window?: HuntDrawWindow,
 ): readonly HuntDrawCommand[] {
   const floor = region.floors.find((candidate) => candidate.z === z);
   if (floor === undefined) return Object.freeze([]);
 
+  const drawWindow = normalizeDrawWindow(region, window);
   const commands: HuntDrawCommand[] = [];
-  const groundSamples = floor.ground.map((_paletteIndex, index) =>
-    resolveGroundSample(region, z, index),
-  );
+  const groundSamples = new Map<number, GroundSample | undefined>();
+  const groundSampleFor = (index: number): GroundSample | undefined => {
+    if (!groundSamples.has(index)) {
+      groundSamples.set(index, resolveGroundSample(region, z, index));
+    }
+    return groundSamples.get(index);
+  };
   const hasGround = (index: number): boolean =>
-    groundSamples[index] !== undefined;
+    groundSampleFor(index) !== undefined;
 
-  floor.ground.forEach((_paletteIndex, index) => {
-    const sample = groundSamples[index];
-    const command =
-      sample === undefined
-        ? undefined
-        : tileCommand(
-            region,
-            z,
-            'ground',
-            index,
-            sample.paletteIndex,
-            0,
-            sample.sourceZ,
-          );
-    if (command !== undefined) commands.push(command);
-  });
+  for (let y = drawWindow.minY; y <= drawWindow.maxY; y += 1) {
+    for (let x = drawWindow.minX; x <= drawWindow.maxX; x += 1) {
+      const index = y * region.width + x;
+      const sample = groundSampleFor(index);
+      if (sample === undefined) continue;
+
+      const command = tileCommand(
+        region,
+        z,
+        'ground',
+        index,
+        sample.paletteIndex,
+        0,
+        sample.sourceZ,
+      );
+      if (command !== undefined) commands.push(command);
+    }
+  }
 
   for (const entry of sortedStacks(floor.objectsBelow)) {
+    const x = entry.i % region.width;
+    const y = Math.floor(entry.i / region.width);
+    if (!windowContains(drawWindow, x, y)) continue;
     if (!hasGround(entry.i)) continue;
     entry.stack.forEach((paletteIndex, stackIndex) => {
       const command = tileCommand(
@@ -205,7 +253,11 @@ export function buildFloorDrawCommands(
   }
 
   for (const actor of [...actors]
-    .filter((candidate) => candidate.position.z === z)
+    .filter(
+      (candidate) =>
+        candidate.position.z === z &&
+        windowContains(drawWindow, candidate.position.x, candidate.position.y),
+    )
     .sort((left, right) => left.entityId - right.entityId)) {
     const index = positionIndex(region, actor.position);
     if (!hasGround(index)) continue;
@@ -223,6 +275,9 @@ export function buildFloorDrawCommands(
   }
 
   for (const entry of sortedStacks(floor.objectsAbove)) {
+    const x = entry.i % region.width;
+    const y = Math.floor(entry.i / region.width);
+    if (!windowContains(drawWindow, x, y)) continue;
     if (!hasGround(entry.i)) continue;
     entry.stack.forEach((paletteIndex, stackIndex) => {
       const command = tileCommand(
@@ -390,7 +445,7 @@ export function createHuntPresentation(
           .sort((left, right) => left.entityId - right.entityId)
           .map(copyActor),
       ),
-    drawCommands: () =>
+    drawCommands: (window) =>
       buildFloorDrawCommands(
         options.region,
         activeFloor,
@@ -401,6 +456,7 @@ export function createHuntPresentation(
           position: actor.target,
           facing: actor.facing,
         })),
+        window,
       ),
     groundComposition: () =>
       groundCompositionStats(options.region, activeFloor),

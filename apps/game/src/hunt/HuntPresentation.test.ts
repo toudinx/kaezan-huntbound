@@ -12,6 +12,7 @@ import type {
 import {
   buildFloorDrawCommands,
   createHuntPresentation,
+  type HuntDrawWindow,
   type PresentationActor,
 } from './HuntPresentation';
 
@@ -94,6 +95,31 @@ describe('HuntPresentation', () => {
     expect(
       commands.find((command) => command.x === 1 && command.y === 1),
     ).toMatchObject({ layer: 'ground', sourceZ: 8 });
+  });
+
+  it('limits floor commands to the camera window', () => {
+    const window: HuntDrawWindow = {
+      minX: 1,
+      minY: 0,
+      maxX: 1,
+      maxY: 0,
+    };
+    const commands = buildFloorDrawCommands(
+      syntheticRegion(),
+      7,
+      [
+        actor(1, 'player', { x: 1, y: 0, z: 7 }),
+        actor(2, 'rotworm', { x: 0, y: 0, z: 7 }),
+      ],
+      window,
+    );
+
+    expect(
+      commands.map(({ kind, layer, x, y }) => ({ kind, layer, x, y })),
+    ).toEqual([
+      { kind: 'tile', layer: 'ground', x: 1, y: 0 },
+      { kind: 'actor', layer: 'actors', x: 1, y: 0 },
+    ]);
   });
 
   it('replaces the active floor and handles actor lifecycle events', () => {
