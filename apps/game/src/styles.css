@@ -1545,13 +1545,16 @@ body {
   touch-action: manipulation;
   isolation: isolate;
   --cooldown-sweep: 0%;
+
+  /* The share already served, which is the part of the art the wedge frees. */
+  --cooldown-clear: calc(100% - var(--cooldown-sweep));
 }
 
 /* Icons --------------------------------------------------------------- */
 
 .cockpit-cell__icon {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 100%;
@@ -1569,60 +1572,6 @@ body {
   image-rendering: pixelated;
 }
 
-.cockpit-cell:hover .cockpit-cell__icon {
-  filter: brightness(1.18);
-}
-
-/* Keyboard focus is the one ring that has to stay drawable. */
-.cockpit-cell:focus-visible {
-  outline: 2px solid #9ec4ff;
-  outline-offset: 1px;
-}
-
-.cockpit-cell[aria-disabled="true"] {
-  cursor: not-allowed;
-}
-
-/*
- * The overlay is the cooldown clock. It grows from the top edge and shrinks
- * toward readiness; the custom property is the only value that changes with a
- * tick, so the compositor can animate it without making the deck relayout.
- */
-.cockpit-cell::after {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  border-radius: inherit;
-  background: rgb(2 7 16 / 78%);
-  clip-path: inset(0 0 calc(100% - var(--cooldown-sweep)) 0);
-  pointer-events: none;
-  content: "";
-  transition: clip-path 50ms linear;
-}
-
-/* Its own cooldown reads warm; one it only shares with a group reads cool. */
-.cockpit-cell[data-cooldown-scope="ability"]::after {
-  background: rgb(38 26 6 / 76%);
-}
-
-.cockpit-cell[data-cooldown-scope="group"]::after {
-  background: rgb(6 16 32 / 70%);
-}
-
-.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__icon {
-  filter: grayscale(0.65) brightness(0.62);
-}
-
-.cockpit-cell[data-unavailable-reason="dead"] {
-  opacity: 0.5;
-}
-
-/* A posture is a mode, so it glows around the art while it is held. */
-.cockpit-cell[data-cell-kind="posture"][aria-checked="true"]
-.cockpit-cell__icon {
-  box-shadow: 0 0 0.5rem 0.1rem rgb(255 212 121 / 70%);
-}
-
 /*
  * The hotkey, the mana price and the cooldown now sit straight on the art
  * instead of on a dark panel, so each carries its own shadow. Without it the
@@ -1638,7 +1587,7 @@ body {
 
 .cockpit-cell__key {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   top: 0.1rem;
   left: 0.22rem;
   color: #b9cbe6;
@@ -1649,7 +1598,7 @@ body {
 /* The mana price, in the colour of the gauge it comes out of. */
 .cockpit-cell__cost {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   bottom: 0.1rem;
   left: 0.22rem;
   color: #9ec4ff;
@@ -1657,13 +1606,9 @@ body {
   line-height: 1;
 }
 
-.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__cost {
-  color: #ffb86b;
-}
-
 .cockpit-cell__cooldown {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   right: 0.22rem;
   bottom: 0.1rem;
   color: #f1d78b;
@@ -1671,6 +1616,123 @@ body {
   font-size: max(0.45rem, calc(var(--cell) * 0.13));
   font-weight: 700;
   line-height: 1;
+}
+
+.cockpit-cell:hover .cockpit-cell__icon {
+  filter: brightness(1.18);
+}
+
+/* Keyboard focus is the one ring that has to stay drawable. */
+.cockpit-cell:focus-visible {
+  outline: 2px solid #9ec4ff;
+  outline-offset: 1px;
+}
+
+.cockpit-cell[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/*
+ * The cooldown clock. It used to sit *under* the icon, which was invisible
+ * once the cell lost its panel: there was nothing left down there to darken.
+ * It now wipes the art itself. The wedge covers what is still owed and gives
+ * the picture back clockwise from twelve o'clock -- the shape every hotbar
+ * uses, and readable from the corner of the eye at a glance.
+ */
+.cockpit-cell::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--cooldown-clear),
+    rgb(2 7 16 / 82%) var(--cooldown-clear) 100%
+  );
+  pointer-events: none;
+  content: "";
+}
+
+/* Its own cooldown reads warm; one it only shares with a group reads cool. */
+.cockpit-cell[data-cooldown-scope="ability"]::after {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--cooldown-clear),
+    rgb(46 28 4 / 84%) var(--cooldown-clear) 100%
+  );
+}
+
+.cockpit-cell[data-cooldown-scope="group"]::after {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 var(--cooldown-clear),
+    rgb(4 14 34 / 78%) var(--cooldown-clear) 100%
+  );
+}
+
+/* Under the wedge the art dims too, so a cell mid-cooldown never reads ready. */
+.cockpit-cell:not([data-cooldown-scope="none"]) .cockpit-cell__icon {
+  filter: grayscale(0.35) brightness(0.72);
+}
+
+/*
+ * Out of mana is the state the player has to recognise without reading a
+ * number, so it is not a shade of the same picture: the art goes flat and
+ * dark, a cold wash sits on top of it, and the price lights up.
+ */
+.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__icon {
+  filter: grayscale(0.95) brightness(0.42) contrast(0.9);
+}
+
+/*
+ * The wash rides on the cell, not on the icon: the icon carries the grayscale
+ * filter, and a filter applies to its own pseudo-elements, so a tint painted
+ * in there came out grey along with the art it was supposed to colour.
+ */
+.cockpit-cell[data-unavailable-reason="mana"]::before {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background: rgb(44 104 208 / 42%);
+  pointer-events: none;
+  content: "";
+}
+
+.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__cost {
+  color: #ffc46b;
+  font-weight: 700;
+}
+
+.cockpit-cell[data-unavailable-reason="dead"] {
+  opacity: 0.5;
+}
+
+/*
+ * The attack cell is the one slot with no art -- there is no Tibia icon for
+ * swinging a weapon. Without a plate it was a "Spc" floating over the field,
+ * so it keeps the frame the other cells gave up, sized like an icon, and
+ * centres its key inside it.
+ */
+.cockpit-cell[data-cell-kind="attack"]::before {
+  position: absolute;
+  z-index: 1;
+  inset: 4%;
+  border: 1px solid rgb(123 161 216 / 45%);
+  border-radius: 0.3rem;
+  background: rgb(12 23 42 / 88%);
+  content: "";
+}
+
+.cockpit-cell[data-cell-kind="attack"] .cockpit-cell__key {
+  top: 50%;
+  left: 50%;
+  color: #cddcf2;
+  transform: translate(-50%, -50%);
+}
+
+/* A posture is a mode, so it glows around the art while it is held. */
+.cockpit-cell[data-cell-kind="posture"][aria-checked="true"]
+.cockpit-cell__icon {
+  box-shadow: 0 0 0.5rem 0.1rem rgb(255 212 121 / 70%);
 }
 
 /* Death --------------------------------------------------------------- */
