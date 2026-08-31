@@ -6,7 +6,7 @@
 cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do Tibia. Elegível. Nenhuma task
 iniciada.
 
-**Última atualização:** 2026-08-31 — `PB-17-FIX-02` aberta a partir do playtest.
+**Última atualização:** 2026-08-31 — `PB-17-FIX-03` fechada: o deck já resolve o ícone de cada magia.
 
 **Base:** o chassi do PB-08-08/09 (`CockpitLayout`, bandas, rail com minimapa/alvo/bag) e as cinco
 hunts do PB-10. Nada aqui reescreve chassi.
@@ -23,6 +23,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-17-04 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | `d3a9ec6` | cor de chão derivada da média dos pixels do tile real, seta com facing, chevrons de transição, ring de entrada e readout de andar; biome/typecheck/suíte de `apps/game` verdes |
 | PB-17-05 | pending | `main` | frontier `xhigh` | — | — | — |
 | PB-17-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `95c6e41` | recorte CSS responsivo do frame 0 nos painéis alvo, mochila e deck; biome/typecheck/test do game verdes |
+| PB-17-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | — | recorte das nove magias no export privado e seleções `personal` regeneradas: os packs das cinco hunts não tinham nenhuma chave `spell:` desde a PB-17-01; `assets:check` verde |
 
 ## Bloqueios
 
