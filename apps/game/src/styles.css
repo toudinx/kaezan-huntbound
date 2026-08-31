@@ -1004,6 +1004,41 @@ body {
   image-rendering: pixelated;
 }
 
+[data-testid="combat-minimap-legend"] {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  color: #9fb4d6;
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-testid="combat-minimap-legend"] > span {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+[data-testid="combat-minimap-legend"] > span::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  content: "";
+}
+
+[data-testid="combat-minimap-legend-entry"]::before {
+  background: #8ef5a3;
+}
+
+[data-testid="combat-minimap-legend-down"]::before {
+  background: #7fd8ff;
+}
+
+[data-testid="combat-minimap-legend-up"]::before {
+  background: #ffb066;
+}
+
 /* Target ------------------------------------------------------------- */
 
 .cockpit-target {

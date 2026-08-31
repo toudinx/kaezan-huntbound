@@ -466,6 +466,8 @@ export async function bootstrapApp(
             });
           },
           region: hunt.region,
+          transitions: hunt.transitions.entries,
+          playerStart: hunt.playerStart,
           resolveAsset: resolveHuntAsset,
         },
         save: {

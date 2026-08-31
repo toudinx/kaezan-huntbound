@@ -36,6 +36,8 @@ export interface AppShellOptions {
     readonly viewModel: CombatViewModel;
     readonly onRestart?: () => void;
     readonly region?: CombatHudOptions['region'];
+    readonly transitions?: CombatHudOptions['transitions'];
+    readonly playerStart?: CombatHudOptions['playerStart'];
     readonly resolveAsset?: CombatHudOptions['resolveAsset'];
   };
   readonly save?: {
@@ -158,6 +160,12 @@ export function mountAppShell(
       ...(options.combat?.region === undefined
         ? {}
         : { region: options.combat.region }),
+      ...(options.combat?.transitions === undefined
+        ? {}
+        : { transitions: options.combat.transitions }),
+      ...(options.combat?.playerStart === undefined
+        ? {}
+        : { playerStart: options.combat.playerStart }),
       ...(options.combat?.resolveAsset === undefined
         ? {}
         : { resolveAsset: options.combat.resolveAsset }),

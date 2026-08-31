@@ -56,6 +56,8 @@ export interface CombatMapActorView {
   readonly blueprintId: string;
   readonly position: GridPosition;
   readonly isPlayer: boolean;
+  /** Where the actor is looking, so the minimap can draw a heading. */
+  readonly facing: Direction | null;
 }
 
 export interface CombatMinimapView {
@@ -410,6 +412,9 @@ export function createCombatViewModel(
         case 'actor/faced': {
           const actor = actorFromEvent(event.payload.entityId, undefined, 1);
           actor.facing = event.payload.facing;
+          // Turning in place moves nothing, but the minimap arrow is a heading:
+          // without this the player faces one way and the marker another.
+          invalidateMinimap();
           break;
         }
         case 'actor/despawned':
@@ -613,6 +618,7 @@ export function createCombatViewModel(
           blueprintId: actor.blueprintId,
           position: copyPosition(actor.position),
           isPlayer: actor.entityId === options.playerEntityId,
+          facing: actor.facing,
         })),
     };
     cachedMinimapRevision = minimapRevision;

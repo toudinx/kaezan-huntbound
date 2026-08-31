@@ -1,3 +1,7 @@
+import type {
+  GridPosition,
+  TransitionEntry,
+} from '../../../../packages/contracts/src/index.ts';
 import {
   type MapRegion,
   TICK_DURATION_MS,
@@ -37,6 +41,9 @@ export interface CombatHud {
 export interface CombatHudOptions {
   readonly onRestart?: () => void;
   readonly region?: MapRegion;
+  /** The hunt's floor links and drop-in cell, drawn as minimap landmarks. */
+  readonly transitions?: readonly TransitionEntry[];
+  readonly playerStart?: GridPosition;
   readonly resolveAsset?: (
     key: string,
   ) => { readonly mediaUrl: string } | undefined;
@@ -103,10 +110,18 @@ export function mountCombatHud(
 
   const banner: VitalBanner = mountVitalBanner(document);
 
-  const minimap: Minimap = mountMinimap(
-    rail,
-    options.region === undefined ? {} : { region: options.region },
-  );
+  const minimap: Minimap = mountMinimap(rail, {
+    ...(options.region === undefined ? {} : { region: options.region }),
+    ...(options.transitions === undefined
+      ? {}
+      : { transitions: options.transitions }),
+    ...(options.playerStart === undefined
+      ? {}
+      : { playerStart: options.playerStart }),
+    ...(options.resolveAsset === undefined
+      ? {}
+      : { resolveAsset: options.resolveAsset }),
+  });
   const targetWindow: TargetWindow = mountTargetWindow(rail, {
     ...(options.resolveAsset === undefined
       ? {}

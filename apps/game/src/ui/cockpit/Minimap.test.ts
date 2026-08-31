@@ -9,6 +9,8 @@ import { type MinimapState, mountMinimap } from './Minimap';
 
 class FakeCanvasContext {
   fillStyle = '';
+  strokeStyle = '';
+  lineWidth = 0;
   readonly calls: string[] = [];
 
   clearRect(): void {
@@ -21,6 +23,34 @@ class FakeCanvasContext {
 
   fillRect(): void {
     this.calls.push('fillRect');
+  }
+
+  beginPath(): void {
+    this.calls.push('beginPath');
+  }
+
+  closePath(): void {
+    this.calls.push('closePath');
+  }
+
+  moveTo(): void {
+    this.calls.push('moveTo');
+  }
+
+  lineTo(): void {
+    this.calls.push('lineTo');
+  }
+
+  arc(): void {
+    this.calls.push('arc');
+  }
+
+  fill(): void {
+    this.calls.push('fill');
+  }
+
+  stroke(): void {
+    this.calls.push('stroke');
   }
 }
 
