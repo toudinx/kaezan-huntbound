@@ -918,7 +918,9 @@ body {
   flex-direction: column;
   gap: 0.4rem;
   width: var(--cockpit-rail);
+  min-height: 0;
   padding: 0.4rem 0.5rem 0.4rem 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -1096,9 +1098,10 @@ body {
 
 [data-testid="combat-loot"] {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   color: #b9d9b0;
   font-variant-numeric: tabular-nums;
 }
@@ -1119,10 +1122,11 @@ body {
 
 [data-testid="combat-run-bag"] {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   min-height: 0;
   gap: 0.25rem;
+  overflow: hidden;
   color: #f1d78b;
 }
 
@@ -1133,11 +1137,15 @@ body {
 
 [data-testid="combat-bag-grid"] {
   display: grid;
+  flex: 1 1 auto;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: minmax(2.55rem, 1fr);
+  align-content: start;
   gap: 0.2rem;
   min-height: 0;
+  max-height: 100%;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-color: rgb(123 161 216 / 55%) rgb(6 11 22 / 60%);
 }
 
@@ -1148,8 +1156,10 @@ body {
   min-height: 2.55rem;
   place-items: center;
   overflow: hidden;
+  cursor: help;
   border: 1px solid rgb(255 255 255 / 14%);
   background: rgb(20 30 47 / 72%);
+  isolation: isolate;
 }
 
 .combat-bag-slot[data-empty="true"] {
@@ -1159,13 +1169,14 @@ body {
 
 .combat-bag-slot img {
   display: block;
+  z-index: 1;
   width: 75%;
   height: 75%;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
-.combat-bag-slot span:not([data-testid^="combat-bag-slot-count-"]) {
+.combat-bag-slot-fallback-label {
   padding: 0.15rem;
   overflow: hidden;
   color: #f1d78b;
@@ -1177,14 +1188,88 @@ body {
   overflow-wrap: anywhere;
 }
 
-.combat-bag-slot span[data-testid^="combat-bag-slot-count-"] {
+.combat-bag-slot-name {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  max-width: calc(100% - 0.3rem);
+  padding: 0.15rem 0.22rem;
+  overflow: hidden;
+  border: 1px solid rgb(241 215 139 / 65%);
+  border-radius: 0.2rem;
+  color: #fff1b8;
+  background: rgb(6 11 22 / 94%);
+  font-size: 0.55rem;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.94);
+  visibility: hidden;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 0s linear 120ms;
+}
+
+.combat-bag-slot:hover .combat-bag-slot-name,
+.combat-bag-slot:focus .combat-bag-slot-name,
+.combat-bag-slot:active .combat-bag-slot-name {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.combat-bag-slot-count {
+  position: absolute;
+  z-index: 3;
   right: 0.15rem;
   bottom: 0.08rem;
+  min-width: 1.25rem;
+  padding: 0.1rem 0.22rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
   color: #f4f7ff;
-  font-size: 0.56rem;
+  background: rgb(6 11 22 / 88%);
+  font-size: 0.58rem;
   font-weight: 700;
+  line-height: 1;
+  text-align: center;
   text-shadow: 0 1px 2px #060b16;
+}
+
+@keyframes combat-bag-slot-enter {
+  0% {
+    border-color: rgb(241 215 139 / 95%);
+    box-shadow: 0 0 0 0 rgb(241 215 139 / 0%);
+    transform: scale(0.84);
+  }
+
+  45% {
+    border-color: rgb(241 215 139 / 95%);
+    box-shadow: 0 0 0.75rem 0.12rem rgb(241 215 139 / 58%);
+    transform: scale(1.04);
+  }
+
+  100% {
+    border-color: rgb(255 255 255 / 14%);
+    box-shadow: 0 0 0 0 rgb(241 215 139 / 0%);
+    transform: scale(1);
+  }
+}
+
+.combat-bag-slot[data-entering="true"] {
+  animation: combat-bag-slot-enter 650ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-bag-slot[data-entering="true"] {
+    animation: none;
+  }
 }
 
 .combat-bag-slot .combat-bag-slot-accessible-label {

@@ -71,4 +71,49 @@ describe('HuntBag', () => {
     expect(label?.textContent).toContain('ham');
     expect(label?.textContent).toContain('2');
   });
+
+  it('mostra o nome e uma contagem em badge quando há sprite', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const bag = mountHuntBag(root as unknown as HTMLElement, {
+      resolveAsset: (key) => ({ mediaUrl: `/assets/${key}.png` }),
+    });
+
+    bag.render([{ itemKey: 'item:tibia:gold-coin', count: 1 }]);
+
+    const slot = root.querySelector('[data-testid="combat-bag-slot-0"]');
+    expect(slot?.getAttribute('data-item-name')).toBe('gold coin');
+    expect(slot?.getAttribute('title')).toBe('gold coin × 1');
+    expect(slot?.getAttribute('aria-label')).toBe('gold coin × 1');
+    expect(
+      root.querySelector('[data-testid="combat-bag-slot-name-0"]')?.textContent,
+    ).toBe('gold coin');
+    expect(
+      root.querySelector('[data-testid="combat-bag-slot-count-0"]')
+        ?.textContent,
+    ).toBe('× 1');
+    expect(
+      root
+        .querySelector('[data-testid="combat-bag-slot-count-0"]')
+        ?.getAttribute('data-count'),
+    ).toBe('1');
+    expect(slot?.getAttribute('data-entering')).toBe(null);
+  });
+
+  it('marca o slot quando o loot chega ou aumenta o stack', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const bag = mountHuntBag(root as unknown as HTMLElement, {
+      resolveAsset: () => ({ mediaUrl: '/assets/gold-coin.png' }),
+    });
+
+    bag.render([{ itemKey: 'item:tibia:gold-coin', count: 1 }]);
+    bag.render([{ itemKey: 'item:tibia:gold-coin', count: 2 }]);
+
+    expect(
+      root
+        .querySelector('[data-testid="combat-bag-slot-0"]')
+        ?.getAttribute('data-entering'),
+    ).toBe('true');
+  });
 });
