@@ -1,6 +1,8 @@
 import type {
   HuntDefinition,
+  MapRegion,
   MapRegionFloor,
+  TransitionEntry,
 } from '../../packages/contracts/src/hunt/types.ts';
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
 import type { ExtractionDiagnostic } from './types.ts';
@@ -159,6 +161,87 @@ function pointWalkable(
     width,
     height,
   );
+}
+
+/**
+ * Every group of cells that can walk to each other, floors joined by the
+ * transitions the extraction derived.
+ *
+ * A raw OTBM box is not one place. The frozen Orc Fortress rectangle carries
+ * the fortress, the field outside its wall and a handful of ledges that share
+ * no path with either, so whoever has to choose a cell for the player needs to
+ * know which of them is the hunt. Cells come out in canonical `(z, y, x)` order
+ * inside each component, and the components in the order their first cell
+ * appears, so a caller can pick deterministically.
+ */
+export function walkableComponents(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+): readonly (readonly GridPosition[])[] {
+  const { width, height } = region;
+  const floorByZ = new Map(region.floors.map((floor) => [floor.z, floor]));
+  const key = (position: GridPosition): string =>
+    `${position.z}:${indexOf(position, width)}`;
+
+  const links = new Map<string, GridPosition[]>();
+  const link = (from: GridPosition, to: GridPosition): void => {
+    const existing = links.get(key(from));
+    if (existing === undefined) links.set(key(from), [to]);
+    else existing.push(to);
+  };
+  for (const transition of transitions) {
+    link(transition.from, transition.to);
+    link(transition.to, transition.from);
+  }
+
+  const visited = new Set<string>();
+  const components: GridPosition[][] = [];
+
+  for (const floor of region.floors) {
+    for (let index = 0; index < width * height; index += 1) {
+      const root: GridPosition = {
+        x: index % width,
+        y: Math.floor(index / width),
+        z: floor.z,
+      };
+      if (!pointWalkable(root, floorByZ, width, height)) continue;
+      if (visited.has(key(root))) continue;
+
+      visited.add(key(root));
+      const component: GridPosition[] = [];
+      const queue: GridPosition[] = [root];
+      while (queue.length > 0) {
+        const current = queue.shift() as GridPosition;
+        component.push(current);
+        const stepped = neighbors(
+          floorByZ.get(current.z),
+          indexOf(current, width),
+          width,
+          height,
+        ).map(
+          (next): GridPosition => ({
+            x: next % width,
+            y: Math.floor(next / width),
+            z: current.z,
+          }),
+        );
+        for (const next of [...stepped, ...(links.get(key(current)) ?? [])]) {
+          if (visited.has(key(next))) continue;
+          if (!pointWalkable(next, floorByZ, width, height)) continue;
+          visited.add(key(next));
+          queue.push(next);
+        }
+      }
+      components.push(
+        component.sort(
+          (left, right) =>
+            left.z - right.z || left.y - right.y || left.x - right.x,
+        ),
+      );
+    }
+  }
+
+  return components;
 }
 
 export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {

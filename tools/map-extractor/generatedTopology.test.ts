@@ -6,12 +6,15 @@ import type { HuntDefinition } from '../../packages/contracts/src/hunt/types.ts'
 import { analyzeBoxDensity } from './boxDensity.ts';
 import { analyzeHuntTopology } from './topology.ts';
 
-const hunt = JSON.parse(
-  readFileSync(
-    'packages/content/src/generated/hunts/venore-rotworm-cave/hunt.json',
-    'utf8',
-  ),
-) as HuntDefinition;
+const readHunt = (slug: string): HuntDefinition =>
+  JSON.parse(
+    readFileSync(
+      `packages/content/src/generated/hunts/${slug}/hunt.json`,
+      'utf8',
+    ),
+  ) as HuntDefinition;
+
+const hunt = readHunt('venore-rotworm-cave');
 
 describe('generated Venore Rotworm Cave hunt', () => {
   it('generates one connected component on each authored floor', () => {
@@ -52,5 +55,34 @@ describe('generated Venore Rotworm Cave hunt', () => {
 
     // One lucky tile is not a spot. The box has to be findable.
     expect(report.tilesByPull[4] ?? 0).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe('generated Orc Fortress hunt', () => {
+  // The box is raw OTBM: the fortress, the field outside its wall and a
+  // handful of ledges that share no path with either. A start picked by
+  // distance to the first spawn group dropped the player on a 21-tile ledge
+  // with one spawn and no stairs, and the hunt read as an empty field. The
+  // start is picked from the walkable component now, so it cannot land off
+  // the hunt again.
+  it('starts the player inside the fortress, not on a ledge', () => {
+    const fortress = readHunt('orc-fortress');
+    const report = analyzeHuntTopology(fortress);
+    const reachable = new Map(
+      report.floors.map((floor) => [
+        floor.z,
+        floor.walkableTiles - floor.unreachable.length,
+      ]),
+    );
+
+    expect(fortress.playerStart).toEqual({ x: 37, y: 40, z: 7 });
+    expect(reachable.get(7)).toBe(889);
+    // The two holes of the fortress floor are real and both lead down.
+    expect(reachable.get(8)).toBe(916);
+    expect(
+      report.diagnostics.filter(
+        (item) => item.code === 'HUNT_PLAYER_START_UNREACHABLE',
+      ),
+    ).toEqual([]);
   });
 });

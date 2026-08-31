@@ -3,6 +3,8 @@ import type {
   HuntDefinition,
   KernelBlueprint,
   MapRegion,
+  SpawnGroupDefinition,
+  TransitionEntry,
 } from '../../packages/contracts/src/hunt/types.ts';
 import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts';
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
@@ -12,7 +14,7 @@ import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
 import { readOtbmTiles } from './otbm.ts';
 import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
-import { analyzeHuntTopology } from './topology.ts';
+import { analyzeHuntTopology, walkableComponents } from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';
 import { diagnostic, sortDiagnostics } from './types.ts';
@@ -80,50 +82,73 @@ function regionIdFor(huntKey: string): string {
 /**
  * Picks the player's starting cell.
  *
- * The rule is deterministic and keeps the start reachable from the hunt: the
- * walkable cell nearest to the first spawn group's center on that group's
- * floor, ties broken by `(y, x)`. Without spawn groups it falls back to the
- * first walkable cell in canonical order.
+ * A layout recipe hands the start over; a raw OTBM box has to earn one. The box
+ * is many disconnected places at once — fortress, field, ledge — and distance
+ * to a spawn does not mean a path to it, so the rule is connectivity first:
+ * the walkable component that holds the most spawn groups, then the floor of
+ * that component holding the most of them, then the cell on that floor with the
+ * shortest total walk to those groups. Ties break on canonical `(y, x)` order,
+ * and a box without a single spawn group falls back to its first walkable cell.
  */
 function pickPlayerStart(
   region: MapRegion,
-  anchor: GridPosition | undefined,
+  transitions: readonly TransitionEntry[],
+  groups: readonly SpawnGroupDefinition[],
 ): GridPosition | undefined {
-  const floors =
-    anchor === undefined
-      ? region.floors
-      : [
-          ...region.floors.filter((floor) => floor.z === anchor.z),
-          ...region.floors.filter((floor) => floor.z !== anchor.z),
-        ];
+  const components = walkableComponents(region, transitions);
+  if (components.length === 0) return undefined;
 
-  for (const floor of floors) {
-    const blocked = new Set(floor.collision);
-    let best: GridPosition | undefined;
-    let bestDistance = Number.POSITIVE_INFINITY;
-
-    for (let index = 0; index < floor.ground.length; index += 1) {
-      if (blocked.has(index)) continue;
-      const candidate: GridPosition = {
-        x: index % region.width,
-        y: Math.floor(index / region.width),
-        z: floor.z,
-      };
-      if (anchor === undefined) return candidate;
-      const distance = Math.max(
-        Math.abs(candidate.x - anchor.x),
-        Math.abs(candidate.y - anchor.y),
+  const holdsCenter = (
+    cells: readonly GridPosition[],
+  ): ((group: SpawnGroupDefinition) => boolean) => {
+    const reachable = new Set(
+      cells.map((cell) => `${cell.z}:${cell.y * region.width + cell.x}`),
+    );
+    return (group) =>
+      reachable.has(
+        `${group.center.z}:${group.center.y * region.width + group.center.x}`,
       );
-      if (distance < bestDistance) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    }
+  };
 
-    if (best !== undefined) return best;
-  }
+  const hunt = components
+    .map((cells) => ({ cells, groups: groups.filter(holdsCenter(cells)) }))
+    .reduce((best, candidate) =>
+      candidate.groups.length > best.groups.length ||
+      (candidate.groups.length === best.groups.length &&
+        candidate.cells.length > best.cells.length)
+        ? candidate
+        : best,
+    );
 
-  return undefined;
+  const floorOf = (z: number) => ({
+    z,
+    cells: hunt.cells.filter((cell) => cell.z === z),
+    groups: hunt.groups.filter((group) => group.center.z === z),
+  });
+  const floor = [...new Set(hunt.cells.map((cell) => cell.z))]
+    .map(floorOf)
+    .reduce((best, candidate) =>
+      candidate.groups.length > best.groups.length ||
+      (candidate.groups.length === best.groups.length &&
+        candidate.cells.length > best.cells.length)
+        ? candidate
+        : best,
+    );
+
+  const walkCost = (cell: GridPosition): number =>
+    floor.groups.reduce(
+      (total, group) =>
+        total +
+        Math.max(
+          Math.abs(cell.x - group.center.x),
+          Math.abs(cell.y - group.center.y),
+        ),
+      0,
+    );
+
+  return floor.cells.reduce((best, candidate) =>
+    walkCost(candidate) < walkCost(best) ? candidate : best,
+  );
 }
 
 function budgetDiagnostics(region: MapRegion): readonly ExtractionDiagnostic[] {
@@ -230,7 +255,11 @@ export function extractHunt(
 
   const playerStart =
     layout?.playerStart ??
-    pickPlayerStart(built.region, spawns.table.groups[0]?.center);
+    pickPlayerStart(
+      built.region,
+      transitions.table.entries,
+      spawns.table.groups,
+    );
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,
