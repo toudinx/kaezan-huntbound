@@ -10,7 +10,8 @@ inteira e as cinco hunts estão na `main`. O que resta é a correção de mapa (
 ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
 **Última atualização:** 2026-08-31 — 13 fechada e corrigida pela PB-10-13-FIX-01 (start do jogador
-caía fora da hunt) e pela PB-10-13-FIX-02 (pack cobrindo a caixa inteira). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
+caía fora da hunt), pela PB-10-13-FIX-02 (pack cobrindo a caixa inteira) e pela PB-10-13-FIX-03
+(escadas de subida). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
 hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
 71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
 
@@ -40,6 +41,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-13 | done | `main` | frontier `xhigh` | Codex GPT-5 `xhigh` | `76e1050` | Orc na caixa real 65×68×3; 33/68 spawns; 6 transições, 2 dropped; primeiro paint z6: 5.427 comandos / 5.115 sprites resolvidos; map-extractor, content, architecture e format verdes; pack derivado 541>512 fica fora do escopo |
 | PB-10-13-FIX-01 | done | `main` | frontier `xhigh` | Claude Opus 5 | `695ea59` | start do jogador por conectividade: componente com mais grupos → andar com mais grupos → célula de menor caminhada. Orc sai de (64,14,z6), lasca de 21 células com 1 grupo, para (37,40,z7): 2.620 células, 19/33 grupos, 6/6 transições. As quatro hunts com receita regeneram byte a byte; map-extractor (139), content, architecture e format verdes |
 | PB-10-13-FIX-02 | done | `main` | frontier `xhigh` | Claude Opus 5 | `c2efb02` | pack da caixa inteira: selection derivada da região real (357→541 chaves), teto de entradas 512→1024 com `maxBytes` como guarda de memória (523 mídias / 2,6 MB contra 6 MiB), 119 ids adicionados ao export privado e export re-rodado. 1.235 de 14.376 comandos de desenho sem sprite → 0. `huntArtifacts.test.ts` (7 vermelhos na `main`, contagens anteriores aos 9 ícones de spell) verde; asset-packer (61), `assets:check` e format verdes |
+| PB-10-13-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | `6d6bb64` | escadas de volta: `type="ladder"` entra na tabela de flags (schema 2, 17 ids) e vira transição `moveUpstairs` (um andar acima, um tile ao sul). Orc vai de 6 para 12 transições; z6 sai de 0 para 815 células alcançáveis do start. `expectedDroppedTransitions` 2→3 pela escada de (27,57,z6) para z5, fora dos andares congelados. As quatro com receita reextraem byte a byte; map-extractor (141), tile-flags (81), content, architecture e format verdes |
 | PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
 
@@ -132,15 +134,21 @@ chave anteriores aos 9 ícones de spell. Consertado pela PB-10-13-FIX-02, mas **
 órfão**: pendurá-lo no `test` é task própria. Mesmo padrão em `tools/map-extractor/tsconfig.json`,
 que não compila na `main` e também não está em gate nenhum.
 
-**B24 — aberto, descoberto no playtest da PB-10-13.** A caixa da Orc Fortress **não tem transição
-de subida**. Os únicos floorchange que o `tile-flags` encontra nos 65×68×3 são 6 buracos `down` (4 de
-z6 para z7, 2 de z7 para z8) e 2 que caem em z9, fora dos andares extraídos e por isso dropados.
-Como `TransitionEntry` é dirigida, o andar é uma descida sem volta: de z7 o jogador desce para z8 e
-não sobe, e z6 (815 células, 5 grupos) é inalcançável — `analyzeHuntTopology` reporta 0 células
-alcançáveis em z6. Não bloqueia a hunt jogável (z7 tem 889 células, 9 grupos, e z8 mais 5), mas mata
-a volta pelo mesmo caminho que a PB-10-13 pedia. Ou o item de subida real não está marcado na tabela
-de flags, ou a derivação precisa emitir o par inverso de cada buraco. **Vale task própria**; a
-PB-10-15 vai encontrar o mesmo nas outras quatro caixas.
+**B24 — fechado pela PB-10-13-FIX-03.** A caixa não tinha uma única transição de subida porque
+`floorchange` no Canary só desce — os 8 itens da caixa são buracos, 2 deles caindo em z9. A volta é a
+escada, que é `type="ladder"` em `items.xml` e sobe por ação (`ladder_up.lua`), não por estado de
+tile. A tabela de flags passou a carregá-la e o extractor emite a geometria do
+`Position:moveUpstairs`: um andar acima e um tile ao sul, porque o tile logo acima da escada é o
+buraco de onde o jogador caiu.
+
+**B26 — aberto, decisão de conteúdo, não é defeito.** 22 dos 68 slots da Orc Fortress (14 dos 33
+grupos) ficam num componente de 1.324 células em z7 — o campo **fora da muralha**, separado do forte
+por parede de pedra real, conferida item a item. O forte de Tibia se entra por cima, e a rampa que
+sobe o morro não está dentro do retângulo congelado. Consequência no kernel: `S7` conta o teto
+`maxLiveActors: 64` sobre **todos** os atores vivos, então esses 22 orcs inalcançáveis seguram um
+terço do teto para sempre e 4 slots alcançáveis nunca chegam a nascer. Opções: descartar na extração
+o grupo inalcançável a partir do `playerStart` (mexe em `expectedSpawnGroups: 33` e
+`expectedSpawnSlots: 68`, congelados na selection) ou aceitar como cenário. **Do usuário.**
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.
