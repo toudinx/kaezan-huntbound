@@ -6,7 +6,7 @@
 cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do Tibia. Elegível. Nenhuma task
 iniciada.
 
-**Última atualização:** 2026-08-30 — criação.
+**Última atualização:** 2026-08-31 — `PB-17-FIX-02` aberta a partir do playtest.
 
 **Base:** o chassi do PB-08-08/09 (`CockpitLayout`, bandas, rail com minimapa/alvo/bag) e as cinco
 hunts do PB-10. Nada aqui reescreve chassi.
@@ -22,6 +22,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-17-03 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7298724` | nome no hover/foco/toque, badge de stack, animação de loot e grid com scroll interno; biome/test verdes |
 | PB-17-04 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | `d3a9ec6` | cor de chão derivada da média dos pixels do tile real, seta com facing, chevrons de transição, ring de entrada e readout de andar; biome/typecheck/suíte de `apps/game` verdes |
 | PB-17-05 | pending | `main` | frontier `xhigh` | — | — | — |
+| PB-17-FIX-02 | pending | `main` | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 

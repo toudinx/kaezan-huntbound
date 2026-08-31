@@ -78,6 +78,7 @@ Em conflito, nesta ordem:
 | PB-17-03 | a mochila: sprite, empilhamento, nome no hover e o loot chegando visível | — |
 | PB-17-04 | o minimapa localiza: cor de chão real, seta com facing, andar, saídas | — |
 | PB-17-05 | o log de combate: dano, cura, leech, regen, loot, morte e recusa de comando. **Task de fechamento — roda `build`.** | — |
+| PB-17-FIX-02 | os painéis do HUD desenham um frame do atlas, não a folha inteira — bug do playtest de 2026-08-31 | 02, 03 |
 
 **Serial na `main`, sem worktree.** As cinco tocam `apps/game/src/styles.css`, então elas não são
 genuinamente paralelas no sentido do `AGENTS.md`, mesmo com os componentes disjuntos. Uma task por
@@ -94,6 +95,7 @@ chat, em sequência.
 | PB-17-03 | econômico | `xhigh` | idem, com cuidado de não entrar no PB-11 |
 | PB-17-04 | **frontier** | `xhigh` | cor de chão real exige ler a paleta da região e decidir a derivação |
 | PB-17-05 | **frontier** | `xhigh` | desenha uma superfície que não existe e escolhe o que **não** entra nela |
+| PB-17-FIX-02 | econômico | `xhigh` | defeito e causa já localizados; o custo é recorte, não decisão |
 
 ## Definition of Done do playbook
 
