@@ -9,7 +9,8 @@
 inteira e as cinco hunts estão na `main`. O que resta é a correção de mapa (13 a 15): a hunt deixa de
 ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
-**Última atualização:** 2026-08-31 — 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
+**Última atualização:** 2026-08-31 — 13 fechada e corrigida pela PB-10-13-FIX-01 (start do jogador
+caía fora da hunt). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
 hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
 71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
 
@@ -37,6 +38,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-11 | done | `main` | frontier `xhigh` | Grok 4.6 `xhigh` | `08cbe85` | hipótese do catálogo derrubada; fallback de ficha removido; relógio da cena resincronizado no create |
 | PB-10-12 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d6743ee` | `corpseItemId` no catálogo; registry, packs e decoração por espécie; content/assets/architecture/test/typecheck/build verdes |
 | PB-10-13 | done | `main` | frontier `xhigh` | Codex GPT-5 `xhigh` | `76e1050` | Orc na caixa real 65×68×3; 33/68 spawns; 6 transições, 2 dropped; primeiro paint z6: 5.427 comandos / 5.115 sprites resolvidos; map-extractor, content, architecture e format verdes; pack derivado 541>512 fica fora do escopo |
+| PB-10-13-FIX-01 | done | `main` | frontier `xhigh` | Claude Opus 5 | `695ea59` | start do jogador por conectividade: componente com mais grupos → andar com mais grupos → célula de menor caminhada. Orc sai de (64,14,z6), lasca de 21 células com 1 grupo, para (37,40,z7): 2.620 células, 19/33 grupos, 6/6 transições. As quatro hunts com receita regeneram byte a byte; map-extractor (139), content, architecture e format verdes |
 | PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
 
@@ -120,6 +122,16 @@ hunt circular do Tibia não acontece — embora o respawn por slot (`respawnTick
 S7 do kernel) já a sustente. O extractor já tem o caminho `layout === undefined` que extrai a caixa
 inteira, deriva travessia de floorchange real e escolhe `playerStart`; quem o proíbe é
 `tools/map-extractor/cli.ts:313`.
+
+**B24 — aberto, descoberto no playtest da PB-10-13.** A caixa da Orc Fortress **não tem transição
+de subida**. Os únicos floorchange que o `tile-flags` encontra nos 65×68×3 são 6 buracos `down` (4 de
+z6 para z7, 2 de z7 para z8) e 2 que caem em z9, fora dos andares extraídos e por isso dropados.
+Como `TransitionEntry` é dirigida, o andar é uma descida sem volta: de z7 o jogador desce para z8 e
+não sobe, e z6 (815 células, 5 grupos) é inalcançável — `analyzeHuntTopology` reporta 0 células
+alcançáveis em z6. Não bloqueia a hunt jogável (z7 tem 889 células, 9 grupos, e z8 mais 5), mas mata
+a volta pelo mesmo caminho que a PB-10-13 pedia. Ou o item de subida real não está marcado na tabela
+de flags, ou a derivação precisa emitir o par inverso de cada buraco. **Vale task própria**; a
+PB-10-15 vai encontrar o mesmo nas outras quatro caixas.
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.
