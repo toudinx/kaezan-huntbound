@@ -8,6 +8,7 @@ import {
   HUNT_PACK_DRAGON_LOOT_KEYS,
   HUNT_PACK_HERO_CREATURE_KEY,
   HUNT_PACK_HERO_LOOT_KEYS,
+  HUNT_PACK_SPELL_KEYS,
   hashHuntRegion,
   validateHuntPack,
 } from './HuntPack.ts';
@@ -60,7 +61,13 @@ function selectionFor(
     packKey: 'pb-04-venore-rotworm-cave',
     huntId: 'hunt:tibia:venore-rotworm-cave',
     regionSha256: hashHuntRegion(input),
-    keys: [...keys, ...huntExtras, ...huntCombatKeys, ...huntLootKeys],
+    keys: [
+      ...keys,
+      ...huntExtras,
+      ...huntCombatKeys,
+      ...HUNT_PACK_SPELL_KEYS,
+      ...huntLootKeys,
+    ],
     budget: { maxEntries: 512, maxBytes: 6 * 1024 * 1024 },
   };
 }
@@ -223,6 +230,7 @@ describe('hunt pack validation', () => {
         HUNT_PACK_HERO_CREATURE_KEY,
         'outfit:tibia:knight',
         ...huntCombatKeys,
+        ...HUNT_PACK_SPELL_KEYS,
         ...HUNT_PACK_HERO_LOOT_KEYS,
       ],
     };
@@ -241,6 +249,7 @@ describe('hunt pack validation', () => {
         HUNT_PACK_DRAGON_CREATURE_KEY,
         'outfit:tibia:knight',
         ...huntCombatKeys,
+        ...HUNT_PACK_SPELL_KEYS,
         ...HUNT_PACK_DRAGON_LOOT_KEYS,
       ],
     };

@@ -7,6 +7,7 @@ import {
   HUNT_PACK_HERO_LOOT_KEYS,
   HUNT_PACK_LOOT_KEYS,
   HUNT_PACK_OUTFIT_KEY,
+  HUNT_PACK_SPELL_KEYS,
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 import {
@@ -105,7 +106,9 @@ describe('hunt selection generation', () => {
       'tile:tibia:200',
       HUNT_PACK_CREATURE_KEY,
       HUNT_PACK_OUTFIT_KEY,
-      ...combatKeys,
+      ...combatKeys.slice(0, 4),
+      ...HUNT_PACK_SPELL_KEYS,
+      'item:tibia:dead-rotworm',
       ...HUNT_PACK_LOOT_KEYS,
     ]);
     expect(selection.regionSha256).toMatch(/^[0-9a-f]{64}$/);
@@ -118,7 +121,7 @@ describe('hunt selection generation', () => {
       consumer,
     });
 
-    expect(manifest.hunt?.keys).toHaveLength(17);
+    expect(manifest.hunt?.keys).toHaveLength(26);
     expect(manifest.entries.map(({ key }) => key)).toEqual([
       HUNT_PACK_CREATURE_KEY,
       'effect:tibia:draw-blood',
@@ -135,6 +138,15 @@ describe('hunt selection generation', () => {
       'item:tibia:sword',
       'item:tibia:worm',
       HUNT_PACK_OUTFIT_KEY,
+      'spell:tibia:berserk',
+      'spell:tibia:blood-rage',
+      'spell:tibia:brutal-strike',
+      'spell:tibia:challenge',
+      'spell:tibia:groundshaker',
+      'spell:tibia:haste',
+      'spell:tibia:protector',
+      'spell:tibia:whirlwind-throw',
+      'spell:tibia:wound-cleansing',
       'tile:tibia:100',
       'tile:tibia:200',
     ]);
@@ -185,6 +197,81 @@ describe('hunt selection generation', () => {
     ]);
   });
 
+  it('maps spell keys to the OTClient clientId columns', () => {
+    const manifest = createHuntAssetSelection({
+      hunt: deriveHuntPackSelection(region(), metadata),
+      group,
+      consumer,
+    });
+    const entries = new Map<string, (typeof manifest.entries)[number]>(
+      manifest.entries.map((entry) => [entry.key, entry]),
+    );
+
+    expect(
+      HUNT_PACK_SPELL_KEYS.map((key) => ({
+        key,
+        category: entries.get(key)?.category,
+        sourceIdentity: entries.get(key)?.sourceIdentity,
+        pivot: entries.get(key)?.presentation.pivot,
+      })),
+    ).toEqual([
+      {
+        key: 'spell:tibia:berserk',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 20 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:brutal-strike',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 22 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:wound-cleansing',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 2 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:groundshaker',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 24 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:whirlwind-throw',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 18 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:blood-rage',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 95 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:protector',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 121 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:challenge',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 96 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+      {
+        key: 'spell:tibia:haste',
+        category: 'spell',
+        sourceIdentity: { kind: 'clientId', id: 100 },
+        pivot: { x: 0.5, y: 0.5 },
+      },
+    ]);
+  });
+
   it('maps the Hero creature and loot keys to their source identities', () => {
     const manifest = createHuntAssetSelection({
       hunt: deriveHuntPackSelection(region(), {
@@ -195,7 +282,7 @@ describe('hunt selection generation', () => {
       group,
       consumer,
     });
-    const entries = new Map(
+    const entries = new Map<string, (typeof manifest.entries)[number]>(
       manifest.entries.map((entry) => [entry.key, entry]),
     );
 
@@ -283,7 +370,7 @@ describe('hunt selection generation', () => {
       group,
       consumer,
     });
-    const entries = new Map(
+    const entries = new Map<string, (typeof manifest.entries)[number]>(
       manifest.entries.map((entry) => [entry.key, entry]),
     );
 
@@ -316,7 +403,7 @@ describe('hunt selection generation', () => {
       consumer,
       assetSelection: orcFortressAssetSelection,
     });
-    const entries = new Map(
+    const entries = new Map<string, (typeof manifest.entries)[number]>(
       manifest.entries.map((entry) => [entry.key, entry]),
     );
 

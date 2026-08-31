@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb04-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "5eb593e7f4405f0fa1d810fada45a8f6901d582dc6abbc180944e969585f1246",
-    "byteLength": 61122
+    "sha256": "eb2eaf46730d81fe8e3a41c9114bd2968bdba3ba0ad606fa617e9f25eb032e95",
+    "byteLength": 64832
   },
   "files": [
     {
@@ -170,6 +170,105 @@
         "id": 131
       },
       "path": "outfits/131.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:berserk",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 20
+      },
+      "path": "spells/20.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:blood-rage",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 95
+      },
+      "path": "spells/95.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:brutal-strike",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 22
+      },
+      "path": "spells/22.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:challenge",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 96
+      },
+      "path": "spells/96.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:groundshaker",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 24
+      },
+      "path": "spells/24.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:haste",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 100
+      },
+      "path": "spells/100.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:protector",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 121
+      },
+      "path": "spells/121.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:whirlwind-throw",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 18
+      },
+      "path": "spells/18.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "spell:tibia:wound-cleansing",
+      "category": "spell",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2
+      },
+      "path": "spells/2.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },

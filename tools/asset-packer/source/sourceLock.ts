@@ -6,7 +6,6 @@ import {
   type AssetDiagnostic,
   type AssetDiagnosticCode,
   type AssetSelectionManifest,
-  type AssetSourceIdentity,
   type AssetSourceLock,
   type AssetSourceLockEntry,
   type AssetValidationResult,
@@ -17,6 +16,7 @@ import {
   type ArenaFableSourceManifest,
   parseArenaFableSourceManifest,
   resolveSelectedSourceEntries,
+  sourceMapForAsset,
 } from './sourceManifest.ts';
 
 interface ResolvedSourceFile {
@@ -28,8 +28,6 @@ interface ReadSourceFile {
   readonly path: string;
   readonly bytes: Buffer;
 }
-
-type SourceMapName = keyof ArenaFableSourceManifest;
 
 function formatPath(path: readonly (string | number)[]): string {
   return path
@@ -113,22 +111,6 @@ function isWithinRoot(rootPath: string, candidatePath: string): boolean {
 
 function hashBytes(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');
-}
-
-function sourceMapForIdentity(identity: AssetSourceIdentity): {
-  readonly name: SourceMapName;
-  readonly id: number;
-} {
-  switch (identity.kind) {
-    case 'lookType':
-      return { name: 'outfits', id: identity.id };
-    case 'clientId':
-      return { name: 'objects', id: identity.id };
-    case 'effectId':
-      return { name: 'effects', id: identity.id };
-    case 'missileId':
-      return { name: 'missiles', id: identity.id };
-  }
 }
 
 function sourcePathDiagnosticPath(sourcePath: string): readonly string[] {
@@ -434,7 +416,7 @@ function verifyManifestEntry(
   entry: AssetSourceLockEntry,
   diagnostics: AssetDiagnostic[],
 ): void {
-  const { name, id } = sourceMapForIdentity(entry.sourceIdentity);
+  const { name, id } = sourceMapForAsset(entry.category, entry.sourceIdentity);
   const sourceEntry = source[name][String(id)];
   if (sourceEntry === undefined) {
     diagnostics.push(

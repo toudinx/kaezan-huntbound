@@ -4,7 +4,6 @@ import { dirname, join, parse, resolve } from 'node:path';
 import {
   type AssetDiagnostic,
   type AssetPackManifest,
-  type AssetSourceIdentity,
   type AssetValidationResult,
   validateAssetPackManifest,
 } from '../../../packages/assets/src/index.ts';
@@ -29,6 +28,7 @@ import {
 import {
   type ArenaFableSourceManifest,
   parseArenaFableSourceManifest,
+  sourceMapForAsset,
 } from '../source/sourceManifest.ts';
 import { canonicalAssetJson } from './buildAssetPack.ts';
 
@@ -36,22 +36,6 @@ export type MaterializedAssetPack = VerifiedAssetPack;
 
 interface PreparedMedia {
   readonly bytesByHash: ReadonlyMap<string, Buffer>;
-}
-
-function sourceMapForIdentity(identity: AssetSourceIdentity): {
-  readonly name: keyof ArenaFableSourceManifest;
-  readonly id: number;
-} {
-  switch (identity.kind) {
-    case 'lookType':
-      return { name: 'outfits', id: identity.id };
-    case 'clientId':
-      return { name: 'objects', id: identity.id };
-    case 'effectId':
-      return { name: 'effects', id: identity.id };
-    case 'missileId':
-      return { name: 'missiles', id: identity.id };
-  }
 }
 
 async function resolveSourceRoot(
@@ -155,7 +139,10 @@ async function prepareMedia(
 
   const bytesByHash = new Map<string, Buffer>();
   for (const [index, entry] of manifest.entries.entries()) {
-    const { name, id } = sourceMapForIdentity(entry.sourceIdentity);
+    const { name, id } = sourceMapForAsset(
+      entry.category,
+      entry.sourceIdentity,
+    );
     const sourceEntry = sourceManifest[name][String(id)];
     if (sourceEntry === undefined) {
       diagnostics.push(

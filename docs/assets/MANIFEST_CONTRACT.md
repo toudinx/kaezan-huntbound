@@ -12,16 +12,16 @@ An `AssetKey` has exactly three lowercase kebab-case segments:
 <kind>:<source-namespace>:<slug>
 ```
 
-The supported kinds are `outfit`, `creature`, `item`, `effect`, and `missile`. The `item` key kind
-represents the `object` visual category. Uppercase characters, underscores, empty segments, path
-separators, parent traversal, and extra segments are invalid.
+The supported kinds are `outfit`, `creature`, `item`, `effect`, `missile`, and `spell`. The `item`
+key kind represents the `object` visual category. Uppercase characters, underscores, empty segments,
+path separators, parent traversal, and extra segments are invalid.
 
 Numeric source identities are positive finite integers, branded by namespace:
 
 | Namespace | Type | Adapter method | Allowed category |
 | --- | --- | --- | --- |
 | `lookType` | `LookTypeId` | `resolveLookType` | `outfit`, `creature` |
-| `clientId` | `ClientId` | `resolveClientId` | `object` |
+| `clientId` | `ClientId` | `resolveClientId` | `object`, `spell` |
 | `effectId` | `EffectId` | `resolveEffectId` | `effect` |
 | `missileId` | `MissileId` | `resolveMissileId` | `missile` |
 
@@ -37,6 +37,9 @@ item:tibia:gold-coin     → clientId 3031
 effect:tibia:energy-hit  → effectId 12
 missile:tibia:energy-ball → missileId 36
 ```
+
+Spell icons use the same `clientId` adapter as objects, but the source manifest keeps them in the
+separate `spells` map so an object and a spell may safely share a numeric client ID.
 
 ## Profiles, licenses, paths, and hashes
 

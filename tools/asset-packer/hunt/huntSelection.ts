@@ -16,6 +16,8 @@ import {
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
   HUNT_PACK_OUTFIT_KEY,
   HUNT_PACK_SMALL_SPLASH_KEY,
+  HUNT_PACK_SPELL_CLIENT_IDS,
+  HUNT_PACK_SPELL_KEYS,
   type HuntPackSelection,
   hashHuntRegion,
   validateHuntPack,
@@ -82,6 +84,7 @@ export function huntPackExtraKeys(
     ...creatures.map((creature) => creature.key),
     HUNT_PACK_OUTFIT_KEY,
     ...HUNT_PACK_COMBAT_KEYS,
+    ...HUNT_PACK_SPELL_KEYS,
     ...creatures.flatMap((creature) =>
       creature.corpse === undefined ? [] : [creature.corpse.key],
     ),
@@ -195,7 +198,13 @@ function identityForKey(
   key: string,
   assetSelection: HuntPackAssetConfig,
 ): {
-  readonly category: 'outfit' | 'creature' | 'object' | 'effect' | 'missile';
+  readonly category:
+    | 'outfit'
+    | 'creature'
+    | 'object'
+    | 'effect'
+    | 'missile'
+    | 'spell';
   readonly sourceIdentity:
     | { readonly kind: 'lookType'; readonly id: number }
     | { readonly kind: 'clientId'; readonly id: number }
@@ -269,6 +278,14 @@ function identityForKey(
     return {
       category: 'object',
       sourceIdentity: { kind: 'clientId', id: 2889 },
+      pivot: { x: 0.5, y: 0.5 },
+    };
+  }
+  const spellClientId = HUNT_PACK_SPELL_CLIENT_IDS.get(key);
+  if (spellClientId !== undefined) {
+    return {
+      category: 'spell',
+      sourceIdentity: { kind: 'clientId', id: spellClientId },
       pivot: { x: 0.5, y: 0.5 },
     };
   }

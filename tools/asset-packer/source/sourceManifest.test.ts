@@ -16,6 +16,7 @@ type HistoricalFixture = {
   readonly objects: HistoricalMap;
   readonly effects: HistoricalMap;
   readonly missiles: HistoricalMap;
+  readonly spells: HistoricalMap;
   readonly semantic: Record<string, unknown>;
   readonly objectNames: Record<string, unknown>;
 };
@@ -26,6 +27,7 @@ const identities = [
   { kind: 'clientId', id: 3031 },
   { kind: 'effectId', id: 12 },
   { kind: 'missileId', id: 36 },
+  { kind: 'clientId', id: 20 },
 ] as const;
 
 const keys = [
@@ -34,6 +36,7 @@ const keys = [
   'item:tibia:gold-coin',
   'effect:tibia:energy-hit',
   'missile:tibia:energy-ball',
+  'spell:tibia:berserk',
 ] as const;
 
 const categories = [
@@ -42,6 +45,7 @@ const categories = [
   'object',
   'effect',
   'missile',
+  'spell',
 ] as const;
 
 function sourceEntry(file: string, groups: unknown): HistoricalEntry {
@@ -87,6 +91,9 @@ function historicalManifest(): HistoricalFixture {
     missiles: {
       '36': sourceEntry('missiles/36.png', animationGroup('object')),
     },
+    spells: {
+      '20': sourceEntry('spells/20.png', animationGroup('spell')),
+    },
     semantic: {},
     objectNames: {},
   };
@@ -128,14 +135,14 @@ function mutableMap(
   source: HistoricalFixture,
   map: keyof Pick<
     HistoricalFixture,
-    'outfits' | 'objects' | 'effects' | 'missiles'
+    'outfits' | 'objects' | 'effects' | 'missiles' | 'spells'
   >,
 ): HistoricalMap {
   return source[map];
 }
 
 describe('Arena Fable source manifest', () => {
-  it('normalizes a single historical group and resolves all five identity maps', () => {
+  it('normalizes a single historical group and resolves all six identity maps', () => {
     const parsed = parseArenaFableSourceManifest(historicalManifest());
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) throw new Error('fixture should parse');
@@ -156,6 +163,7 @@ describe('Arena Fable source manifest', () => {
       'objects/3031.png',
       'effects/12.png',
       'missiles/36.png',
+      'spells/20.png',
     ]);
   });
 

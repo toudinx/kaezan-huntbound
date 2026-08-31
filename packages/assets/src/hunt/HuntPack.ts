@@ -76,6 +76,30 @@ export const HUNT_PACK_COMBAT_KEYS = [
   HUNT_PACK_MAGIC_BLUE_EFFECT_KEY,
 ] as const;
 
+export const HUNT_PACK_SPELL_KEYS = [
+  'spell:tibia:berserk',
+  'spell:tibia:brutal-strike',
+  'spell:tibia:wound-cleansing',
+  'spell:tibia:groundshaker',
+  'spell:tibia:whirlwind-throw',
+  'spell:tibia:blood-rage',
+  'spell:tibia:protector',
+  'spell:tibia:challenge',
+  'spell:tibia:haste',
+] as const;
+
+export const HUNT_PACK_SPELL_CLIENT_IDS: ReadonlyMap<string, number> = new Map([
+  ['spell:tibia:berserk', 20],
+  ['spell:tibia:brutal-strike', 22],
+  ['spell:tibia:wound-cleansing', 2],
+  ['spell:tibia:groundshaker', 24],
+  ['spell:tibia:whirlwind-throw', 18],
+  ['spell:tibia:blood-rage', 95],
+  ['spell:tibia:protector', 121],
+  ['spell:tibia:challenge', 96],
+  ['spell:tibia:haste', 100],
+]);
+
 export interface HuntPackSelection {
   readonly packKey: string;
   readonly huntId: string;
@@ -296,6 +320,7 @@ export function validateHuntPack(
     ...(options.extraKeys ?? [
       HUNT_PACK_OUTFIT_KEY,
       ...HUNT_PACK_COMBAT_KEYS,
+      ...HUNT_PACK_SPELL_KEYS,
       ...selectedDynamicKeys(selection),
     ]),
   ];

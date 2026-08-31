@@ -10,6 +10,7 @@ import type {
   MissileId,
 } from '../manifest/identity.ts';
 import type {
+  AssetCategory,
   AssetPackEntry,
   AssetPackManifest,
   AssetSourceIdentity,
@@ -24,6 +25,7 @@ interface RegistryIndexes {
   readonly keys: Map<AssetKey, ResolvedAsset>;
   readonly lookTypes: Map<LookTypeId, AssetKey>;
   readonly clientIds: Map<ClientId, AssetKey>;
+  readonly spellClientIds: Map<ClientId, AssetKey>;
   readonly effects: Map<EffectId, AssetKey>;
   readonly missiles: Map<MissileId, AssetKey>;
 }
@@ -33,6 +35,7 @@ function emptyIndexes(): RegistryIndexes {
     keys: new Map(),
     lookTypes: new Map(),
     clientIds: new Map(),
+    spellClientIds: new Map(),
     effects: new Map(),
     missiles: new Map(),
   };
@@ -41,12 +44,15 @@ function emptyIndexes(): RegistryIndexes {
 function getIdentityKey(
   indexes: RegistryIndexes,
   identity: AssetSourceIdentity,
+  category?: AssetCategory,
 ): AssetKey | undefined {
   switch (identity.kind) {
     case 'lookType':
       return indexes.lookTypes.get(identity.id);
     case 'clientId':
-      return indexes.clientIds.get(identity.id);
+      return (
+        category === 'spell' ? indexes.spellClientIds : indexes.clientIds
+      ).get(identity.id);
     case 'effectId':
       return indexes.effects.get(identity.id);
     case 'missileId':
@@ -58,13 +64,17 @@ function setIdentityKey(
   indexes: RegistryIndexes,
   identity: AssetSourceIdentity,
   key: AssetKey,
+  category: AssetCategory,
 ): void {
   switch (identity.kind) {
     case 'lookType':
       indexes.lookTypes.set(identity.id, key);
       return;
     case 'clientId':
-      indexes.clientIds.set(identity.id, key);
+      (category === 'spell' ? indexes.spellClientIds : indexes.clientIds).set(
+        identity.id,
+        key,
+      );
       return;
     case 'effectId':
       indexes.effects.set(identity.id, key);
@@ -154,6 +164,7 @@ export class AssetPackRegistry {
       keys: new Map(this.indexes.keys),
       lookTypes: new Map(this.indexes.lookTypes),
       clientIds: new Map(this.indexes.clientIds),
+      spellClientIds: new Map(this.indexes.spellClientIds),
       effects: new Map(this.indexes.effects),
       missiles: new Map(this.indexes.missiles),
     };
@@ -185,6 +196,7 @@ export class AssetPackRegistry {
       const existingKey = getIdentityKey(
         candidateIndexes,
         entry.sourceIdentity,
+        entry.category,
       );
       if (existingKey !== undefined) {
         diagnostics.push(
@@ -201,7 +213,12 @@ export class AssetPackRegistry {
       sourceIdentitiesByKey.set(entry.key, entry.sourceIdentity);
       ownedMediaUrlsBySha256.set(entry.media.sha256, mediaUrl);
       candidateIndexes.keys.set(entry.key, asset);
-      setIdentityKey(candidateIndexes, entry.sourceIdentity, entry.key);
+      setIdentityKey(
+        candidateIndexes,
+        entry.sourceIdentity,
+        entry.key,
+        entry.category,
+      );
     });
 
     if (diagnostics.length > 0) {
@@ -292,7 +309,12 @@ export class AssetPackRegistry {
         nextIndexes.keys.set(asset.key, asset);
         const sourceIdentity = pack.sourceIdentitiesByKey.get(asset.key);
         if (sourceIdentity !== undefined) {
-          setIdentityKey(nextIndexes, sourceIdentity, asset.key);
+          setIdentityKey(
+            nextIndexes,
+            sourceIdentity,
+            asset.key,
+            asset.category,
+          );
         }
       }
     }

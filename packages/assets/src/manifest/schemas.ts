@@ -80,6 +80,7 @@ export const AssetCategorySchema = z.enum([
   'object',
   'effect',
   'missile',
+  'spell',
 ]);
 export type AssetCategory = z.infer<typeof AssetCategorySchema>;
 
@@ -314,7 +315,7 @@ function categoryMatchesIdentity(
     case 'lookType':
       return category === 'outfit' || category === 'creature';
     case 'clientId':
-      return category === 'object';
+      return category === 'object' || category === 'spell';
     case 'effectId':
       return category === 'effect';
     case 'missileId':
@@ -361,7 +362,11 @@ function validateIdentityEntries(
       keyIndexes.set(entry.key, index);
     }
 
-    const identityKey = `${entry.sourceIdentity.kind}:${entry.sourceIdentity.id}`;
+    const identityNamespace =
+      entry.sourceIdentity.kind === 'clientId' && entry.category === 'spell'
+        ? 'spell'
+        : entry.sourceIdentity.kind;
+    const identityKey = `${identityNamespace}:${entry.sourceIdentity.id}`;
     const identityIndex = identityIndexes.get(identityKey);
     if (identityIndex !== undefined) {
       addAssetIssue(

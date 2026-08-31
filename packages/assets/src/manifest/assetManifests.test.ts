@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AssetCategorySchema,
   AssetPackCatalogSchema,
   AssetPackManifestSchema,
   AssetSelectionManifestSchema,
@@ -156,6 +157,27 @@ function itemAt<T>(items: readonly T[], index: number): T {
 }
 
 describe('asset manifest schemas', () => {
+  it('accepts the spell category with a clientId identity', () => {
+    expect(AssetCategorySchema.parse('spell')).toBe('spell');
+
+    const input = selectionManifest();
+    input.entries.push({
+      key: 'spell:tibia:berserk',
+      category: 'spell',
+      sourceIdentity: { kind: 'clientId', id: 20 },
+      sourceGroupId: group.groupId,
+      consumer: 'PB-17 spell icon fixture',
+      rationale: 'Covers the Berserk spell icon.',
+      presentation: {
+        pivot: { x: 0.5, y: 0.5 },
+        scale: 1,
+        filtering: 'nearest',
+      },
+    });
+
+    expect(AssetSelectionManifestSchema.safeParse(input).success).toBe(true);
+  });
+
   it('accepts the minimum valid selection, source lock, pack, and catalog', () => {
     expect(
       AssetSelectionManifestSchema.safeParse(selectionManifest()).success,

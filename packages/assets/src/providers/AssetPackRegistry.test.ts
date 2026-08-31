@@ -47,11 +47,23 @@ const definitions = [
     sourceIdentity: { kind: 'missileId', id: 36 },
     pivot: { x: 0.5, y: 0.5 },
   },
+  {
+    key: 'spell:tibia:berserk',
+    category: 'spell',
+    sourceIdentity: { kind: 'clientId', id: 3031 },
+    pivot: { x: 0.5, y: 0.5 },
+  },
 ] as const;
 
 type Definition = {
   readonly key: string;
-  readonly category: 'outfit' | 'creature' | 'object' | 'effect' | 'missile';
+  readonly category:
+    | 'outfit'
+    | 'creature'
+    | 'object'
+    | 'effect'
+    | 'missile'
+    | 'spell';
   readonly sourceIdentity:
     | { readonly kind: 'lookType'; readonly id: number }
     | { readonly kind: 'clientId'; readonly id: number }
@@ -171,7 +183,7 @@ function assertFailure<T>(
 }
 
 describe('AssetPackRegistry', () => {
-  it('installs all five indexes and resolves each identity independently', () => {
+  it('installs all six indexes and keeps spell clientIds separate from objects', () => {
     const registry = new AssetPackRegistry();
     const manifest = createManifest('asset-pack:fixture:one');
 
@@ -197,6 +209,12 @@ describe('AssetPackRegistry', () => {
     expect(registry.resolveSourceIdentity(identity('missileId', 36))).toBe(
       'missile:tibia:energy-ball',
     );
+    expect(
+      registry.resolve(createAssetKey('spell:tibia:berserk')),
+    ).toMatchObject({
+      key: 'spell:tibia:berserk',
+      category: 'spell',
+    });
   });
 
   it('reports every missing key in input order', () => {

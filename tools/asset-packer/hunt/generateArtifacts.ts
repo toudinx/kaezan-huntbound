@@ -7,6 +7,8 @@ import type {
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 import { createAssetSourceLock } from '../source/sourceLock.ts';
+import { sourceMapForAsset } from '../source/sourceManifest.ts';
+import { cropSpellIconAtlas } from '../spells/cropSpellIcons.ts';
 import {
   getHuntPipelineEntry,
   type HuntPipelineEntry,
@@ -22,6 +24,7 @@ const transparentPixel = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
 );
+const preparedPersonalSpellRoots = new Set<string>();
 
 function canonicalJson(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
@@ -51,19 +54,8 @@ function sourceEntry(file: string) {
 function sourcePathForEntry(
   entry: AssetSelectionManifest['entries'][number],
 ): string {
-  const directory = (() => {
-    switch (entry.sourceIdentity.kind) {
-      case 'lookType':
-        return 'outfits';
-      case 'clientId':
-        return 'objects';
-      case 'effectId':
-        return 'effects';
-      case 'missileId':
-        return 'missiles';
-    }
-  })();
-  return `${directory}/${entry.sourceIdentity.id}.png`;
+  const { name, id } = sourceMapForAsset(entry.category, entry.sourceIdentity);
+  return `${name}/${id}.png`;
 }
 
 function syntheticManifest(selection: AssetSelectionManifest) {
@@ -72,23 +64,14 @@ function syntheticManifest(selection: AssetSelectionManifest) {
     objects: {} as Record<string, ReturnType<typeof sourceEntry>>,
     effects: {} as Record<string, ReturnType<typeof sourceEntry>>,
     missiles: {} as Record<string, ReturnType<typeof sourceEntry>>,
+    spells: {} as Record<string, ReturnType<typeof sourceEntry>>,
   };
   for (const entry of selection.entries) {
-    const mapName = (() => {
-      switch (entry.sourceIdentity.kind) {
-        case 'lookType':
-          return 'outfits';
-        case 'clientId':
-          return 'objects';
-        case 'effectId':
-          return 'effects';
-        case 'missileId':
-          return 'missiles';
-      }
-    })();
-    maps[mapName][String(entry.sourceIdentity.id)] = sourceEntry(
-      sourcePathForEntry(entry),
+    const { name, id } = sourceMapForAsset(
+      entry.category,
+      entry.sourceIdentity,
     );
+    maps[name][String(id)] = sourceEntry(sourcePathForEntry(entry));
   }
   return {
     ...maps,
@@ -270,6 +253,10 @@ export async function generateHuntArtifacts(
     throw new Error(
       'HUNTBOUND_PERSONAL_ASSET_SOURCE is required for personal hunt assets',
     );
+  }
+  if (!options.check && !preparedPersonalSpellRoots.has(sourceRoot)) {
+    await cropSpellIconAtlas({ sourceRoot });
+    preparedPersonalSpellRoots.add(sourceRoot);
   }
   await writePersonalArtifacts(entry, hunt, sourceRoot, options.check);
 }

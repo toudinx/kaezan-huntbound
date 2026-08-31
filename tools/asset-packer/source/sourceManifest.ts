@@ -33,6 +33,7 @@ export interface ArenaFableSourceManifest {
   readonly objects: Readonly<Record<string, ArenaFableSourceEntry>>;
   readonly effects: Readonly<Record<string, ArenaFableSourceEntry>>;
   readonly missiles: Readonly<Record<string, ArenaFableSourceEntry>>;
+  readonly spells: Readonly<Record<string, ArenaFableSourceEntry>>;
 }
 
 export interface SelectedSourceEntry {
@@ -41,7 +42,7 @@ export interface SelectedSourceEntry {
   readonly source: ArenaFableSourceEntry;
 }
 
-type SourceMapName = keyof ArenaFableSourceManifest;
+export type SourceMapName = keyof ArenaFableSourceManifest;
 type UnknownRecord = Record<string, unknown>;
 
 const sourceMapNames: readonly SourceMapName[] = [
@@ -49,6 +50,7 @@ const sourceMapNames: readonly SourceMapName[] = [
   'objects',
   'effects',
   'missiles',
+  'spells',
 ];
 
 const sourceEntryFields = new Set([
@@ -423,7 +425,10 @@ function parseMap(
   return entries;
 }
 
-function sourceMapForIdentity(identity: AssetSourceIdentity): {
+export function sourceMapForAsset(
+  category: AssetCategory,
+  identity: AssetSourceIdentity,
+): {
   readonly name: SourceMapName;
   readonly id: number;
 } {
@@ -431,7 +436,10 @@ function sourceMapForIdentity(identity: AssetSourceIdentity): {
     case 'lookType':
       return { name: 'outfits', id: identity.id };
     case 'clientId':
-      return { name: 'objects', id: identity.id };
+      return {
+        name: category === 'spell' ? 'spells' : 'objects',
+        id: identity.id,
+      };
     case 'effectId':
       return { name: 'effects', id: identity.id };
     case 'missileId':
@@ -447,7 +455,7 @@ function categoryMapMatches(
     case 'lookType':
       return category === 'outfit' || category === 'creature';
     case 'clientId':
-      return category === 'object';
+      return category === 'object' || category === 'spell';
     case 'effectId':
       return category === 'effect';
     case 'missileId':
@@ -491,6 +499,10 @@ export function parseArenaFableSourceManifest(
     objects: parseMap(input.objects, 'objects', diagnostics),
     effects: parseMap(input.effects, 'effects', diagnostics),
     missiles: parseMap(input.missiles, 'missiles', diagnostics),
+    spells:
+      input.spells === undefined
+        ? {}
+        : parseMap(input.spells, 'spells', diagnostics),
   } satisfies ArenaFableSourceManifest;
 
   return diagnostics.length > 0
@@ -506,7 +518,6 @@ export function resolveSelectedSourceEntries(
   const resolved: SelectedSourceEntry[] = [];
 
   for (const entry of selection.entries) {
-    const { name, id } = sourceMapForIdentity(entry.sourceIdentity);
     if (!categoryMapMatches(entry.category, entry.sourceIdentity)) {
       diagnostics.push(
         diagnostic(
@@ -518,6 +529,11 @@ export function resolveSelectedSourceEntries(
       );
       continue;
     }
+
+    const { name, id } = sourceMapForAsset(
+      entry.category,
+      entry.sourceIdentity,
+    );
 
     const sourceEntry = source[name][String(id)];
     if (sourceEntry === undefined) {

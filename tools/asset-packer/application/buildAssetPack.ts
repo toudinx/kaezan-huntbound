@@ -16,14 +16,13 @@ import type {
   ArenaFableSourceEntry,
   ArenaFableSourceManifest,
 } from '../source/sourceManifest.ts';
+import { sourceMapForAsset } from '../source/sourceManifest.ts';
 
 export interface BuildAssetPackInput {
   readonly selection: AssetSelectionManifest;
   readonly sourceLock: AssetSourceLock;
   readonly sourceManifest: ArenaFableSourceManifest;
 }
-
-type SourceMapName = keyof ArenaFableSourceManifest;
 
 function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -72,22 +71,6 @@ function diagnostic(
     path,
     ...(key === undefined ? {} : { key }),
   };
-}
-
-function sourceMapForIdentity(identity: AssetSourceIdentity): {
-  readonly name: SourceMapName;
-  readonly id: number;
-} {
-  switch (identity.kind) {
-    case 'lookType':
-      return { name: 'outfits', id: identity.id };
-    case 'clientId':
-      return { name: 'objects', id: identity.id };
-    case 'effectId':
-      return { name: 'effects', id: identity.id };
-    case 'missileId':
-      return { name: 'missiles', id: identity.id };
-  }
 }
 
 function identitiesMatch(
@@ -234,7 +217,10 @@ export function buildAssetPackManifest(
       lockEntryMatches = false;
     }
 
-    const { name, id } = sourceMapForIdentity(selectionEntry.sourceIdentity);
+    const { name, id } = sourceMapForAsset(
+      selectionEntry.category,
+      selectionEntry.sourceIdentity,
+    );
     const sourceEntry = input.sourceManifest[name][String(id)];
     if (sourceEntry === undefined) {
       diagnostics.push(

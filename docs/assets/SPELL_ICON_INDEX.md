@@ -60,6 +60,23 @@ de qualquer coisa no packer:
 O `AssetExtractor` externo hoje conhece `outfitIds`, `objectIds`, `effectIds` e `missileIds` — não
 conhece fatiamento de folha. Esse recorte é o custo real da task, não a categoria nova no schema.
 
+## Reprodução do recorte
+
+O recorte é reproduzível pela ferramenta versionada
+`tools/asset-packer/spells/cropSpellIcons.ts`. Ela lê `manifest.json` no diretório indicado por
+`HUNTBOUND_PERSONAL_ASSET_SOURCE`, recorta as colunas `clientId` e grava os nove arquivos
+`spells/<clientId>.png`, atualizando também o mapa `spells` do manifesto. O atlas pode ficar dentro
+do export privado em `spell-icons-32x32.png` ou ser informado explicitamente:
+
+```powershell
+$env:HUNTBOUND_PERSONAL_SPELL_ATLAS = 'C:\caminho\privado\spell-icons-32x32.png'
+corepack pnpm exec node --no-warnings --experimental-transform-types tools/asset-packer/spells/cropSpellIcons.ts
+```
+
+`corepack pnpm assets:hunt:personal:generate` executa esse recorte automaticamente antes de criar
+os source-locks das hunts. Os arquivos privados não entram no Git; o source-lock registra o tamanho
+e o SHA-256 de cada recorte.
+
 **A armadilha de aceite continua valendo:** o perfil `test` fabrica um placeholder 1 × 1 para
 qualquer id pedido, então `verify` fecha verde com zero arte na tela. A prova é screenshot do perfil
 `personal`.

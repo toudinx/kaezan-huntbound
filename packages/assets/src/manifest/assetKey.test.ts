@@ -22,6 +22,7 @@ describe('asset identity contracts', () => {
       'tile:tibia:100',
       'effect:tibia:energy-hit',
       'missile:tibia:energy-ball',
+      'spell:tibia:berserk',
     ];
 
     expect(keys.map((key) => AssetKeySchema.parse(key))).toEqual(keys);
