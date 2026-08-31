@@ -24,8 +24,15 @@ import {
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 
+/**
+ * The entry cap is a runaway guard, not the memory guard: `maxBytes` is what
+ * keeps the pack loadable, and a 65x68x3 box of real OTBM ground derives 541
+ * keys against 2.6 MB of media at 357. The cap is 1024 so the boxes of the
+ * remaining hunts fit without another bump, and a derivation that doubles that
+ * still stops here.
+ */
 export const HUNT_PACK_BUDGET = {
-  maxEntries: 512,
+  maxEntries: 1024,
   maxBytes: 6 * 1024 * 1024,
 } as const;
 

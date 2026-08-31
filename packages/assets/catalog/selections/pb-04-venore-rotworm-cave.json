@@ -3146,7 +3146,7 @@
       "item:tibia:worm"
     ],
     "budget": {
-      "maxEntries": 512,
+      "maxEntries": 1024,
       "maxBytes": 6291456
     }
   }
