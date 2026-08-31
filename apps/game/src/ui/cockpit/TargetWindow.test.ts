@@ -95,17 +95,15 @@ describe('TargetWindow', () => {
       },
     });
 
-    const image = root.querySelector(
-      '[data-testid="combat-target-image"]',
-    );
+    const image = root.querySelector('[data-testid="combat-target-image"]');
     expect(image?.getAttribute('src')).toBe('blob:rotworm');
     expect(image?.parent?.getAttribute('data-atlas-frame')).toBe('0');
     expect(
       image?.parent?.style.getPropertyValue('--cockpit-atlas-columns'),
     ).toBe('16');
-    expect(
-      image?.parent?.style.getPropertyValue('--cockpit-atlas-rows'),
-    ).toBe('3');
+    expect(image?.parent?.style.getPropertyValue('--cockpit-atlas-rows')).toBe(
+      '3',
+    );
   });
 
   it('mostra — para resistência ausente sem transformar ausência em zero', () => {

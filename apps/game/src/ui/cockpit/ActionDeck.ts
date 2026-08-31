@@ -3,13 +3,9 @@ import type {
   CombatAbilityView,
   CombatViewState,
 } from '../../hunt/CombatViewModel';
-import { assetFrameSignature } from './AssetFrame';
-import {
-  createAbilityGlyph,
-  createAbilityIcon,
-  spellIconAssetKey,
-} from './AbilityGlyph';
+import { createAbilityIcon, spellIconAssetKey } from './AbilityIcon';
 import type { ResolveCockpitAsset } from './AssetFrame';
+import { assetFrameSignature } from './AssetFrame';
 
 /**
  * The nine actions, centred under the play area.
@@ -199,7 +195,6 @@ function createCell(
     button.setAttribute('aria-checked', 'false');
   }
 
-  const glyph = createAbilityGlyph(document, abilityId);
   const icon =
     slot.abilityIndex === null
       ? undefined
@@ -222,12 +217,7 @@ function createCell(
   cost.className = 'cockpit-cell__cost';
   cost.setAttribute('aria-hidden', 'true');
 
-  button.append(
-    ...(icon === undefined ? [glyph] : [icon, glyph]),
-    hotkey,
-    cost,
-    cooldown,
-  );
+  button.append(...(icon === undefined ? [] : [icon]), hotkey, cost, cooldown);
 
   return { button, slot, cooldown, cost, written: new Map() };
 }

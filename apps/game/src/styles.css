@@ -1050,8 +1050,8 @@ body {
 .cockpit-asset-frame {
   position: relative;
   display: block;
-  aspect-ratio: var(--cockpit-atlas-cell-width) /
-    var(--cockpit-atlas-cell-height);
+  aspect-ratio:
+    var(--cockpit-atlas-cell-width) / var(--cockpit-atlas-cell-height);
   overflow: hidden;
 }
 
@@ -1512,17 +1512,21 @@ body {
   flex: 0 0 auto;
 }
 
+/* The postures keep their gap, not their box: nothing in the deck is framed. */
 .cockpit-deck__switch {
   display: flex;
   gap: 0.15rem;
   align-items: center;
   padding: 0.12rem;
-  border: 1px solid rgb(158 196 255 / 45%);
-  border-radius: 0.6rem;
-  background: rgb(12 23 42 / 92%);
   pointer-events: auto;
 }
 
+/*
+ * The cell is the art and nothing else: no frame, no panel behind it. The
+ * border used to carry state -- cooldown scope, missing mana, active posture
+ * -- and each of those moved onto the icon itself rather than growing a box
+ * back around it.
+ */
 .cockpit-cell {
   position: relative;
   display: grid;
@@ -1531,24 +1535,48 @@ body {
   height: var(--cell);
   min-width: 1.5rem;
   padding: 0;
-  border: 1px solid rgb(123 161 216 / 55%);
-  border-radius: 0.4rem;
+  border: 0;
   color: #dce6f8;
-  background: rgb(12 23 42 / 92%);
+  background: none;
   font: inherit;
   font-size: max(0.55rem, calc(var(--cell) * 0.19));
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
-  overflow: hidden;
   isolation: isolate;
   --cooldown-sweep: 0%;
 }
 
-.cockpit-cell:hover,
+/* Icons --------------------------------------------------------------- */
+
+.cockpit-cell__icon {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 0.2rem;
+  pointer-events: none;
+}
+
+.cockpit-cell__icon-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.cockpit-cell:hover .cockpit-cell__icon {
+  filter: brightness(1.18);
+}
+
+/* Keyboard focus is the one ring that has to stay drawable. */
 .cockpit-cell:focus-visible {
-  border-color: #9ec4ff;
-  outline: none;
+  outline: 2px solid #9ec4ff;
+  outline-offset: 1px;
 }
 
 .cockpit-cell[aria-disabled="true"] {
@@ -1572,33 +1600,40 @@ body {
   transition: clip-path 50ms linear;
 }
 
-.cockpit-cell[data-cooldown-scope="ability"] {
-  border-color: rgb(241 215 139 / 65%);
+/* Its own cooldown reads warm; one it only shares with a group reads cool. */
+.cockpit-cell[data-cooldown-scope="ability"]::after {
+  background: rgb(38 26 6 / 76%);
 }
 
-.cockpit-cell[data-cooldown-scope="group"] {
-  border-color: rgb(123 161 216 / 30%);
+.cockpit-cell[data-cooldown-scope="group"]::after {
+  background: rgb(6 16 32 / 70%);
 }
 
-.cockpit-cell[data-unavailable-reason="mana"] {
-  border-color: rgb(142 191 255 / 78%);
-  box-shadow: inset 0 0 12px rgb(64 129 216 / 22%);
+.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__icon {
+  filter: grayscale(0.65) brightness(0.62);
 }
 
 .cockpit-cell[data-unavailable-reason="dead"] {
   opacity: 0.5;
 }
 
-.cockpit-cell[data-cell-kind="posture"] {
-  border-color: rgb(158 196 255 / 30%);
-  border-radius: 0.5rem;
-  background: rgb(9 17 33 / 92%);
+/* A posture is a mode, so it glows around the art while it is held. */
+.cockpit-cell[data-cell-kind="posture"][aria-checked="true"]
+.cockpit-cell__icon {
+  box-shadow: 0 0 0.5rem 0.1rem rgb(255 212 121 / 70%);
 }
 
-.cockpit-cell[data-cell-kind="posture"][aria-checked="true"] {
-  border-color: #ffd479;
-  background: rgb(48 38 16 / 92%);
-  box-shadow: inset 0 0 14px rgb(255 212 121 / 22%);
+/*
+ * The hotkey, the mana price and the cooldown now sit straight on the art
+ * instead of on a dark panel, so each carries its own shadow. Without it the
+ * pale numbers vanish over a pale icon.
+ */
+.cockpit-cell__key,
+.cockpit-cell__cost,
+.cockpit-cell__cooldown {
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 95%),
+    0 0 3px rgb(0 0 0 / 85%);
 }
 
 .cockpit-cell__key {
@@ -1606,7 +1641,7 @@ body {
   z-index: 2;
   top: 0.1rem;
   left: 0.22rem;
-  color: #8fa6c8;
+  color: #b9cbe6;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -1636,112 +1671,6 @@ body {
   font-size: max(0.45rem, calc(var(--cell) * 0.13));
   font-weight: 700;
   line-height: 1;
-}
-
-/* Glyphs -------------------------------------------------------------- */
-
-.cockpit-cell__icon {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 53%;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 0.2rem;
-  pointer-events: none;
-}
-
-.cockpit-cell__icon-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-/*
- * The area of effect, drawn on a five-by-five grid with the knight in the
- * middle. It is not a stand-in for the Tibia spell atlas: an icon says which
- * spell, this says where it lands, which is the thing being chosen between.
- */
-.cockpit-glyph {
-  position: absolute;
-  z-index: 2;
-  right: 0.22rem;
-  bottom: 0.42rem;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 6%;
-  width: 30%;
-  margin: 0;
-  aspect-ratio: 1;
-  pointer-events: none;
-}
-
-.cockpit-glyph__cell {
-  border-radius: 12%;
-}
-
-.cockpit-glyph__cell[data-cell="hit"] {
-  background: #ff9c6b;
-}
-
-.cockpit-glyph__cell[data-cell="edge"] {
-  box-shadow: inset 0 0 0 1px #9ec4ff;
-}
-
-.cockpit-glyph__cell[data-cell="path"] {
-  background: rgb(158 196 255 / 45%);
-}
-
-.cockpit-glyph__cell[data-cell="origin"] {
-  background: #f4f7ff;
-}
-
-.cockpit-glyph[data-glyph-mark="cross"]
-  .cockpit-glyph__cell[data-cell="origin"] {
-  border-radius: 0;
-  background:
-    linear-gradient(#8ef0a8 0 0) center / 100% 34% no-repeat,
-    linear-gradient(#8ef0a8 0 0) center / 34% 100% no-repeat;
-}
-
-.cockpit-glyph[data-glyph-mark="taunt"]
-  .cockpit-glyph__cell[data-cell="origin"] {
-  background: #ffd479;
-}
-
-.cockpit-glyph[data-glyph-mark="stance-open"]
-  .cockpit-glyph__cell[data-cell="hit"],
-.cockpit-glyph[data-glyph-mark="stance-open"]
-  .cockpit-glyph__cell[data-cell="origin"] {
-  background: #ff8a8a;
-}
-
-.cockpit-glyph[data-glyph-mark="stance-closed"]
-  .cockpit-glyph__cell[data-cell="origin"] {
-  background: #9ec4ff;
-}
-
-.cockpit-glyph[data-glyph-mark="stance-closed"]
-  .cockpit-glyph__cell[data-cell="edge"] {
-  box-shadow: inset 0 0 0 1px #9ec4ff;
-  background: rgb(158 196 255 / 22%);
-}
-
-.cockpit-glyph[data-glyph-mark="trail"]
-  .cockpit-glyph__cell[data-cell="origin"] {
-  background: #9eff6a;
-}
-
-.cockpit-glyph[data-glyph-mark="quake"] .cockpit-glyph__cell[data-cell="hit"] {
-  background: rgb(255 156 107 / 55%);
-}
-
-.cockpit-glyph[data-glyph-mark="throw"] .cockpit-glyph__cell[data-cell="edge"] {
-  box-shadow: inset 0 0 0 1px #ff9c6b;
 }
 
 /* Death --------------------------------------------------------------- */

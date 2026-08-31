@@ -128,16 +128,14 @@ describe('HuntBag', () => {
 
     bag.render([{ itemKey: 'item:tibia:gold-coin', count: 3 }]);
 
-    const image = root.querySelector(
-      '[data-testid="combat-bag-slot-image-0"]',
-    );
+    const image = root.querySelector('[data-testid="combat-bag-slot-image-0"]');
     expect(image?.parent?.getAttribute('data-atlas-frame')).toBe('0');
     expect(
       image?.parent?.style.getPropertyValue('--cockpit-atlas-columns'),
     ).toBe('8');
-    expect(
-      image?.parent?.style.getPropertyValue('--cockpit-atlas-rows'),
-    ).toBe('1');
+    expect(image?.parent?.style.getPropertyValue('--cockpit-atlas-rows')).toBe(
+      '1',
+    );
   });
 
   it('marca o slot quando o loot chega ou aumenta o stack', () => {

@@ -2,16 +2,10 @@ import type { ResolvedAsset } from '../../../../../packages/assets/src/index.ts'
 
 export type CockpitAsset = Pick<
   ResolvedAsset,
-  | 'mediaUrl'
-  | 'cellWidth'
-  | 'cellHeight'
-  | 'columns'
-  | 'atlasFrameCount'
+  'mediaUrl' | 'cellWidth' | 'cellHeight' | 'columns' | 'atlasFrameCount'
 >;
 
-export type ResolveCockpitAsset = (
-  key: string,
-) => CockpitAsset | undefined;
+export type ResolveCockpitAsset = (key: string) => CockpitAsset | undefined;
 
 interface AtlasFrameOptions {
   readonly frameClassName?: string;
@@ -29,9 +23,7 @@ function atlasRows(asset: CockpitAsset): number {
 }
 
 /** Includes the geometry metadata because it determines the visible crop. */
-export function assetFrameSignature(
-  asset: CockpitAsset | undefined,
-): string {
+export function assetFrameSignature(asset: CockpitAsset | undefined): string {
   if (asset === undefined) return '';
 
   return [
@@ -54,10 +46,7 @@ export function createAtlasFrame(
   options: AtlasFrameOptions,
 ): HTMLElement {
   const frame = document.createElement('span');
-  frame.className = [
-    'cockpit-asset-frame',
-    options.frameClassName ?? '',
-  ]
+  frame.className = ['cockpit-asset-frame', options.frameClassName ?? '']
     .filter(Boolean)
     .join(' ');
   frame.setAttribute('data-atlas-frame', String(STATIC_FRAME_INDEX));
@@ -73,10 +62,7 @@ export function createAtlasFrame(
   );
 
   const image = document.createElement('img') as HTMLImageElement;
-  image.className = [
-    'cockpit-asset-frame__image',
-    options.imageClassName,
-  ]
+  image.className = ['cockpit-asset-frame__image', options.imageClassName]
     .filter(Boolean)
     .join(' ');
   if (options.imageTestId !== undefined) {

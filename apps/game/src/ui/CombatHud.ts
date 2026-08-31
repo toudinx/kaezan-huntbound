@@ -8,12 +8,12 @@ import {
 } from '../../../../packages/contracts/src/index.ts';
 import type { CombatViewState } from '../hunt/CombatViewModel';
 import { mountActionDeck } from './cockpit/ActionDeck';
+import type { ResolveCockpitAsset } from './cockpit/AssetFrame';
 import { type HuntBag, mountHuntBag } from './cockpit/HuntBag';
 import { type Minimap, mountMinimap } from './cockpit/Minimap';
 import { mountTargetWindow, type TargetWindow } from './cockpit/TargetWindow';
 import { createVitalArc, type VitalArc } from './cockpit/VitalArcs';
 import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
-import type { ResolveCockpitAsset } from './cockpit/AssetFrame';
 
 /**
  * Orchestrates the cockpit's combat surfaces.
