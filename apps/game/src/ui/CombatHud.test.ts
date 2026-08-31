@@ -22,7 +22,14 @@ class FakeElement {
   readonly children: FakeElement[] = [];
   readonly attributes = new Map<string, string>();
   readonly listeners = new Map<string, Set<() => void>>();
-  readonly style = { setProperty: (): void => undefined };
+  readonly style = {
+    properties: new Map<string, string>(),
+    setProperty: (name: string, value: string): void => {
+      this.style.properties.set(name, value);
+    },
+    getPropertyValue: (name: string): string =>
+      this.style.properties.get(name) ?? '',
+  };
   parent: FakeElement | null = null;
   textContent = '';
   className = '';
@@ -249,6 +256,21 @@ function byTestId(root: FakeElement, testId: string): FakeElement {
   return element;
 }
 
+function byClass(root: FakeElement, className: string): FakeElement {
+  const visit = (element: FakeElement): FakeElement | undefined => {
+    if (element.className.split(/\s+/u).includes(className)) return element;
+    for (const child of element.children) {
+      const match = visit(child);
+      if (match !== undefined) return match;
+    }
+    return undefined;
+  };
+
+  const element = visit(root);
+  if (element === undefined) throw new Error(`Missing .${className}`);
+  return element;
+}
+
 describe('CombatHud', () => {
   it('renders bars, target, cooldowns, loot and death overlay from its view model', () => {
     const document = new FakeDocument();
@@ -397,6 +419,89 @@ describe('CombatHud', () => {
     expect(
       byTestId(root, 'combat-haste').getAttribute('data-remaining-ticks'),
     ).toBe('600');
+
+    hud.destroy();
+  });
+
+  it('renders the resolved spell icon and animates a cooldown sweep', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    let assetsReady = false;
+    const resolveAsset = vi.fn((key: string) =>
+      assetsReady && key === 'spell:tibia:berserk'
+        ? { mediaUrl: 'blob:berserk' }
+        : undefined,
+    );
+    const hud = mountCombatHud(root as unknown as HTMLElement, {
+      resolveAsset,
+    });
+
+    hud.render(state());
+    expect(resolveAsset).toHaveBeenCalledWith('spell:tibia:berserk');
+    const cell = byTestId(root, 'combat-ability-0');
+    expect(() => byClass(cell, 'cockpit-cell__icon')).toThrow(
+      'Missing .cockpit-cell__icon',
+    );
+
+    assetsReady = true;
+    hud.render(state());
+    const readyCell = byTestId(root, 'combat-ability-0');
+    const icon = byClass(readyCell, 'cockpit-cell__icon');
+    expect(icon.getAttribute('data-asset-key')).toBe('spell:tibia:berserk');
+    expect(byClass(icon, 'cockpit-cell__icon-image').getAttribute('src')).toBe(
+      'blob:berserk',
+    );
+    expect(readyCell.style.getPropertyValue('--cooldown-sweep')).toBe('2.5%');
+
+    hud.render(
+      state({
+        abilities: state().abilities.map((ability) =>
+          ability.index === 0
+            ? { ...ability, remainingCooldownTicks: 1 }
+            : ability,
+        ),
+      }),
+    );
+    expect(
+      byTestId(root, 'combat-ability-0').style.getPropertyValue(
+        '--cooldown-sweep',
+      ),
+    ).toBe('1.25%');
+
+    hud.destroy();
+  });
+
+  it('keeps mana lock visually distinct from a cooldown lock', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement);
+
+    hud.render(
+      state({
+        playerDead: false,
+        player: {
+          entityId: 1 as EntityId,
+          health: 175,
+          maxHealth: 185,
+          resource: 0,
+          maxResource: 185,
+        },
+        abilities: state().abilities.map((ability) =>
+          ability.index === 1 ? { ...ability, available: false } : ability,
+        ),
+      }),
+    );
+
+    expect(
+      byTestId(root, 'combat-ability-0').getAttribute(
+        'data-unavailable-reason',
+      ),
+    ).toBe('cooldown');
+    expect(
+      byTestId(root, 'combat-ability-1').getAttribute(
+        'data-unavailable-reason',
+      ),
+    ).toBe('mana');
 
     hud.destroy();
   });

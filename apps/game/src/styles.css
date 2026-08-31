@@ -1390,6 +1390,9 @@ body {
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
+  overflow: hidden;
+  isolation: isolate;
+  --cooldown-sweep: 0%;
 }
 
 .cockpit-cell:hover,
@@ -1403,18 +1406,37 @@ body {
 }
 
 /*
- * Why a cell is dark is the game's answer, not the deck's. Challenge and Haste
- * spend the support group and are never held by the attack group, so they carry
- * `scope="none"` while the attack cells sit at `scope="group"` -- the two states
- * look different on purpose, because they mean different things.
+ * The overlay is the cooldown clock. It grows from the top edge and shrinks
+ * toward readiness; the custom property is the only value that changes with a
+ * tick, so the compositor can animate it without making the deck relayout.
  */
+.cockpit-cell::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  background: rgb(2 7 16 / 78%);
+  clip-path: inset(0 0 calc(100% - var(--cooldown-sweep)) 0);
+  pointer-events: none;
+  content: "";
+  transition: clip-path 50ms linear;
+}
+
 .cockpit-cell[data-cooldown-scope="ability"] {
-  opacity: 0.62;
+  border-color: rgb(241 215 139 / 65%);
 }
 
 .cockpit-cell[data-cooldown-scope="group"] {
   border-color: rgb(123 161 216 / 30%);
-  opacity: 0.45;
+}
+
+.cockpit-cell[data-unavailable-reason="mana"] {
+  border-color: rgb(142 191 255 / 78%);
+  box-shadow: inset 0 0 12px rgb(64 129 216 / 22%);
+}
+
+.cockpit-cell[data-unavailable-reason="dead"] {
+  opacity: 0.5;
 }
 
 .cockpit-cell[data-cell-kind="posture"] {
@@ -1431,6 +1453,7 @@ body {
 
 .cockpit-cell__key {
   position: absolute;
+  z-index: 2;
   top: 0.1rem;
   left: 0.22rem;
   color: #8fa6c8;
@@ -1441,6 +1464,7 @@ body {
 /* The mana price, in the colour of the gauge it comes out of. */
 .cockpit-cell__cost {
   position: absolute;
+  z-index: 2;
   bottom: 0.1rem;
   left: 0.22rem;
   color: #9ec4ff;
@@ -1448,16 +1472,43 @@ body {
   line-height: 1;
 }
 
+.cockpit-cell[data-unavailable-reason="mana"] .cockpit-cell__cost {
+  color: #ffb86b;
+}
+
 .cockpit-cell__cooldown {
   position: absolute;
+  z-index: 2;
   right: 0.22rem;
   bottom: 0.1rem;
   color: #f1d78b;
   font-variant-numeric: tabular-nums;
+  font-size: max(0.45rem, calc(var(--cell) * 0.13));
+  font-weight: 700;
   line-height: 1;
 }
 
 /* Glyphs -------------------------------------------------------------- */
+
+.cockpit-cell__icon {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 53%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 0.2rem;
+  pointer-events: none;
+}
+
+.cockpit-cell__icon-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
 
 /*
  * The area of effect, drawn on a five-by-five grid with the knight in the
@@ -1465,13 +1516,18 @@ body {
  * spell, this says where it lands, which is the thing being chosen between.
  */
 .cockpit-glyph {
+  position: absolute;
+  z-index: 2;
+  right: 0.22rem;
+  bottom: 0.42rem;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(5, 1fr);
   gap: 6%;
-  width: 62%;
-  margin-top: -6%;
+  width: 30%;
+  margin: 0;
   aspect-ratio: 1;
+  pointer-events: none;
 }
 
 .cockpit-glyph__cell {

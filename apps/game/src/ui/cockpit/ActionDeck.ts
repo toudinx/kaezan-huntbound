@@ -3,7 +3,11 @@ import type {
   CombatAbilityView,
   CombatViewState,
 } from '../../hunt/CombatViewModel';
-import { createAbilityGlyph } from './AbilityGlyph';
+import {
+  createAbilityGlyph,
+  createAbilityIcon,
+  spellIconAssetKey,
+} from './AbilityGlyph';
 
 /**
  * The nine actions, centred under the play area.
@@ -27,6 +31,12 @@ import { createAbilityGlyph } from './AbilityGlyph';
 export interface ActionDeck {
   render(state: CombatViewState): void;
   destroy(): void;
+}
+
+export interface ActionDeckOptions {
+  readonly resolveAsset?: (
+    key: string,
+  ) => { readonly mediaUrl: string } | undefined;
 }
 
 type SlotKind = 'attack' | 'ability' | 'posture';
@@ -105,10 +115,66 @@ function cooldownScope(ability: CombatAbilityView): string {
   return 'none';
 }
 
+function sameCooldownGroup(
+  left: CombatAbilityView,
+  right: CombatAbilityView,
+): boolean {
+  return (
+    left.primaryCooldownGroup === right.primaryCooldownGroup ||
+    left.primaryCooldownGroup === right.secondaryCooldownGroup ||
+    left.secondaryCooldownGroup === right.primaryCooldownGroup ||
+    (left.secondaryCooldownGroup !== null &&
+      left.secondaryCooldownGroup === right.secondaryCooldownGroup)
+  );
+}
+
+function cooldownDurationTicks(
+  ability: CombatAbilityView,
+  abilities: readonly CombatAbilityView[],
+): number {
+  if (ability.cooldownTicks > 0) return ability.cooldownTicks;
+
+  // Toggle abilities have no personal cooldown. The view model still gives us
+  // their group countdown, and the other abilities that spend that group give
+  // us a stable presentation scale without making the deck own game rules.
+  return Math.max(
+    ability.remainingGroupCooldownTicks,
+    ...abilities
+      .filter((candidate) => sameCooldownGroup(ability, candidate))
+      .map((candidate) => candidate.cooldownTicks),
+    1,
+  );
+}
+
+function cooldownSweepPercent(
+  ability: CombatAbilityView,
+  abilities: readonly CombatAbilityView[],
+): string {
+  const remaining = Math.max(0, ability.remainingCooldownTicks);
+  if (remaining === 0) return '0%';
+
+  const duration = cooldownDurationTicks(ability, abilities);
+  const fraction = Math.min(1, remaining / duration);
+  return `${fraction * 100}%`;
+}
+
+function unavailableReason(
+  state: CombatViewState,
+  ability: CombatAbilityView,
+): 'ready' | 'cooldown' | 'mana' | 'dead' | 'unavailable' {
+  if (state.playerDead) return 'dead';
+  if (ability.remainingCooldownTicks > 0) return 'cooldown';
+  if (state.player !== null && state.player.resource < ability.resourceCost) {
+    return 'mana';
+  }
+  return ability.available ? 'ready' : 'unavailable';
+}
+
 function createCell(
   document: Document,
   slot: DeckSlot,
   abilityId: string,
+  resolveAsset: ActionDeckOptions['resolveAsset'],
 ): DeckCell {
   const button = document.createElement('button') as HTMLButtonElement;
   button.type = 'button';
@@ -134,6 +200,14 @@ function createCell(
   }
 
   const glyph = createAbilityGlyph(document, abilityId);
+  const icon =
+    slot.abilityIndex === null
+      ? undefined
+      : createAbilityIcon(
+          document,
+          abilityId,
+          resolveAsset?.(spellIconAssetKey(abilityId)),
+        );
   const hotkey = document.createElement('span');
   hotkey.className = 'cockpit-cell__key';
   hotkey.setAttribute('aria-hidden', 'true');
@@ -148,7 +222,12 @@ function createCell(
   cost.className = 'cockpit-cell__cost';
   cost.setAttribute('aria-hidden', 'true');
 
-  button.append(glyph, hotkey, cost, cooldown);
+  button.append(
+    ...(icon === undefined ? [glyph] : [icon, glyph]),
+    hotkey,
+    cost,
+    cooldown,
+  );
 
   return { button, slot, cooldown, cost, written: new Map() };
 }
@@ -167,7 +246,10 @@ function gap(document: Document): HTMLElement {
   return element;
 }
 
-export function mountActionDeck(root: HTMLElement): ActionDeck {
+export function mountActionDeck(
+  root: HTMLElement,
+  options: ActionDeckOptions = {},
+): ActionDeck {
   const document = root.ownerDocument;
   const deck = document.createElement('div');
   deck.className = 'cockpit-deck__inner';
@@ -199,14 +281,16 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
 
     for (const slot of slots) {
       if (slot.abilityIndex === null) {
-        built.push(createCell(document, slot, 'auto-attack'));
+        built.push(createCell(document, slot, 'auto-attack', undefined));
         continue;
       }
 
       const ability = byIndex.get(slot.abilityIndex);
       if (ability === undefined) continue;
 
-      built.push(createCell(document, slot, ability.abilityId));
+      built.push(
+        createCell(document, slot, ability.abilityId, options.resolveAsset),
+      );
     }
 
     for (const ability of extras) {
@@ -219,6 +303,7 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
             hotkey: String(ability.index + 1),
           },
           ability.abilityId,
+          options.resolveAsset,
         ),
       );
     }
@@ -262,7 +347,12 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
 
   const render = (state: CombatViewState): void => {
     const next = state.abilities
-      .map((ability) => `${ability.index}:${ability.abilityId}`)
+      .map((ability) => {
+        const asset = options.resolveAsset?.(
+          spellIconAssetKey(ability.abilityId),
+        );
+        return `${ability.index}:${ability.abilityId}:${asset?.mediaUrl ?? ''}`;
+      })
       .join('|');
 
     if (next !== signature) {
@@ -286,7 +376,15 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
           'aria-disabled',
           String(state.playerDead || state.targetEntityId === null),
         );
+        write(
+          cell,
+          'data-unavailable-reason',
+          state.playerDead || state.targetEntityId === null
+            ? 'unavailable'
+            : 'ready',
+        );
         write(cell, 'data-cooldown-scope', 'none');
+        cell.button.style.setProperty('--cooldown-sweep', '0%');
         continue;
       }
 
@@ -317,6 +415,7 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       );
       write(cell, 'data-cooldown-group', String(ability.primaryCooldownGroup));
       write(cell, 'data-cooldown-scope', cooldownScope(ability));
+      write(cell, 'data-unavailable-reason', unavailableReason(state, ability));
       write(cell, 'aria-pressed', String(ability.active));
       write(cell, 'data-active', String(ability.active));
       if (slot.kind === 'posture') {
@@ -330,6 +429,10 @@ export function mountActionDeck(root: HTMLElement): ActionDeck {
       if (cell.cooldown.textContent !== text) cell.cooldown.textContent = text;
       const cost = ability.resourceCost > 0 ? String(ability.resourceCost) : '';
       if (cell.cost.textContent !== cost) cell.cost.textContent = cost;
+      cell.button.style.setProperty(
+        '--cooldown-sweep',
+        cooldownSweepPercent(ability, state.abilities),
+      );
     }
 
     const stance = state.playerPosture?.abilityId ?? 'none';

@@ -165,7 +165,11 @@ export function mountCombatHud(
   // the spells so that nothing ever shares a line with the bars and resizes
   // them mid-hunt.
   deckBand.append(banner.status);
-  const deck = mountActionDeck(deckBand);
+  const deck = mountActionDeck(deckBand, {
+    ...(options.resolveAsset === undefined
+      ? {}
+      : { resolveAsset: options.resolveAsset }),
+  });
   deckBand.append(banner.element);
 
   const onRestart = (): void => {

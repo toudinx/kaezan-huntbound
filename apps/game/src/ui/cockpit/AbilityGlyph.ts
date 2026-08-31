@@ -1,12 +1,9 @@
 /**
  * What each action does to the ground around the knight, drawn on a 5x5 grid.
  *
- * Tibia's own spell icons are an atlas slice away, but that atlas needs a sixth
- * asset category and a packer that understands it -- blocker B13, and PB-08-09's
- * problem. This is not a placeholder waiting for that art: an icon says *which*
- * spell, while this says *where it lands*, which is the thing the player is
- * actually choosing between. When the atlas arrives it goes beside this, not
- * over it.
+ * The Tibia spell icon sits beside this glyph: the icon says *which* spell,
+ * while this says *where it lands*, which is the thing the player is actually
+ * choosing between.
  *
  * Presentation only. The shapes are keyed by ability id and written out by
  * hand; reading radius off the ability definition would put a rule about how
@@ -126,6 +123,43 @@ const SHAPES: ReadonlyMap<string, GlyphShape> = new Map([
     ]),
   ],
 ]);
+
+export interface AbilityIconAsset {
+  readonly mediaUrl: string;
+}
+
+/** The stable manifest key delivered by PB-17-01 for one spell icon. */
+export function spellIconAssetKey(abilityId: string): string {
+  return `spell:tibia:${abilityId}`;
+}
+
+/**
+ * Builds the real Tibia icon when the hunt pack has resolved it. An absent
+ * asset keeps the area glyph alive as a useful fallback while the pack is
+ * loading or when a future ability has no personal art yet.
+ */
+export function createAbilityIcon(
+  document: Document,
+  abilityId: string,
+  asset: AbilityIconAsset | undefined,
+): HTMLElement | undefined {
+  if (asset === undefined) return undefined;
+
+  const icon = document.createElement('span');
+  icon.className = 'cockpit-cell__icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('data-asset-key', spellIconAssetKey(abilityId));
+
+  const image = document.createElement('img') as HTMLImageElement;
+  image.className = 'cockpit-cell__icon-image';
+  image.setAttribute('src', asset.mediaUrl);
+  image.setAttribute('alt', '');
+  image.setAttribute('aria-hidden', 'true');
+  image.setAttribute('draggable', 'false');
+  icon.append(image);
+
+  return icon;
+}
 
 /** The shape ids this module can draw, for callers that want to check first. */
 export function hasAbilityGlyph(abilityId: string): boolean {
