@@ -244,21 +244,32 @@ export function walkableComponents(
   return components;
 }
 
-export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
-  const { width, height } = hunt.region;
-  const floorByZ = new Map(hunt.region.floors.map((floor) => [floor.z, floor]));
+/**
+ * Every cell the player can actually get to, floor by floor.
+ *
+ * Walking is symmetric but a transition is not: a hole drops one way, and only
+ * the ladder at the bottom makes the pair. So this follows `from` to `to` and
+ * never the reverse, which is what the kernel does when the player steps on the
+ * cell.
+ */
+export function reachableCells(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+  origin: GridPosition,
+): ReadonlyMap<number, ReadonlySet<number>> {
+  const { width, height } = region;
+  const floorByZ = new Map(region.floors.map((floor) => [floor.z, floor]));
   const rootsByZ = new Map<number, Set<number>>(
-    hunt.region.floors.map((floor) => [floor.z, new Set<number>()]),
+    region.floors.map((floor) => [floor.z, new Set<number>()]),
   );
   const reachableByZ = new Map<number, Set<number>>(
-    hunt.region.floors.map((floor) => [floor.z, new Set<number>()]),
+    region.floors.map((floor) => [floor.z, new Set<number>()]),
   );
-  const startFloor = floorByZ.get(hunt.playerStart.z);
-  if (startFloor !== undefined) {
-    rootsByZ.get(hunt.playerStart.z)?.add(indexOf(hunt.playerStart, width));
+  if (floorByZ.get(origin.z) !== undefined) {
+    rootsByZ.get(origin.z)?.add(indexOf(origin, width));
   }
 
-  const pendingFloors = [hunt.playerStart.z];
+  const pendingFloors = [origin.z];
   const queuedFloors = new Set(pendingFloors);
   while (pendingFloors.length > 0) {
     const z = pendingFloors.shift() as number;
@@ -272,7 +283,7 @@ export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
     for (const index of reachable) previous.add(index);
     if (!changed && previous.size > 0) continue;
 
-    hunt.transitions.entries.forEach((transition) => {
+    transitions.forEach((transition) => {
       if (transition.from.z !== z) return;
       const fromIndex = indexOf(transition.from, width);
       if (!previous.has(fromIndex)) return;
@@ -288,6 +299,18 @@ export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
       }
     });
   }
+
+  return reachableByZ;
+}
+
+export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
+  const { width, height } = hunt.region;
+  const floorByZ = new Map(hunt.region.floors.map((floor) => [floor.z, floor]));
+  const reachableByZ = reachableCells(
+    hunt.region,
+    hunt.transitions.entries,
+    hunt.playerStart,
+  );
 
   const floorReports = hunt.region.floors.map((floor) => {
     const { count, walkable } = components(floor, width, height);

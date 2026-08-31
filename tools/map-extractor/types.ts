@@ -19,12 +19,17 @@ export type ExtractionDiagnosticCode =
   | 'HUNT_WALKABLE_DISCONNECTED'
   | 'HUNT_PLAYER_START_UNREACHABLE'
   | 'HUNT_SPAWN_UNREACHABLE'
+  | 'HUNT_SPAWN_DROPPED'
   | 'HUNT_TRANSITION_UNREACHABLE'
   | 'HUNT_SCHEMA_INVALID';
 
-/** A dropped transition is reconciled against the frozen selection. */
+/**
+ * A dropped transition is reconciled against the frozen selection, and a seat
+ * dropped for being unreachable is the extraction doing its job on a raw box.
+ */
 const advisoryCodes = new Set<ExtractionDiagnosticCode>([
   'HUNT_TRANSITION_DROPPED',
+  'HUNT_SPAWN_DROPPED',
 ]);
 
 export function isBlockingDiagnostic(

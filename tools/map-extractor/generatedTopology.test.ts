@@ -83,10 +83,19 @@ describe('generated Orc Fortress hunt', () => {
     expect(reachable.get(8)).toBe(916);
     expect(reachable.get(6)).toBe(815);
     expect(fortress.transitions.entries).toHaveLength(12);
+    // Every seat left in the box is one the player can walk to: the field
+    // outside the wall is a component of its own, and its creatures would hold
+    // `maxLiveActors` down for a fight that never happens.
     expect(
       report.diagnostics.filter(
-        (item) => item.code === 'HUNT_PLAYER_START_UNREACHABLE',
+        (item) =>
+          item.code === 'HUNT_PLAYER_START_UNREACHABLE' ||
+          item.code === 'HUNT_SPAWN_UNREACHABLE',
       ),
     ).toEqual([]);
+    expect(fortress.spawns.groups).toHaveLength(21);
+    expect(fortress.spawns.groups.flatMap((group) => group.slots)).toHaveLength(
+      46,
+    );
   });
 });

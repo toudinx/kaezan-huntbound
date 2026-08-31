@@ -445,17 +445,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Orc-Fortress",
       "maxLiveActors": 64,
-      "experiencePerHour": 150549,
+      "experiencePerHour": 119960,
       "creatures": [
         {
           "creatureKey": "creature:tibia:orc",
           "displayName": "Orc",
-          "slotCount": 13,
+          "slotCount": 9,
           "health": 70,
           "experience": 25,
           "lookType": 5,
           "respawnTicks": 1800,
-          "experiencePerHour": 12235,
+          "experiencePerHour": 9000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -522,12 +522,12 @@
         {
           "creatureKey": "creature:tibia:orc-shaman",
           "displayName": "Orc Shaman",
-          "slotCount": 22,
+          "slotCount": 19,
           "health": 115,
           "experience": 110,
           "lookType": 6,
           "respawnTicks": 1800,
-          "experiencePerHour": 91105,
+          "experiencePerHour": 83600,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -600,12 +600,12 @@
         {
           "creatureKey": "creature:tibia:orc-spearman",
           "displayName": "Orc Spearman",
-          "slotCount": 33,
+          "slotCount": 18,
           "health": 105,
           "experience": 38,
           "lookType": 50,
           "respawnTicks": 1800,
-          "experiencePerHour": 47209,
+          "experiencePerHour": 27360,
           "loot": [
             {
               "itemKey": "item:tibia:meat",

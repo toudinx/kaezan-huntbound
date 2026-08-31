@@ -4,6 +4,7 @@ import type {
   KernelBlueprint,
   MapRegion,
   SpawnGroupDefinition,
+  SpawnTable,
   TransitionEntry,
 } from '../../packages/contracts/src/hunt/types.ts';
 import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts';
@@ -14,7 +15,11 @@ import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
 import { readOtbmTiles } from './otbm.ts';
 import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
-import { analyzeHuntTopology, walkableComponents } from './topology.ts';
+import {
+  analyzeHuntTopology,
+  reachableCells,
+  walkableComponents,
+} from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';
 import { diagnostic, sortDiagnostics } from './types.ts';
@@ -151,6 +156,89 @@ function pickPlayerStart(
   );
 }
 
+/**
+ * Drops the spawn groups the player cannot walk to.
+ *
+ * A raw box is cut out of a living map, so it carries seats the hunt has no
+ * path to — the Orc Fortress rectangle holds the field outside its wall, and
+ * the ramp up the mountain is not inside the cut. Those creatures are not
+ * scenery: `S7` counts `maxLiveActors` over every live actor, so seats nobody
+ * can reach hold the cap down and starve the seats inside the hunt.
+ *
+ * A seat survives if the player can stand where the creature will. When the
+ * seat's own cell is blocked the kernel draws from the group radius instead,
+ * so that pool decides for it.
+ */
+function keepReachableSpawns(
+  table: SpawnTable,
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+  playerStart: GridPosition,
+): {
+  readonly table: SpawnTable;
+  readonly diagnostics: readonly ExtractionDiagnostic[];
+} {
+  const reachable = reachableCells(region, transitions, playerStart);
+  const isReachable = (position: GridPosition): boolean =>
+    reachable.get(position.z)?.has(position.y * region.width + position.x) ===
+    true;
+  const isWalkable = (position: GridPosition): boolean => {
+    const floor = region.floors.find((entry) => entry.z === position.z);
+    if (floor === undefined) return false;
+    if (
+      position.x < 0 ||
+      position.y < 0 ||
+      position.x >= region.width ||
+      position.y >= region.height
+    ) {
+      return false;
+    }
+    return !floor.collision.includes(position.y * region.width + position.x);
+  };
+
+  const diagnostics: ExtractionDiagnostic[] = [];
+  const groups = table.groups.flatMap((group, groupIndex) => {
+    const radiusReachable = (): boolean => {
+      for (
+        let y = group.center.y - group.radius;
+        y <= group.center.y + group.radius;
+        y += 1
+      ) {
+        for (
+          let x = group.center.x - group.radius;
+          x <= group.center.x + group.radius;
+          x += 1
+        ) {
+          if (isReachable({ x, y, z: group.center.z })) return true;
+        }
+      }
+      return false;
+    };
+
+    const slots = group.slots.filter((slot) => {
+      const seat = {
+        x: group.center.x + slot.offsetX,
+        y: group.center.y + slot.offsetY,
+        z: group.center.z + slot.offsetZ,
+      };
+      return isWalkable(seat) ? isReachable(seat) : radiusReachable();
+    });
+
+    if (slots.length === group.slots.length) return [{ ...group, slots }];
+
+    diagnostics.push(
+      diagnostic(
+        `spawns.groups[${groupIndex}]`,
+        'HUNT_SPAWN_DROPPED',
+        `${group.slots.length - slots.length} of ${group.slots.length} seats at (${group.center.x}, ${group.center.y}, ${group.center.z}) are unreachable from the player start`,
+      ),
+    );
+    return slots.length === 0 ? [] : [{ ...group, slots }];
+  });
+
+  return { table: { ...table, groups }, diagnostics };
+}
+
 function budgetDiagnostics(region: MapRegion): readonly ExtractionDiagnostic[] {
   const out: ExtractionDiagnostic[] = [];
   if (region.width > MAX_WIDTH) {
@@ -260,10 +348,23 @@ export function extractHunt(
       transitions.table.entries,
       spawns.table.groups,
     );
+  // Only a raw box carries seats with no path to them: a layout recipe places
+  // every group by hand inside the cut it authored.
+  const reachableSpawns =
+    layout === undefined && playerStart !== undefined
+      ? keepReachableSpawns(
+          spawns.table,
+          built.region,
+          transitions.table.entries,
+          playerStart,
+        )
+      : { table: spawns.table, diagnostics: [] };
+
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,
     ...spawns.diagnostics,
+    ...reachableSpawns.diagnostics,
     ...budgetDiagnostics(built.region),
   ];
 
@@ -283,7 +384,7 @@ export function extractHunt(
     huntRevision: HUNT_REVISION,
     region: built.region,
     transitions: transitions.table,
-    spawns: spawns.table,
+    spawns: reachableSpawns.table,
     blueprints,
     playerStart: playerStart ?? {
       x: 0,
