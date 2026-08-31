@@ -329,6 +329,22 @@ describe('validateHuntSelection', () => {
     ]);
   });
 
+  it('accepts a selection without a layout recipe', () => {
+    const { layout: _layout, ...selectionWithoutLayout } = selection();
+    const result = validateHuntSelection(
+      {
+        ...selectionWithoutLayout,
+        expectedSpawnGroups: 1,
+        expectedSpawnSlots: 1,
+      },
+      `<monsters>${group(100, 200, 8, [slot('Rotworm', 0, 0, 8, '90')])}</monsters>`,
+      catalogCreatureKeys,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics).toEqual([]);
+  });
+
   it('accepts a selection that names both sources', () => {
     const result = validateHuntSelection(
       selection({

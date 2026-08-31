@@ -6,7 +6,6 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
-  "layout": "../../layouts/hunts/orc-fortress.json",
   "recommendedLevel": 25,
   "soloVocation": "vocation:tibia:knight",
   "band": 2,
@@ -81,7 +80,7 @@
   ],
   "expectedSpawnGroups": 33,
   "expectedSpawnSlots": 68,
-  "expectedDroppedTransitions": 0,
+  "expectedDroppedTransitions": 2,
   "budget": {
     "maxFloors": 3,
     "maxWidth": 96,

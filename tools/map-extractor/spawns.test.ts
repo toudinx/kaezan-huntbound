@@ -216,6 +216,24 @@ describe('buildSpawnTable', () => {
     expect(built.table.groups[0]?.slots[0]?.respawnTicks).toBe(1800);
   });
 
+  it('clamps an XML spawn radius to the hunt contract maximum', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X,
+          centerY: MIN_Y,
+          centerZ: 8,
+          radius: 30,
+          slots: [{ name: 'Rotworm', x: 0, y: 0, z: 8 }],
+        },
+      ]),
+      selection,
+      region,
+    );
+
+    expect(built.table.groups[0]?.radius).toBe(15);
+  });
+
   it('rejects a spawntime that does not divide into whole ticks', () => {
     const built = buildSpawnTable(
       monsterXml([
@@ -378,8 +396,8 @@ describe('buildSpawnTable', () => {
     );
 
     expect(built.table.groups[0]).toMatchObject({
-      center: { x: -5, y: 0, z: 8 },
-      slots: [{ source: { x: MIN_X, y: MIN_Y, z: 8 } }],
+      center: { x: 0, y: 0, z: 8 },
+      slots: [{ offsetX: 0, offsetY: 0, source: { x: MIN_X, y: MIN_Y, z: 8 } }],
       sourceCenter: { x: MIN_X - 5, y: MIN_Y, z: 8 },
     });
     expect(built.diagnostics).toEqual([]);
@@ -429,11 +447,11 @@ describe('buildSpawnTable', () => {
 
     expect(built.table.groups).toMatchObject([
       {
-        center: { x: -1, y: 0, z: 8 },
+        center: { x: 0, y: 0, z: 8 },
         sourceCenter: { x: MIN_X - 1, y: MIN_Y, z: 8 },
         slots: [
           {
-            offsetX: 1,
+            offsetX: 0,
             offsetY: 0,
             offsetZ: 0,
             source: { x: MIN_X, y: MIN_Y, z: 8 },

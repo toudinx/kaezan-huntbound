@@ -310,81 +310,91 @@ function runBuild(
   const tileFlagsText = readFileSync(resolve(command.tileFlags), 'utf8');
   const tileFlags = JSON.parse(tileFlagsText) as TileFlagsTable;
 
-  if (typeof selection.layout !== 'string' || selection.layout.length === 0) {
-    io.stderr({
-      command: 'build',
-      reason: 'blocking-diagnostics',
-      diagnostics: [
-        diagnostic(
-          'layout',
-          'HUNT_LAYOUT_INVALID',
-          'Selection must name a Huntbound layout recipe',
-        ),
-      ],
-      total: 1,
-    });
-    return 1;
-  }
   const selectionDirectory = dirname(selectionPath);
-  const layoutPath = resolve(selectionDirectory, selection.layout);
-  const layoutRelative = relative(selectionDirectory, layoutPath);
-  if (
-    isAbsolute(selection.layout) ||
-    selection.layout.includes('\\') ||
-    /^[a-zA-Z]:/.test(selection.layout)
-  ) {
-    io.stderr({
-      command: 'build',
-      reason: 'blocking-diagnostics',
-      diagnostics: [
-        diagnostic(
-          'layout',
-          'HUNT_LAYOUT_INVALID',
-          `Layout path must stay relative to the selection file: ${selection.layout}`,
-        ),
-      ],
-      total: 1,
-    });
-    return 1;
-  }
-  let layoutText: string;
-  try {
-    layoutText = readFileSync(layoutPath, 'utf8');
-  } catch (error) {
-    io.stderr({
-      command: 'build',
-      reason: 'blocking-diagnostics',
-      diagnostics: [
-        diagnostic(
-          'layout',
-          'HUNT_LAYOUT_INVALID',
-          `Layout recipe cannot be read: ${error instanceof Error ? error.message : String(error)}`,
-        ),
-      ],
-      total: 1,
-    });
-    return 1;
-  }
-  let layout: ReturnType<typeof parseHuntLayoutRecipe>;
-  try {
-    layout = parseHuntLayoutRecipe(
-      JSON.parse(layoutText) as unknown,
-      selection.region,
-    );
-  } catch (error) {
-    io.stderr({
-      command: 'build',
-      reason: 'blocking-diagnostics',
-      diagnostics: [
-        diagnostic(
-          'layout',
-          'HUNT_LAYOUT_INVALID',
-          error instanceof Error ? error.message : String(error),
-        ),
-      ],
-      total: 1,
-    });
-    return 1;
+  let layout: ReturnType<typeof parseHuntLayoutRecipe> | undefined;
+  let layoutMetadata: {
+    readonly relativePath: string;
+    readonly sha256: string;
+  } | null = null;
+  if (selection.layout !== undefined) {
+    if (typeof selection.layout !== 'string' || selection.layout.length === 0) {
+      io.stderr({
+        command: 'build',
+        reason: 'blocking-diagnostics',
+        diagnostics: [
+          diagnostic(
+            'layout',
+            'HUNT_LAYOUT_INVALID',
+            'Selection layout must be a non-empty path when declared',
+          ),
+        ],
+        total: 1,
+      });
+      return 1;
+    }
+    const layoutPath = resolve(selectionDirectory, selection.layout);
+    const layoutRelative = relative(selectionDirectory, layoutPath);
+    if (
+      isAbsolute(selection.layout) ||
+      selection.layout.includes('\\') ||
+      /^[a-zA-Z]:/.test(selection.layout)
+    ) {
+      io.stderr({
+        command: 'build',
+        reason: 'blocking-diagnostics',
+        diagnostics: [
+          diagnostic(
+            'layout',
+            'HUNT_LAYOUT_INVALID',
+            `Layout path must stay relative to the selection file: ${selection.layout}`,
+          ),
+        ],
+        total: 1,
+      });
+      return 1;
+    }
+    let layoutText: string;
+    try {
+      layoutText = readFileSync(layoutPath, 'utf8');
+    } catch (error) {
+      io.stderr({
+        command: 'build',
+        reason: 'blocking-diagnostics',
+        diagnostics: [
+          diagnostic(
+            'layout',
+            'HUNT_LAYOUT_INVALID',
+            `Layout recipe cannot be read: ${error instanceof Error ? error.message : String(error)}`,
+          ),
+        ],
+        total: 1,
+      });
+      return 1;
+    }
+    try {
+      layout = parseHuntLayoutRecipe(
+        JSON.parse(layoutText) as unknown,
+        selection.region,
+      );
+    } catch (error) {
+      io.stderr({
+        command: 'build',
+        reason: 'blocking-diagnostics',
+        diagnostics: [
+          diagnostic(
+            'layout',
+            'HUNT_LAYOUT_INVALID',
+            error instanceof Error ? error.message : String(error),
+          ),
+        ],
+        total: 1,
+      });
+      return 1;
+    }
+    layoutMetadata = {
+      relativePath: layoutRelative.replaceAll('\\', '/'),
+      sha256: sha256Hex(layoutText),
+    };
   }
 
   const sources = resolveHuntSources(
@@ -410,7 +420,13 @@ function runBuild(
     layout,
   );
 
-  const blocking = diagnostics.filter(isBlockingDiagnostic);
+  // A recipe must be fully authored; a raw box intentionally preserves the
+  // OTBM voids as collision so the complete frozen region remains rectangular.
+  const blocking = diagnostics.filter(
+    (item) =>
+      isBlockingDiagnostic(item) &&
+      !(layout === undefined && item.code === 'HUNT_EMPTY_TILE'),
+  );
   if (blocking.length > 0) {
     io.stderr({
       command: 'build',
@@ -446,10 +462,7 @@ function runBuild(
     ),
     emptyTiles: diagnostics.filter((item) => item.code === 'HUNT_EMPTY_TILE')
       .length,
-    layout: {
-      relativePath: layoutRelative.replaceAll('\\', '/'),
-      sha256: sha256Hex(layoutText),
-    },
+    layout: layoutMetadata,
     topology: topology.floors.map(({ z, walkableTiles, componentCount }) => ({
       z,
       walkableTiles,

@@ -30,7 +30,7 @@ export interface HuntSelection {
   readonly displayName: string;
   readonly sourceUrl: string;
   readonly source: HuntSelectionSource;
-  readonly layout: string;
+  readonly layout?: string;
   readonly recommendedLevel: number;
   readonly soloVocation: string;
   readonly band: number;

@@ -242,6 +242,71 @@ describe('runMapExtractorCli', () => {
     }
   });
 
+  it('extracts the selected box directly when no layout recipe is declared', () => {
+    const { layout: _layout, ...selectionWithoutLayout } = selection;
+    writeFileSync(selectionPath, JSON.stringify(selectionWithoutLayout));
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
+
+    const hunt = JSON.parse(
+      readFileSync(join(output, 'hunt.json'), 'utf8'),
+    ) as {
+      readonly region: {
+        readonly origin: { readonly x: number; readonly y: number };
+        readonly width: number;
+        readonly height: number;
+      };
+      readonly spawns: {
+        readonly groups: readonly {
+          readonly center: { readonly x: number; readonly y: number };
+          readonly slots: readonly {
+            readonly offsetX: number;
+            readonly offsetY: number;
+          }[];
+        }[];
+      };
+    };
+
+    expect(hunt.region).toMatchObject({
+      origin: { x: MIN_X, y: MIN_Y },
+      width: SIZE,
+      height: SIZE,
+    });
+    expect(hunt.spawns.groups[0]?.center).toMatchObject({ x: 2, y: 2 });
+    expect(hunt.spawns.groups[0]?.slots[0]).toMatchObject({
+      offsetX: 0,
+      offsetY: 1,
+    });
+  });
+
+  it('keeps void cells as collision when extracting a box directly', () => {
+    writeFileSync(
+      mapPath,
+      encodeOtbmMap(
+        areas().map((area) => ({
+          ...area,
+          tiles: area.tiles.filter((_tile, index) => index !== 3),
+        })),
+      ),
+    );
+    writeSourceLock();
+    const { layout: _layout, ...selectionWithoutLayout } = selection;
+    writeFileSync(selectionPath, JSON.stringify(selectionWithoutLayout));
+
+    expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
+
+    const hunt = JSON.parse(
+      readFileSync(join(output, 'hunt.json'), 'utf8'),
+    ) as {
+      readonly region: {
+        readonly floors: readonly { readonly collision: readonly number[] }[];
+      };
+    };
+    expect(
+      hunt.region.floors.every((floor) => floor.collision.includes(3)),
+    ).toBe(true);
+  });
+
   it('reports exit 0 without writing on the second run with --check', () => {
     expect(runMapExtractorCli(buildArgs(), io(captured))).toBe(0);
     const before = readFileSync(join(output, 'hunt.json'), 'utf8');

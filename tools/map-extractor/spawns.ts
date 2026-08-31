@@ -17,6 +17,7 @@ import { diagnostic } from './types.ts';
 
 /** Frozen ceiling of simultaneously live actors from the region budget. */
 export const MAX_LIVE_ACTORS = 64;
+const MAX_SPAWN_RADIUS = 15;
 
 export interface SpawnTableBuild {
   readonly table: SpawnTable;
@@ -172,7 +173,7 @@ export function buildSpawnTable(
       centerX,
       centerY,
       centerZ,
-      radius,
+      radius: Math.min(radius, MAX_SPAWN_RADIUS),
       centerInside,
       element,
     });
@@ -315,30 +316,31 @@ export function buildSpawnTable(
     });
 
     if (mappedSlots.length === 0) return;
-    const targetCenter = mappedSlots[0]?.position as {
+    const sourceCenter = {
+      x: group.centerX - region.origin.x,
+      y: group.centerY - region.origin.y,
+      z: group.centerZ,
+    };
+    const useSourceCenter =
+      layout === undefined && outputContains(sourceCenter);
+    const targetCenter = (
+      useSourceCenter ? sourceCenter : mappedSlots[0]?.position
+    ) as {
       readonly x: number;
       readonly y: number;
       readonly z: number;
     };
-    const slots =
-      layout === undefined
-        ? mappedSlots.map(({ slot }) => slot)
-        : mappedSlots.map(({ position, slot }) => ({
-            ...slot,
-            offsetX: position.x - targetCenter.x,
-            offsetY: position.y - targetCenter.y,
-            offsetZ: position.z - targetCenter.z,
-          }));
+    const slots = useSourceCenter
+      ? mappedSlots.map(({ slot }) => slot)
+      : mappedSlots.map(({ position, slot }) => ({
+          ...slot,
+          offsetX: position.x - targetCenter.x,
+          offsetY: position.y - targetCenter.y,
+          offsetZ: position.z - targetCenter.z,
+        }));
     slotCount += slots.length;
     groups.push({
-      center:
-        layout === undefined
-          ? {
-              x: group.centerX - region.origin.x,
-              y: group.centerY - region.origin.y,
-              z: group.centerZ,
-            }
-          : targetCenter,
+      center: targetCenter,
       radius: group.radius,
       sourceCenter: {
         x: group.centerX,

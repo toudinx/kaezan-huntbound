@@ -318,6 +318,7 @@ function sourceDiagnostics(
 }
 
 function layoutDiagnostics(value: unknown): readonly HuntSelectionDiagnostic[] {
+  if (value === undefined) return [];
   if (typeof value !== 'string' || value.trim().length === 0) {
     return [
       diagnostic(
