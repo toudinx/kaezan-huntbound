@@ -11,7 +11,7 @@ ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
 **Última atualização:** 2026-08-31 — 13 fechada e corrigida pela PB-10-13-FIX-01 (start do jogador
 caía fora da hunt), pela PB-10-13-FIX-02 (pack cobrindo a caixa inteira) e pela PB-10-13-FIX-03
-(escadas de subida). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
+(escadas de subida) e pela PB-10-13-FIX-04 (spawn inalcançável). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
 hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
 71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
 
@@ -42,6 +42,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-13-FIX-01 | done | `main` | frontier `xhigh` | Claude Opus 5 | `695ea59` | start do jogador por conectividade: componente com mais grupos → andar com mais grupos → célula de menor caminhada. Orc sai de (64,14,z6), lasca de 21 células com 1 grupo, para (37,40,z7): 2.620 células, 19/33 grupos, 6/6 transições. As quatro hunts com receita regeneram byte a byte; map-extractor (139), content, architecture e format verdes |
 | PB-10-13-FIX-02 | done | `main` | frontier `xhigh` | Claude Opus 5 | `c2efb02` | pack da caixa inteira: selection derivada da região real (357→541 chaves), teto de entradas 512→1024 com `maxBytes` como guarda de memória (523 mídias / 2,6 MB contra 6 MiB), 119 ids adicionados ao export privado e export re-rodado. 1.235 de 14.376 comandos de desenho sem sprite → 0. `huntArtifacts.test.ts` (7 vermelhos na `main`, contagens anteriores aos 9 ícones de spell) verde; asset-packer (61), `assets:check` e format verdes |
 | PB-10-13-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | `6d6bb64` | escadas de volta: `type="ladder"` entra na tabela de flags (schema 2, 17 ids) e vira transição `moveUpstairs` (um andar acima, um tile ao sul). Orc vai de 6 para 12 transições; z6 sai de 0 para 815 células alcançáveis do start. `expectedDroppedTransitions` 2→3 pela escada de (27,57,z6) para z5, fora dos andares congelados. As quatro com receita reextraem byte a byte; map-extractor (141), tile-flags (81), content, architecture e format verdes |
+| PB-10-13-FIX-04 | done | `main` | frontier `xhigh` | Claude Opus 5 | `cc43143` | spawn inalcançável sai na extração, pela regra do próprio kernel (célula do slot; raio do grupo quando ela é bloqueada). Orc vai de 33 grupos/68 slots para 21/46, todos dentro do circuito e agora todos cabendo em `maxLiveActors: 64`. `expectedSpawnGroups: 33` fica: descreve o XML, não a hunt. As quatro com receita reextraem byte a byte; map-extractor (141), content, architecture e format verdes |
 | PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
 
@@ -141,14 +142,12 @@ tile. A tabela de flags passou a carregá-la e o extractor emite a geometria do
 `Position:moveUpstairs`: um andar acima e um tile ao sul, porque o tile logo acima da escada é o
 buraco de onde o jogador caiu.
 
-**B26 — aberto, decisão de conteúdo, não é defeito.** 22 dos 68 slots da Orc Fortress (14 dos 33
-grupos) ficam num componente de 1.324 células em z7 — o campo **fora da muralha**, separado do forte
-por parede de pedra real, conferida item a item. O forte de Tibia se entra por cima, e a rampa que
-sobe o morro não está dentro do retângulo congelado. Consequência no kernel: `S7` conta o teto
-`maxLiveActors: 64` sobre **todos** os atores vivos, então esses 22 orcs inalcançáveis seguram um
-terço do teto para sempre e 4 slots alcançáveis nunca chegam a nascer. Opções: descartar na extração
-o grupo inalcançável a partir do `playerStart` (mexe em `expectedSpawnGroups: 33` e
-`expectedSpawnSlots: 68`, congelados na selection) ou aceitar como cenário. **Do usuário.**
+**B26 — fechado pela PB-10-13-FIX-04.** Decisão do usuário em 2026-08-31: descartar. Os 22 slots do
+campo fora da muralha saem na extração; sobram 21 grupos e 46 slots, todos alcançáveis a partir do
+`playerStart` e todos cabendo no teto de 64. A muralha foi conferida item a item — é `stone wall`
+real nos 19 pontos onde o campo quase encosta na hunt, e a única porta da caixa guarda um armário de
+3 tiles. O forte de Tibia se entra por cima e a rampa não está no retângulo congelado; o campo é
+cenário.
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.
