@@ -5,7 +5,7 @@ import type {
 } from '../../packages/contracts/src/hunt/types.ts';
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
 import type { FloorChange } from '../tile-flags/types.ts';
-import type { FloorChangeCells } from './region.ts';
+import type { FloorChangeCells, LadderCells } from './region.ts';
 import type { ExtractionDiagnostic } from './types.ts';
 import { diagnostic } from './types.ts';
 
@@ -53,15 +53,32 @@ function destination(
 }
 
 /**
+ * Where a ladder puts the climber.
+ *
+ * `Position:moveUpstairs` in `references/canary/data/libs/functions/position.lua`
+ * goes one floor up and prefers the tile one south of the ladder. That offset
+ * is not decoration: the tile straight above a ladder is usually the hole the
+ * player fell through, and landing back on it would drop them again.
+ */
+function ladderDestination(from: GridPosition): GridPosition {
+  return { x: from.x, y: from.y + 1, z: from.z - 1 };
+}
+
+/**
  * Derives the directed transitions of the region.
  *
  * Each cell yields at most one transition, so two entries can never share an
  * origin. A destination outside the region, on a floor that was not extracted
  * or on a collision tile is dropped, counted and reported.
+ *
+ * Floorchange items only ever go down — Canary has no `up` value — so the way
+ * back is the ladder, which is an item type climbed by action rather than a
+ * tile state. Without it a raw box is a one-way descent.
  */
 export function buildTransitionTable(
   region: MapRegion,
   floorChanges: FloorChangeCells,
+  ladders: LadderCells = new Map(),
 ): TransitionTableBuild {
   const collisionByFloor = new Map(
     region.floors.map((floor) => [floor.z, new Set(floor.collision)]),
@@ -95,6 +112,44 @@ export function buildTransitionTable(
         z: floor.z,
       };
       const to = destination(from, values);
+
+      if (
+        to.x < 0 ||
+        to.x >= region.width ||
+        to.y < 0 ||
+        to.y >= region.height
+      ) {
+        drop(from, to, 'falls outside the extracted region');
+        continue;
+      }
+      const collision = collisionByFloor.get(to.z);
+      if (collision === undefined) {
+        drop(from, to, 'is on a floor that was not extracted');
+        continue;
+      }
+      if (collision.has(to.y * region.width + to.x)) {
+        drop(from, to, 'is a collision tile');
+        continue;
+      }
+
+      entries.push({ from, to });
+    }
+  }
+
+  for (const floor of region.floors) {
+    const cells = ladders.get(floor.z);
+    if (cells === undefined) continue;
+
+    for (const index of [...cells].sort((left, right) => left - right)) {
+      const from: GridPosition = {
+        x: index % region.width,
+        y: Math.floor(index / region.width),
+        z: floor.z,
+      };
+      // A cell can hold a ladder and a floorchange at once; the floorchange
+      // already claimed it and an origin may only yield one transition.
+      if (floorChanges.get(floor.z)?.get(index) !== undefined) continue;
+      const to = ladderDestination(from);
 
       if (
         to.x < 0 ||

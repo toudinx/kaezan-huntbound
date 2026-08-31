@@ -229,7 +229,7 @@ export function extractHunt(
   );
   const transitions =
     layout === undefined
-      ? buildTransitionTable(built.region, built.floorChanges)
+      ? buildTransitionTable(built.region, built.floorChanges, built.ladders)
       : {
           table: { entries: layout.transitions, dropped: 0 },
           diagnostics: [],

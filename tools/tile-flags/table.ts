@@ -1,12 +1,13 @@
 /**
- * Joins `appearances.dat` flags with `items.xml` floorchanges into the
- * versioned, byte-reproducible tile-flags table.
+ * Joins `appearances.dat` flags with the `items.xml` floorchanges and ladders
+ * into the versioned, byte-reproducible tile-flags table.
  */
 
 import { createHash } from 'node:crypto';
 
 import { parseAppearanceFlags } from './appearances.ts';
 import { readFloorChanges } from './floorChanges.ts';
+import { readLadderIds } from './ladders.ts';
 import {
   TILE_FLAGS_SCHEMA_VERSION,
   type TileFlags,
@@ -24,6 +25,7 @@ export function buildTileFlagsTable(
 ): TileFlagsTable {
   const appearances = parseAppearanceFlags(appearancesDat);
   const floorChanges = readFloorChanges(itemsXml);
+  const ladders = readLadderIds(itemsXml);
 
   const known = new Set(appearances.map((entry) => entry.serverId));
   for (const serverId of floorChanges.keys()) {
@@ -38,6 +40,7 @@ export function buildTileFlagsTable(
     .map((entry) => ({
       ...entry,
       floorChange: floorChanges.get(entry.serverId) ?? null,
+      ladder: ladders.has(entry.serverId),
     }))
     .sort((left, right) => left.serverId - right.serverId);
 
@@ -63,6 +66,7 @@ function encodeEntry(entry: TileFlags): string {
     elevation: entry.elevation,
     floorChange: entry.floorChange,
     ground: entry.ground,
+    ladder: entry.ladder,
     serverId: entry.serverId,
     top: entry.top,
     unmove: entry.unmove,

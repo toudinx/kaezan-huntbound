@@ -77,8 +77,12 @@ describe('generated Orc Fortress hunt', () => {
 
     expect(fortress.playerStart).toEqual({ x: 37, y: 40, z: 7 });
     expect(reachable.get(7)).toBe(889);
-    // The two holes of the fortress floor are real and both lead down.
+    // Both directions: the holes drop into the cave and the ladders climb back
+    // to the roof, so all three floors are reachable from where the hunt
+    // starts.
     expect(reachable.get(8)).toBe(916);
+    expect(reachable.get(6)).toBe(815);
+    expect(fortress.transitions.entries).toHaveLength(12);
     expect(
       report.diagnostics.filter(
         (item) => item.code === 'HUNT_PLAYER_START_UNREACHABLE',

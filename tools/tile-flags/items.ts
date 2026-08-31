@@ -2,19 +2,24 @@
  * Minimal scanner over Canary's `items.xml`.
  *
  * Only two shapes matter: `<item id=…>` / `<item fromid=… toid=…>` and the
- * `<attribute key="floorchange" value=…/>` child. Deliberately not a general
- * XML parser — no new dependency enters the workspace for this.
+ * `<attribute key=…/>` children this workspace reads — `floorchange`, which
+ * walks a creature between floors, and `type`, which is how a ladder declares
+ * itself. Deliberately not a general XML parser — no new dependency enters the
+ * workspace for this.
  */
 
 const ITEM_TAG = /<item\b([^>]*?)(\/?)>/g;
 const ATTRIBUTE_PAIR = /([A-Za-z_][\w.-]*)\s*=\s*"([^"]*)"/g;
 const FLOORCHANGE_ATTRIBUTE =
   /<attribute\b[^>]*\bkey\s*=\s*"floorchange"[^>]*\bvalue\s*=\s*"([^"]*)"[^>]*>/i;
+const TYPE_ATTRIBUTE =
+  /<attribute\b[^>]*\bkey\s*=\s*"type"[^>]*\bvalue\s*=\s*"([^"]*)"[^>]*>/i;
 
 export interface ItemRow {
   readonly ids: readonly number[];
   readonly name: string;
   readonly floorChange: string | undefined;
+  readonly type: string | undefined;
 }
 
 function attributesOf(raw: string): ReadonlyMap<string, string> {
@@ -67,6 +72,7 @@ export function scanItems(itemsXml: string): readonly ItemRow[] {
     if (rawAttributes === undefined) continue;
 
     let floorChange: string | undefined;
+    let type: string | undefined;
     if (selfClosing !== '/') {
       const closing = itemsXml.indexOf('</item>', ITEM_TAG.lastIndex);
       const body = itemsXml.slice(
@@ -74,13 +80,14 @@ export function scanItems(itemsXml: string): readonly ItemRow[] {
         closing === -1 ? itemsXml.length : closing,
       );
       floorChange = FLOORCHANGE_ATTRIBUTE.exec(body)?.[1];
+      type = TYPE_ATTRIBUTE.exec(body)?.[1];
     }
 
     const attributes = attributesOf(rawAttributes);
     const ids = idRange(attributes);
     if (ids === undefined) continue;
 
-    rows.push({ ids, name: attributes.get('name') ?? '', floorChange });
+    rows.push({ ids, name: attributes.get('name') ?? '', floorChange, type });
   }
 
   return rows;
