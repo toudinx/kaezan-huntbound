@@ -6,8 +6,8 @@
 > `hunt-content-pipeline`. Execute uma task card por chat. O formato, o handoff e o ciclo automático
 > de integração e limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 
-**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 a 10 fecharam e estão integradas; a
-próxima é **PB-10-11**.
+**Status:** reescrito em 2026-08-26 e **elegível**. As tasks 01 a 12 fecharam e estão integradas; a
+próxima é **PB-10-13**, primeira da correção de mapa acrescentada em 2026-08-31.
 
 **Goal:** o jogo deixa de ter *uma* hunt compilada e passa a ter um **catálogo navegável**: você abre
 o jogo, olha as hunts disponíveis com faixa de nível, criaturas, exp e loot, escolhe uma e entra.
@@ -104,6 +104,9 @@ Detalhe e justificativa na spec. Aqui só o que uma task não pode redecidir soz
    resistência liga no PB-11, junto do equipamento que responde a ela.
 7. **Espécie e hunt não são escada.** Cada uma entra por um comportamento visível que nenhuma outra
    tem.
+8. **A hunt ocupa a caixa curada inteira.** Acrescentada em 2026-08-31. O recorte é a caixa da
+   `HUNT_BANDS.md`, não um sub-retângulo dela, e **revoga a orientação de recorte apertado da
+   PB-10-08**. Ver "A correção de mapa".
 
 ## Ordem das tasks
 
@@ -120,13 +123,17 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 07-10 | Uma task por hunt, faixas 2 a 5 | conteúdo — **sobretudo mapa** |
 | 11 | A `main` volta a ficar verde | investigação — **o B19** |
 | 12 | O corpo é da espécie que morreu | importador, contrato, packer e `apps/game` — **o B20** |
+| 13 | Orc Fortress ocupa a caixa inteira | tool e conteúdo — **a correção de mapa** |
+| 14 | O andar desenha só o que cabe na tela | `apps/game`, render |
+| 15 | As outras quatro hunts ocupam suas caixas | conteúdo |
 
-**Fechadas: 01 a 10 — a máquina do catálogo está inteira e as cinco hunts estão na `main`. Escritas e
-elegíveis: 11 e 12.**
+**Fechadas: 01 a 12 — a máquina do catálogo está inteira, as cinco hunts estão na `main` e o
+playbook foi aceito jogando. Escritas e elegíveis: 13 a 15, a correção de mapa.**
 
-As duas últimas nasceram do **aceite**: o usuário jogou em 2026-08-30, aprovou as cavernas e apontou o
-corpo errado. Elas fecham o playbook, e a **12 é a task de fechamento** — é ela que roda o `verify`
-completo, conforme a revisão de processo de 2026-08-30 no `docs/06`.
+A 11 e a 12 nasceram do **aceite**: o usuário jogou em 2026-08-30, aprovou as cavernas e apontou o
+corpo errado. As 13 a 15 nasceram do mesmo aceite, um dia depois, com a observação de que as hunts
+estão pequenas — e **a 15 passou a ser a task de fechamento**, a que roda `build` no estado final
+conforme a política de raio de diff do `AGENTS.md`.
 
 O que ele apontou junto e **não** virou task daqui: as faixas 2 a 5 não são concluíveis, porque
 `finish('completed')` não é chamado em lugar nenhum e a mitigação está desligada pela decisão
@@ -158,6 +165,26 @@ As quatro, e o risco de design de cada uma — que é o que muda entre elas:
 - **10 — Hero Cave**, faixa 5. O heal é o teto do kit. **O Hero não traz fogo** — a spec dizia que
   sim, o Lua disse que não, e o arquivo venceu. Risco: **filtragem**, 24 Heroes entre 184 slots (13 %),
   contra 43–67 % nas outras três.
+
+### A correção de mapa — tasks 13 a 15
+
+Acrescentada em 2026-08-31, depois do aceite. O usuário apontou que as hunts estão temáticas mas
+pequenas, e que a hunt de Tibia é famosa por ser **circular**: o jogador roda spots e limpa em ciclos.
+
+O diagnóstico é que **a volta já estava selecionada e o recorte a jogava fora**. Cada selection já
+enquadra a hunt real inteira — 65 × 68 na Orc Fortress, 71 × 61 na Cyclopolis, 69 × 61 no Dragon Lair,
+71 × 71 na Hero Cave, 64 × 96 na rotworm — tudo dentro do budget de 96 × 96 × 3 de `extract.ts:66`. A
+receita de layout é que comprime isso em 24 × 24 ou 32 × 32. O 24 × 24 foi escopo de MVP do PB-04 e
+virou hábito; nunca foi limite técnico.
+
+E o ciclo já roda por baixo: cada slot tem `respawnTicks` do `spawntime` real do Canary — 1800 ticks,
+90 s, para o Cyclops — e o estágio S7 do kernel repovoa sozinho. O que falta não é mecânica de
+respawn, é **distância entre spots**: com aggro de 11 tiles, um tabuleiro 24 × 24 é um box só.
+
+O extractor **já sabe extrair sem receita**: `layout === undefined` pega a região direto do OTBM,
+deriva as travessias dos floorchange reais e escolhe o `playerStart`. Quem proíbe é uma validação na
+CLI. Daí a decomposição: 13 destrava e prova numa hunt, 14 paga o render que a área maior cobra, 15
+aplica nas outras quatro.
 
 ### A 05 e a 06 rodam em paralelo
 
@@ -207,6 +234,9 @@ brigariam pelo mesmo bloco de `package.json`. **São seriais.**
 | PB-10-05  | apresentação em `apps/game`                                                            | econômico `xhigh`, **validado pelo usuário jogando** |
 | PB-10-06  | implementação complexa — IA e kernel, regenera golden                                  | frontier `xhigh`                                     |
 | PB-10-07+ | conteúdo, uma hunt por task                                                            | econômico `xhigh`                                    |
+| PB-10-13  | tool e conteúdo — destrava a extração e prova numa hunt | frontier `xhigh` |
+| PB-10-14  | render em `apps/game` | econômico `xhigh`, **validado pelo usuário jogando** |
+| PB-10-15  | conteúdo, quatro reextrações da mesma forma | econômico `xhigh` |
 
 Revisão prefere modelo **diferente** do implementador. Modelo e effort efetivamente usados vão para o
 `STATE.md`.

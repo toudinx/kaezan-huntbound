@@ -5,12 +5,13 @@
 **Estado geral:** reescrito em 2026-08-26 como "Catálogo de hunts", em cima do PB-08 integrado
 (`80be90b`). Spec congelada em
 `docs/superpowers/specs/2026-08-26-pb-10-catalogo-de-hunts-design.md`. Escada em
-`docs/content/HUNT_BANDS.md`. Tasks 01 a 10 fechadas e integradas — a máquina do catálogo está
-inteira e as cinco hunts estão na `main`. As hunts autoram em
-paralelo, integram em série, e não rodam `verify` ao mesmo tempo (bloqueio B17).
+`docs/content/HUNT_BANDS.md`. Tasks 01 a 12 fechadas e integradas — a máquina do catálogo está
+inteira e as cinco hunts estão na `main`. O que resta é a correção de mapa (13 a 15): a hunt deixa de
+ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
-**Última atualização:** 2026-08-30 — PB-10-11 fechou o B19 (hipótese do catálogo derrubada; fallback
-de ficha removido; relógio da cena resincronizado no create). B20 e PB-10-12 seguem.
+**Última atualização:** 2026-08-31 — 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
+hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
+71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -35,6 +36,9 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
 | PB-10-11 | done | `main` | frontier `xhigh` | Grok 4.6 `xhigh` | `08cbe85` | hipótese do catálogo derrubada; fallback de ficha removido; relógio da cena resincronizado no create |
 | PB-10-12 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d6743ee` | `corpseItemId` no catálogo; registry, packs e decoração por espécie; content/assets/architecture/test/typecheck/build verdes |
+| PB-10-13 | pending | `main` | frontier `xhigh` | — | — | — |
+| PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -108,6 +112,14 @@ por isso vira linha aqui e **não** task de correção: um agente atrás disso c
 reproduz. Vale reabrir como task se passar a reproduzir isolado ou a atingir outro arquivo. Mesmo
 dia, `assets:check` saiu com exit 139 numa execução e verde em 7,6 s na seguinte, o que inclina para
 a máquina.
+
+**B23 — aberto, endereçado pelas PB-10-13 a 15.** A hunt é jogada num sub-retângulo da caixa que a
+PB-10-02 curou: 32×32 na Orc Fortress contra 65×68 congelados, 24×24 nas outras quatro contra 64×96 a
+71×71. Com aggro de 11 tiles o tabuleiro recortado é um box só, então não há spot para rotacionar e a
+hunt circular do Tibia não acontece — embora o respawn por slot (`respawnTicks` do `spawntime` real,
+S7 do kernel) já a sustente. O extractor já tem o caminho `layout === undefined` que extrai a caixa
+inteira, deriva travessia de floorchange real e escolhe `playerStart`; quem o proíbe é
+`tools/map-extractor/cli.ts:313`.
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.
