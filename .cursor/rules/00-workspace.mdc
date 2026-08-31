@@ -25,9 +25,13 @@ arquitetura ou backlog a partir deles. A ordem normativa está em `docs/README.m
 **O custo do processo é proporcional ao raio do diff.** Piloto: entregue jogável, o aceite é o
 usuário jogando, e bug na primeira integração vira FIX — não outra hora de suíte.
 
-Antes de commitar: `biome check .` e **só** a linha do seu raio na tabela (`run-gates` / `AGENTS.md`).
-`verify` só no fechamento do playbook; nunca em task de HUD, mapa ou hunt. Rode o gate para saber se
-quebrou, nunca para produzir prova.
+Antes de commitar: **só** o teste diretamente afetado e a linha do seu raio na tabela de
+`AGENTS.md`, uma vez. `corepack pnpm test` só para runner/configuração ou contrato público
+transversal; nunca como taxa sobre todo TypeScript. `qa:browser` e `verify` são do usuário. Budget de
+browser só em task cujo objetivo é performance e reutiliza build fresco.
+
+O alvo dos comandos verdes é até 25% do tempo de implementação, nunca mais que a implementação. O
+orçamento corta suítes adicionais, não checks determinísticos aplicáveis nem uma falha real.
 
 O default é commitar na `main`: branch e worktree só quando o `README.md` do playbook declarar duas
 tasks paralelas rodando ao mesmo tempo.

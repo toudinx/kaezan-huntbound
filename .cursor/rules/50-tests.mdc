@@ -13,8 +13,9 @@ ele vem antes do código (vermelho pela razão certa), porque o playtest não v�
 esse teste é o caminho mais rápido para você mesmo convergir.
 
 Não escreva cobertura de caso que ninguém reportou nem e2e para o que uma sessão de dois minutos
-mostra. `corepack pnpm test` (51 s) é seu e roda quando o comportamento mudou; `qa:browser`, `verify`
-e `qa:budgets` são do usuário, e vermelho neles vira `PB-NN-FIX-MM`, não bloqueio.
+mostra. Rode com `exec vitest run` só o arquivo diretamente afetado. `corepack pnpm test` (51 s) é
+auditoria ampla e só entra para runner/configuração ou contrato público transversal. `qa:browser` e
+`verify` são do usuário; budget de browser só entra em task cujo objetivo é performance.
 
 Isto é um piloto. Não existe entrega 100% na primeira integração.
 
@@ -45,5 +46,9 @@ detectar mudança de comportamento não intencional.
 
 # Execução
 
-- O golden da área, quando o kernel mudou, mais `test` se o comportamento mudou.
-- `qa:browser` e `verify` são do usuário. `playwright test` direto não builda.
+- O último verde do teste focado contra o código final já vale; não repita para fechar.
+- O golden da área entra quando o kernel mudou. Suíte ampla não acumula automaticamente.
+- O alvo dos comandos verdes é 25% do tempo de implementação e o teto é 1:1. Isso corta validação
+  adicional, nunca mascara vermelho nem pula check determinístico da área.
+- `qa:browser` e `verify` são do usuário. Em task de performance: build fresco e
+  `qa:budgets:prebuilt`.

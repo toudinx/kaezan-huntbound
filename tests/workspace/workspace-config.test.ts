@@ -36,6 +36,15 @@ const requiredRootScripts = [
   'verify',
 ] as const;
 
+const focusedTestScripts = [
+  'test:game',
+  'test:contracts',
+  'test:simulation',
+  'test:content',
+  'test:assets',
+  'test:save',
+] as const;
+
 const readJson = <T>(path: string): T =>
   JSON.parse(readFileSync(path, 'utf8')) as T;
 
@@ -110,11 +119,35 @@ describe('workspace configuration', () => {
     );
     const verify = root.scripts?.verify ?? '';
     const qaBrowser = root.scripts?.['qa:browser'] ?? '';
+    const qaBrowserPrebuilt = root.scripts?.['qa:browser:prebuilt'] ?? '';
+    const qaBudgets = root.scripts?.['qa:budgets'] ?? '';
+    const qaBudgetsPrebuilt = root.scripts?.['qa:budgets:prebuilt'] ?? '';
 
     expect(qaBrowser).toMatch(/(?:^|&& )corepack pnpm build(?: &&|$)/);
+    expect(qaBrowser).toContain('corepack pnpm qa:browser:prebuilt');
+    expect(qaBrowserPrebuilt).toBe('playwright test --project=correctness');
+    expect(qaBrowserPrebuilt).not.toContain('build');
+    expect(qaBudgets).toContain('corepack pnpm build');
+    expect(qaBudgets).toContain('corepack pnpm qa:budgets:prebuilt');
+    expect(qaBudgetsPrebuilt).toBe('playwright test --project=budgets');
+    expect(qaBudgetsPrebuilt).not.toContain('build');
     expect(verify).toBe('corepack pnpm check && corepack pnpm qa:browser');
     expect(verify, 'verify must not build again before qa:browser').not.toMatch(
       /build && (?:corepack pnpm )?qa:browser/,
     );
+  });
+
+  test('keeps implementation tests focused and free from asset staging', () => {
+    const root = readJson<PackageManifest>(
+      resolve(process.cwd(), 'package.json'),
+    );
+
+    expect(root.scripts?.test).not.toContain('assets:stage:test');
+    for (const scriptName of focusedTestScripts) {
+      const script = root.scripts?.[scriptName] ?? '';
+      expect(script, `missing focused script: ${scriptName}`).toContain(
+        'exec vitest run',
+      );
+    }
   });
 });

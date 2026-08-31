@@ -21,8 +21,10 @@ alwaysApply: false
 reconstrói. Qualquer edição em `apps/game/src/**` é invisível para o browser até rodar
 `corepack pnpm build`.
 
-- `corepack pnpm qa:browser` e `corepack pnpm verify` buildam antes. Use-os **só no fechamento do
-  playbook**. Task de HUD ou hunt: `dev` de pé; o usuário joga.
+- `corepack pnpm qa:browser` e `corepack pnpm verify` são do usuário. Task de HUD ou hunt: teste
+  unitário focado quando houver lógica pura, `dev` de pé e o usuário joga.
+- Em task explicitamente de performance, o agente roda `build` uma vez e depois
+  `qa:budgets:prebuilt`. Não rode a suíte de correctness nem builde de novo.
 - `playwright test` direto **não** builda. Se usar, builde manualmente antes — inclusive depois de
   reverter qualquer experimento de mutação.
 - Quando um sintoma no browser contradisser o código que você está lendo, confira a idade do bundle
@@ -31,5 +33,6 @@ reconstrói. Qualquer edição em `apps/game/src/**` é invisível para o browse
 
 # Assets em desenvolvimento
 
-`dev` e `build` dependem do staging de assets (`assets:stage:test`). Rodar o Vite direto sem stage
-deixa o jogo sem pack. Use os scripts `dev`, `dev:personal` e `build` do workspace.
+`dev:test` e `build` fazem staging de assets. A suíte unitária não faz. `dev`/`dev:personal`
+reutilizam o profile pessoal existente e só o geram quando falta; uma task que altera assets deve
+regenerá-lo explicitamente antes do playtest. Use os scripts do workspace.

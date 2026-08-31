@@ -56,7 +56,7 @@ describe('dev launcher', () => {
     });
   });
 
-  test('rebuilds an existing personal profile only when it drifted', () => {
+  test('reuses an existing personal profile without rechecking every pack', () => {
     const environment = {
       HUNTBOUND_PERSONAL_ASSET_SOURCE: 'C:\\Kaezan\\private-assets',
     };
@@ -68,10 +68,6 @@ describe('dev launcher', () => {
     ).toEqual({
       ok: true,
       commands: [
-        {
-          command: 'corepack pnpm assets:hunt:personal:check',
-          recovery: 'corepack pnpm assets:hunt:personal:generate',
-        },
         {
           command:
             'corepack pnpm --filter @huntbound/game exec vite --mode personal',

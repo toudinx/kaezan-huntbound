@@ -16,8 +16,9 @@ Quatro motivos concretos, e nenhum deles é controle de qualidade:
 Toda regra abaixo serve a um desses quatro. Regra que não serve a nenhum foi removida — e uma regra
 nova só entra se você conseguir dizer qual dos quatro ela protege.
 
-Quem faz controle de qualidade é o usuário jogando. Os gates cobrem só o que uma sessão de jogo não
-vê, e estão em `AGENTS.md`.
+Quem faz controle visual e de gameplay é o usuário jogando. O agente cobre teste básico de
+implementação, determinismo e performance quando esse for o objetivo da task. A matriz e o orçamento
+de validação estão em `AGENTS.md`.
 
 ## Estrutura
 
@@ -134,8 +135,8 @@ Trabalhe em C:\Kaezan\kaezan-huntbound.
 
 Execute integralmente e somente: <PATH-DA-TASK-CARD>
 
-Leia AGENTS.md e o STATE.md do playbook. Implemente, rode só o gate do raio do seu diff, commite na
-main e pare. Não peça confirmação para commitar. Não inicie a próxima task.
+Leia AGENTS.md e o STATE.md do playbook. Implemente, rode só o teste focado e o gate do raio do seu
+diff, commite na main e pare. Não peça confirmação para commitar. Não inicie a próxima task.
 ```
 
 ## Tasks paralelas
@@ -151,8 +152,9 @@ Se você está rodando as tasks em sequência — o caso normal — não existe 
 Fecha quando **o usuário joga e aprova**. É o único aceite normativo.
 
 A última task roda `corepack pnpm build` — 5 segundos que provam que compila e sobe, que era a única
-coisa que `verify` protegia ali. `qa:browser`, `verify` e `qa:budgets` são do usuário e rodam quando
-ele quiser. Aprovado, o `STATE.md` recebe `closed`; apontado, vira `PB-NN-FIX-MM`.
+coisa que `verify` protegia ali. `qa:browser` e `verify` são do usuário e rodam quando ele quiser.
+`qa:budgets:prebuilt` é do agente somente quando performance for objetivo explícito e reutiliza o
+build fresco. Aprovado, o `STATE.md` recebe `closed`; apontado, vira `PB-NN-FIX-MM`.
 
 Auditoria independente é opcional, roda **depois** do aceite, endereça um commit por hash, não exige
 árvore limpa e gera task de backlog em vez de veredito. Nenhum playbook espera o fechamento formal de
@@ -163,7 +165,8 @@ outro: o que o próximo precisa é código integrado na `main`, confirmável por
 - Card que prescreve a implementação, ou que passa de 40 linhas.
 - Duplicar a card num prompt copiável.
 - Rodar gate para produzir prova em vez de para saber se quebrou.
-- Rodar `verify` ou `qa:browser` — são do usuário; polir até zero bug antes do playtest.
+- Rodar `verify` ou `qa:browser` — são do usuário; rodar budget fora de task de performance; polir
+  até zero bug antes do playtest.
 - Reler o próprio diff atrás de melhorias depois que a funcionalidade roda e o gate está verde.
 - Worktree ou branch numa task que roda sozinha em sequência.
 - Um único chat para planejar, implementar e depurar o playbook inteiro.

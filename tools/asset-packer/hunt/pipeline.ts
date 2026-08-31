@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path';
 
-import { runAssetPackerCli } from '../cli.ts';
+import { type AssetPackerCliIo, runAssetPackerCli } from '../cli.ts';
 import { checkHuntPack } from './checkHuntPack.ts';
 import { generateHuntArtifacts } from './generateArtifacts.ts';
 import { listHuntPipelineEntries } from './huntRegistry.ts';
@@ -8,6 +8,32 @@ import { listHuntPipelineEntries } from './huntRegistry.ts';
 const repositoryRoot = resolve(import.meta.dirname, '../../..');
 
 type StageProfile = 'test' | 'product';
+
+export function compactAssetPipelineOutput(value: unknown): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+
+  const record = value as Readonly<Record<string, unknown>>;
+  if (!Array.isArray(record.paths)) return value;
+
+  const { paths, ...summary } = record;
+  return { ...summary, pathCount: paths.length };
+}
+
+const compactProcessIo: AssetPackerCliIo = {
+  stdout(value) {
+    process.stdout.write(
+      `${JSON.stringify(compactAssetPipelineOutput(value))}\n`,
+    );
+  },
+  stderr(value) {
+    process.stderr.write(`${JSON.stringify(value)}\n`);
+  },
+  usage() {
+    process.stderr.write('Invalid asset packer command.\n');
+  },
+};
 
 function workspacePath(relativePath: string): string {
   return resolve(repositoryRoot, relativePath);
@@ -51,7 +77,7 @@ async function runAssetCommand(
   entry: ReturnType<typeof listHuntPipelineEntries>[number],
   args: readonly string[],
 ): Promise<void> {
-  const status = await runAssetPackerCli(args);
+  const status = await runAssetPackerCli(args, compactProcessIo);
   if (status !== 0) {
     throw new Error(`Asset pipeline command failed for ${entry.huntId}`);
   }

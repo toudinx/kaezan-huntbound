@@ -46,11 +46,14 @@ O playbook em execução e seu estado estão em `docs/playbooks/<PB-ID>/STATE.md
 - Workspace: `apps/*` e `packages/*`. `tools/*` roda por `node --experimental-transform-types`.
 - `save-exact=true`: versões são pinadas de propósito. Não faça bump sem pedido.
 - Windows/PowerShell. Prefira o script pnpm existente a montar a linha na mão.
+- Não rode `install` por rotina. Só quando `node_modules` não existir, o lockfile mudar ou uma
+  worktree nova precisar das dependências.
 
 ## Gates
 
-Política: **subir primeiro, melhorar depois.** Seu trabalho é a implementação. Você roda o que é
-barato e diz algo que o usuário não veria jogando; o browser é dele.
+Política: **subir primeiro, melhorar depois.** Seu trabalho é a implementação. Você roda o teste
+diretamente afetado e o check determinístico que cobre algo que o playtest não vê; o browser e o
+gameplay são do usuário.
 
 Custos medidos em 2026-08-30, máquina livre. Eles estão na tabela para você **não deliberar**: o gate
 da sua linha custa menos que reler o próprio diff.
@@ -58,32 +61,50 @@ da sua linha custa menos que reler o próprio diff.
 | Raio do diff | O playtest é cego a | Gate | Custo |
 |---|---|---|---:|
 | doc, nome, string, config, comentário | formatação | `biome check .` | 1,8 s |
-| `apps/game`, HUD, mapa, hunt nova | **nada que o usuário não veja jogando** | `biome check .`, mais `typecheck` se a assinatura mudou. `dev` de pé e uma frase do que olhar. | 1,8 s (+2,9 s) |
+| `apps/game`, HUD, mapa, hunt nova | erro local de implementação | `biome check .`; o teste Vitest diretamente afetado se houver lógica pura; `typecheck` se a assinatura mudou. `dev` de pé e uma frase do que olhar. | 1,8 s (+ teste focado / 2,9 s) |
 | import ou manifesto | dependência ilegal | `architecture:check` | 1,4 s |
-| `packages/simulation`, `packages/contracts` | replay divergente no tick 400 | o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check`) + `architecture:check` | 1,3–3,1 s |
-| `packages/content` ou gerador | artefato gerado diferente da fonte | `content:check` | 8,1 s |
-| `packages/assets` ou packer | pack/sidecar divergente | `assets:check` | 7,6 s |
-| mudou comportamento em TypeScript, em qualquer pacote ou app | regressão de unidade | `corepack pnpm test` | 51 s |
+| `packages/simulation`, `packages/contracts`, `packages/save` | replay ou contrato divergente | o teste diretamente afetado + o golden que esse diff pode mover (`simulation:check` / `hunt:check` / `combat:check` / `save:check`) + `architecture:check` | 1,3–3,1 s + teste focado |
+| `packages/content` ou gerador | artefato gerado diferente da fonte | teste diretamente afetado, se a lógica mudou, + `content:check` | 8,1 s + teste focado |
+| `packages/assets` ou packer | pack/sidecar divergente | teste diretamente afetado, se a lógica mudou, + `assets:check` | 7,6 s + teste focado |
+| runner/configuração de testes ou contrato público com vários consumidores | regressão transversal | `corepack pnpm test`, uma vez, no estado final | 51 s |
+| task cujo objetivo é performance | regressão de orçamento | `build` uma vez + `qa:budgets:prebuilt`; nunca a suíte de correctness | variável |
 | última task do playbook | crash antes de o usuário sentar | `corepack pnpm build` | 5,1 s |
 
-Um diff que cruza duas linhas roda as duas — a de `test` acumula com as outras sempre que houver
-mudança de comportamento.
+Um diff que cruza duas linhas roda as duas. A suíte ampla **não** acumula automaticamente com os
+testes focados: ela só entra pela linha transversal. `corepack pnpm test` é auditoria unitária do
+workspace, não taxa sobre todo TypeScript.
 
 Um diff mecânico que cruza 200 arquivos **sem** mudar comportamento (rename, mover módulo) é provado
 por `typecheck` — é exatamente para isso que ele existe, e nem `test` nem qualquer suíte acrescenta
 informação sobre ele.
 
+### Orçamento de validação
+
+- Durante RED/GREEN, rode com `exec vitest run` só o arquivo afetado. O último verde contra o código
+  final já vale; não o repita para "fechar".
+- No fechamento, no máximo **uma execução por linha aplicável** da tabela. Teste focado e suíte ampla
+  são alternativas, salvo quando a própria task muda o runner.
+- O alvo de tempo dos comandos verdes é até **25% do tempo de implementação** e nunca maior que a
+  implementação. Se um check determinístico obrigatório sozinho passar desse alvo, rode-o uma vez e
+  corte suítes adicionais — o orçamento nunca transforma vermelho em verde.
+- Task de performance é a exceção: medir é a implementação. Fora dela, não rode budget de browser.
+- `test` não faz staging de assets. `build` e `dev:test` fazem; não rode `assets:stage:test` antes
+  deles. Profile pessoal existente é reutilizado por `dev`; task de assets o regenera explicitamente.
+- Evite saída volumosa: prefira summaries e reporter conciso; paths completos só em falha.
+
 ### O browser é do usuário, não seu
 
-**Não rode, não peça, não espere:** `qa:browser` (4,6 min), `verify` (~6 min) e `qa:budgets`. São
-dele, rodam quando ele quiser, e um vermelho ali vira `PB-NN-FIX-MM` — nunca bloqueia a sua task nem
-a próxima.
+**Não rode, não peça, não espere:** `qa:browser` (4,6 min) e `verify` (~6 min). São do usuário,
+rodam quando ele quiser, e um vermelho ali vira `PB-NN-FIX-MM` — nunca bloqueia a sua task nem a
+próxima. `qa:budgets` é do agente somente em task cujo objetivo explícito é performance; depois de
+um build fresco, use `qa:budgets:prebuilt` para não buildar de novo.
 
 O fechamento do playbook roda `build`, não `verify`: 5 segundos provam que compila e sobe, que era a
 única coisa que `verify` protegia ali. Se ele quiser as 82 specs de browser, ele roda.
 
-Isso vale inclusive quando a card antiga exige `verify`, `qa:browser` ou "saída fresca colada no
-relatório". A card está desatualizada; execute a linha da tabela.
+Isso vale inclusive quando a card antiga exige `verify`, `qa:browser`, budget sem objetivo de
+performance ou "saída fresca colada no relatório". A card está desatualizada; execute a linha da
+tabela.
 
 ### O que não é gate
 
@@ -203,12 +224,15 @@ explica.
    `dist/game`; nada na suíte reconstrói. Edição em `apps/game/src/**` é invisível para o browser até
    `corepack pnpm build`. `qa:browser` e `verify` buildam; `playwright test` direto, não. Quando o
    sintoma no browser contradisser o código que você lê, confira a idade do bundle antes de teorizar.
-2. **`EPERM: operation not permitted, rename` no `assets:stage:test`.** Nunca é código. Duas causas,
+2. **`EPERM: operation not permitted, rename` no `assets:stage:test`.** Nunca é código. A suíte
+   unitária não faz mais staging; esse erro só pode aparecer em `dev:test`, `build` ou comando de
+   staging explícito. Duas causas,
    distinguidas pela repetição: **determinística** — um `vite` de pé na 5173/4173 segurando
    `apps/game/public/assets`; ache com `Get-NetTCPConnection -LocalPort 5173,4173 -State Listen`,
    derrube, rode, **suba de volta** e avise se era o usuário jogando. **Intermitente** — antivírus ou
    indexador; passa na segunda tentativa. Rode de novo antes de teorizar.
-3. **Playwright e gate lento são do usuário, mas se você esbarrar:** um Playwright por host — dois
+3. **Playwright de correctness é do usuário; budget é do agente só em task de performance.** Um
+   Playwright por host — dois
    saturam CPU e disputam a preview; porta ocupada resolve-se com `PLAYWRIGHT_PREVIEW_PORT`, nunca
    com `http://127.0.0.1:4173` hardcoded. E gate lento é sintoma de máquina ocupada antes de ser
    sintoma de código lento: uma sessão abandonada deixou `qa:browser` vivo por horas e `tools/replay`
@@ -256,8 +280,8 @@ Uma task = um chat. O formato está em `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS
 1. Leia a task card, o `STATE.md` do playbook e **apenas** o que a card listar. Não carregue skills
    de plugin (Superpowers e afins) a menos que a card as nomeie.
 2. Implemente. Arquitetura, padrão do vizinho, funcionalidade jogável.
-3. Rode **só o gate do raio do seu diff**, uma vez. `qa:browser`, `verify` e `qa:budgets` são do
-   usuário.
+3. Rode **só o gate do raio do seu diff**, uma vez. `qa:browser` e `verify` são do usuário;
+   `qa:budgets:prebuilt` só entra em task de performance depois de build fresco.
 4. Commite na `main`. A narrativa do que foi feito vai na mensagem de commit — o Git já guarda, data
    e associa ao diff.
 5. Atualize **só a linha da task** no `STATE.md`.

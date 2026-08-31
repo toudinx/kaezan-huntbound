@@ -8,14 +8,8 @@ export type DevProfile = 'test' | 'personal';
 
 type DevEnvironment = Readonly<Record<string, string | undefined>>;
 
-/**
- * A step the launcher runs. `recovery` rebuilds a derived artefact the step
- * only inspects, so drift reports a diff and repairs itself instead of
- * stranding the dev server.
- */
 export type DevStep = {
   readonly command: string;
-  readonly recovery?: string;
 };
 
 type DevPlan =
@@ -103,12 +97,9 @@ export function createDevPlan(
             },
           ]
         : [
-            options.personalProfileExists
-              ? {
-                  command: 'corepack pnpm assets:hunt:personal:check',
-                  recovery: 'corepack pnpm assets:hunt:personal:generate',
-                }
-              : { command: 'corepack pnpm assets:hunt:personal:generate' },
+            ...(options.personalProfileExists
+              ? []
+              : [{ command: 'corepack pnpm assets:hunt:personal:generate' }]),
             {
               command:
                 'corepack pnpm --filter @huntbound/game exec vite --mode personal',
@@ -233,15 +224,7 @@ export async function runDevLauncher(
   }
 
   for (const step of plan.commands) {
-    let exitCode = await runCommand(step.command, root, plan.environment);
-
-    if (exitCode !== 0 && step.recovery !== undefined) {
-      console.log(
-        '\nThe staged profile no longer matches its inputs. Rebuilding it from the current selection.',
-      );
-      exitCode = await runCommand(step.recovery, root, plan.environment);
-    }
-
+    const exitCode = await runCommand(step.command, root, plan.environment);
     if (exitCode !== 0) return exitCode;
   }
 
