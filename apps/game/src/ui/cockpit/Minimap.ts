@@ -390,6 +390,10 @@ export function mountMinimap(
     // The detached buffer is intentionally repainted only when the region,
     // floor or a ground colour changes; actor movement never touches it.
     paintedClientIds = drawTerrain(terrainContext, region, floorZ, size, tints);
+    // Ask for this floor's colours as soon as it is known to need them. Ids
+    // already read or in flight are skipped, so the repaint this may cause
+    // cannot feed back into itself.
+    tints?.prime(paintedClientIds);
     drawLandmarks(
       terrainContext,
       region,
