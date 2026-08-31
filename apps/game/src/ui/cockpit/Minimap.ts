@@ -88,19 +88,22 @@ const CREATURE_COLORS = [
   '#f2cc60',
 ] as const;
 
-interface Placement {
-  readonly tileSize: number;
-  readonly offsetX: number;
-  readonly offsetY: number;
+/**
+ * Buffer pixels per tile.
+ *
+ * The floor is drawn once at this scale and the panel shows a window onto it,
+ * so following the player is a blit rather than a repaint. Fitting the whole
+ * region into the panel instead put a 24-tile cave into 192 px, which is the
+ * scale at which a corridor and a wall are the same smudge.
+ */
+const TILE_PX = 12;
+
+function bufferWidth(region: MapRegion): number {
+  return Math.max(1, region.width * TILE_PX);
 }
 
-function placementFor(region: MapRegion, size: number): Placement {
-  const tileSize = Math.min(size / region.width, size / region.height);
-  return {
-    tileSize,
-    offsetX: (size - tileSize * region.width) / 2,
-    offsetY: (size - tileSize * region.height) / 2,
-  };
+function bufferHeight(region: MapRegion): number {
+  return Math.max(1, region.height * TILE_PX);
 }
 
 function createElement(
@@ -139,23 +142,55 @@ function floorReadout(region: MapRegion, floorZ: number): string {
     : `Floor ${floorZ} · ${position + 1}/${ordered.length}`;
 }
 
-/** Paints the floor and reports every ground client id it drew with. */
+/** The top-left corner of the visible window, in buffer pixels. */
+interface Camera {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * Where the window looks.
+ *
+ * It follows the player, who therefore sits in the middle of the panel and
+ * stays there: the map moves, not the marker. With no player on this floor
+ * there is nothing to follow, so it falls back to the middle of the region.
+ * The window is deliberately not clamped to the region — clamping would slide
+ * the player off centre near an edge, and the honest answer at the edge of a
+ * cave is that there is nothing further out.
+ */
+function cameraFor(
+  region: MapRegion,
+  actors: readonly MinimapActorView[],
+  floorZ: number,
+  size: number,
+): Camera {
+  const player = actors.find(
+    (actor) => actor.isPlayer && actor.position.z === floorZ,
+  );
+  const focus =
+    (player === undefined ? undefined : cellCenter(region, player.position)) ??
+    ({ x: bufferWidth(region) / 2, y: bufferHeight(region) / 2 } as const);
+
+  return { x: focus.x - size / 2, y: focus.y - size / 2 };
+}
+
+/** Paints the whole floor into the buffer and reports the client ids it used. */
 function drawTerrain(
   context: CanvasRenderingContext2D | null,
   region: MapRegion,
   floorZ: number,
-  size: number,
   tints: GroundTintCache | undefined,
 ): ReadonlySet<number> {
   const drawn = new Set<number>();
   if (context === null) return drawn;
 
-  const { tileSize, offsetX, offsetY } = placementFor(region, size);
+  const width = bufferWidth(region);
+  const height = bufferHeight(region);
   const floor = region.floors.find((entry) => entry.z === floorZ);
 
-  context.clearRect(0, 0, size, size);
+  context.clearRect(0, 0, width, height);
   context.fillStyle = VOID_FILL;
-  context.fillRect(0, 0, size, size);
+  context.fillRect(0, 0, width, height);
 
   if (floor === undefined) return drawn;
 
@@ -179,21 +214,16 @@ function drawTerrain(
           : 0.6;
 
       context.fillStyle = formatRgb(scaleRgb(base, shade));
-      context.fillRect(
-        offsetX + x * tileSize,
-        offsetY + y * tileSize,
-        Math.ceil(tileSize),
-        Math.ceil(tileSize),
-      );
+      context.fillRect(x * TILE_PX, y * TILE_PX, TILE_PX, TILE_PX);
     }
   }
 
   return drawn;
 }
 
+/** The middle of a cell, in buffer pixels. */
 function cellCenter(
   region: MapRegion,
-  placement: Placement,
   position: GridPosition,
 ): { x: number; y: number } | undefined {
   const localX = position.x - region.origin.x;
@@ -206,10 +236,7 @@ function cellCenter(
   ) {
     return undefined;
   }
-  return {
-    x: placement.offsetX + (localX + 0.5) * placement.tileSize,
-    y: placement.offsetY + (localY + 0.5) * placement.tileSize,
-  };
+  return { x: (localX + 0.5) * TILE_PX, y: (localY + 0.5) * TILE_PX };
 }
 
 /**
@@ -223,18 +250,16 @@ function drawLandmarks(
   context: CanvasRenderingContext2D | null,
   region: MapRegion,
   floorZ: number,
-  size: number,
   transitions: readonly TransitionEntry[],
   playerStart: GridPosition | undefined,
 ): void {
   if (context === null) return;
 
-  const placement = placementFor(region, size);
-  const radius = Math.max(2, Math.min(6, placement.tileSize * 0.42));
+  const radius = TILE_PX * 0.42;
 
   for (const transition of transitions) {
     if (transition.from.z !== floorZ) continue;
-    const center = cellCenter(region, placement, transition.from);
+    const center = cellCenter(region, transition.from);
     if (center === undefined) continue;
 
     // Canary counts z downward, so a larger target floor is deeper in.
@@ -249,11 +274,11 @@ function drawLandmarks(
   }
 
   if (playerStart === undefined || playerStart.z !== floorZ) return;
-  const entry = cellCenter(region, placement, playerStart);
+  const entry = cellCenter(region, playerStart);
   if (entry === undefined) return;
 
   context.strokeStyle = ENTRY_COLOR;
-  context.lineWidth = Math.max(1, placement.tileSize * 0.18);
+  context.lineWidth = Math.max(1, TILE_PX * 0.18);
   context.beginPath();
   context.arc(entry.x, entry.y, radius, 0, Math.PI * 2);
   context.stroke();
@@ -265,17 +290,26 @@ function drawActors(
   region: MapRegion,
   floorZ: number,
   size: number,
+  camera: Camera,
 ): void {
   if (context === null) return;
 
-  const placement = placementFor(region, size);
-  const markerSize = Math.max(4, Math.min(9, placement.tileSize * 0.62));
+  const markerSize = TILE_PX * 0.72;
 
   context.clearRect(0, 0, size, size);
   for (const actor of actors) {
     if (actor.position.z !== floorZ) continue;
-    const center = cellCenter(region, placement, actor.position);
-    if (center === undefined) continue;
+    const buffer = cellCenter(region, actor.position);
+    if (buffer === undefined) continue;
+    const center = { x: buffer.x - camera.x, y: buffer.y - camera.y };
+    if (
+      center.x < -TILE_PX ||
+      center.y < -TILE_PX ||
+      center.x > size + TILE_PX ||
+      center.y > size + TILE_PX
+    ) {
+      continue;
+    }
 
     if (!actor.isPlayer) {
       context.fillStyle = creatureColor(actor.blueprintId);
@@ -367,8 +401,11 @@ export function mountMinimap(
   element.append(legend);
 
   const terrainBuffer = document.createElement('canvas') as HTMLCanvasElement;
-  terrainBuffer.width = size;
-  terrainBuffer.height = size;
+  const sizeBuffer = (): void => {
+    terrainBuffer.width = bufferWidth(region);
+    terrainBuffer.height = bufferHeight(region);
+  };
+  sizeBuffer();
   const terrainContext =
     typeof terrainBuffer.getContext === 'function'
       ? terrainBuffer.getContext('2d')
@@ -384,12 +421,47 @@ export function mountMinimap(
 
   let tints: GroundTintCache | undefined;
   let paintedClientIds: ReadonlySet<number> = new Set();
+  let camera: Camera = { x: 0, y: 0 };
+
+  /**
+   * Blits the window the camera is looking at onto the visible canvas.
+   *
+   * The source rectangle is clipped to the buffer by hand and drawn at the
+   * matching destination offset. Handing a canvas an out-of-bounds source
+   * rectangle makes it scale what it does have to fill the destination, which
+   * would stretch the map every time the player walked near an edge.
+   */
+  const composite = (): void => {
+    if (visibleTerrainContext === null || terrainContext === null) return;
+
+    visibleTerrainContext.clearRect(0, 0, size, size);
+    visibleTerrainContext.fillStyle = VOID_FILL;
+    visibleTerrainContext.fillRect(0, 0, size, size);
+
+    const left = Math.max(0, camera.x);
+    const top = Math.max(0, camera.y);
+    const right = Math.min(terrainBuffer.width, camera.x + size);
+    const bottom = Math.min(terrainBuffer.height, camera.y + size);
+    if (right <= left || bottom <= top) return;
+
+    visibleTerrainContext.drawImage(
+      terrainBuffer,
+      left,
+      top,
+      right - left,
+      bottom - top,
+      left - camera.x,
+      top - camera.y,
+      right - left,
+      bottom - top,
+    );
+  };
 
   const paintTerrain = (floorZ: number): void => {
     paintedFloor = floorZ;
     // The detached buffer is intentionally repainted only when the region,
-    // floor or a ground colour changes; actor movement never touches it.
-    paintedClientIds = drawTerrain(terrainContext, region, floorZ, size, tints);
+    // floor or a ground colour changes; actor movement only moves the window.
+    paintedClientIds = drawTerrain(terrainContext, region, floorZ, tints);
     // Ask for this floor's colours as soon as it is known to need them. Ids
     // already read or in flight are skipped, so the repaint this may cause
     // cannot feed back into itself.
@@ -398,14 +470,10 @@ export function mountMinimap(
       terrainContext,
       region,
       floorZ,
-      size,
       transitions,
       options.playerStart,
     );
-    visibleTerrainContext?.clearRect(0, 0, size, size);
-    if (terrainContext !== null) {
-      visibleTerrainContext?.drawImage(terrainBuffer, 0, 0);
-    }
+    composite();
   };
 
   // A sampled colour arriving is a property of the map, not of the frame, so it
@@ -427,19 +495,31 @@ export function mountMinimap(
       floorLabelValue = readout;
       floorLabel.textContent = readout;
     }
+    const nextCamera = cameraFor(region, state.actors, state.floor, size);
+    const cameraMoved = nextCamera.x !== camera.x || nextCamera.y !== camera.y;
+    camera = nextCamera;
+
     const nextSignature = `${region.regionId}:${region.regionRevision}:${state.floor}`;
     if (terrainSignature !== nextSignature) {
       terrainSignature = nextSignature;
       terrainRedraws += 1;
       paintTerrain(state.floor);
       element.setAttribute('data-terrain-redraws', String(terrainRedraws));
+    } else if (cameraMoved) {
+      // Walking slides the window over a buffer that is already painted, so
+      // following the player costs one blit and no terrain work at all.
+      composite();
     }
 
-    if (renderedActors !== state.actors || renderedFloor !== state.floor) {
+    if (
+      renderedActors !== state.actors ||
+      renderedFloor !== state.floor ||
+      cameraMoved
+    ) {
       renderedActors = state.actors;
       renderedFloor = state.floor;
       actorRedraws += 1;
-      drawActors(actorContext, state.actors, region, state.floor, size);
+      drawActors(actorContext, state.actors, region, state.floor, size, camera);
       element.setAttribute('data-actor-redraws', String(actorRedraws));
     }
   };
@@ -449,6 +529,7 @@ export function mountMinimap(
     render,
     setRegion: (nextRegion) => {
       region = nextRegion;
+      sizeBuffer();
       terrainSignature = undefined;
       renderedActors = undefined;
       renderedFloor = undefined;

@@ -995,7 +995,7 @@ body {
   image-rendering: pixelated;
 }
 
-#game-root [data-testid="combat-minimap-viewport"] canvas {
+#ui-root [data-testid="combat-minimap-viewport"] canvas {
   position: absolute;
   inset: 0;
   display: block;
