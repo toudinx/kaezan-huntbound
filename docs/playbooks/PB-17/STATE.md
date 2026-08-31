@@ -22,7 +22,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-17-03 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7298724` | nome no hover/foco/toque, badge de stack, animação de loot e grid com scroll interno; biome/test verdes |
 | PB-17-04 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | `d3a9ec6` | cor de chão derivada da média dos pixels do tile real, seta com facing, chevrons de transição, ring de entrada e readout de andar; biome/typecheck/suíte de `apps/game` verdes |
 | PB-17-05 | pending | `main` | frontier `xhigh` | — | — | — |
-| PB-17-FIX-02 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-17-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `95c6e41` | recorte CSS responsivo do frame 0 nos painéis alvo, mochila e deck; biome/typecheck/test do game verdes |
 
 ## Bloqueios
 
