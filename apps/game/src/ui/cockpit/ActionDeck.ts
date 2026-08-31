@@ -203,6 +203,15 @@ function createCell(
           abilityId,
           resolveAsset?.(spellIconAssetKey(abilityId)),
         );
+  // The attack cell has no icon to name it, so it says what it is in words
+  // where the other cells put their art.
+  const name =
+    slot.abilityIndex === null ? document.createElement('span') : undefined;
+  if (name !== undefined) {
+    name.className = 'cockpit-cell__name';
+    name.setAttribute('aria-hidden', 'true');
+    name.textContent = 'Auto';
+  }
   const hotkey = document.createElement('span');
   hotkey.className = 'cockpit-cell__key';
   hotkey.setAttribute('aria-hidden', 'true');
@@ -217,7 +226,13 @@ function createCell(
   cost.className = 'cockpit-cell__cost';
   cost.setAttribute('aria-hidden', 'true');
 
-  button.append(...(icon === undefined ? [] : [icon]), hotkey, cost, cooldown);
+  button.append(
+    ...(icon === undefined ? [] : [icon]),
+    ...(name === undefined ? [] : [name]),
+    hotkey,
+    cost,
+    cooldown,
+  );
 
   return { button, slot, cooldown, cost, written: new Map() };
 }

@@ -1709,8 +1709,8 @@ body {
 /*
  * The attack cell is the one slot with no art -- there is no Tibia icon for
  * swinging a weapon. Without a plate it was a "Spc" floating over the field,
- * so it keeps the frame the other cells gave up, sized like an icon, and
- * centres its key inside it.
+ * so it keeps the frame the other cells gave up and writes "Auto" where the
+ * others put their picture.
  */
 .cockpit-cell[data-cell-kind="attack"]::before {
   position: absolute;
@@ -1722,11 +1722,20 @@ body {
   content: "";
 }
 
-.cockpit-cell[data-cell-kind="attack"] .cockpit-cell__key {
+/* The word the missing icon would have been. The hotkey stays in the corner
+ * where every other cell keeps it. */
+.cockpit-cell__name {
+  position: absolute;
+  z-index: 3;
   top: 50%;
   left: 50%;
   color: #cddcf2;
   transform: translate(-50%, -50%);
+  font-size: max(0.5rem, calc(var(--cell) * 0.17));
+  line-height: 1;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 95%),
+    0 0 3px rgb(0 0 0 / 85%);
 }
 
 /* A posture is a mode, so it glows around the art while it is held. */
