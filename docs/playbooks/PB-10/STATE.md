@@ -36,7 +36,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-10 | done | `codex/pb10-10-hero-cave` | econômico `xhigh` | Codex GPT-5 `xhigh` | `ae6b4d1` | Hero 24/24; content/assets/hunt/combat/sim verdes; correctness 79/79; budgets 5.338/5.183 s informativo; verify canônico bloqueado por 4173 externo |
 | PB-10-11 | done | `main` | frontier `xhigh` | Grok 4.6 `xhigh` | `08cbe85` | hipótese do catálogo derrubada; fallback de ficha removido; relógio da cena resincronizado no create |
 | PB-10-12 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d6743ee` | `corpseItemId` no catálogo; registry, packs e decoração por espécie; content/assets/architecture/test/typecheck/build verdes |
-| PB-10-13 | pending | `main` | frontier `xhigh` | — | — | — |
+| PB-10-13 | done | `main` | frontier `xhigh` | Codex GPT-5 `xhigh` | `76e1050` | Orc na caixa real 65×68×3; 33/68 spawns; 6 transições, 2 dropped; primeiro paint z6: 5.427 comandos / 5.115 sprites resolvidos; map-extractor, content, architecture e format verdes; pack derivado 541>512 fica fora do escopo |
 | PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
 
