@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "selectionId": "selection:pb-10-09-dragon-lair",
   "packId": "asset-pack:pb-10-09-dragon-lair",
-  "contentVersion": "pb-10-09-dragon-lair@a76a03235483",
+  "contentVersion": "pb-10-09-dragon-lair@2d38f6a0d242",
   "buildProfiles": [
     "test",
     "product"
@@ -534,6 +534,25 @@
       }
     },
     {
+      "key": "tile:tibia:103",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 103
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:103 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1050",
       "category": "object",
       "sourceIdentity": {
@@ -800,6 +819,25 @@
       }
     },
     {
+      "key": "tile:tibia:1081",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1081
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1081 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1082",
       "category": "object",
       "sourceIdentity": {
@@ -809,6 +847,25 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1082 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1084",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1084
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1084 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -857,6 +914,215 @@
       }
     },
     {
+      "key": "tile:tibia:1100",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1100
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1100 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1101",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1101
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1101 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1102",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1102
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1102 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1103",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1103
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1103 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1104",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1104
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1104 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1105",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1105
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1105 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1106",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1106
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1106 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1107",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1107
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1107 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1109",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1109
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1109 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1111",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1111
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1111 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1112",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1112
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1112 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1128",
       "category": "object",
       "sourceIdentity": {
@@ -885,6 +1151,120 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1134 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13499",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13499
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13499 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13501",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13501
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13501 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13502",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13502
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13502 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13503",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13503
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13503 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13504",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13504
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13504 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13505",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13505
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13505 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -952,6 +1332,291 @@
       }
     },
     {
+      "key": "tile:tibia:13509",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13509
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13509 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13510",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13510
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13510 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13511",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13511
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13511 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13512",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13512
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13512 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13552",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13552
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13552 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:13554",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 13554
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:13554 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1729",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1729
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1729 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1730",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1730
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1730 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1731",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1731
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1731 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1732",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1732
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1732 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1733",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1733
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1733 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1772",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1772
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1772 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1780",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1780
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1780 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1791",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1791
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1791 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1795",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1795
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1795 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1840",
       "category": "object",
       "sourceIdentity": {
@@ -961,6 +1626,63 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1840 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1845",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1845
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1845 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1846",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1846
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1846 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1851",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1851
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1851 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1094,6 +1816,101 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1858 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1859",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1859
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1859 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1861",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1861
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1861 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1862",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1862
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1862 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1863",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1863
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1863 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1864",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1864
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1864 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1275,6 +2092,25 @@
       }
     },
     {
+      "key": "tile:tibia:1878",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1878
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1878 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1879",
       "category": "object",
       "sourceIdentity": {
@@ -1370,6 +2206,82 @@
       }
     },
     {
+      "key": "tile:tibia:1888",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1888
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1888 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1889",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1889
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1889 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1890",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1890
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1890 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1891",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1891
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1891 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1892",
       "category": "object",
       "sourceIdentity": {
@@ -1379,6 +2291,63 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1892 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1895",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1895
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1895 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1901",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1901
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1901 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1902",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1902
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1902 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1493,6 +2462,291 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:1914 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1952",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1952
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1952 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1953",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1953
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1953 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1956",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1956
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1956 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1957",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1957
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:1957 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2118",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2118
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2118 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2120",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2120
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2120 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:21477",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 21477
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:21477 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:21480",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 21480
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:21480 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:21481",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 21481
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:21481 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:231",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 231
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:231 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2727",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2727
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2727 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2728",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2728
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2728 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2730",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2730
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2730 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2731",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2731
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2731 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2732",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2732
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:2732 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1788,6 +3042,25 @@
       }
     },
     {
+      "key": "tile:tibia:305",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 305
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:305 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:3114",
       "category": "object",
       "sourceIdentity": {
@@ -1835,6 +3108,253 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:3116 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3132",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3132
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:3132 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:317",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 317
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:317 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:318",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 318
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:318 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:319",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 319
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:319 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:320",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 320
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:320 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:351",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 351
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:351 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:352",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 352
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:352 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:353",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 353
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:353 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:354",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 354
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:354 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:355",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 355
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:355 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3635",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3635
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:3635 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3696",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3696
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:3696 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:386",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 386
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:386 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -2025,6 +3545,25 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:393 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3993",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3993
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:3993 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -2396,6 +3935,44 @@
       }
     },
     {
+      "key": "tile:tibia:4447",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4447
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4447 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4448",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4448
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4448 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:4449",
       "category": "object",
       "sourceIdentity": {
@@ -2434,6 +4011,44 @@
       }
     },
     {
+      "key": "tile:tibia:4451",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4451
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4451 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4452",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4452
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4452 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:4453",
       "category": "object",
       "sourceIdentity": {
@@ -2462,6 +4077,44 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:4454 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4455",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4455
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4455 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4456",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4456
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4456 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -3289,6 +4942,25 @@
       }
     },
     {
+      "key": "tile:tibia:4635",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4635
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4635 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:4637",
       "category": "object",
       "sourceIdentity": {
@@ -3327,6 +4999,25 @@
       }
     },
     {
+      "key": "tile:tibia:4639",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4639
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4639 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:4641",
       "category": "object",
       "sourceIdentity": {
@@ -3355,6 +5046,462 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:4642 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4643",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4643
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4643 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4656",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4656
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4656 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4657",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4657
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4657 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4658",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4658
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4658 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4659",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4659
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4659 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4660",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4660
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4660 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4661",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4661
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4661 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4662",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4662
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4662 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4663",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4663
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4663 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4664",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4664
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4664 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4665",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4665
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4665 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4666",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4666
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4666 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4667",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4667
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4667 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:469",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 469
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:469 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4749",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4749
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4749 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4750",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4750
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4750 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4751",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4751
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4751 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4753",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4753
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4753 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4754",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4754
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4754 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4756",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4756
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4756 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4757",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4757
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4757 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4758",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4758
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4758 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4760",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4760
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4760 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4815",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4815
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:4815 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -3450,6 +5597,44 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:5662 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5663",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5663
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:5663 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:631",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 631
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:631 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -3640,6 +5825,44 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:6382 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:6383",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6383
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:6383 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:6384",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6384
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:6384 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -3897,6 +6120,44 @@
       }
     },
     {
+      "key": "tile:tibia:6487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6487
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:6487 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:730",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 730
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:730 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:7480",
       "category": "object",
       "sourceIdentity": {
@@ -3925,6 +6186,215 @@
       "sourceGroupId": "huntbound-test-pb10-09",
       "consumer": "PB-10-09 Dragon Lair asset pack",
       "rationale": "Covers tile:tibia:7481 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7483",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7483
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7483 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7484",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7484
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7484 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7485",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7485
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7485 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:756",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 756
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:756 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:757",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 757
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:757 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7574",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7574
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7574 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7575",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7575
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7575 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:758",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 758
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:758 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7729",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7729
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7729 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7730",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7730
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:7730 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:969",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 969
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:969 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -4313,13 +6783,243 @@
         "scale": 1,
         "filtering": "nearest"
       }
+    },
+    {
+      "key": "tile:tibia:979",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 979
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:979 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:980",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 980
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:980 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:981",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 981
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:981 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:983",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 983
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:983 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:984",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 984
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:984 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:985",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 985
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:985 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:986",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 986
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:986 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:987",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 987
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:987 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:988",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 988
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:988 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:989",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 989
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:989 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:990",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 990
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:990 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:991",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 991
+      },
+      "sourceGroupId": "huntbound-test-pb10-09",
+      "consumer": "PB-10-09 Dragon Lair asset pack",
+      "rationale": "Covers tile:tibia:991 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
     }
   ],
   "hunt": {
     "packKey": "pb-10-09-dragon-lair",
     "huntId": "hunt:tibia:dragon-lair",
-    "regionSha256": "a76a03235483aaea56a99cda9eee1e1d412d28080f81507c36884f1e648c0732",
+    "regionSha256": "2d38f6a0d242956793d6451770bc143ac8575981a3b9219f74825fb6e5ef3028",
     "keys": [
+      "tile:tibia:103",
+      "tile:tibia:231",
       "tile:tibia:290",
       "tile:tibia:291",
       "tile:tibia:292",
@@ -4332,11 +7032,41 @@
       "tile:tibia:301",
       "tile:tibia:302",
       "tile:tibia:303",
+      "tile:tibia:305",
+      "tile:tibia:317",
+      "tile:tibia:318",
+      "tile:tibia:319",
+      "tile:tibia:320",
+      "tile:tibia:351",
+      "tile:tibia:352",
+      "tile:tibia:353",
+      "tile:tibia:354",
+      "tile:tibia:355",
+      "tile:tibia:386",
       "tile:tibia:388",
       "tile:tibia:389",
       "tile:tibia:391",
       "tile:tibia:392",
       "tile:tibia:393",
+      "tile:tibia:469",
+      "tile:tibia:631",
+      "tile:tibia:730",
+      "tile:tibia:756",
+      "tile:tibia:757",
+      "tile:tibia:758",
+      "tile:tibia:969",
+      "tile:tibia:979",
+      "tile:tibia:980",
+      "tile:tibia:981",
+      "tile:tibia:983",
+      "tile:tibia:984",
+      "tile:tibia:985",
+      "tile:tibia:986",
+      "tile:tibia:987",
+      "tile:tibia:988",
+      "tile:tibia:989",
+      "tile:tibia:990",
+      "tile:tibia:991",
       "tile:tibia:1019",
       "tile:tibia:1050",
       "tile:tibia:1052",
@@ -4352,12 +7082,37 @@
       "tile:tibia:1063",
       "tile:tibia:1064",
       "tile:tibia:1065",
+      "tile:tibia:1081",
       "tile:tibia:1082",
+      "tile:tibia:1084",
       "tile:tibia:1085",
       "tile:tibia:1086",
+      "tile:tibia:1100",
+      "tile:tibia:1101",
+      "tile:tibia:1102",
+      "tile:tibia:1103",
+      "tile:tibia:1104",
+      "tile:tibia:1105",
+      "tile:tibia:1106",
+      "tile:tibia:1107",
+      "tile:tibia:1109",
+      "tile:tibia:1111",
+      "tile:tibia:1112",
       "tile:tibia:1128",
       "tile:tibia:1134",
+      "tile:tibia:1729",
+      "tile:tibia:1730",
+      "tile:tibia:1731",
+      "tile:tibia:1732",
+      "tile:tibia:1733",
+      "tile:tibia:1772",
+      "tile:tibia:1780",
+      "tile:tibia:1791",
+      "tile:tibia:1795",
       "tile:tibia:1840",
+      "tile:tibia:1845",
+      "tile:tibia:1846",
+      "tile:tibia:1851",
       "tile:tibia:1852",
       "tile:tibia:1853",
       "tile:tibia:1854",
@@ -4365,6 +7120,11 @@
       "tile:tibia:1856",
       "tile:tibia:1857",
       "tile:tibia:1858",
+      "tile:tibia:1859",
+      "tile:tibia:1861",
+      "tile:tibia:1862",
+      "tile:tibia:1863",
+      "tile:tibia:1864",
       "tile:tibia:1865",
       "tile:tibia:1866",
       "tile:tibia:1867",
@@ -4374,29 +7134,52 @@
       "tile:tibia:1871",
       "tile:tibia:1876",
       "tile:tibia:1877",
+      "tile:tibia:1878",
       "tile:tibia:1879",
       "tile:tibia:1884",
       "tile:tibia:1885",
       "tile:tibia:1886",
       "tile:tibia:1887",
+      "tile:tibia:1888",
+      "tile:tibia:1889",
+      "tile:tibia:1890",
+      "tile:tibia:1891",
       "tile:tibia:1892",
+      "tile:tibia:1895",
+      "tile:tibia:1901",
+      "tile:tibia:1902",
       "tile:tibia:1903",
       "tile:tibia:1904",
       "tile:tibia:1907",
       "tile:tibia:1908",
       "tile:tibia:1909",
       "tile:tibia:1914",
+      "tile:tibia:1952",
+      "tile:tibia:1953",
+      "tile:tibia:1956",
+      "tile:tibia:1957",
+      "tile:tibia:2118",
+      "tile:tibia:2120",
+      "tile:tibia:2727",
+      "tile:tibia:2728",
+      "tile:tibia:2730",
+      "tile:tibia:2731",
+      "tile:tibia:2732",
       "tile:tibia:2733",
       "tile:tibia:2734",
       "tile:tibia:2736",
       "tile:tibia:3114",
       "tile:tibia:3115",
       "tile:tibia:3116",
+      "tile:tibia:3132",
+      "tile:tibia:3635",
+      "tile:tibia:3696",
       "tile:tibia:3889",
       "tile:tibia:3890",
       "tile:tibia:3891",
       "tile:tibia:3892",
       "tile:tibia:3893",
+      "tile:tibia:3993",
       "tile:tibia:4394",
       "tile:tibia:4395",
       "tile:tibia:4396",
@@ -4416,10 +7199,16 @@
       "tile:tibia:4410",
       "tile:tibia:4445",
       "tile:tibia:4446",
+      "tile:tibia:4447",
+      "tile:tibia:4448",
       "tile:tibia:4449",
       "tile:tibia:4450",
+      "tile:tibia:4451",
+      "tile:tibia:4452",
       "tile:tibia:4453",
       "tile:tibia:4454",
+      "tile:tibia:4455",
+      "tile:tibia:4456",
       "tile:tibia:4457",
       "tile:tibia:4458",
       "tile:tibia:4459",
@@ -4463,15 +7252,41 @@
       "tile:tibia:4601",
       "tile:tibia:4602",
       "tile:tibia:4633",
+      "tile:tibia:4635",
       "tile:tibia:4637",
       "tile:tibia:4638",
+      "tile:tibia:4639",
       "tile:tibia:4641",
       "tile:tibia:4642",
+      "tile:tibia:4643",
+      "tile:tibia:4656",
+      "tile:tibia:4657",
+      "tile:tibia:4658",
+      "tile:tibia:4659",
+      "tile:tibia:4660",
+      "tile:tibia:4661",
+      "tile:tibia:4662",
+      "tile:tibia:4663",
+      "tile:tibia:4664",
+      "tile:tibia:4665",
+      "tile:tibia:4666",
+      "tile:tibia:4667",
+      "tile:tibia:4749",
+      "tile:tibia:4750",
+      "tile:tibia:4751",
+      "tile:tibia:4753",
+      "tile:tibia:4754",
+      "tile:tibia:4756",
+      "tile:tibia:4757",
+      "tile:tibia:4758",
+      "tile:tibia:4760",
+      "tile:tibia:4815",
       "tile:tibia:4816",
       "tile:tibia:5659",
       "tile:tibia:5660",
       "tile:tibia:5661",
       "tile:tibia:5662",
+      "tile:tibia:5663",
       "tile:tibia:6373",
       "tile:tibia:6374",
       "tile:tibia:6375",
@@ -4482,6 +7297,8 @@
       "tile:tibia:6380",
       "tile:tibia:6381",
       "tile:tibia:6382",
+      "tile:tibia:6383",
+      "tile:tibia:6384",
       "tile:tibia:6385",
       "tile:tibia:6475",
       "tile:tibia:6476",
@@ -4495,8 +7312,16 @@
       "tile:tibia:6484",
       "tile:tibia:6485",
       "tile:tibia:6486",
+      "tile:tibia:6487",
       "tile:tibia:7480",
       "tile:tibia:7481",
+      "tile:tibia:7483",
+      "tile:tibia:7484",
+      "tile:tibia:7485",
+      "tile:tibia:7574",
+      "tile:tibia:7575",
+      "tile:tibia:7729",
+      "tile:tibia:7730",
       "tile:tibia:9700",
       "tile:tibia:9701",
       "tile:tibia:9702",
@@ -4517,9 +7342,24 @@
       "tile:tibia:9717",
       "tile:tibia:9718",
       "tile:tibia:9719",
+      "tile:tibia:13499",
+      "tile:tibia:13501",
+      "tile:tibia:13502",
+      "tile:tibia:13503",
+      "tile:tibia:13504",
+      "tile:tibia:13505",
       "tile:tibia:13506",
       "tile:tibia:13507",
       "tile:tibia:13508",
+      "tile:tibia:13509",
+      "tile:tibia:13510",
+      "tile:tibia:13511",
+      "tile:tibia:13512",
+      "tile:tibia:13552",
+      "tile:tibia:13554",
+      "tile:tibia:21477",
+      "tile:tibia:21480",
+      "tile:tibia:21481",
       "creature:tibia:dragon",
       "outfit:tibia:knight",
       "effect:tibia:draw-blood",

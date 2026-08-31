@@ -4,8 +4,8 @@
   "sourceSnapshot": "pb10-10-synthetic-v1",
   "manifest": {
     "path": "manifest.json",
-    "sha256": "4382db26cc47762e089ea6fe9b2ca3b2f3b926c9ce657933dd343db1b9910df1",
-    "byteLength": 49042
+    "sha256": "af93754f87c15b84e1954629e2da9546375600c169a9a731b3f19f7d6debef3d",
+    "byteLength": 112140
   },
   "files": [
     {
@@ -104,17 +104,6 @@
         "id": 3563
       },
       "path": "objects/3563.png",
-      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
-      "byteLength": 68
-    },
-    {
-      "key": "item:tibia:meat",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 3577
-      },
-      "path": "objects/3577.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -262,6 +251,270 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:1026",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1026
+      },
+      "path": "objects/1026.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1027",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1027
+      },
+      "path": "objects/1027.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1032",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1032
+      },
+      "path": "objects/1032.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1033",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1033
+      },
+      "path": "objects/1033.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10336",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10336
+      },
+      "path": "objects/10336.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1034",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1034
+      },
+      "path": "objects/1034.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10434",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10434
+      },
+      "path": "objects/10434.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10435",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10435
+      },
+      "path": "objects/10435.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10436",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10436
+      },
+      "path": "objects/10436.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10437",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10437
+      },
+      "path": "objects/10437.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:10876",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10876
+      },
+      "path": "objects/10876.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1128",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1128
+      },
+      "path": "objects/1128.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:11392",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 11392
+      },
+      "path": "objects/11392.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:11889",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 11889
+      },
+      "path": "objects/11889.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12605",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12605
+      },
+      "path": "objects/12605.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12608",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12608
+      },
+      "path": "objects/12608.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12613",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12613
+      },
+      "path": "objects/12613.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12614",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12614
+      },
+      "path": "objects/12614.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12615",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12615
+      },
+      "path": "objects/12615.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12616",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12616
+      },
+      "path": "objects/12616.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12646",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12646
+      },
+      "path": "objects/12646.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12647",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12647
+      },
+      "path": "objects/12647.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12648",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12648
+      },
+      "path": "objects/12648.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:12649",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12649
+      },
+      "path": "objects/12649.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:1450",
       "category": "object",
       "sourceIdentity": {
@@ -350,6 +603,17 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:1498",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1498
+      },
+      "path": "objects/1498.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:15484",
       "category": "object",
       "sourceIdentity": {
@@ -357,6 +621,28 @@
         "id": 15484
       },
       "path": "objects/15484.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1851",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1851
+      },
+      "path": "objects/1851.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1852",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1852
+      },
+      "path": "objects/1852.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -449,6 +735,149 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:1872",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1872
+      },
+      "path": "objects/1872.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1873",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1873
+      },
+      "path": "objects/1873.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1874",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1874
+      },
+      "path": "objects/1874.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1876",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1876
+      },
+      "path": "objects/1876.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1884",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1884
+      },
+      "path": "objects/1884.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1885",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1885
+      },
+      "path": "objects/1885.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1886",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1886
+      },
+      "path": "objects/1886.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1930",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1930
+      },
+      "path": "objects/1930.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1931",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1931
+      },
+      "path": "objects/1931.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1983",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1983
+      },
+      "path": "objects/1983.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:1984",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1984
+      },
+      "path": "objects/1984.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2003",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2003
+      },
+      "path": "objects/2003.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2111",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2111
+      },
+      "path": "objects/2111.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:2112",
       "category": "object",
       "sourceIdentity": {
@@ -460,6 +889,204 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:2113",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2113
+      },
+      "path": "objects/2113.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2114",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2114
+      },
+      "path": "objects/2114.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:212",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 212
+      },
+      "path": "objects/212.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:213",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 213
+      },
+      "path": "objects/213.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:216",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 216
+      },
+      "path": "objects/216.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:217",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 217
+      },
+      "path": "objects/217.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2184",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2184
+      },
+      "path": "objects/2184.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2308",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2308
+      },
+      "path": "objects/2308.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2309",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2309
+      },
+      "path": "objects/2309.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2310",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2310
+      },
+      "path": "objects/2310.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2311",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2311
+      },
+      "path": "objects/2311.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2312",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2312
+      },
+      "path": "objects/2312.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2313",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2313
+      },
+      "path": "objects/2313.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2435",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2435
+      },
+      "path": "objects/2435.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2436",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2436
+      },
+      "path": "objects/2436.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2437",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2437
+      },
+      "path": "objects/2437.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2438",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2438
+      },
+      "path": "objects/2438.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2440",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2440
+      },
+      "path": "objects/2440.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:2469",
       "category": "object",
       "sourceIdentity": {
@@ -467,6 +1094,72 @@
         "id": 2469
       },
       "path": "objects/2469.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2474",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2474
+      },
+      "path": "objects/2474.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2475",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2475
+      },
+      "path": "objects/2475.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2476",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2476
+      },
+      "path": "objects/2476.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2477",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2477
+      },
+      "path": "objects/2477.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2487
+      },
+      "path": "objects/2487.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2488",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2488
+      },
+      "path": "objects/2488.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -511,6 +1204,105 @@
         "id": 2492
       },
       "path": "objects/2492.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2520",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2520
+      },
+      "path": "objects/2520.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2522",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2522
+      },
+      "path": "objects/2522.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2524",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2524
+      },
+      "path": "objects/2524.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2696",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2696
+      },
+      "path": "objects/2696.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2697",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2697
+      },
+      "path": "objects/2697.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2698",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2698
+      },
+      "path": "objects/2698.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2714",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2714
+      },
+      "path": "objects/2714.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2719",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2719
+      },
+      "path": "objects/2719.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2720",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2720
+      },
+      "path": "objects/2720.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -581,6 +1373,28 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:2734",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2734
+      },
+      "path": "objects/2734.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:2735",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2735
+      },
+      "path": "objects/2735.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:2736",
       "category": "object",
       "sourceIdentity": {
@@ -588,6 +1402,204 @@
         "id": 2736
       },
       "path": "objects/2736.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3134",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3134
+      },
+      "path": "objects/3134.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3265",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3265
+      },
+      "path": "objects/3265.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:351",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 351
+      },
+      "path": "objects/351.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3519",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3519
+      },
+      "path": "objects/3519.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:352",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 352
+      },
+      "path": "objects/352.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3520",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3520
+      },
+      "path": "objects/3520.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3525",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3525
+      },
+      "path": "objects/3525.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3526",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3526
+      },
+      "path": "objects/3526.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3527",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3527
+      },
+      "path": "objects/3527.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3528",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3528
+      },
+      "path": "objects/3528.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3529",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3529
+      },
+      "path": "objects/3529.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:353",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 353
+      },
+      "path": "objects/353.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3530",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3530
+      },
+      "path": "objects/3530.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3531",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3531
+      },
+      "path": "objects/3531.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3532",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3532
+      },
+      "path": "objects/3532.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:354",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 354
+      },
+      "path": "objects/354.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:355",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 355
+      },
+      "path": "objects/355.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:3577",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3577
+      },
+      "path": "objects/3577.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -610,6 +1622,17 @@
         "id": 4415
       },
       "path": "objects/4415.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4416",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4416
+      },
+      "path": "objects/4416.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -735,6 +1758,193 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:4429",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4429
+      },
+      "path": "objects/4429.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4430",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4430
+      },
+      "path": "objects/4430.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4431",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4431
+      },
+      "path": "objects/4431.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4432",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4432
+      },
+      "path": "objects/4432.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4747",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4747
+      },
+      "path": "objects/4747.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4748",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4748
+      },
+      "path": "objects/4748.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4785",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4785
+      },
+      "path": "objects/4785.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4786",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4786
+      },
+      "path": "objects/4786.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4788",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4788
+      },
+      "path": "objects/4788.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4789",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4789
+      },
+      "path": "objects/4789.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4790",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4790
+      },
+      "path": "objects/4790.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4791",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4791
+      },
+      "path": "objects/4791.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4792",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4792
+      },
+      "path": "objects/4792.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4793",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4793
+      },
+      "path": "objects/4793.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4794",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4794
+      },
+      "path": "objects/4794.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4795",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4795
+      },
+      "path": "objects/4795.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:4796",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4796
+      },
+      "path": "objects/4796.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:5019",
       "category": "object",
       "sourceIdentity": {
@@ -757,6 +1967,94 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:5297",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5297
+      },
+      "path": "objects/5297.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5298",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5298
+      },
+      "path": "objects/5298.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5473",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5473
+      },
+      "path": "objects/5473.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5482",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5482
+      },
+      "path": "objects/5482.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5484",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5484
+      },
+      "path": "objects/5484.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5485",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5485
+      },
+      "path": "objects/5485.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5487
+      },
+      "path": "objects/5487.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5489",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5489
+      },
+      "path": "objects/5489.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:5518",
       "category": "object",
       "sourceIdentity": {
@@ -764,6 +2062,127 @@
         "id": 5518
       },
       "path": "objects/5518.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5554",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5554
+      },
+      "path": "objects/5554.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5555",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5555
+      },
+      "path": "objects/5555.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5568",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5568
+      },
+      "path": "objects/5568.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5569",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5569
+      },
+      "path": "objects/5569.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5570",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5570
+      },
+      "path": "objects/5570.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5571",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5571
+      },
+      "path": "objects/5571.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5572",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5572
+      },
+      "path": "objects/5572.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5573",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5573
+      },
+      "path": "objects/5573.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5574",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5574
+      },
+      "path": "objects/5574.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5575",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5575
+      },
+      "path": "objects/5575.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5576",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5576
+      },
+      "path": "objects/5576.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -966,6 +2385,17 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:5718",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5718
+      },
+      "path": "objects/5718.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:5719",
       "category": "object",
       "sourceIdentity": {
@@ -973,6 +2403,17 @@
         "id": 5719
       },
       "path": "objects/5719.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5720",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5720
+      },
+      "path": "objects/5720.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -995,6 +2436,39 @@
         "id": 5722
       },
       "path": "objects/5722.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5723",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5723
+      },
+      "path": "objects/5723.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5724",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5724
+      },
+      "path": "objects/5724.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:5725",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5725
+      },
+      "path": "objects/5725.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -1153,6 +2627,28 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:6415",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6415
+      },
+      "path": "objects/6415.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:6417",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6417
+      },
+      "path": "objects/6417.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:6475",
       "category": "object",
       "sourceIdentity": {
@@ -1208,6 +2704,17 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:6480",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6480
+      },
+      "path": "objects/6480.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:6481",
       "category": "object",
       "sourceIdentity": {
@@ -1241,6 +2748,17 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:6484",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6484
+      },
+      "path": "objects/6484.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:6485",
       "category": "object",
       "sourceIdentity": {
@@ -1259,6 +2777,127 @@
         "id": 6486
       },
       "path": "objects/6486.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:6487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6487
+      },
+      "path": "objects/6487.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7059",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7059
+      },
+      "path": "objects/7059.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7137",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7137
+      },
+      "path": "objects/7137.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7138",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7138
+      },
+      "path": "objects/7138.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7139",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7139
+      },
+      "path": "objects/7139.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7232",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7232
+      },
+      "path": "objects/7232.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7541",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7541
+      },
+      "path": "objects/7541.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:7843",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7843
+      },
+      "path": "objects/7843.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:8333",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8333
+      },
+      "path": "objects/8333.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:8334",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8334
+      },
+      "path": "objects/8334.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:8441",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8441
+      },
+      "path": "objects/8441.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     },
@@ -1285,6 +2924,28 @@
       "byteLength": 68
     },
     {
+      "key": "tile:tibia:8601",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8601
+      },
+      "path": "objects/8601.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:8602",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8602
+      },
+      "path": "objects/8602.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
       "key": "tile:tibia:8603",
       "category": "object",
       "sourceIdentity": {
@@ -1303,6 +2964,17 @@
         "id": 8604
       },
       "path": "objects/8604.png",
+      "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+      "byteLength": 68
+    },
+    {
+      "key": "tile:tibia:8816",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8816
+      },
+      "path": "objects/8816.png",
       "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
       "byteLength": 68
     }

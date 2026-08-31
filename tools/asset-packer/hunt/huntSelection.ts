@@ -54,6 +54,8 @@ export type HuntPackAssetConfig = {
   }[];
 };
 
+const HUNT_PACK_SMALL_SPLASH_CLIENT_ID = 2889;
+
 const defaultAssetConfig: HuntPackAssetConfig = {
   creature: {
     key: HUNT_PACK_CREATURE_KEY,
@@ -80,14 +82,40 @@ export type HuntPackMetadata = {
   readonly assetSelection?: HuntPackAssetConfig;
 };
 
+function objectClientIdForExtraKey(
+  key: string,
+  assetSelection: HuntPackAssetConfig,
+): number | undefined {
+  if (key === HUNT_PACK_SMALL_SPLASH_KEY) {
+    return HUNT_PACK_SMALL_SPLASH_CLIENT_ID;
+  }
+
+  const corpse = [
+    assetSelection.creature,
+    ...(assetSelection.extraCreatures ?? []),
+  ]
+    .map((creature) => creature.corpse)
+    .find((candidate) => candidate?.key === key);
+  if (corpse !== undefined) return corpse.clientId;
+
+  return assetSelection.loot.find((loot) => loot.key === key)?.clientId;
+}
+
+/**
+ * Map tiles keep ownership of their clientId when a full box also contains a
+ * loot or combat extra with that id. The manifest has one source identity per
+ * entry, and the renderer cannot omit the tile key; the colliding item can
+ * still use its textual fallback in the HUD.
+ */
 export function huntPackExtraKeys(
   assetSelection: HuntPackAssetConfig = defaultAssetConfig,
+  region?: Pick<MapRegion, 'palette'>,
 ): readonly string[] {
   const creatures = [
     assetSelection.creature,
     ...(assetSelection.extraCreatures ?? []),
   ];
-  return [
+  const extraKeys = [
     ...creatures.map((creature) => creature.key),
     HUNT_PACK_OUTFIT_KEY,
     ...HUNT_PACK_COMBAT_KEYS,
@@ -97,6 +125,13 @@ export function huntPackExtraKeys(
     ),
     ...assetSelection.loot.map(({ key }) => key),
   ];
+  if (region === undefined) return extraKeys;
+
+  const mapClientIds = new Set(region.palette);
+  return extraKeys.filter((key) => {
+    const clientId = objectClientIdForExtraKey(key, assetSelection);
+    return clientId === undefined || !mapClientIds.has(clientId);
+  });
 }
 
 const knownLootClientIds: ReadonlyMap<string, number> = new Map([
@@ -175,23 +210,19 @@ export function deriveHuntPackSelection(
   metadata: HuntPackMetadata,
 ): HuntPackSelection {
   const assetSelection = assetSelectionForMetadata(metadata);
+  const extraKeys = huntPackExtraKeys(assetSelection, region);
   const selection: HuntPackSelection = {
     packKey: metadata.packKey,
     huntId: metadata.huntId,
     regionSha256: hashHuntRegion(region),
-    keys: [
-      ...new Set([
-        ...deriveHuntPackKeys(region),
-        ...huntPackExtraKeys(assetSelection),
-      ]),
-    ],
+    keys: [...new Set([...deriveHuntPackKeys(region), ...extraKeys])],
     budget: HUNT_PACK_BUDGET,
   };
   const diagnostics = validateHuntPack(
     selection,
     region,
     selection.keys.map((key) => ({ key, bytes: 0 })),
-    { extraKeys: huntPackExtraKeys(assetSelection) },
+    { extraKeys },
   );
   if (diagnostics.length > 0) {
     throw new Error(
@@ -284,7 +315,10 @@ function identityForKey(
   if (key === HUNT_PACK_SMALL_SPLASH_KEY) {
     return {
       category: 'object',
-      sourceIdentity: { kind: 'clientId', id: 2889 },
+      sourceIdentity: {
+        kind: 'clientId',
+        id: HUNT_PACK_SMALL_SPLASH_CLIENT_ID,
+      },
       pivot: { x: 0.5, y: 0.5 },
     };
   }

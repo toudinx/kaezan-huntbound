@@ -6,7 +6,6 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
-  "layout": "../../layouts/hunts/venore-rotworm-cave.json",
   "recommendedLevel": 8,
   "soloVocation": "vocation:tibia:knight",
   "band": 1,
@@ -47,7 +46,7 @@
   ],
   "expectedSpawnGroups": 13,
   "expectedSpawnSlots": 20,
-  "expectedDroppedTransitions": 0,
+  "expectedDroppedTransitions": 3,
   "budget": {
     "maxFloors": 3,
     "maxWidth": 96,

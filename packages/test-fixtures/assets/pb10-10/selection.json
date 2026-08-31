@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "selectionId": "selection:pb-10-10-hero-cave",
   "packId": "asset-pack:pb-10-10-hero-cave",
-  "contentVersion": "pb-10-10-hero-cave@544de0eb684d",
+  "contentVersion": "pb-10-10-hero-cave@4a6cb66299e4",
   "buildProfiles": [
     "test",
     "product"
@@ -182,25 +182,6 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers item:tibia:green-tunic required by the frozen hunt selection.",
-      "presentation": {
-        "pivot": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scale": 1,
-        "filtering": "nearest"
-      }
-    },
-    {
-      "key": "item:tibia:meat",
-      "category": "object",
-      "sourceIdentity": {
-        "kind": "clientId",
-        "id": 3577
-      },
-      "sourceGroupId": "huntbound-test-pb10-10",
-      "consumer": "PB-10-10 Hero Cave asset pack",
-      "rationale": "Covers item:tibia:meat required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -458,6 +439,462 @@
       }
     },
     {
+      "key": "tile:tibia:1026",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1026
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1026 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1027",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1027
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1027 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1032",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1032
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1032 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1033",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1033
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1033 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10336",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10336
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10336 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1034",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1034
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1034 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10434",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10434
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10434 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10435",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10435
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10435 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10436",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10436
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10436 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10437",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10437
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10437 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:10876",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 10876
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:10876 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1128",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1128
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1128 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:11392",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 11392
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:11392 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:11889",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 11889
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:11889 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12605",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12605
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12605 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12608",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12608
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12608 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12613",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12613
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12613 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12614",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12614
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12614 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12615",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12615
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12615 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12616",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12616
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12616 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12646",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12646
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12646 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12647",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12647
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12647 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12648",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12648
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12648 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:12649",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 12649
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:12649 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:1450",
       "category": "object",
       "sourceIdentity": {
@@ -610,6 +1047,25 @@
       }
     },
     {
+      "key": "tile:tibia:1498",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1498
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1498 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:15484",
       "category": "object",
       "sourceIdentity": {
@@ -619,6 +1075,44 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:15484 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1851",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1851
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1851 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1852",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1852
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1852 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -781,6 +1275,253 @@
       }
     },
     {
+      "key": "tile:tibia:1872",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1872
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1872 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1873",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1873
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1873 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1874",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1874
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1874 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1876",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1876
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1876 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1884",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1884
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1884 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1885",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1885
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1885 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1886",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1886
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1886 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1930",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1930
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1930 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1931",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1931
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1931 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1983",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1983
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1983 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:1984",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 1984
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:1984 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2003",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2003
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2003 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2111",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2111
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2111 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:2112",
       "category": "object",
       "sourceIdentity": {
@@ -800,6 +1541,348 @@
       }
     },
     {
+      "key": "tile:tibia:2113",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2113
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2113 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2114",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2114
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2114 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:212",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 212
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:212 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:213",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 213
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:213 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:216",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 216
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:216 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:217",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 217
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:217 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2184",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2184
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2184 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2308",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2308
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2308 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2309",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2309
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2309 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2310",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2310
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2310 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2311",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2311
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2311 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2312",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2312
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2312 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2313",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2313
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2313 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2435",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2435
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2435 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2436",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2436
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2436 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2437",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2437
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2437 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2438",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2438
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2438 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2440",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2440
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2440 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:2469",
       "category": "object",
       "sourceIdentity": {
@@ -809,6 +1892,120 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:2469 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2474",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2474
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2474 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2475",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2475
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2475 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2476",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2476
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2476 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2477",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2477
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2477 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2487
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2487 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2488",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2488
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2488 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -885,6 +2082,177 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:2492 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2520",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2520
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2520 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2522",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2522
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2522 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2524",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2524
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2524 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2696",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2696
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2696 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2697",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2697
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2697 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2698",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2698
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2698 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2714",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2714
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2714 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2719",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2719
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2719 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2720",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2720
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2720 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1009,6 +2377,44 @@
       }
     },
     {
+      "key": "tile:tibia:2734",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2734
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2734 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:2735",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 2735
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:2735 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:2736",
       "category": "object",
       "sourceIdentity": {
@@ -1018,6 +2424,348 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:2736 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3134",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3134
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3134 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3265",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3265
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3265 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:351",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 351
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:351 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3519",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3519
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3519 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:352",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 352
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:352 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3520",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3520
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3520 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3525",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3525
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3525 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3526",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3526
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3526 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3527",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3527
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3527 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3528",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3528
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3528 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3529",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3529
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3529 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:353",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 353
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:353 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3530",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3530
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3530 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3531",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3531
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3531 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3532",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3532
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3532 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:354",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 354
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:354 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:355",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 355
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:355 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:3577",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 3577
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:3577 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1056,6 +2804,25 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:4415 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4416",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4416
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4416 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1275,6 +3042,329 @@
       }
     },
     {
+      "key": "tile:tibia:4429",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4429
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4429 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4430",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4430
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4430 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4431",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4431
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4431 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4432",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4432
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4432 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4747",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4747
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4747 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4748",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4748
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4748 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4785",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4785
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4785 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4786",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4786
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4786 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4788",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4788
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4788 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4789",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4789
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4789 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4790",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4790
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4790 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4791",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4791
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4791 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4792",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4792
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4792 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4793",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4793
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4793 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4794",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4794
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4794 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4795",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4795
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4795 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:4796",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 4796
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:4796 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:5019",
       "category": "object",
       "sourceIdentity": {
@@ -1313,6 +3403,158 @@
       }
     },
     {
+      "key": "tile:tibia:5297",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5297
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5297 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5298",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5298
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5298 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5473",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5473
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5473 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5482",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5482
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5482 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5484",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5484
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5484 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5485",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5485
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5485 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5487
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5487 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5489",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5489
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5489 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:5518",
       "category": "object",
       "sourceIdentity": {
@@ -1322,6 +3564,215 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:5518 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5554",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5554
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5554 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5555",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5555
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5555 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5568",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5568
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5568 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5569",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5569
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5569 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5570",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5570
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5570 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5571",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5571
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5571 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5572",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5572
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5572 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5573",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5573
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5573 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5574",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5574
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5574 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5575",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5575
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5575 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5576",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5576
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5576 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1674,6 +4125,25 @@
       }
     },
     {
+      "key": "tile:tibia:5718",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5718
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5718 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:5719",
       "category": "object",
       "sourceIdentity": {
@@ -1683,6 +4153,25 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:5719 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5720",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5720
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5720 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1721,6 +4210,63 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:5722 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5723",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5723
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5723 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5724",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5724
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5724 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:5725",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 5725
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:5725 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -1997,6 +4543,44 @@
       }
     },
     {
+      "key": "tile:tibia:6415",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6415
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:6415 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:6417",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6417
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:6417 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:6475",
       "category": "object",
       "sourceIdentity": {
@@ -2092,6 +4676,25 @@
       }
     },
     {
+      "key": "tile:tibia:6480",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6480
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:6480 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:6481",
       "category": "object",
       "sourceIdentity": {
@@ -2149,6 +4752,25 @@
       }
     },
     {
+      "key": "tile:tibia:6484",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6484
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:6484 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:6485",
       "category": "object",
       "sourceIdentity": {
@@ -2177,6 +4799,215 @@
       "sourceGroupId": "huntbound-test-pb10-10",
       "consumer": "PB-10-10 Hero Cave asset pack",
       "rationale": "Covers tile:tibia:6486 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:6487",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 6487
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:6487 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7059",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7059
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7059 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7137",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7137
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7137 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7138",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7138
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7138 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7139",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7139
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7139 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7232",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7232
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7232 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7541",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7541
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7541 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:7843",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 7843
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:7843 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:8333",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8333
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8333 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:8334",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8334
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8334 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:8441",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8441
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8441 required by the frozen hunt selection.",
       "presentation": {
         "pivot": {
           "x": 0.5,
@@ -2225,6 +5056,44 @@
       }
     },
     {
+      "key": "tile:tibia:8601",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8601
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8601 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
+      "key": "tile:tibia:8602",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8602
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8602 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
+    },
+    {
       "key": "tile:tibia:8603",
       "category": "object",
       "sourceIdentity": {
@@ -2261,15 +5130,49 @@
         "scale": 1,
         "filtering": "nearest"
       }
+    },
+    {
+      "key": "tile:tibia:8816",
+      "category": "object",
+      "sourceIdentity": {
+        "kind": "clientId",
+        "id": 8816
+      },
+      "sourceGroupId": "huntbound-test-pb10-10",
+      "consumer": "PB-10-10 Hero Cave asset pack",
+      "rationale": "Covers tile:tibia:8816 required by the frozen hunt selection.",
+      "presentation": {
+        "pivot": {
+          "x": 0.5,
+          "y": 1
+        },
+        "scale": 1,
+        "filtering": "nearest"
+      }
     }
   ],
   "hunt": {
     "packKey": "pb-10-10-hero-cave",
     "huntId": "hunt:tibia:hero-cave",
-    "regionSha256": "544de0eb684d1d775b53d9530e23d1f5f8bf944e39669376e0ab9926952da428",
+    "regionSha256": "4a6cb66299e4fd94e6dd31100807c46910c3c2cf6506c9a43c579eee5941bb56",
     "keys": [
       "tile:tibia:101",
+      "tile:tibia:212",
+      "tile:tibia:213",
+      "tile:tibia:216",
+      "tile:tibia:217",
+      "tile:tibia:351",
+      "tile:tibia:352",
+      "tile:tibia:353",
+      "tile:tibia:354",
+      "tile:tibia:355",
       "tile:tibia:410",
+      "tile:tibia:1026",
+      "tile:tibia:1027",
+      "tile:tibia:1032",
+      "tile:tibia:1033",
+      "tile:tibia:1034",
+      "tile:tibia:1128",
       "tile:tibia:1450",
       "tile:tibia:1451",
       "tile:tibia:1452",
@@ -2278,6 +5181,9 @@
       "tile:tibia:1459",
       "tile:tibia:1479",
       "tile:tibia:1480",
+      "tile:tibia:1498",
+      "tile:tibia:1851",
+      "tile:tibia:1852",
       "tile:tibia:1854",
       "tile:tibia:1855",
       "tile:tibia:1856",
@@ -2286,20 +5192,78 @@
       "tile:tibia:1865",
       "tile:tibia:1866",
       "tile:tibia:1867",
+      "tile:tibia:1872",
+      "tile:tibia:1873",
+      "tile:tibia:1874",
+      "tile:tibia:1876",
+      "tile:tibia:1884",
+      "tile:tibia:1885",
+      "tile:tibia:1886",
+      "tile:tibia:1930",
+      "tile:tibia:1931",
+      "tile:tibia:1983",
+      "tile:tibia:1984",
+      "tile:tibia:2003",
+      "tile:tibia:2111",
       "tile:tibia:2112",
+      "tile:tibia:2113",
+      "tile:tibia:2114",
+      "tile:tibia:2184",
+      "tile:tibia:2308",
+      "tile:tibia:2309",
+      "tile:tibia:2310",
+      "tile:tibia:2311",
+      "tile:tibia:2312",
+      "tile:tibia:2313",
+      "tile:tibia:2435",
+      "tile:tibia:2436",
+      "tile:tibia:2437",
+      "tile:tibia:2438",
+      "tile:tibia:2440",
       "tile:tibia:2469",
+      "tile:tibia:2474",
+      "tile:tibia:2475",
+      "tile:tibia:2476",
+      "tile:tibia:2477",
+      "tile:tibia:2487",
+      "tile:tibia:2488",
       "tile:tibia:2489",
       "tile:tibia:2490",
       "tile:tibia:2491",
       "tile:tibia:2492",
+      "tile:tibia:2520",
+      "tile:tibia:2522",
+      "tile:tibia:2524",
+      "tile:tibia:2696",
+      "tile:tibia:2697",
+      "tile:tibia:2698",
+      "tile:tibia:2714",
+      "tile:tibia:2719",
+      "tile:tibia:2720",
       "tile:tibia:2726",
       "tile:tibia:2728",
       "tile:tibia:2729",
       "tile:tibia:2730",
       "tile:tibia:2732",
       "tile:tibia:2733",
+      "tile:tibia:2734",
+      "tile:tibia:2735",
       "tile:tibia:2736",
+      "tile:tibia:3134",
+      "tile:tibia:3265",
+      "tile:tibia:3519",
+      "tile:tibia:3520",
+      "tile:tibia:3525",
+      "tile:tibia:3526",
+      "tile:tibia:3527",
+      "tile:tibia:3528",
+      "tile:tibia:3529",
+      "tile:tibia:3530",
+      "tile:tibia:3531",
+      "tile:tibia:3532",
+      "tile:tibia:3577",
       "tile:tibia:4415",
+      "tile:tibia:4416",
       "tile:tibia:4417",
       "tile:tibia:4418",
       "tile:tibia:4419",
@@ -2311,9 +5275,45 @@
       "tile:tibia:4425",
       "tile:tibia:4426",
       "tile:tibia:4427",
+      "tile:tibia:4429",
+      "tile:tibia:4430",
+      "tile:tibia:4431",
+      "tile:tibia:4432",
+      "tile:tibia:4747",
+      "tile:tibia:4748",
+      "tile:tibia:4785",
+      "tile:tibia:4786",
+      "tile:tibia:4788",
+      "tile:tibia:4789",
+      "tile:tibia:4790",
+      "tile:tibia:4791",
+      "tile:tibia:4792",
+      "tile:tibia:4793",
+      "tile:tibia:4794",
+      "tile:tibia:4795",
+      "tile:tibia:4796",
       "tile:tibia:5019",
       "tile:tibia:5020",
+      "tile:tibia:5297",
+      "tile:tibia:5298",
+      "tile:tibia:5473",
+      "tile:tibia:5482",
+      "tile:tibia:5484",
+      "tile:tibia:5485",
+      "tile:tibia:5487",
+      "tile:tibia:5489",
       "tile:tibia:5518",
+      "tile:tibia:5554",
+      "tile:tibia:5555",
+      "tile:tibia:5568",
+      "tile:tibia:5569",
+      "tile:tibia:5570",
+      "tile:tibia:5571",
+      "tile:tibia:5572",
+      "tile:tibia:5573",
+      "tile:tibia:5574",
+      "tile:tibia:5575",
+      "tile:tibia:5576",
       "tile:tibia:5577",
       "tile:tibia:5578",
       "tile:tibia:5579",
@@ -2332,9 +5332,14 @@
       "tile:tibia:5715",
       "tile:tibia:5716",
       "tile:tibia:5717",
+      "tile:tibia:5718",
       "tile:tibia:5719",
+      "tile:tibia:5720",
       "tile:tibia:5721",
       "tile:tibia:5722",
+      "tile:tibia:5723",
+      "tile:tibia:5724",
+      "tile:tibia:5725",
       "tile:tibia:5726",
       "tile:tibia:6373",
       "tile:tibia:6374",
@@ -2349,20 +5354,56 @@
       "tile:tibia:6383",
       "tile:tibia:6384",
       "tile:tibia:6385",
+      "tile:tibia:6415",
+      "tile:tibia:6417",
       "tile:tibia:6475",
       "tile:tibia:6476",
       "tile:tibia:6477",
       "tile:tibia:6478",
       "tile:tibia:6479",
+      "tile:tibia:6480",
       "tile:tibia:6481",
       "tile:tibia:6482",
       "tile:tibia:6483",
+      "tile:tibia:6484",
       "tile:tibia:6485",
       "tile:tibia:6486",
+      "tile:tibia:6487",
+      "tile:tibia:7059",
+      "tile:tibia:7137",
+      "tile:tibia:7138",
+      "tile:tibia:7139",
+      "tile:tibia:7232",
+      "tile:tibia:7541",
+      "tile:tibia:7843",
+      "tile:tibia:8333",
+      "tile:tibia:8334",
+      "tile:tibia:8441",
       "tile:tibia:8597",
       "tile:tibia:8598",
+      "tile:tibia:8601",
+      "tile:tibia:8602",
       "tile:tibia:8603",
       "tile:tibia:8604",
+      "tile:tibia:8816",
+      "tile:tibia:10336",
+      "tile:tibia:10434",
+      "tile:tibia:10435",
+      "tile:tibia:10436",
+      "tile:tibia:10437",
+      "tile:tibia:10876",
+      "tile:tibia:11392",
+      "tile:tibia:11889",
+      "tile:tibia:12605",
+      "tile:tibia:12608",
+      "tile:tibia:12613",
+      "tile:tibia:12614",
+      "tile:tibia:12615",
+      "tile:tibia:12616",
+      "tile:tibia:12646",
+      "tile:tibia:12647",
+      "tile:tibia:12648",
+      "tile:tibia:12649",
       "tile:tibia:15484",
       "creature:tibia:hero",
       "outfit:tibia:knight",
@@ -2384,7 +5425,6 @@
       "item:tibia:arrow",
       "item:tibia:bow",
       "item:tibia:green-tunic",
-      "item:tibia:meat",
       "item:tibia:sniper-arrow"
     ],
     "budget": {

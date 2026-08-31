@@ -113,17 +113,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Dragon-Lair",
       "maxLiveActors": 31,
-      "experiencePerHour": 868000,
+      "experiencePerHour": 224000,
       "creatures": [
         {
           "creatureKey": "creature:tibia:dragon",
           "displayName": "Dragon",
-          "slotCount": 31,
+          "slotCount": 8,
           "health": 1000,
           "experience": 700,
           "lookType": 34,
           "respawnTicks": 1800,
-          "experiencePerHour": 868000,
+          "experiencePerHour": 224000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -264,17 +264,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Hero-Cave",
       "maxLiveActors": 24,
-      "experiencePerHour": 1152000,
+      "experiencePerHour": 624000,
       "creatures": [
         {
           "creatureKey": "creature:tibia:hero",
           "displayName": "Hero",
-          "slotCount": 24,
+          "slotCount": 13,
           "health": 1400,
           "experience": 1200,
           "lookType": 73,
           "respawnTicks": 1800,
-          "experiencePerHour": 1152000,
+          "experiencePerHour": 624000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -674,17 +674,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave",
       "maxLiveActors": 20,
-      "experiencePerHour": 32000,
+      "experiencePerHour": 3200,
       "creatures": [
         {
           "creatureKey": "creature:tibia:rotworm",
           "displayName": "Rotworm",
-          "slotCount": 20,
+          "slotCount": 2,
           "health": 65,
           "experience": 40,
           "lookType": 26,
           "respawnTicks": 1800,
-          "experiencePerHour": 32000,
+          "experiencePerHour": 3200,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
