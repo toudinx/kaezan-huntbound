@@ -17,7 +17,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 
 | ID | Status | Branch prevista | Modelo previsto | Modelo usado | Commit | Evidência principal |
 |---|---|---|---|---|---|---|
-| PB-17-01 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-17-01 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `f59d400` | categoria `spell`, nove recortes por `clientId`, source-locks e packs das cinco hunts; assets/content/architecture/test verdes |
 | PB-17-02 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-17-03 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-17-04 | pending | `main` | frontier `xhigh` | — | — | — |
