@@ -171,6 +171,19 @@ o *dirt floor* que o `items.xml` descreve como "There is a hole in the ceiling" 
 não tem item nem magia, então o rope spot virou transição andada, igual à escada. `ropeSpots` do
 `data/global.lua` está transcrito em `tools/map-extractor/transitions.ts`.
 
+**B29 — aberto.** Reportado no mesmo playtest: quadrados chapados no meio da caverna. Não é o
+renderer, é a extração. `planCell` em `tools/map-extractor/region.ts` descarta **todos** os itens de
+um tile que não tem item com flag `ground` e devolve `blocking: true` — o tile existe no OTBM, só não
+tem chão sob a parede. A célula vira void, e o `HuntScene` pinta ali o `WORLD_EDGE_RIM_COLOR`
+(`0x3a281c`), que é o retângulo marrom que o usuário viu. Na Rotworm são 3 células internas: `(6,10)`
+e `(7,11)` em z9, ambas `dirt wall` 5649, e `(53,44)`, `swamp clay mountain` 16669 — as duas
+primeiras estão coladas no pouso do buraco de `(8,10)`, que é onde o print foi tirado. As demais
+células chapadas ficam na borda do recorte e são void de verdade.
+
+A correção é `planCell` preservar `below`/`above` quando não há ground, mantendo void e colisão. O
+raio é maior que o desta FIX: a paleta cresce, `region.json` e `hunt.json` de todas as hunts mudam, e
+as selections e packs de asset precisam dos sprites de parede novos. Task própria.
+
 **B26 — fechado pela PB-10-13-FIX-04.** Decisão do usuário em 2026-08-31: descartar. Os 22 slots do
 campo fora da muralha saem na extração; sobram 21 grupos e 46 slots, todos alcançáveis a partir do
 `playerStart` e todos cabendo no teto de 64. A muralha foi conferida item a item — é `stone wall`
