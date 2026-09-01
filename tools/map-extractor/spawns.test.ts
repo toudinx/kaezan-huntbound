@@ -234,6 +234,35 @@ describe('buildSpawnTable', () => {
     expect(built.table.groups[0]?.radius).toBe(15);
   });
 
+  it('widens the radius of a group re-seated on its first slot', () => {
+    const built = buildSpawnTable(
+      monsterXml([
+        {
+          centerX: MIN_X + 11,
+          centerY: MIN_Y + 5,
+          centerZ: 8,
+          radius: 3,
+          slots: [
+            { name: 'Rotworm', x: -3, y: -3, z: 8 },
+            { name: 'Rotworm', x: -2, y: 3, z: 8 },
+          ],
+        },
+      ]),
+      selection,
+      region,
+    );
+
+    expect(built.diagnostics).toEqual([]);
+    expect(built.table.groups[0]).toMatchObject({
+      center: { x: 8, y: 2, z: 8 },
+      radius: 6,
+      slots: [
+        { offsetX: 0, offsetY: 0 },
+        { offsetX: 1, offsetY: 6 },
+      ],
+    });
+  });
+
   it('rejects a spawntime that does not divide into whole ticks', () => {
     const built = buildSpawnTable(
       monsterXml([
