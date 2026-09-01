@@ -44,7 +44,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-13-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | `6d6bb64` | escadas de volta: `type="ladder"` entra na tabela de flags (schema 2, 17 ids) e vira transição `moveUpstairs` (um andar acima, um tile ao sul). Orc vai de 6 para 12 transições; z6 sai de 0 para 815 células alcançáveis do start. `expectedDroppedTransitions` 2→3 pela escada de (27,57,z6) para z5, fora dos andares congelados. As quatro com receita reextraem byte a byte; map-extractor (141), tile-flags (81), content, architecture e format verdes |
 | PB-10-13-FIX-04 | done | `main` | frontier `xhigh` | Claude Opus 5 | `cc43143` | spawn inalcançável sai na extração, pela regra do próprio kernel (célula do slot; raio do grupo quando ela é bloqueada). Orc vai de 33 grupos/68 slots para 21/46, todos dentro do circuito e agora todos cabendo em `maxLiveActors: 64`. `expectedSpawnGroups: 33` fica: descreve o XML, não a hunt. As quatro com receita reextraem byte a byte; map-extractor (141), content, architecture e format verdes |
 | PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
-| PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
 
 ## Bloqueios
 
