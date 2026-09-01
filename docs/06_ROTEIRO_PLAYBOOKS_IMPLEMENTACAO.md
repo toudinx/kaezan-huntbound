@@ -82,7 +82,8 @@ em task cards fechadas do PB-08, e renumerar tornaria essas referências histór
 economizar nada. **O número é identidade, a ordem é declarada aqui** — é a mesma regra que já põe o
 PB-10 antes do PB-09.
 
-A ordem de execução a partir daqui é **PB-10-12, depois PB-17, depois PB-18, depois PB-09**. O PB-17
+A ordem de execução a partir daqui é **PB-10-15-FIX-01, PB-17-FIX-01, PB-17-05, PB-18, PB-09** —
+atualizada em 2026-09-01, com o PB-10 fechado em conteúdo e o PB-17 já com 01 a 04 integradas. O PB-17
 é de apresentação pura: não toca kernel, não muda golden, e sua fronteira com PB-09, PB-11, PB-13 e
 PB-15 está tabelada em `docs/playbooks/PB-17/README.md`.
 

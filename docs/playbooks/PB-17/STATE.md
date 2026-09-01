@@ -3,10 +3,13 @@
 **Playbook:** `docs/playbooks/PB-17/README.md`
 
 **Estado geral:** criado em 2026-08-30 a pedido do usuário — "melhorar o que já temos", com o
-cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do Tibia. Elegível. Nenhuma task
-iniciada.
+cockpit in-game como alvo: mochila, minimapa e cooldowns com ícone do Tibia. **01 a 04 fechadas e
+integradas**; restam a `PB-17-05`, task de fechamento, e a `PB-17-FIX-01`, que agora tem card.
 
-**Última atualização:** 2026-08-31 — `PB-17-FIX-03` fechada: o deck já resolve o ícone de cada magia.
+**Última atualização:** 2026-09-01 — `PB-17-FIX-01` escrita. A validação de fechamento do PB-10 achou
+o B19 pela terceira vez: a PB-10-15 deixou seis contagens de `huntArtifacts.test.ts` obsoletas e
+ninguém viu, porque o config continua fora de todo script. Próxima elegível: **PB-17-FIX-01**, e
+depois a **PB-17-05**.
 
 **Base:** o chassi do PB-08-08/09 (`CockpitLayout`, bandas, rail com minimapa/alvo/bag) e as cinco
 hunts do PB-10. Nada aqui reescreve chassi.
@@ -22,6 +25,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-17-03 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7298724` | nome no hover/foco/toque, badge de stack, animação de loot e grid com scroll interno; biome/test verdes |
 | PB-17-04 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | `d3a9ec6` | cor de chão derivada da média dos pixels do tile real, seta com facing, chevrons de transição, ring de entrada e readout de andar; biome/typecheck/suíte de `apps/game` verdes |
 | PB-17-05 | pending | `main` | frontier `xhigh` | — | — | — |
+| PB-17-FIX-01 | pending | `main` | econômico `xhigh` | — | — | — |
 | PB-17-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `95c6e41` | recorte CSS responsivo do frame 0 nos painéis alvo, mochila e deck; biome/typecheck/test do game verdes |
 | PB-17-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 `xhigh` | `281b8eb` | recorte das nove magias no export privado e seleções `personal` regeneradas: os packs das cinco hunts não tinham nenhuma chave `spell:` desde a PB-17-01; `assets:check` verde |
 
@@ -32,7 +36,10 @@ não é invocado por nenhum script do `package.json`, então `huntArtifacts.test
 a PB-17-01 sem ninguém ver: as contagens fixas (147/109/217) não somaram os nove ícones de magia, e
 `sourceLock.files.every(byteLength === 68)` deixou de valer para os recortes de `spell`. As contagens
 são mecânicas; a asserção de byteLength exige decidir o que a fixture sintética deve afirmar sobre
-magia. Vira `PB-17-FIX-01`, junto com ligar essa config ao script de teste.
+magia. É a `PB-17-FIX-01`, com card escrito em 2026-09-01, junto com ligar essa config ao script de
+teste. **Reincidiu na PB-10-15**: rotworm 156→451, hero cave 118→270, dragon lair 226→368, seis
+asserções vermelhas. `tools/diagnostics/vitest.config.ts` é órfão do mesmo jeito. Mesmo bloqueio é o
+B25 do PB-10.
 
 **B13 — desbloqueado pelo usuário em 2026-08-25, é a PB-17-01.** Sexta categoria de asset (`spell`)
 autorizada, com identidade `clientId` e suporte no packer. O índice das nove magias está medido em

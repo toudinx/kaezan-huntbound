@@ -9,11 +9,11 @@
 inteira e as cinco hunts estão na `main`. O que resta é a correção de mapa (13 a 15): a hunt deixa de
 ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
-**Última atualização:** 2026-08-31 — 13 fechada e corrigida pela PB-10-13-FIX-01 (start do jogador
-caía fora da hunt), pela PB-10-13-FIX-02 (pack cobrindo a caixa inteira) e pela PB-10-13-FIX-03
-(escadas de subida) e pela PB-10-13-FIX-04 (spawn inalcançável). 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
-hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
-71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
+**Última atualização:** 2026-09-01 — 13 a 15 fechadas e integradas; a máquina do catálogo e as
+cinco caixas curadas estão na `main`. A validação de fechamento achou dois vermelhos que os gates das
+tasks não cobriam: a fixture do PB-04 ficou obsoleta contra o `hunt.json` novo (**PB-10-15-FIX-01**) e
+o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). Aberto o **B27**,
+densidade da rotworm. Próxima elegível: **PB-10-15-FIX-01**, depois de o B27 ser decidido.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -45,6 +45,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-13-FIX-04 | done | `main` | frontier `xhigh` | Claude Opus 5 | `cc43143` | spawn inalcançável sai na extração, pela regra do próprio kernel (célula do slot; raio do grupo quando ela é bloqueada). Orc vai de 33 grupos/68 slots para 21/46, todos dentro do circuito e agora todos cabendo em `maxLiveActors: 64`. `expectedSpawnGroups: 33` fica: descreve o XML, não a hunt. As quatro com receita reextraem byte a byte; map-extractor (141), content, architecture e format verdes |
 | PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
 | PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
+| PB-10-15-FIX-01 | pending | `main` | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -127,13 +128,19 @@ S7 do kernel) já a sustente. O extractor já tem o caminho `layout === undefine
 inteira, deriva travessia de floorchange real e escolhe `playerStart`; quem o proíbe é
 `tools/map-extractor/cli.ts:313`.
 
-**B25 — aberto, não é da PB-10.** `tools/asset-packer/vitest.config.ts` não está em nenhum script:
-o `test` da raiz lista replay, tile-flags, map-extractor, map-materials, hunt-selection,
-content-catalog, hunt-index e save, e os 15 arquivos de teste do asset-packer não rodam em lugar
-nenhum. Por isso `huntArtifacts.test.ts` ficou 7 vermelhos sem ninguém ver — congelava contagens de
-chave anteriores aos 9 ícones de spell. Consertado pela PB-10-13-FIX-02, mas **o config continua
-órfão**: pendurá-lo no `test` é task própria. Mesmo padrão em `tools/map-extractor/tsconfig.json`,
-que não compila na `main` e também não está em gate nenhum.
+**B25 — aberto, não é da PB-10. Virou `PB-17-FIX-01`.** `tools/asset-packer/vitest.config.ts` não
+está em nenhum script: os 15 arquivos e 62 testes do packer não rodam em lugar nenhum, e
+`huntArtifacts.test.ts` acumula vermelho sem ninguém ver. Já mordeu três vezes — PB-17-01,
+PB-10-13-FIX-02 e agora a PB-10-15, que moveu rotworm 156→451, hero cave 118→270 e dragon lair
+226→368. Mesmo padrão em `tools/diagnostics/vitest.config.ts` e em `tools/map-extractor/tsconfig.json`.
+A card existe em `docs/playbooks/PB-17/tasks/PB-17-FIX-01-o-config-orfao.md`.
+
+**B27 — aberto, é decisão do usuário, não defeito.** A rotworm — faixa 1, a primeira hunt do jogo —
+ficou com **1 grupo e 2 slots** numa caixa de 64 × 96 × 2, contra Orc 21/46, Cyclopolis 18/19, Hero
+10/13 e Dragon 8/8. O filtro de alcançabilidade da PB-10-13-FIX-04 fez o que devia e na rotworm
+sobrou: 6.144 células com dois rotworms não é uma hunt. As saídas na mesa são aceitar (a faixa 1 vira
+tutorial curto), recurar a caixa só dela, ou revisar o filtro para este caso. **Bloqueia a
+PB-10-15-FIX-01**, que teria de ser refeita se a geometria mudar depois.
 
 **B24 — fechado pela PB-10-13-FIX-03.** A caixa não tinha uma única transição de subida porque
 `floorchange` no Canary só desce — os 8 itens da caixa são buracos, 2 deles caindo em z9. A volta é a
