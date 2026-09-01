@@ -113,17 +113,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Dragon-Lair",
       "maxLiveActors": 31,
-      "experiencePerHour": 224000,
+      "experiencePerHour": 280000,
       "creatures": [
         {
           "creatureKey": "creature:tibia:dragon",
           "displayName": "Dragon",
-          "slotCount": 8,
+          "slotCount": 10,
           "health": 1000,
           "experience": 700,
           "lookType": 34,
           "respawnTicks": 1800,
-          "experiencePerHour": 224000,
+          "experiencePerHour": 280000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -674,17 +674,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave",
       "maxLiveActors": 20,
-      "experiencePerHour": 3200,
+      "experiencePerHour": 19200,
       "creatures": [
         {
           "creatureKey": "creature:tibia:rotworm",
           "displayName": "Rotworm",
-          "slotCount": 2,
+          "slotCount": 12,
           "health": 65,
           "experience": 40,
           "lookType": 26,
           "respawnTicks": 1800,
-          "experiencePerHour": 3200,
+          "experiencePerHour": 19200,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",

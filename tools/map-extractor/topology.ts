@@ -29,6 +29,12 @@ export interface HuntTopologyReport {
   readonly diagnostics: readonly ExtractionDiagnostic[];
 }
 
+export interface WalkableComponentGraph {
+  readonly components: readonly (readonly GridPosition[])[];
+  readonly componentByKey: ReadonlyMap<string, number>;
+  readonly reachableComponents: readonly ReadonlySet<number>[];
+}
+
 function indexOf(position: GridPosition, width: number): number {
   return position.y * width + position.x;
 }
@@ -242,6 +248,55 @@ export function walkableComponents(
   }
 
   return components;
+}
+
+/**
+ * Builds the directed reachability graph used when a raw box needs a start.
+ *
+ * Plain walking makes each local component strongly connected; only extracted
+ * transitions can move the player from one component to another, and those
+ * edges keep their in-game direction. This is equivalent to `reachableCells`
+ * at component granularity without running a tile BFS for every candidate.
+ */
+export function buildWalkableComponentGraph(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+): WalkableComponentGraph {
+  const components = walkableComponents(region, []);
+  const componentByKey = new Map<string, number>();
+  const key = (position: GridPosition): string =>
+    `${position.z}:${indexOf(position, region.width)}`;
+
+  components.forEach((component, componentIndex) => {
+    component.forEach((position) => {
+      componentByKey.set(key(position), componentIndex);
+    });
+  });
+
+  const edges = components.map(() => new Set<number>());
+  transitions.forEach((transition) => {
+    if (transition.from.z === transition.to.z) return;
+    const from = componentByKey.get(key(transition.from));
+    const to = componentByKey.get(key(transition.to));
+    if (from === undefined || to === undefined || from === to) return;
+    edges[from]?.add(to);
+  });
+
+  const reachableComponents = components.map((_component, root) => {
+    const reachable = new Set<number>([root]);
+    const queue = [root];
+    while (queue.length > 0) {
+      const current = queue.shift() as number;
+      for (const next of edges[current] ?? []) {
+        if (reachable.has(next)) continue;
+        reachable.add(next);
+        queue.push(next);
+      }
+    }
+    return reachable;
+  });
+
+  return { components, componentByKey, reachableComponents };
 }
 
 /**

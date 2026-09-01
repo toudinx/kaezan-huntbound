@@ -14,6 +14,28 @@ const readHunt = (slug: string): HuntDefinition =>
     ),
   ) as HuntDefinition;
 
+function reachableCellCount(hunt: HuntDefinition): number {
+  const report = analyzeHuntTopology(hunt);
+  return report.floors.reduce(
+    (total, floor) => total + floor.walkableTiles - floor.unreachable.length,
+    0,
+  );
+}
+
+function walkableCellCount(hunt: HuntDefinition): number {
+  return analyzeHuntTopology(hunt).floors.reduce(
+    (total, floor) => total + floor.walkableTiles,
+    0,
+  );
+}
+
+function spawnSlotCount(hunt: HuntDefinition): number {
+  return hunt.spawns.groups.reduce(
+    (total, group) => total + group.slots.length,
+    0,
+  );
+}
+
 const hunt = readHunt('venore-rotworm-cave');
 
 describe('generated Venore Rotworm Cave hunt', () => {
@@ -31,17 +53,17 @@ describe('generated Venore Rotworm Cave hunt', () => {
       { z: 9, walkableTiles: 761, componentCount: 13 },
     ]);
     expect(report.diagnostics.map(({ code }) => code)).toEqual([
-      ...Array.from({ length: 8 }, () => 'HUNT_TRANSITION_UNREACHABLE'),
+      ...Array.from({ length: 4 }, () => 'HUNT_TRANSITION_UNREACHABLE'),
       'HUNT_WALKABLE_DISCONNECTED',
       'HUNT_WALKABLE_DISCONNECTED',
     ]);
   });
 
-  it('keeps only spawn slots reachable from the full-box start', () => {
+  it('keeps spawn slots reachable from the upper hunt circuit', () => {
     expect(hunt.transitions.entries).toHaveLength(8);
-    expect(hunt.spawns.groups).toHaveLength(1);
-    expect(hunt.spawns.groups.flatMap((group) => group.slots)).toHaveLength(2);
-    expect(hunt.playerStart).toEqual({ x: 11, y: 6, z: 9 });
+    expect(hunt.spawns.groups).toHaveLength(8);
+    expect(hunt.spawns.groups.flatMap((group) => group.slots)).toHaveLength(12);
+    expect(hunt.playerStart).toEqual({ x: 13, y: 19, z: 8 });
   });
 
   it('offers a spot where a knight can box', () => {
@@ -95,6 +117,22 @@ describe('generated Orc Fortress hunt', () => {
     expect(fortress.spawns.groups).toHaveLength(21);
     expect(fortress.spawns.groups.flatMap((group) => group.slots)).toHaveLength(
       46,
+    );
+  });
+});
+
+describe('generated raw-box hunt starts', () => {
+  it('keeps the rotworm hunt on its upper circuit and clears the dragon threshold', () => {
+    const rotworm = readHunt('venore-rotworm-cave');
+    const dragon = readHunt('dragon-lair');
+
+    expect(rotworm.playerStart.z).toBe(8);
+    expect(rotworm.spawns.groups.length).toBeGreaterThan(1);
+    expect(spawnSlotCount(rotworm)).toBeGreaterThan(2);
+    expect(reachableCellCount(rotworm)).toBeGreaterThan(35);
+
+    expect(reachableCellCount(dragon)).toBeGreaterThanOrEqual(
+      walkableCellCount(dragon) * 0.25,
     );
   });
 });

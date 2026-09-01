@@ -17,8 +17,8 @@ import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
 import {
   analyzeHuntTopology,
+  buildWalkableComponentGraph,
   reachableCells,
-  walkableComponents,
 } from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';
@@ -89,59 +89,165 @@ function regionIdFor(huntKey: string): string {
  *
  * A layout recipe hands the start over; a raw OTBM box has to earn one. The box
  * is many disconnected places at once — fortress, field, ledge — and distance
- * to a spawn does not mean a path to it, so the rule is connectivity first:
- * the walkable component that holds the most spawn groups, then the floor of
- * that component holding the most of them, then the cell on that floor with the
- * shortest total walk to those groups. Ties break on canonical `(y, x)` order,
- * and a box without a single spawn group falls back to its first walkable cell.
+ * to a spawn does not mean a path. Candidate components are therefore ranked
+ * by the groups and slots reachable through directed transitions, then by the
+ * reachable area. The start is the cell with the shortest total walk to the
+ * groups on its local component; ties break on canonical `(y, x)` order.
  */
+interface ReachableSpawnSummary {
+  readonly groups: readonly SpawnGroupDefinition[];
+  readonly slots: number;
+}
+
+interface StartCandidate {
+  readonly cells: readonly GridPosition[];
+  readonly localGroups: readonly SpawnGroupDefinition[];
+  readonly reachableGroups: readonly SpawnGroupDefinition[];
+  readonly reachableSlots: number;
+  readonly reachableCellCount: number;
+}
+
+function componentAt(
+  position: GridPosition,
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+): number | undefined {
+  if (
+    position.x < 0 ||
+    position.y < 0 ||
+    position.x >= region.width ||
+    position.y >= region.height
+  ) {
+    return undefined;
+  }
+  return componentByKey.get(
+    `${position.z}:${position.y * region.width + position.x}`,
+  );
+}
+
+function slotIsReachable(
+  group: SpawnGroupDefinition,
+  slot: SpawnGroupDefinition['slots'][number],
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+  reachableComponents: ReadonlySet<number>,
+): boolean {
+  const seat = {
+    x: group.center.x + slot.offsetX,
+    y: group.center.y + slot.offsetY,
+    z: group.center.z + slot.offsetZ,
+  };
+  const seatComponent = componentAt(seat, region, componentByKey);
+  if (seatComponent !== undefined)
+    return reachableComponents.has(seatComponent);
+
+  for (
+    let y = group.center.y - group.radius;
+    y <= group.center.y + group.radius;
+    y += 1
+  ) {
+    for (
+      let x = group.center.x - group.radius;
+      x <= group.center.x + group.radius;
+      x += 1
+    ) {
+      const radiusComponent = componentAt(
+        { x, y, z: group.center.z },
+        region,
+        componentByKey,
+      );
+      if (
+        radiusComponent !== undefined &&
+        reachableComponents.has(radiusComponent)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function reachableSpawns(
+  groups: readonly SpawnGroupDefinition[],
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+  reachableComponents: ReadonlySet<number>,
+): ReachableSpawnSummary {
+  const reachableGroups: SpawnGroupDefinition[] = [];
+  let slots = 0;
+  for (const group of groups) {
+    const slotsForGroup = group.slots.filter((slot) =>
+      slotIsReachable(group, slot, region, componentByKey, reachableComponents),
+    );
+    if (slotsForGroup.length === 0) continue;
+    reachableGroups.push({ ...group, slots: slotsForGroup });
+    slots += slotsForGroup.length;
+  }
+  return { groups: reachableGroups, slots };
+}
+
 function pickPlayerStart(
   region: MapRegion,
   transitions: readonly TransitionEntry[],
   groups: readonly SpawnGroupDefinition[],
 ): GridPosition | undefined {
-  const components = walkableComponents(region, transitions);
-  if (components.length === 0) return undefined;
+  const graph = buildWalkableComponentGraph(region, transitions);
+  if (graph.components.length === 0) return undefined;
 
-  const holdsCenter = (
-    cells: readonly GridPosition[],
-  ): ((group: SpawnGroupDefinition) => boolean) => {
-    const reachable = new Set(
-      cells.map((cell) => `${cell.z}:${cell.y * region.width + cell.x}`),
-    );
-    return (group) =>
-      reachable.has(
-        `${group.center.z}:${group.center.y * region.width + group.center.x}`,
+  const candidates: StartCandidate[] = graph.components.map(
+    (cells, componentIndex) => {
+      const reachableComponentIds =
+        graph.reachableComponents[componentIndex] ?? new Set([componentIndex]);
+      const reachable = reachableSpawns(
+        groups,
+        region,
+        graph.componentByKey,
+        reachableComponentIds,
       );
+      const localGroups = groups.filter(
+        (group) =>
+          componentAt(group.center, region, graph.componentByKey) ===
+          componentIndex,
+      );
+      return {
+        cells,
+        localGroups,
+        reachableGroups: reachable.groups,
+        reachableSlots: reachable.slots,
+        reachableCellCount: [...reachableComponentIds].reduce(
+          (total, id) => total + (graph.components[id]?.length ?? 0),
+          0,
+        ),
+      };
+    },
+  );
+
+  const isBetter = (
+    candidate: StartCandidate,
+    best: StartCandidate,
+  ): boolean => {
+    if (candidate.reachableGroups.length !== best.reachableGroups.length) {
+      return candidate.reachableGroups.length > best.reachableGroups.length;
+    }
+    if (candidate.reachableSlots !== best.reachableSlots) {
+      return candidate.reachableSlots > best.reachableSlots;
+    }
+    if (candidate.reachableCellCount !== best.reachableCellCount) {
+      return candidate.reachableCellCount > best.reachableCellCount;
+    }
+    if (candidate.localGroups.length !== best.localGroups.length) {
+      return candidate.localGroups.length > best.localGroups.length;
+    }
+    return candidate.cells.length > best.cells.length;
   };
 
-  const hunt = components
-    .map((cells) => ({ cells, groups: groups.filter(holdsCenter(cells)) }))
-    .reduce((best, candidate) =>
-      candidate.groups.length > best.groups.length ||
-      (candidate.groups.length === best.groups.length &&
-        candidate.cells.length > best.cells.length)
-        ? candidate
-        : best,
-    );
-
-  const floorOf = (z: number) => ({
-    z,
-    cells: hunt.cells.filter((cell) => cell.z === z),
-    groups: hunt.groups.filter((group) => group.center.z === z),
-  });
-  const floor = [...new Set(hunt.cells.map((cell) => cell.z))]
-    .map(floorOf)
-    .reduce((best, candidate) =>
-      candidate.groups.length > best.groups.length ||
-      (candidate.groups.length === best.groups.length &&
-        candidate.cells.length > best.cells.length)
-        ? candidate
-        : best,
-    );
-
+  const best = candidates.reduce((current, candidate) =>
+    isBetter(candidate, current) ? candidate : current,
+  );
+  const groupsForWalk =
+    best.localGroups.length > 0 ? best.localGroups : best.reachableGroups;
   const walkCost = (cell: GridPosition): number =>
-    floor.groups.reduce(
+    groupsForWalk.reduce(
       (total, group) =>
         total +
         Math.max(
@@ -151,8 +257,8 @@ function pickPlayerStart(
       0,
     );
 
-  return floor.cells.reduce((best, candidate) =>
-    walkCost(candidate) < walkCost(best) ? candidate : best,
+  return best.cells.reduce((current, candidate) =>
+    walkCost(candidate) < walkCost(current) ? candidate : current,
   );
 }
 
