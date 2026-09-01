@@ -12,8 +12,10 @@ ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 **Última atualização:** 2026-09-01 — 13 a 15 fechadas e integradas; a máquina do catálogo e as
 cinco caixas curadas estão na `main`. A validação de fechamento achou dois vermelhos que os gates das
 tasks não cobriam: a fixture do PB-04 ficou obsoleta contra o `hunt.json` novo (**PB-10-15-FIX-01**) e
-o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). Aberto o **B27**,
-densidade da rotworm. Próxima elegível: **PB-10-15-FIX-01**, depois de o B27 ser decidido.
+o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). O **B27** foi
+aberto como densidade da rotworm e reclassificado como defeito de `playerStart` pela investigação do
+mesmo dia; virou a **PB-10-15-FIX-02**, que roda **antes** da FIX-01. Próxima elegível:
+**PB-10-15-FIX-02**.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -45,7 +47,8 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-13-FIX-04 | done | `main` | frontier `xhigh` | Claude Opus 5 | `cc43143` | spawn inalcançável sai na extração, pela regra do próprio kernel (célula do slot; raio do grupo quando ela é bloqueada). Orc vai de 33 grupos/68 slots para 21/46, todos dentro do circuito e agora todos cabendo em `maxLiveActors: 64`. `expectedSpawnGroups: 33` fica: descreve o XML, não a hunt. As quatro com receita reextraem byte a byte; map-extractor (141), content, architecture e format verdes |
 | PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
 | PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
-| PB-10-15-FIX-01 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-10-15-FIX-01 | pending | `main` | econômico `xhigh` | — | — | roda **depois** da FIX-02 |
+| PB-10-15-FIX-02 | pending | `main` | econômico `xhigh` | — | — | — |
 
 ## Bloqueios
 
@@ -135,12 +138,20 @@ PB-10-13-FIX-02 e agora a PB-10-15, que moveu rotworm 156→451, hero cave 118�
 226→368. Mesmo padrão em `tools/diagnostics/vitest.config.ts` e em `tools/map-extractor/tsconfig.json`.
 A card existe em `docs/playbooks/PB-17/tasks/PB-17-FIX-01-o-config-orfao.md`.
 
-**B27 — aberto, é decisão do usuário, não defeito.** A rotworm — faixa 1, a primeira hunt do jogo —
-ficou com **1 grupo e 2 slots** numa caixa de 64 × 96 × 2, contra Orc 21/46, Cyclopolis 18/19, Hero
-10/13 e Dragon 8/8. O filtro de alcançabilidade da PB-10-13-FIX-04 fez o que devia e na rotworm
-sobrou: 6.144 células com dois rotworms não é uma hunt. As saídas na mesa são aceitar (a faixa 1 vira
-tutorial curto), recurar a caixa só dela, ou revisar o filtro para este caso. **Bloqueia a
-PB-10-15-FIX-01**, que teria de ser refeita se a geometria mudar depois.
+**B27 — aberto, é defeito e tem card: `PB-10-15-FIX-02`.** Aberto como "densidade da rotworm" e
+**reclassificado no mesmo dia** pela investigação que o usuário pediu: não é densidade, é o
+`playerStart`. Na rotworm ele cai num bolsão de **35 células, 2 % do andável**, sem uma única das 8
+transições alcançável — o jogador não sai do lugar. Medido por BFS a partir do start, atravessando
+transições: Orc 2620/4312 (61 %), Cyclopolis 671/1401 (48 %), Hero 2138/4624 (46 %), Dragon 485/2376
+(20 %), rotworm 35/1451 (2 %). A heurística da PB-10-13-FIX-01 — "componente com mais grupos" — foi
+afinada na Orc, onde transições costuram componentes, e não tem termo de tamanho: na rotworm ela
+preferiu um bolsão sete vezes menor que o maior componente plano (267) e que não costura nada. O
+filtro de spawn da FIX-04 está certo; ele descartou 18 slots porque o start era o errado.
+
+**B28 — aberto, observação, sem task.** Cyclopolis e Hero Cave alcançam **zero** transições a partir
+do start: a Hero não extraiu nenhuma em 71 × 71 × 3 e a única da Cyclopolis é inalcançável. As duas
+são jogáveis, mas de um andar só — o circuito multi-andar que as PB-10-13 a 15 existiam para criar só
+é real na Orc. Medir se isso é a caixa, o `floorchange` ou a escada é task própria, depois do B27.
 
 **B24 — fechado pela PB-10-13-FIX-03.** A caixa não tinha uma única transição de subida porque
 `floorchange` no Canary só desce — os 8 itens da caixa são buracos, 2 deles caindo em z9. A volta é a

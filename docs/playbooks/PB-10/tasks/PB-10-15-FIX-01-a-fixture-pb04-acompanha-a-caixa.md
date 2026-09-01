@@ -15,9 +15,12 @@ browser caem junto. Ao fim disto a fixture descreve o mapa que o jogo carrega.
 Quem consome, e por isso quebra hoje: `hunt-play`, `hunt-replay`, `hunt-world-edge`, `posture-play` e
 `tests/e2e/support/combatDriver.ts`.
 
-**Fora de escopo.** Nada em `packages/simulation` nem em `apps/game`. As outras quatro hunts. A
-densidade da rotworm — 1 grupo e 2 slots em 6.144 células — é o **B27** e é decisão do usuário: se
-ela mudar, esta task se refaz do zero, então rode-a depois de a decisão estar no `STATE.md`.
+**Fora de escopo.** Nada em `packages/simulation` nem em `apps/game`. As outras quatro hunts.
+
+**Esta task roda depois da `PB-10-15-FIX-02`.** O B27 foi investigado em 2026-09-01 e não era
+densidade: o `playerStart` da rotworm cai num bolsão de 35 células. Consertá-lo move o start e os
+spawns, ou seja, muda o `hunt.json` de novo — regenerar a fixture antes disso é fazer o trabalho
+duas vezes.
 
 **Decisões congeladas.** A geometria nova é intencional — decisão congelada 8 do README, a hunt ocupa
 a caixa curada inteira. O golden se **regenera** porque o comportamento mudou de propósito, e o

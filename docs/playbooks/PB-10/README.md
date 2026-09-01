@@ -126,7 +126,8 @@ Decomposta por **fronteira de pipeline**, não por contagem de arquivos.
 | 13 | Orc Fortress ocupa a caixa inteira | tool e conteúdo — **a correção de mapa** |
 | 14 | O andar desenha só o que cabe na tela | `apps/game`, render |
 | 15 | As outras quatro hunts ocupam suas caixas | conteúdo |
-| 15-FIX-01 | A fixture PB-04 acompanha a caixa | fixture e golden — achado na validação de fechamento |
+| 15-FIX-02 | O start não cai num armário | tool e conteúdo — **o B27** |
+| 15-FIX-01 | A fixture PB-04 acompanha a caixa | fixture e golden — roda depois da 15-FIX-02 |
 
 **Fechadas: 01 a 12 — a máquina do catálogo está inteira, as cinco hunts estão na `main` e o
 playbook foi aceito jogando. Escritas e elegíveis: 13 a 15, a correção de mapa.**
@@ -239,6 +240,7 @@ brigariam pelo mesmo bloco de `package.json`. **São seriais.**
 | PB-10-14  | render em `apps/game` | econômico `xhigh`, **validado pelo usuário jogando** |
 | PB-10-15  | conteúdo, quatro reextrações da mesma forma | econômico `xhigh` |
 | PB-10-15-FIX-01 | regeneração de fixture e golden, decisão já congelada | econômico `xhigh` |
+| PB-10-15-FIX-02 | heurística de start, com critério de aceite numérico e já medido | econômico `xhigh` |
 
 Revisão prefere modelo **diferente** do implementador. Modelo e effort efetivamente usados vão para o
 `STATE.md`.
