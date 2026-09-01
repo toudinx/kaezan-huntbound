@@ -48,7 +48,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
 | PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
 | PB-10-15-FIX-01 | pending | `main` | econômico `xhigh` | — | — | roda **depois** da FIX-02 |
-| PB-10-15-FIX-02 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-10-15-FIX-02 | pending | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7797993` | start por alcance dirigido; Rotworm 255/1451 (17,6%) com 8/12 grupos/slots e Dragon 594/2376 (25,0%); os 25% da Rotworm ficam bloqueados pela caixa congelada: a maior área alcançável sem spawns chega a 503/1451 |
 
 ## Bloqueios
 
