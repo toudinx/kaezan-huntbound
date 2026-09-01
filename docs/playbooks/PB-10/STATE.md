@@ -12,10 +12,10 @@ ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 **Última atualização:** 2026-09-01 — 13 a 15 fechadas e integradas; a máquina do catálogo e as
 cinco caixas curadas estão na `main`. A validação de fechamento achou dois vermelhos que os gates das
 tasks não cobriam: a fixture do PB-04 ficou obsoleta contra o `hunt.json` novo (**PB-10-15-FIX-01**) e
-o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). O **B27** foi
-aberto como densidade da rotworm e reclassificado como defeito de `playerStart` pela investigação do
-mesmo dia; virou a **PB-10-15-FIX-02**, que roda **antes** da FIX-01. Próxima elegível:
-**PB-10-15-FIX-02**.
+o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). O **B27** foi aberto como
+densidade da rotworm, reclassificado como defeito de `playerStart` e **fechado** pela
+PB-10-15-FIX-02; a FIX-01 fechou em seguida. **O PB-10 está inteiro.** Próxima elegível:
+**PB-17-FIX-01**, e depois a PB-17-05.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -48,7 +48,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
 | PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
 | PB-10-15-FIX-01 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8151c52` | PB-04 e PB-04-respawn alinhadas à caixa `64×96×2`; `hunt:check` e `corepack pnpm test` verdes |
-| PB-10-15-FIX-02 | pending | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7797993` | start por alcance dirigido; Rotworm 255/1451 (17,6%) com 8/12 grupos/slots e Dragon 594/2376 (25,0%); os 25% da Rotworm ficam bloqueados pela caixa congelada: a maior área alcançável sem spawns chega a 503/1451 |
+| PB-10-15-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7797993` | start por alcance dirigido; Rotworm 255/1451 (17,6%) com 8/12 grupos/slots e Dragon 594/2376 (25,0%); critério de 25 % da card corrigido para "maximiza grupos alcançáveis" — a maior área alcançável da Rotworm, 503/1451, não tem um único spawn; map-extractor 142 e content verdes |
 
 ## Bloqueios
 
@@ -138,15 +138,18 @@ PB-10-13-FIX-02 e agora a PB-10-15, que moveu rotworm 156→451, hero cave 118�
 226→368. Mesmo padrão em `tools/diagnostics/vitest.config.ts` e em `tools/map-extractor/tsconfig.json`.
 A card existe em `docs/playbooks/PB-17/tasks/PB-17-FIX-01-o-config-orfao.md`.
 
-**B27 — aberto, é defeito e tem card: `PB-10-15-FIX-02`.** Aberto como "densidade da rotworm" e
-**reclassificado no mesmo dia** pela investigação que o usuário pediu: não é densidade, é o
-`playerStart`. Na rotworm ele cai num bolsão de **35 células, 2 % do andável**, sem uma única das 8
-transições alcançável — o jogador não sai do lugar. Medido por BFS a partir do start, atravessando
-transições: Orc 2620/4312 (61 %), Cyclopolis 671/1401 (48 %), Hero 2138/4624 (46 %), Dragon 485/2376
-(20 %), rotworm 35/1451 (2 %). A heurística da PB-10-13-FIX-01 — "componente com mais grupos" — foi
-afinada na Orc, onde transições costuram componentes, e não tem termo de tamanho: na rotworm ela
-preferiu um bolsão sete vezes menor que o maior componente plano (267) e que não costura nada. O
-filtro de spawn da FIX-04 está certo; ele descartou 18 slots porque o start era o errado.
+**B27 — fechado pela PB-10-15-FIX-02 (`7797993`).** Aberto como "densidade da rotworm", reclassificado
+no mesmo dia como defeito de `playerStart`: ele caía num bolsão de 35 células, 2 % do andável, sem
+uma das 8 transições alcançável. A heurística da PB-10-13-FIX-01 escolhia "componente com mais
+grupos" sem termo de tamanho e sem respeitar a **direção** das transições. A correção monta um grafo
+de alcance dirigido por componente — buraco só desce — em `tools/map-extractor/topology.ts`. Rotworm
+vai de 35/1451 e 1 grupo/2 slots para **255/1451 e 8 grupos/12 slots**, com 4 das 8 transições
+utilizáveis; Dragon Lair de 485 para 594 e de 8 para 10 slots. Orc, Cyclopolis e Hero não se moveram:
+já estavam no melhor componente.
+
+**O teto é o mapa, não a heurística.** O maior conjunto alcançável da rotworm é 503/1451 e **não tem
+um único rotworm** no XML. 255 células com 8 dos 13 grupos é o ótimo real desta caixa, e os 25 % que
+a card pedia eram um número inventado na especificação — corrigido lá, não aqui.
 
 **B28 — aberto, observação, sem task.** Cyclopolis e Hero Cave alcançam **zero** transições a partir
 do start: a Hero não extraiu nenhuma em 71 × 71 × 3 e a única da Cyclopolis é inalcançável. As duas

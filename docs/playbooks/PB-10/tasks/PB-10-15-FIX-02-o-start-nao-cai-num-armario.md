@@ -29,11 +29,17 @@ tamanho, e empata mal quando os grupos se espalham por muitos componentes.
 da PB-10-13-FIX-04 — ele está certo, o start é que está errado. Não recurar caixa: as caixas da
 `HUNT_BANDS.md` seguem congeladas.
 
-**Decisões congeladas.** O critério de aceite é numérico e é o que fecha a task: **nenhuma hunt fecha
-com menos de 25 % do andável alcançável a partir do start**, e a rotworm precisa recuperar grupos —
-ela tem 13 grupos e 20 slots no XML (`expectedSpawnGroups`/`expectedSpawnSlots` da selection) e hoje
-entrega 1 e 2. A Dragon Lair em 20 % também entra no conserto. A caixa curada, o teto de
-`maxLiveActors` e a regra de descarte de spawn inalcançável não se redesenham aqui.
+**Decisões congeladas.** O start maximiza **grupos de spawn alcançáveis**, e área é só desempate.
+A caixa curada, o teto de `maxLiveActors` e a regra de descarte de spawn inalcançável não se
+redesenham aqui.
+
+**Correção de 2026-09-01, depois da implementação.** A primeira versão desta card congelou "nenhuma
+hunt fecha com menos de 25 % do andável alcançável". **O número estava errado e era meu, não do
+mapa**: na rotworm o maior conjunto alcançável chega a 503/1451 (35 %) e **não contém um único
+rotworm** — perseguir a porcentagem faria o filtro de spawn descartar tudo e entregar uma caverna
+vazia e grande no lugar de uma pequena e cheia. A sessão que executou recusou fechar contra esse
+critério em vez de enfraquecê-lo, que é o comportamento certo pelo `AGENTS.md`. Área não é o alvo;
+grupo alcançável é.
 
 **Gate.** Linha `packages/content`/gerador: teste diretamente afetado do `map-extractor` +
 `content:check`; `assets:check` se algum pack mudar de tamanho; `architecture:check` porque `tools`

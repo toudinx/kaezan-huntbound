@@ -181,9 +181,13 @@ describe('PB-04 hunt replay fixture', () => {
     expect(divergent).toEqual([]);
 
     for (const boundary of [0, 300, 600]) {
-      const split = buildReplayArtifacts(fixture.scenarioText, fixture.logText, {
-        resumeAtTick: boundary,
-      });
+      const split = buildReplayArtifacts(
+        fixture.scenarioText,
+        fixture.logText,
+        {
+          resumeAtTick: boundary,
+        },
+      );
       expect(split.ok).toBe(true);
       if (!split.ok) continue;
       expect(split.value.snapshotText).toBe(straight.value.snapshotText);
