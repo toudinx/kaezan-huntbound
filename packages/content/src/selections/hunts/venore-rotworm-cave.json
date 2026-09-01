@@ -46,7 +46,7 @@
   ],
   "expectedSpawnGroups": 13,
   "expectedSpawnSlots": 20,
-  "expectedDroppedTransitions": 3,
+  "expectedDroppedTransitions": 7,
   "budget": {
     "maxFloors": 3,
     "maxWidth": 96,

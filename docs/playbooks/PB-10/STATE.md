@@ -49,6 +49,7 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
 | PB-10-15-FIX-01 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8151c52` | PB-04 e PB-04-respawn alinhadas à caixa `64×96×2`; `hunt:check` e `corepack pnpm test` verdes |
 | PB-10-15-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7797993` | start por alcance dirigido; Rotworm 255/1451 (17,6%) com 8/12 grupos/slots e Dragon 594/2376 (25,0%); critério de 25 % da card corrigido para "maximiza grupos alcançáveis" — a maior área alcançável da Rotworm, 503/1451, não tem um único spawn; map-extractor 142 e content verdes |
+| PB-10-15-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | (este commit) | volta do buraco pelo rope spot: os 8 buracos da Rotworm caíam em z9 sem retorno porque a caixa não tem uma única escada — a volta ali é a corda sobre o `386`. O extractor emite a mesma geometria `moveUpstairs` da escada e a Rotworm vai de 8 para 16 transições, uma subida por buraco. `expectedDroppedTransitions` sobe onde o rope spot leva a um andar fora da caixa (Rotworm 3→7, Cyclopolis 4→6, Dragon 4→5); map-extractor (16 em transitions), content e format verdes |
 
 ## Bloqueios
 
@@ -162,6 +163,13 @@ escada, que é `type="ladder"` em `items.xml` e sobe por ação (`ladder_up.lua`
 tile. A tabela de flags passou a carregá-la e o extractor emite a geometria do
 `Position:moveUpstairs`: um andar acima e um tile ao sul, porque o tile logo acima da escada é o
 buraco de onde o jogador caiu.
+
+**B28 — fechado pela PB-10-15-FIX-03.** Reportado no playtest: na Rotworm o jogador desce o buraco e
+não volta. A B24 tratou a escada, mas esta caixa não tem nenhuma — os 8 buracos `385` caem num `386`,
+o *dirt floor* que o `items.xml` descreve como "There is a hole in the ceiling" e que o
+`Tile:isRopeSpot` reconhece pelo **ground**. No Canary sobe-se dali com corda ou `exani tera`; a hunt
+não tem item nem magia, então o rope spot virou transição andada, igual à escada. `ropeSpots` do
+`data/global.lua` está transcrito em `tools/map-extractor/transitions.ts`.
 
 **B26 — fechado pela PB-10-13-FIX-04.** Decisão do usuário em 2026-08-31: descartar. Os 22 slots do
 campo fora da muralha saem na extração; sobram 21 grupos e 46 slots, todos alcançáveis a partir do
