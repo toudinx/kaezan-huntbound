@@ -86,6 +86,17 @@ function contentTypeFor(path: string): string {
   }
 }
 
+// Media files are addressed by the SHA-256 of their own bytes, so a given URL
+// can never point at different content. Everything else — catalogs, manifests —
+// keeps its name across regenerations and must be revalidated every load.
+const IMMUTABLE_MEDIA_PATH = /(?:^|\/)media\/[0-9a-f]{64}\.[a-z0-9]+$/;
+
+function cacheControlFor(relativePath: string): string {
+  return IMMUTABLE_MEDIA_PATH.test(relativePath)
+    ? 'public, max-age=31536000, immutable'
+    : 'no-cache';
+}
+
 type RequestedAssetPath = {
   readonly profile: AssetBuildProfile;
   readonly relativePath: string;
@@ -201,6 +212,10 @@ export function assetProfileGuardPlugin(input: {
           const body = await readFile(resolved.path);
           response.statusCode = 200;
           response.setHeader('Content-Type', contentTypeFor(resolved.path));
+          response.setHeader(
+            'Cache-Control',
+            cacheControlFor(requested.relativePath),
+          );
           response.setHeader('Content-Length', body.byteLength);
           response.end(request.method === 'HEAD' ? undefined : body);
         } catch (error) {
