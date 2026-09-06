@@ -1,4 +1,7 @@
-import type { MapRegion } from '../../../../packages/contracts/src/index.ts';
+import {
+  isHuntRegionBorderCell,
+  type MapRegion,
+} from '../../../../packages/contracts/src/index.ts';
 
 export interface GroundSample {
   readonly paletteIndex: number;
@@ -13,12 +16,31 @@ function validPaletteIndex(region: MapRegion, paletteIndex: number): boolean {
   );
 }
 
+/**
+ * The ground under one cell, or nothing when the cell has none.
+ *
+ * The border ring of the region rectangle is answered as empty even where the
+ * extraction did carry ground: that ground continues onto a floor nobody cut,
+ * and the kernel blocks the ring for the same reason. Answering it here — the
+ * one place the floor, the minimap and the world edge all ask — is what makes
+ * the map end on a rock face instead of on a corridor that refuses to be
+ * walked.
+ */
 export function resolveGroundSample(
   region: MapRegion,
   activeZ: number,
   cellIndex: number,
 ): GroundSample | undefined {
   if (!Number.isSafeInteger(cellIndex) || cellIndex < 0) return undefined;
+  if (
+    isHuntRegionBorderCell(
+      region,
+      cellIndex % region.width,
+      Math.floor(cellIndex / region.width),
+    )
+  ) {
+    return undefined;
+  }
 
   const orderedFloors = [
     ...region.floors.filter((floor) => floor.z === activeZ),

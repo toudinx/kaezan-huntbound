@@ -10,26 +10,31 @@ import {
   unresolvedGroundCells,
 } from './GroundCompositor';
 
+/**
+ * Two stacked floors whose ground sits in the 2x2 middle of the rectangle. The
+ * border ring is never composed, so anything worth asserting has to live one
+ * cell in from the edge — cells 5, 6, 9 and 10.
+ */
 function regionWithStackedGround(): MapRegion {
   return {
     schemaVersion: 1,
     regionId: 'region:test:stacked-ground' as MapRegion['regionId'],
     regionRevision: 2,
     origin: { x: 0, y: 0 },
-    width: 2,
-    height: 2,
+    width: 4,
+    height: 4,
     palette: [0, 101, 102],
     floors: [
       {
         z: 7,
-        ground: [1, 2, 0, 0],
+        ground: [0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         objectsBelow: [],
         objectsAbove: [],
         collision: [],
       },
       {
         z: 8,
-        ground: [1, 1, 0, 1],
+        ground: [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
         objectsBelow: [],
         objectsAbove: [],
         collision: [],
@@ -72,21 +77,56 @@ describe('GroundCompositor', () => {
   it('reveals lower-floor ground through an active-floor void', () => {
     const region = regionWithStackedGround();
 
-    expect(resolveGroundSample(region, 7, 3)).toEqual({
+    expect(resolveGroundSample(region, 7, 10)).toEqual({
       paletteIndex: 1,
       sourceZ: 8,
     });
-    expect(resolveGroundSample(region, 8, 2)).toBeUndefined();
+    expect(resolveGroundSample(region, 8, 9)).toBeUndefined();
+  });
+
+  /**
+   * The region is a window cut mid-floor out of the Canary map, so its outer
+   * ring shows ground whose continuation was never extracted. The kernel blocks
+   * that ring; composing it anyway would leave the player facing a corridor
+   * that refuses to be walked.
+   */
+  it('composes no ground on the border ring, even where the floor has some', () => {
+    const region: MapRegion = {
+      ...regionWithStackedGround(),
+      floors: [
+        {
+          z: 7,
+          ground: new Array(16).fill(1),
+          objectsBelow: [],
+          objectsAbove: [],
+          collision: [],
+        },
+      ],
+    };
+
+    for (const index of [0, 3, 7, 8, 12, 15]) {
+      expect(resolveGroundSample(region, 7, index)).toBeUndefined();
+    }
+    expect(resolveGroundSample(region, 7, 5)).toEqual({
+      paletteIndex: 1,
+      sourceZ: 7,
+    });
+    expect(groundBounds(region, 7)).toEqual({
+      minX: 1,
+      minY: 1,
+      maxX: 2,
+      maxY: 2,
+    });
   });
 
   it('prefers active-floor ground and ignores invalid palette entries', () => {
     const region = regionWithStackedGround();
 
-    expect(resolveGroundSample(region, 7, 0)).toEqual({
+    expect(resolveGroundSample(region, 7, 5)).toEqual({
       paletteIndex: 1,
       sourceZ: 7,
     });
-    expect(resolveGroundSample(region, 7, 1)).toEqual({
+    expect(resolveGroundSample(region, 7, 6)).toEqual({
       paletteIndex: 2,
       sourceZ: 7,
     });

@@ -555,23 +555,31 @@ function syntheticHunt(
         'region:tibia:synthetic-cave' as HuntDefinition['region']['regionId'],
       regionRevision: 2,
       origin: { x: 1000, y: 2000 },
-      width: 4,
-      height: 4,
+      // 6x6 rather than 4x4: the hunt blocks the border ring, so everything the
+      // scenario has to carry — start, seats, collision — lives inside it.
+      width: 6,
+      height: 6,
       palette: [100, 200],
       floors: [
         {
           z: 7,
-          ground: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          ground: [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          ],
           objectsBelow: [],
           objectsAbove: [],
-          collision: [1, 14],
+          collision: [8, 27],
         },
         {
           z: 8,
-          ground: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          ground: [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          ],
           objectsBelow: [],
           objectsAbove: [],
-          collision: [8],
+          collision: [15],
         },
       ],
     },
@@ -623,7 +631,7 @@ function syntheticHunt(
       combatNeutral('rotworm', 3, 'wander'),
       ...extraBlueprints,
     ],
-    playerStart: { x: 0, y: 0, z: 7 },
+    playerStart: { x: 4, y: 4, z: 7 },
     playerBlueprintId: 'player',
   };
 }
@@ -697,18 +705,8 @@ describe('buildHuntScenario', () => {
       schemaVersion: SIMULATION_SCHEMA_VERSION,
       scenarioId: 'scenario:hunt:tibia:synthetic-cave',
       scenarioRevision: 4,
-      width: 4,
-      height: 4,
-      floors: [
-        {
-          z: 7,
-          blockedTiles: [
-            [1, 0],
-            [2, 3],
-          ],
-        },
-        { z: 8, blockedTiles: [[0, 2]] },
-      ],
+      width: 6,
+      height: 6,
       transitions: [
         {
           from: { x: 1, y: 1, z: 7 },
@@ -741,11 +739,35 @@ describe('buildHuntScenario', () => {
       initialActors: [
         {
           blueprintId: 'player',
-          position: { x: 0, y: 0, z: 7 },
+          position: { x: 4, y: 4, z: 7 },
           facing: 's',
         },
       ],
     });
+  });
+
+  /**
+   * The region is a window cut mid-floor out of the Canary map, so its outer
+   * ring shows ground that leads nowhere. Blocking it keeps the player off a
+   * cell that looks like a corridor and then refuses to be walked.
+   */
+  it('blocks the region border on top of the authored collision', () => {
+    const { scenario } = build();
+    const blocked = new Set(
+      scenario.floors
+        .find((floor) => floor.z === 7)
+        ?.blockedTiles.map(([x, y]) => `${x}:${y}`),
+    );
+
+    for (let along = 0; along < 6; along += 1) {
+      expect(blocked.has(`${along}:0`)).toBe(true);
+      expect(blocked.has(`${along}:5`)).toBe(true);
+      expect(blocked.has(`0:${along}`)).toBe(true);
+      expect(blocked.has(`5:${along}`)).toBe(true);
+    }
+    expect(blocked.has('2:1')).toBe(true);
+    expect(blocked.has('3:4')).toBe(true);
+    expect(blocked.has('4:4')).toBe(false);
   });
 
   it('returns a scenario accepted by the kernel validator', () => {
