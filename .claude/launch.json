@@ -6,6 +6,12 @@
       "runtimeExecutable": "corepack",
       "runtimeArgs": ["pnpm", "dev:personal"],
       "port": 5173
+    },
+    {
+      "name": "huntbound-test",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": ["pnpm", "dev:test"],
+      "port": 5173
     }
   ]
 }

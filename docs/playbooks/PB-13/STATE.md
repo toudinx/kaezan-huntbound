@@ -1,7 +1,7 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01 a PB-13-09 implementadas nas fontes; artefatos gerados e gates pendentes.
-**Próxima:** nenhuma. O playbook fechou nas fontes; falta rodar o pipeline e os gates do B27.
+**Estado:** PB-13-01 a PB-13-09 implementadas; gates do B27 rodados em 2026-09-08 e verdes.
+**Próxima:** nenhuma. O playbook fechou; os vermelhos remanescentes estão no B28.
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
@@ -109,6 +109,24 @@ instalado) e nenhum gate rodou. O diff é só de `apps/game` — nada de contrac
 conteúdo —, então a linha da task é `biome check .` mais `apps/game/src/hunt/HuntHelper.test.ts`, o
 teste da lógica pura de decisão, e `typecheck` pelas assinaturas novas de `SceneBridge` e `CombatHud`.
 Como é a última task do playbook, soma `corepack pnpm build`. Vermelho ali é `PB-13-09-FIX-01`.
+
+**B27 — endereçado em 2026-09-08 no macOS com toolchain instalada.** O checkout ganhou Node
+24.14.0 (fnm), corepack e pnpm 11.21.0, e `node_modules` foi refeito do zero — o que estava lá era o
+do Windows. Rodados uma vez, todos verdes: `content:check`, `save:check`, `simulation:check`,
+`hunt:check`, `combat:check`, `architecture:check`, `typecheck` e `build`. Os gerados batem com as
+fontes; a árvore continuou limpa depois do `content:catalog:rebuild`. O vermelho do PB-13-09 era um
+`SimulationEvent` com `tick` sem marca `TickIndex` e a formatação de um assert — corrigido em
+`049b90d`. Resta o B28.
+
+**B28 — aberto, sem task escrita. Três vermelhos reais, nenhum de plataforma.** (1)
+`assets:check` para em `HUNT_PACK_OVER_ENTRIES: Pack has 541 entries; maximum is 512`, contra o
+`maxEntries` de `tools/asset-packer/hunt/huntSelection.ts:28`; o `build` e o staging passam, então o
+jogo roda. (2) `tools/save/migratePb06Legacy.test.ts:40` ainda espera `schemaVersion` 5, e
+`SAVE_SCHEMA_VERSION` está em 8 desde o PB-13-06/07. (3)
+`tools/save/cli.test.ts:253` espera exit 1 ao adulterar o `legacy.json` para `schemaVersion: 4`; o
+CLI sai 2 com `SAVE_DOCUMENT_INVALID`, porque marcar a versão pula os passos de migração que criam
+`character` e convertem `spawnSlots` para `slotId`. Os dois testes de save estão desatualizados, não
+o código: `save:check` verifica o fixture real e passa.
 
 ## Decisões congeladas
 
