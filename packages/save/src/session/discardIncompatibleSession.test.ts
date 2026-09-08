@@ -62,12 +62,13 @@ describe('incompatible session discard', () => {
 
     expect(counting.writeCount()).toBe(1);
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 7,
+      schemaVersion: 8,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: ['item:tibia:gold-coin', 'item:tibia:meat'],
         bestiary: [],
+        achievements: [],
       },
       gold: 0,
       nextHuntBuff: 'none',
@@ -116,12 +117,13 @@ describe('incompatible session discard', () => {
     });
 
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 7,
+      schemaVersion: 8,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: ['item:tibia:gold-coin', 'item:tibia:meat'],
         bestiary: [],
+        achievements: [],
       },
       gold: 0,
       nextHuntBuff: 'none',

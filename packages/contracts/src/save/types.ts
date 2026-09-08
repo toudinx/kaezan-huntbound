@@ -1,7 +1,7 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 7;
+export const SAVE_SCHEMA_VERSION = 8;
 
 /**
  * Whether a next-hunt blessing is sitting on the character.
@@ -60,6 +60,36 @@ export interface BestiaryProgress {
   readonly rewardClaimed: boolean;
 }
 
+/** The existing account facts an achievement is allowed to observe. */
+export const ACHIEVEMENT_METRICS = [
+  'completed-runs',
+  'equipped-slots',
+  'sold-items',
+  'experience',
+  'bestiary-species',
+] as const;
+
+export type AchievementMetric = (typeof ACHIEVEMENT_METRICS)[number];
+
+/** Static content for one first-loop account objective. */
+export interface AchievementDefinition {
+  readonly achievementId: string;
+  readonly displayName: string;
+  readonly description: string;
+  readonly metric: AchievementMetric;
+  /** The value at which the objective is complete. */
+  readonly target: number;
+  readonly rewardGold: number;
+}
+
+/** Persistent progress and the one-time reward ledger for one objective. */
+export interface AchievementProgress {
+  readonly achievementId: string;
+  readonly progress: number;
+  /** Prevents the reward from being paid more than once. */
+  readonly rewardClaimed: boolean;
+}
+
 /**
  * The character the player keeps between runs.
  *
@@ -81,6 +111,8 @@ export interface CharacterProgress {
   readonly collection: readonly string[];
   /** Bestiary entries are sparse and ordered by creature key. */
   readonly bestiary: readonly BestiaryProgress[];
+  /** Achievement entries are sparse and ordered by achievement ID. */
+  readonly achievements: readonly AchievementProgress[];
 }
 
 export interface ActiveRunState {
@@ -127,6 +159,7 @@ export function createEmptyCharacterProgress(): CharacterProgress {
     equipment: createEmptyEquipment(),
     collection: [],
     bestiary: [],
+    achievements: [],
   };
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type AchievementDefinition,
   type BestiarySpecies,
   createEmptyCharacterProgress,
   createEmptyGameSave,
@@ -36,6 +37,15 @@ const ORC_BESTIARY: BestiarySpecies = {
   creatureKey: 'creature:tibia:orc',
   displayName: 'Orc',
   targetKills: 2,
+  rewardGold: 25,
+};
+
+const FIRST_SALE_ACHIEVEMENT: AchievementDefinition = {
+  achievementId: 'achievement:test:first-sale',
+  displayName: 'First sale',
+  description: 'Sell one item.',
+  metric: 'sold-items',
+  target: 1,
   rewardGold: 25,
 };
 
@@ -598,6 +608,69 @@ describe('createSaveSession', () => {
     await expect(repository.load()).resolves.toMatchObject({
       stash: [],
       gold: 10,
+    });
+    reloaded.destroy();
+  });
+
+  it('pays a sale achievement once and keeps it claimed after reload', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({
+        ...createEmptyGameSave(),
+        stash: [{ itemKey: 'item:tibia:meat', count: 1 }],
+        gold: 4,
+        session: null,
+      }),
+    );
+    const options = {
+      resolveSellItem: () => ({
+        displayName: 'meat',
+        unitPrice: 2,
+        protected: false,
+      }),
+      achievements: [FIRST_SALE_ACHIEVEMENT],
+    };
+    const saveSession = createSaveSession(repository, options);
+    await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    await expect(saveSession.sell('item:tibia:meat', 1)).resolves.toMatchObject(
+      {
+        ok: true,
+        gold: 6,
+      },
+    );
+    await expect(repository.load()).resolves.toMatchObject({
+      gold: 31,
+      character: {
+        achievements: [
+          {
+            achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
+            progress: 1,
+            rewardClaimed: true,
+          },
+        ],
+      },
+    });
+    saveSession.destroy();
+
+    const reloaded = createSaveSession(repository, options);
+    await reloaded.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    await expect(repository.load()).resolves.toMatchObject({
+      gold: 31,
+      character: {
+        achievements: [
+          {
+            achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
+            progress: 1,
+            rewardClaimed: true,
+          },
+        ],
+      },
     });
     reloaded.destroy();
   });

@@ -171,6 +171,73 @@ body {
   color: #b6f1a4;
 }
 
+/* Small account goals: the description says what to do next, the ledger says what is done. */
+.hunting-places__achievements {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #f1d78b;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__achievements-intro {
+  margin: 0.4rem 0 0;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+}
+
+.hunting-places__achievement-entries {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hunting-places__achievement-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem 0.6rem;
+  align-items: baseline;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgb(123 161 216 / 16%);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__achievement-entry:last-child {
+  border-bottom: 0;
+}
+
+.hunting-places__achievement-name {
+  color: #e5edff;
+  font-weight: 700;
+}
+
+.hunting-places__achievement-description {
+  grid-column: 1;
+  color: #9fb4d5;
+}
+
+.hunting-places__achievement-progress {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #c9d8f1;
+  text-align: right;
+}
+
+.hunting-places__achievement-reward {
+  grid-column: 1 / -1;
+  color: #f1d78b;
+}
+
+.hunting-places__achievement-entry[data-completed="true"]
+  .hunting-places__achievement-name,
+.hunting-places__achievement-entry[data-completed="true"]
+  .hunting-places__achievement-progress {
+  color: #b6f1a4;
+}
+
 /* The set the character is wearing, and what the stash could put on instead. */
 .hunting-places__equipment {
   max-width: 42rem;
@@ -571,6 +638,18 @@ body {
   .hunting-places__bestiary-reward {
     grid-column: 1 / -1;
     grid-row: 2;
+    text-align: left;
+  }
+
+  .hunting-places__achievement-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hunting-places__achievement-description,
+  .hunting-places__achievement-progress,
+  .hunting-places__achievement-reward {
+    grid-column: 1;
+    grid-row: auto;
     text-align: left;
   }
 }

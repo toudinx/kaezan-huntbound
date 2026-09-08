@@ -3,6 +3,7 @@ export * from './application/ContentImportError.ts';
 export * from './application/ImportCanarySlice.ts';
 export type { SourceSnapshotLock } from './application/sourceLockTypes.ts';
 export * from './hunts/index.ts';
+export * from './runtime/achievements.ts';
 export * from './runtime/bestiary.ts';
 export * from './runtime/contentRegistry.ts';
 export * from './runtime/equipment.ts';

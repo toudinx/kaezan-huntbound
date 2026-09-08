@@ -43,7 +43,7 @@ describe('save schema v1 to v2', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.schemaVersion).toBe(8);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.snapshot.spawnSlots).toEqual([]);
   });
@@ -69,7 +69,7 @@ describe('save schema v2 to v3', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.schemaVersion).toBe(8);
     expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
     // Nothing the player had already earned is touched by the bump.
     expect(parsed.value.stash).toEqual([
@@ -133,7 +133,7 @@ describe('save schema v4 to v5', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.schemaVersion).toBe(8);
     expect(parsed.value.gold).toBe(0);
     expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
@@ -162,7 +162,7 @@ describe('save schema v5 to v6', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.schemaVersion).toBe(8);
     expect(parsed.value.gold).toBe(18);
     expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
@@ -176,7 +176,12 @@ describe('save schema v6 to v7', () => {
     const current = saveWithSession(makeSession(), [
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);
-    const { bestiary: _bestiary, ...withoutBestiary } = current.character;
+    const {
+      achievements: _achievements,
+      bestiary: _bestiary,
+      ...withoutBestiary
+    } = current.character;
+    void _achievements;
     void _bestiary;
     const session = current.session;
     if (session === null) {
@@ -202,9 +207,44 @@ describe('save schema v6 to v7', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.schemaVersion).toBe(8);
     expect(parsed.value.character.bestiary).toEqual([]);
+    expect(parsed.value.character.achievements).toEqual([]);
     expect(parsed.value.session?.lastBestiaryEventSequence).toBe(0);
+    expect(parsed.value.stash).toEqual([
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+  });
+});
+
+describe('save schema v7 to v8', () => {
+  it('adds an empty achievement ledger to a save written before PB-13-08', () => {
+    const current = saveWithSession(makeSession(), [
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+    const { achievements: _achievements, ...characterWithoutAchievements } =
+      current.character;
+    void _achievements;
+    const v7 = {
+      ...current,
+      schemaVersion: 7,
+      character: characterWithoutAchievements,
+    };
+
+    const parsed = parseGameSave(migrateSaveDocument(v7));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      throw new Error(
+        `v7 save did not open after 7→8: ${parsed.diagnostics
+          .map((item) => item.message)
+          .join('; ')}`,
+      );
+    }
+
+    expect(parsed.value.schemaVersion).toBe(8);
+    expect(parsed.value.character.achievements).toEqual([]);
+    expect(parsed.value.character.bestiary).toEqual([]);
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);

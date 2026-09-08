@@ -40,6 +40,11 @@ function createEmptyDocument() {
         kills: number;
         rewardClaimed: boolean;
       }[],
+      achievements: [] as {
+        achievementId: string;
+        progress: number;
+        rewardClaimed: boolean;
+      }[],
     },
     stash: [] as { itemKey: string; count: number }[],
     gold: 0,
@@ -65,6 +70,7 @@ function createFullSave() {
       equipment: createEmptyEquipment(),
       collection: [] as string[],
       bestiary: [],
+      achievements: [],
     },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
@@ -100,11 +106,11 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 7', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(7);
+  it('pins SAVE_SCHEMA_VERSION at 8', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(8);
   });
 
-  it('createEmptyGameSave produces a valid empty v7 document', () => {
+  it('createEmptyGameSave produces a valid empty v8 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
@@ -114,6 +120,7 @@ describe('game save contract', () => {
         equipment: createEmptyEquipment(),
         collection: [],
         bestiary: [],
+        achievements: [],
       },
       stash: [],
       gold: 0,
@@ -145,12 +152,13 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(7);
+    expect(save.schemaVersion).toBe(8);
     expect(save.character).toEqual({
       experience: 28_800,
       equipment: createEmptyEquipment(),
       collection: [],
       bestiary: [],
+      achievements: [],
     });
     expect(save.stash).toEqual(document.stash);
     expect(save.gold).toBe(37);
@@ -191,6 +199,63 @@ describe('game save contract', () => {
       { creatureKey: 'creature:tibia:orc', kills: 2, rewardClaimed: false },
     ];
     expectRejectedAt(unsorted, ['character', 'bestiary', 1, 'creatureKey']);
+  });
+
+  it('accepts sorted achievement progress and rejects duplicates or unsorted entries', () => {
+    const accepted = createEmptyDocument();
+    accepted.character.achievements = [
+      {
+        achievementId: 'achievement:huntbound:first-hunt',
+        progress: 1,
+        rewardClaimed: true,
+      },
+      {
+        achievementId: 'achievement:huntbound:honest-work',
+        progress: 0,
+        rewardClaimed: false,
+      },
+    ];
+    expect(parseGameSave(accepted).ok).toBe(true);
+
+    const duplicate = createEmptyDocument();
+    duplicate.character.achievements = [
+      {
+        achievementId: 'achievement:huntbound:first-hunt',
+        progress: 1,
+        rewardClaimed: true,
+      },
+      {
+        achievementId: 'achievement:huntbound:first-hunt',
+        progress: 1,
+        rewardClaimed: true,
+      },
+    ];
+    expectRejectedAt(duplicate, [
+      'character',
+      'achievements',
+      1,
+      'achievementId',
+    ]);
+
+    const unsorted = createEmptyDocument();
+    unsorted.character.achievements = [
+      {
+        achievementId: 'achievement:huntbound:honest-work',
+        progress: 0,
+        rewardClaimed: false,
+      },
+      {
+        achievementId: 'achievement:huntbound:first-hunt',
+        progress: 1,
+        rewardClaimed: true,
+      },
+    ];
+    expectRejectedAt(unsorted, [
+      'character',
+      'achievements',
+      1,
+      'achievementId',
+    ]);
   });
 
   it('rejects count 0, negative, or fractional', () => {

@@ -6,6 +6,8 @@ import {
   resolveEquippedStats,
 } from '../../../../packages/content/src/index.ts';
 import {
+  type AchievementDefinition,
+  type AchievementProgress,
   type BestiaryProgress,
   type BestiarySpecies,
   type CharacterProgress,
@@ -414,6 +416,103 @@ function createBestiaryPanel(
   return panel;
 }
 
+function achievementProgressFor(
+  progress: readonly AchievementProgress[],
+  achievementId: string,
+): AchievementProgress | undefined {
+  return progress.find((entry) => entry.achievementId === achievementId);
+}
+
+function achievementProgressLabel(
+  definition: AchievementDefinition,
+  progress: number,
+): string {
+  const value = `${formatInteger(progress)} / ${formatInteger(definition.target)}`;
+  switch (definition.metric) {
+    case 'completed-runs':
+      return `${value} runs`;
+    case 'equipped-slots':
+      return `${value} pieces`;
+    case 'sold-items':
+      return `${value} sales`;
+    case 'experience':
+      return `${value} XP`;
+    case 'bestiary-species':
+      return `${value} entries`;
+  }
+}
+
+/** First-loop goals live beside the bestiary so the next action is obvious. */
+function createAchievementPanel(
+  document: Document,
+  definitions: readonly AchievementDefinition[],
+  progress: readonly AchievementProgress[],
+): HTMLElement {
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__achievements';
+  panel.setAttribute('data-testid', 'hunt-achievements');
+
+  const title = createTextElement(
+    document,
+    'h2',
+    'Achievements',
+    'hunting-places__section-title',
+  );
+  const intro = createTextElement(
+    document,
+    'p',
+    'First-loop goals · each reward is paid once.',
+    'hunting-places__achievements-intro',
+  );
+  const entries = document.createElement('ul');
+  entries.className = 'hunting-places__achievement-entries';
+
+  for (const definition of definitions) {
+    const current = achievementProgressFor(progress, definition.achievementId);
+    const currentProgress = current?.progress ?? 0;
+    const completed = current?.rewardClaimed === true;
+    const row = document.createElement('li');
+    row.className = 'hunting-places__achievement-entry';
+    row.setAttribute('data-testid', 'hunt-achievement-entry');
+    row.setAttribute('data-achievement-id', definition.achievementId);
+    row.setAttribute('data-progress', String(currentProgress));
+    row.setAttribute('data-target', String(definition.target));
+    row.setAttribute('data-completed', String(completed));
+
+    const name = createTextElement(
+      document,
+      'span',
+      definition.displayName,
+      'hunting-places__achievement-name',
+    );
+    const description = createTextElement(
+      document,
+      'span',
+      definition.description,
+      'hunting-places__achievement-description',
+    );
+    const count = createTextElement(
+      document,
+      'span',
+      achievementProgressLabel(definition, currentProgress),
+      'hunting-places__achievement-progress',
+    );
+    const reward = createTextElement(
+      document,
+      'span',
+      completed
+        ? `Complete · ${formatInteger(definition.rewardGold)} gold claimed`
+        : `Reward ${formatInteger(definition.rewardGold)} gold`,
+      'hunting-places__achievement-reward',
+    );
+    row.append(name, description, count, reward);
+    entries.append(row);
+  }
+
+  panel.append(title, intro, entries);
+  return panel;
+}
+
 const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
   weapon: 'Weapon',
   shield: 'Shield',
@@ -763,6 +862,7 @@ export function mountHuntingPlaces(
   gear?: HuntingPlacesGear,
   preparation?: HuntingPlacesPreparation,
   bestiary?: readonly BestiarySpecies[],
+  achievements?: readonly AchievementDefinition[],
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -804,6 +904,11 @@ export function mountHuntingPlaces(
   }
   if (bestiary !== undefined && character !== undefined) {
     header.append(createBestiaryPanel(document, bestiary, character.bestiary));
+  }
+  if (achievements !== undefined && character !== undefined) {
+    header.append(
+      createAchievementPanel(document, achievements, character.achievements),
+    );
   }
   if (summary !== undefined) {
     header.append(createRunSummary(document, summary));

@@ -128,12 +128,48 @@ const BestiaryProgressEntriesSchema = z
     }
   });
 
+const AchievementProgressSchema = z
+  .object({
+    achievementId: nonEmptyString,
+    progress: nonNegativeInteger,
+    rewardClaimed: z.boolean(),
+  })
+  .strict();
+
+const AchievementProgressEntriesSchema = z
+  .array(AchievementProgressSchema)
+  .readonly()
+  .superRefine((entries, context) => {
+    for (let index = 1; index < entries.length; index += 1) {
+      const previous = entries[index - 1];
+      const current = entries[index];
+      if (previous === undefined || current === undefined) {
+        continue;
+      }
+      if (previous.achievementId === current.achievementId) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'achievementId'],
+          message: 'achievementId must be unique',
+        });
+      } else if (previous.achievementId > current.achievementId) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'achievementId'],
+          message:
+            'entries must be ordered by achievementId in UTF-16 code unit order',
+        });
+      }
+    }
+  });
+
 export const CharacterProgressSchema = z
   .object({
     experience: nonNegativeInteger,
     equipment: CharacterEquipmentSchema,
     collection: CollectionSchema,
     bestiary: BestiaryProgressEntriesSchema,
+    achievements: AchievementProgressEntriesSchema,
   })
   .strict();
 

@@ -24,6 +24,14 @@ function assertGameSaveReadonly(save: GameSave) {
   // @ts-expect-error the collection is readonly on a GameSave.
   save.character.collection = [];
 
+  // @ts-expect-error the achievement ledger is readonly on a GameSave.
+  save.character.achievements = [];
+  const achievement = save.character.achievements[0];
+  if (achievement !== undefined) {
+    // @ts-expect-error achievement progress is readonly on a GameSave.
+    achievement.progress = 1;
+  }
+
   const stashEntry = save.stash[0];
   if (stashEntry !== undefined) {
     // @ts-expect-error bag entries on a GameSave are readonly.

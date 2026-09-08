@@ -61,6 +61,7 @@ describe('SaveRepository', () => {
         equipment: createEmptyEquipment(),
         collection: [],
         bestiary: [],
+        achievements: [],
       },
       stash,
       gold: 0,
@@ -254,7 +255,7 @@ describe('SaveRepository', () => {
     );
 
     await expect(repository.export()).resolves.toBe(
-      '{"character":{"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":7,"session":null,"stash":[]}\n',
+      '{"character":{"achievements":[],"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":8,"session":null,"stash":[]}\n',
     );
   });
 

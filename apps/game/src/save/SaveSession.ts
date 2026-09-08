@@ -1,4 +1,5 @@
 import {
+  type AchievementDefinition,
   type ActiveRunState,
   type BestiarySpecies,
   type CharacterProgress,
@@ -9,6 +10,7 @@ import {
   type SimulationSnapshot,
 } from '../../../../packages/contracts/src/index.ts';
 import {
+  type AchievementUpdate,
   activateNextHuntBuff,
   type BestiaryCreditResult,
   type CheckpointScheduler,
@@ -20,6 +22,7 @@ import {
   type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
+  refreshAchievements,
   type SaleResult,
   SaveError,
   type SaveRepository,
@@ -80,6 +83,8 @@ export interface SaveSessionOptions {
   readonly resolveSellItem?: (itemKey: string) => SellItemDetails | undefined;
   /** The seven catalogued species and their one account milestone each. */
   readonly bestiary?: readonly BestiarySpecies[];
+  /** First-loop objectives projected from the persistent account state. */
+  readonly achievements?: readonly AchievementDefinition[];
 }
 
 const EMPTY_STATE: SaveInventoryState = {
@@ -141,6 +146,15 @@ function saleMessage(result: SaleResult, displayName?: string): string {
     case 'session-destroyed':
       return 'Save session is destroyed';
   }
+}
+
+function achievementMessage(
+  updates: readonly AchievementUpdate[],
+): string | undefined {
+  const unlocked = updates.find((update) => update.newlyCompleted);
+  return unlocked === undefined
+    ? undefined
+    : `Achievement unlocked: ${unlocked.displayName} (+${unlocked.rewardGold} gold)`;
 }
 
 /**
@@ -209,6 +223,7 @@ export function createSaveSession(
   const bestiaryByKey = new Map(
     (options.bestiary ?? []).map((species) => [species.creatureKey, species]),
   );
+  const achievementDefinitions = options.achievements ?? [];
   // The set the run started with. A run never changes it -- equipping happens
   // in the atlas -- so carrying it here keeps the panel honest without giving
   // the checkpoint a way to write it back.
@@ -345,6 +360,31 @@ export function createSaveSession(
         }
       }
 
+      let bootAchievementMessage: string | undefined;
+      if (achievementDefinitions.length > 0) {
+        try {
+          const refreshed = await repository.transact((draft) => {
+            const achievements = refreshAchievements(
+              draft,
+              achievementDefinitions,
+            );
+            return {
+              achievements,
+              character: draft.character,
+              gold: draft.gold,
+            };
+          });
+          save = {
+            ...save,
+            character: refreshed.character,
+            gold: refreshed.gold,
+          };
+          bootAchievementMessage = achievementMessage(refreshed.achievements);
+        } catch (error) {
+          publishError('Achievement progress could not be refreshed', error);
+        }
+      }
+
       latestBag = copyBag(bag);
       latestExperience = save.character.experience;
       latestBestiaryEventSequence =
@@ -356,11 +396,12 @@ export function createSaveSession(
       const message =
         status === 'error'
           ? state.message
-          : decision.kind === 'resume'
-            ? 'Run resumed'
-            : decision.kind === 'discard'
-              ? 'Incompatible run discarded'
-              : 'New run started';
+          : (bootAchievementMessage ??
+            (decision.kind === 'resume'
+              ? 'Run resumed'
+              : decision.kind === 'discard'
+                ? 'Incompatible run discarded'
+                : 'New run started'));
       publish(saveState(save, latestBag, status, message, latestCharacter));
 
       return {
@@ -443,8 +484,12 @@ export function createSaveSession(
             );
           }
           const credit = creditBestiaryKill(draft, species, eventSequence);
+          const achievements = credit.credited
+            ? refreshAchievements(draft, achievementDefinitions)
+            : [];
           return {
             credit,
+            achievements,
             character: draft.character,
             stash: copyBag(draft.stash),
             gold: draft.gold,
@@ -461,9 +506,14 @@ export function createSaveSession(
         }
 
         latestCharacter = transaction.character;
-        const message = transaction.credit.completed
+        const bestiaryMessage = transaction.credit.completed
           ? `Bestiary complete: ${species.displayName} (+${transaction.credit.rewardGold} gold)`
           : `Bestiary: ${species.displayName} ${transaction.credit.kills}/${transaction.credit.targetKills}`;
+        const unlocked = achievementMessage(transaction.achievements);
+        const message =
+          unlocked === undefined
+            ? bestiaryMessage
+            : `${unlocked} · ${bestiaryMessage}`;
         publish(
           saveState(transaction, latestBag, 'ready', message, latestCharacter),
         );
@@ -531,7 +581,13 @@ export function createSaveSession(
             experience: latestExperience,
           };
           consolidateRun(draft, outcome);
+          const achievements = refreshAchievements(
+            draft,
+            achievementDefinitions,
+            outcome === 'completed' ? 'hunt-completed' : undefined,
+          );
           return {
+            achievements,
             stash: copyBag(draft.stash),
             gold: draft.gold,
             nextHuntBuff: draft.nextHuntBuff,
@@ -542,12 +598,15 @@ export function createSaveSession(
         latestBag = [];
         latestCharacter = result.character;
         latestBestiaryEventSequence = 0;
+        const unlocked = achievementMessage(result.achievements);
         publish(
           saveState(
             result,
             [],
             'ready',
-            finishMessages[outcome],
+            unlocked === undefined
+              ? finishMessages[outcome]
+              : `${finishMessages[outcome]} · ${unlocked}`,
             latestCharacter,
           ),
         );
@@ -591,12 +650,17 @@ export function createSaveSession(
           const sale = sellFromStash(draft, itemKey, quantity, details, {
             allowProtected,
           });
+          const achievements = sale.ok
+            ? refreshAchievements(draft, achievementDefinitions, 'item-sold')
+            : [];
           return {
+            achievements,
             sale,
             stash: copyBag(draft.stash),
             gold: draft.gold,
             nextHuntBuff: draft.nextHuntBuff,
             completedRuns: draft.completedRuns,
+            character: draft.character,
           };
         });
 
@@ -609,12 +673,15 @@ export function createSaveSession(
           return transaction.sale;
         }
 
+        latestCharacter = transaction.character;
+        const unlocked = achievementMessage(transaction.achievements);
+        const saleStatus = saleMessage(transaction.sale, details.displayName);
         publish(
           saveState(
             transaction,
             latestBag,
             'ready',
-            saleMessage(transaction.sale, details.displayName),
+            unlocked === undefined ? saleStatus : `${saleStatus} · ${unlocked}`,
             latestCharacter,
           ),
         );
@@ -641,12 +708,35 @@ export function createSaveSession(
     async import(serialized) {
       try {
         await repository.import(serialized);
+        let importedAchievementMessage: string | undefined;
+        if (achievementDefinitions.length > 0) {
+          const refreshed = await repository.transact((draft) => {
+            const achievements = refreshAchievements(
+              draft,
+              achievementDefinitions,
+            );
+            return { achievements };
+          });
+          importedAchievementMessage = achievementMessage(
+            refreshed.achievements,
+          );
+        }
         const save = await repository.load();
         latestBag = copyBag(save.session?.bag ?? []);
         latestExperience = save.character.experience;
+        latestBestiaryEventSequence =
+          save.session?.lastBestiaryEventSequence ?? 0;
         latestCharacter = save.character;
         publish(
-          saveState(save, latestBag, 'ready', 'Save replaced', latestCharacter),
+          saveState(
+            save,
+            latestBag,
+            'ready',
+            importedAchievementMessage === undefined
+              ? 'Save replaced'
+              : `Save replaced · ${importedAchievementMessage}`,
+            latestCharacter,
+          ),
         );
       } catch (error) {
         publishError('Save replacement failed', error);

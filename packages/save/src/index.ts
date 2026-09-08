@@ -18,6 +18,8 @@ export {
   encodeSaveDocument,
 } from './serialization/saveDocument.ts';
 export {
+  type AchievementEvent,
+  type AchievementUpdate,
   activateNextHuntBuff,
   type BestiaryCreditResult,
   type BuffPurchaseFailureReason,
@@ -36,6 +38,7 @@ export {
   type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
+  refreshAchievements,
   type SaleFailureReason,
   type SaleResult,
   type SellItemDetails,

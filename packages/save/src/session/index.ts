@@ -1,4 +1,9 @@
 export {
+  type AchievementEvent,
+  type AchievementUpdate,
+  refreshAchievements,
+} from './achievements.ts';
+export {
   type BestiaryCreditResult,
   creditBestiaryKill,
 } from './bestiary.ts';

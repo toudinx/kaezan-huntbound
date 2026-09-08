@@ -7,10 +7,10 @@ the sidecar `.sha256`.
 
 | Artifact | SHA-256 |
 |---|---|
-| `checkpoint.golden.json` | `383ceae5f0d6c2155859e62346ec1a7764158be608d5b70a9c73d1817a7438b4` |
-| `export.golden.txt` | `383ceae5f0d6c2155859e62346ec1a7764158be608d5b70a9c73d1817a7438b4` |
+| `checkpoint.golden.json` | `41a3fa3c5e76eb08e39c2400d98e67079a9d002af550a097b1d9fd5dbaa4374a` |
+| `export.golden.txt` | `41a3fa3c5e76eb08e39c2400d98e67079a9d002af550a097b1d9fd5dbaa4374a` |
 | `legacy.json` | `07eef04155d2f1dd57ef074c12ba4310ac7a15584980d1a9e8dec2a9206ead7f` |
-| `migrated.golden.json` | `58a6597247f18813f0513a9af747c9271d4bb0acfd69cb9a7efea538a05098b6` |
+| `migrated.golden.json` | `0af78655b80b621bb8f72e569036688fec761b18563ae0e8f714b2975f01d5a0` |
 
 The gate proves that persisting the run cannot change the simulation: a kernel
 resumed from the imported checkpoint snapshot and advanced to tick `2700`

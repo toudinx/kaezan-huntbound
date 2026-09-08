@@ -9,6 +9,7 @@ import {
 import huntIndexJson from '../../../packages/content/src/generated/hunts/index.json?raw';
 import catalogBundleJson from '../../../packages/content/src/generated/pb-01-contract-coverage.json?raw';
 import {
+  buildAchievementCatalog,
   buildBestiaryCatalog,
   buildHuntScenario,
   createContentRegistry,
@@ -48,6 +49,7 @@ import {
   createIndexedDbSaveDriver,
   createSaveRepository,
   equipFromStash,
+  refreshAchievements,
   type SaveRepository,
   unequipToStash,
 } from '../../../packages/save/src/index.ts';
@@ -368,6 +370,24 @@ export async function bootstrapApp(
   }
   const appUiRoot = uiRoot;
   const bestiary = buildBestiaryCatalog(huntIndex);
+  const achievements = buildAchievementCatalog();
+  try {
+    const refreshed = await saveRepository.transact((draft) => {
+      refreshAchievements(draft, achievements);
+      return {
+        character: draft.character,
+        gold: draft.gold,
+        stash: draft.stash,
+        nextHuntBuff: draft.nextHuntBuff,
+      };
+    });
+    character = refreshed.character;
+    stash = refreshed.stash;
+    gold = refreshed.gold;
+    nextHuntBuff = refreshed.nextHuntBuff;
+  } catch {
+    // SaveSession will surface a write failure once the player starts a run.
+  }
   const bestiaryByCreatureKey = new Map(
     bestiary.map((species) => [species.creatureKey, species]),
   );
@@ -560,8 +580,13 @@ export async function bootstrapApp(
         ? overrides.createSaveSession(saveRepository, {
             resolveSellItem,
             bestiary,
+            achievements,
           })
-        : createSaveSession(saveRepository, { resolveSellItem, bestiary });
+        : createSaveSession(saveRepository, {
+            resolveSellItem,
+            bestiary,
+            achievements,
+          });
       pageHideHandler = (): void => {
         void saveSession?.pagehide();
       };
@@ -855,12 +880,20 @@ export async function bootstrapApp(
     const applyGearChange = (change: (draft: SaveDraft) => boolean): void => {
       void saveRepository
         .transact((draft) => {
-          change(draft);
-          return { character: draft.character, stash: draft.stash };
+          const changed = change(draft);
+          if (changed) {
+            refreshAchievements(draft, achievements, 'item-equipped');
+          }
+          return {
+            character: draft.character,
+            stash: draft.stash,
+            gold: draft.gold,
+          };
         })
         .then((next) => {
           character = next.character;
           stash = next.stash;
+          gold = next.gold;
           showHuntingPlaces(summary);
         })
         .catch(() => {
@@ -913,6 +946,7 @@ export async function bootstrapApp(
         },
       } satisfies HuntingPlacesPreparation,
       bestiary,
+      achievements,
     );
   }
 

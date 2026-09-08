@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type AchievementDefinition,
   type BestiarySpecies,
   createEmptyCharacterProgress,
   type HuntIndex,
@@ -317,6 +318,63 @@ describe('HuntingPlaces', () => {
     expect(entries[1]?.getAttribute('data-kills')).toBe('10');
     expect(entries[1]?.getAttribute('data-completed')).toBe('true');
     expect(entries[1]?.textContent).toContain('Complete · 25 gold claimed');
+  });
+
+  it('shows the next first-loop objective and the reward ledger', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    const achievements: readonly AchievementDefinition[] = [
+      {
+        achievementId: 'achievement:test:first-hunt',
+        displayName: 'First Hunt',
+        description: 'Complete your first hunt.',
+        metric: 'completed-runs',
+        target: 1,
+        rewardGold: 25,
+      },
+      {
+        achievementId: 'achievement:test:armed',
+        displayName: 'Armed and Ready',
+        description: 'Equip your first piece of gear.',
+        metric: 'equipped-slots',
+        target: 1,
+        rewardGold: 25,
+      },
+    ];
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      undefined,
+      {
+        ...createEmptyCharacterProgress(),
+        achievements: [
+          {
+            achievementId: 'achievement:test:first-hunt',
+            progress: 1,
+            rewardClaimed: true,
+          },
+        ],
+      },
+      undefined,
+      undefined,
+      undefined,
+      achievements,
+    );
+
+    const panel = findByTestId(root, 'hunt-achievements');
+    if (panel === undefined) {
+      throw new Error('Missing test id hunt-achievements');
+    }
+    const entries = findAllByTestId(panel, 'hunt-achievement-entry');
+    expect(entries).toHaveLength(2);
+    expect(entries[0]?.getAttribute('data-completed')).toBe('true');
+    expect(entries[0]?.textContent).toContain('Complete your first hunt.');
+    expect(entries[0]?.textContent).toContain('1 / 1 runs');
+    expect(entries[0]?.textContent).toContain('Complete · 25 gold claimed');
+    expect(entries[1]?.getAttribute('data-completed')).toBe('false');
+    expect(entries[1]?.textContent).toContain('0 / 1 pieces');
+    expect(entries[1]?.textContent).toContain('Reward 25 gold');
   });
 
   it('sells nothing here: the blessing is a between-runs buy with a clear duration', () => {

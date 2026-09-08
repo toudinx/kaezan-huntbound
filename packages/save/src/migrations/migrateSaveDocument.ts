@@ -287,6 +287,31 @@ const v6ToV7: SaveMigration = {
   },
 };
 
+/**
+ * PB-13-08 adds the first-loop achievement ledger. Older saves already carry
+ * every fact these objectives observe, except for a successful sale event;
+ * the additive empty ledger therefore preserves the old save exactly and
+ * starts new objectives at zero.
+ */
+const v7ToV8: SaveMigration = {
+  from: 7,
+  to: 8,
+  migrate(document) {
+    const current = document as SaveDocument;
+    const character = isSaveDocument(current.character)
+      ? current.character
+      : {};
+    return {
+      ...current,
+      schemaVersion: 8,
+      character: {
+        ...character,
+        achievements: [],
+      },
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
@@ -295,6 +320,7 @@ const saveMigrations: readonly SaveMigration[] = [
   v4ToV5,
   v5ToV6,
   v6ToV7,
+  v7ToV8,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {
