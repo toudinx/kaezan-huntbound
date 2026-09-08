@@ -18,16 +18,28 @@ hipótese de RNG, consumível ou modulação como autorização implícita.
 
 Execução **serial**, uma task por chat. Cada linha depende da anterior; a primeira depende da base
 indicada acima. Não há tasks paralelas, branches ou worktrees previstas. Todas as cards existem;
-a existência da card não elimina sua dependência. Modelo/effort são escolhidos pela política 08.
+a existência da card não elimina sua dependência. As recomendações abaixo aplicam a política 08; o `STATE.md` registra o modelo/effort usado.
 
-| ID | Task |
-|---|---|
-| PB-14-01 | [Kits, comportamento e lacunas reais](tasks/PB-14-01-kits.md) |
-| PB-14-02 | [Suporte aos kits curados](tasks/PB-14-02-suporte.md) |
-| PB-14-03 | [Sorcerer no loop completo](tasks/PB-14-03-sorcerer.md) |
-| PB-14-04 | [Paladin no loop completo](tasks/PB-14-04-paladin.md) |
-| PB-14-05 | [Comportamentos dos monstros](tasks/PB-14-05-comportamentos.md) |
-| PB-14-06 | [Encontros das três vocações](tasks/PB-14-06-encontros.md) |
+| ID | Task | Modelo sugerido | Effort | Motivo |
+|---|---|---|---|---|
+| PB-14-01 | [Kits, comportamento e lacunas reais](tasks/PB-14-01-kits.md) | Claude Opus 5 | `xhigh` | Curadoria e decisões de kit, fonte e contrato. |
+| PB-14-02 | [Suporte aos kits curados](tasks/PB-14-02-suporte.md) | Grok 4.6 | `xhigh` | Kernel e comportamento compartilhado; continuidade com taunt e conjuração anteriores. |
+| PB-14-03 | [Sorcerer no loop completo](tasks/PB-14-03-sorcerer.md) | GPT-5.6 Luna | `xhigh` | Conteúdo e integração com kit e suporte congelados nas 01/02. |
+| PB-14-04 | [Paladin no loop completo](tasks/PB-14-04-paladin.md) | GPT-5.6 Luna | `xhigh` | Reaplica o caminho da Sorcerer com kit ranged já decidido. |
+| PB-14-05 | [Comportamentos dos monstros](tasks/PB-14-05-comportamentos.md) | Grok 4.6 | `xhigh` | IA determinística; continuidade com a conjuração de mobs já implementada. |
+| PB-14-06 | [Encontros das três vocações](tasks/PB-14-06-encontros.md) | GPT-5.6 Sol | `xhigh` | Integração de composição, apresentação e helper das três classes. |
+
+## Como escolher o executor
+
+GPT roda no Codex; Opus 5 no Claude Code; Grok 4.6 no Cursor, conforme os ambientes informados
+pelo usuário. `xhigh` segue a política local; se a interface não expuser esse nome, usar a opção
+alta equivalente disponível e registrar o valor real no STATE, sem inventar um parâmetro.
+
+Luna pressupõe decisões e contratos congelados pelas tasks anteriores. Se houver decisão nova,
+risco não coberto ou dois ciclos bloqueados pela mesma causa, escalar conforme a política 08.
+Tasks já classificadas como complexas começam diretamente no modelo indicado. Sol, Opus e Grok
+podem substituir uns aos outros conforme disponibilidade; a alocação não é um benchmark de superioridade.
+Revisão por outro modelo continua opcional, pós-aceite. Não executar a mesma task em três agentes.
 
 ## Aceite e validação
 

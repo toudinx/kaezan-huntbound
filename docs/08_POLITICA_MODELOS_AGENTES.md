@@ -68,7 +68,8 @@ pequeno, pois o risco está no julgamento e não na quantidade de linhas.
 
 ## Escalonamento Luna-first
 
-Uma task de implementação começa em Luna e só troca para a camada frontier quando ocorrer pelo menos
+Uma task de implementação **geral e bem especificada** começa em Luna e só troca para a camada
+frontier quando ocorrer pelo menos
 um dos gatilhos abaixo:
 
 - a mesma causa bloqueia dois ciclos RED/GREEN consecutivos;
@@ -112,6 +113,10 @@ tarefa, modelo sugerido, effort, validador e rota de skills **saíram do cabeça
 escolhe modelo e effort na hora, por este documento, e registra no `STATE.md` o que **efetivamente**
 usou. Um campo que só era copiado da card para o `STATE.md` não decidia nada.
 
+O `README.md` de cada playbook pode recomendar modelo, effort e motivo por task, como solicitado
+pelo usuário para PB-13–15. Essa tabela orienta a abertura do chat; o STATE registra o executor
+real. Tasks complexas começam diretamente na camada frontier, conforme a classificação acima.
+
 A card declara paralelismo apenas quando ele existe — o `README.md` do playbook é quem nomeia as
 tasks que rodam ao mesmo tempo, e só elas usam branch e worktree.
 
@@ -141,3 +146,7 @@ documento.
 
 Essas fontes descrevem produtos externos e podem mudar. A regra operacional vigente é este
 documento até uma revisão explícita do projeto.
+
+Consulta de 2026-09-07: a [página oficial de Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna)
+confirma o foco em custo e suporte a `xhigh`. A distribuição das tasks é julgamento local pelo risco,
+não uma comparação experimental entre fornecedores.

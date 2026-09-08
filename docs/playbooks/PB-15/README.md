@@ -18,17 +18,29 @@ hipótese de RNG, consumível ou modulação como autorização implícita.
 
 Execução **serial**, uma task por chat. Cada linha depende da anterior; a primeira depende da base
 indicada acima. Não há tasks paralelas, branches ou worktrees previstas. Todas as cards existem;
-a existência da card não elimina sua dependência. Modelo/effort são escolhidos pela política 08.
+a existência da card não elimina sua dependência. As recomendações abaixo aplicam a política 08; o `STATE.md` registra o modelo/effort usado.
 
-| ID | Task |
-|---|---|
-| PB-15-01 | [Dungeon e modulação da build](tasks/PB-15-01-design.md) |
-| PB-15-02 | [Renderizar as hunts grandes](tasks/PB-15-02-render.md) |
-| PB-15-03 | [Completar as caixas das hunts](tasks/PB-15-03-mapas.md) |
-| PB-15-04 | [Dungeon com começo e fim](tasks/PB-15-04-dungeon.md) |
-| PB-15-05 | [Modo modulado](tasks/PB-15-05-modulacao.md) |
-| PB-15-06 | [Coleção visual de outfits](tasks/PB-15-06-outfits.md) |
-| PB-15-07 | [Gacha cosmético e V0 integrado](tasks/PB-15-07-gacha.md) |
+| ID | Task | Modelo sugerido | Effort | Motivo |
+|---|---|---|---|---|
+| PB-15-01 | [Dungeon e modulação da build](tasks/PB-15-01-design.md) | Claude Opus 5 | `xhigh` | Design de dungeon, recompensa e modulação da build. |
+| PB-15-02 | [Renderizar as hunts grandes](tasks/PB-15-02-render.md) | GPT-5.6 Sol | `xhigh` | Investigação e implementação de performance no renderer. |
+| PB-15-03 | [Completar as caixas das hunts](tasks/PB-15-03-mapas.md) | GPT-5.6 Luna | `xhigh` | Pipeline e caixas já definidos; reextração com checks objetivos. |
+| PB-15-04 | [Dungeon com começo e fim](tasks/PB-15-04-dungeon.md) | Claude Opus 5 | `xhigh` | Novo fluxo de encontros/boss com kernel, conteúdo e persistência. |
+| PB-15-05 | [Modo modulado](tasks/PB-15-05-modulacao.md) | Claude Opus 5 | `xhigh` | Transformação reversível de poder/gear e compatibilidade de sessão. |
+| PB-15-06 | [Coleção visual de outfits](tasks/PB-15-06-outfits.md) | GPT-5.6 Luna | `xhigh` | Contrato de família e pipeline visual já estabelecidos. |
+| PB-15-07 | [Gacha cosmético e V0 integrado](tasks/PB-15-07-gacha.md) | Claude Opus 5 | `xhigh` | Economia e transação atômica de moeda, prêmio, garantia e duplicata. |
+
+## Como escolher o executor
+
+GPT roda no Codex; Opus 5 no Claude Code; Grok 4.6 no Cursor, conforme os ambientes informados
+pelo usuário. `xhigh` segue a política local; se a interface não expuser esse nome, usar a opção
+alta equivalente disponível e registrar o valor real no STATE, sem inventar um parâmetro.
+
+Luna pressupõe decisões e contratos congelados pelas tasks anteriores. Se houver decisão nova,
+risco não coberto ou dois ciclos bloqueados pela mesma causa, escalar conforme a política 08.
+Tasks já classificadas como complexas começam diretamente no modelo indicado. Sol, Opus e Grok
+podem substituir uns aos outros conforme disponibilidade; a alocação não é um benchmark de superioridade.
+Revisão por outro modelo continua opcional, pós-aceite. Não executar a mesma task em três agentes.
 
 ## Aceite e validação
 
