@@ -33,6 +33,7 @@ export interface VitalBanner {
   /** Owned by the HUD, which keeps writing their text and data attributes. */
   readonly posture: HTMLElement;
   readonly haste: HTMLElement;
+  readonly preparedHunt: HTMLElement;
   update(vitals: VitalBannerVitals | null): void;
 }
 
@@ -128,7 +129,12 @@ export function mountVitalBanner(document: Document): VitalBanner {
   haste.setAttribute('data-testid', 'combat-haste');
   haste.setAttribute('aria-live', 'polite');
 
-  status.append(posture, haste);
+  const preparedHunt = document.createElement('p');
+  preparedHunt.className = 'cockpit-banner__chip';
+  preparedHunt.setAttribute('data-testid', 'combat-prepared-hunt');
+  preparedHunt.setAttribute('aria-live', 'polite');
+
+  status.append(posture, haste, preparedHunt);
 
   let writtenColour = '';
   let writtenCritical = '';
@@ -164,5 +170,5 @@ export function mountVitalBanner(document: Document): VitalBanner {
 
   update(null);
 
-  return { element, status, posture, haste, update };
+  return { element, status, posture, haste, preparedHunt, update };
 }

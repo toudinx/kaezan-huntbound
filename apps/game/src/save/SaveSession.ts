@@ -9,6 +9,7 @@ import {
 } from '../../../../packages/contracts/src/index.ts';
 import {
   type CheckpointScheduler,
+  activateNextHuntBuff,
   consolidateRun,
   createCheckpointScheduler,
   decideResume,
@@ -78,6 +79,7 @@ const EMPTY_STATE: SaveInventoryState = {
   bag: [],
   stash: [],
   gold: 0,
+  nextHuntBuff: 'none',
   completedRuns: 0,
   character: createEmptyCharacterProgress(),
 };
@@ -152,7 +154,7 @@ function errorText(error: unknown): string {
 }
 
 function saveState(
-  save: Pick<GameSave, 'stash' | 'gold' | 'completedRuns'>,
+  save: Pick<GameSave, 'stash' | 'gold' | 'completedRuns' | 'nextHuntBuff'>,
   bag: readonly RunBagEntry[],
   status: SaveInventoryState['status'],
   message: string,
@@ -164,6 +166,7 @@ function saveState(
     bag: copyBag(bag),
     stash: copyBag(save.stash),
     gold: save.gold,
+    nextHuntBuff: save.nextHuntBuff,
     completedRuns: save.completedRuns,
     character,
   };
@@ -276,6 +279,7 @@ export function createSaveSession(
             return {
               stash: copyBag(draft.stash),
               gold: draft.gold,
+              nextHuntBuff: draft.nextHuntBuff,
               completedRuns: draft.completedRuns,
             };
           });
@@ -283,6 +287,7 @@ export function createSaveSession(
             ...save,
             stash: consolidated.stash,
             gold: consolidated.gold,
+            nextHuntBuff: consolidated.nextHuntBuff,
             completedRuns: consolidated.completedRuns,
             session: null,
           };
@@ -306,6 +311,18 @@ export function createSaveSession(
         driver = createDriver(undefined);
         decision = { kind: 'fresh' };
         bag = [];
+      }
+
+      if (save.nextHuntBuff === 'pending') {
+        try {
+          const nextHuntBuff = await repository.transact((draft) => {
+            activateNextHuntBuff(draft);
+            return draft.nextHuntBuff;
+          });
+          save = { ...save, nextHuntBuff };
+        } catch (error) {
+          publishError('Next-hunt blessing could not be activated', error);
+        }
       }
 
       latestBag = copyBag(bag);
@@ -408,6 +425,7 @@ export function createSaveSession(
           return {
             stash: copyBag(draft.stash),
             gold: draft.gold,
+            nextHuntBuff: draft.nextHuntBuff,
             completedRuns: draft.completedRuns,
             character: draft.character,
           };
@@ -467,6 +485,7 @@ export function createSaveSession(
             sale,
             stash: copyBag(draft.stash),
             gold: draft.gold,
+            nextHuntBuff: draft.nextHuntBuff,
             completedRuns: draft.completedRuns,
           };
         });

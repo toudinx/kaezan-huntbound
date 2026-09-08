@@ -512,4 +512,39 @@ describe('createSaveSession', () => {
     ).resolves.toMatchObject({ ok: true, gold: 24 });
     saveSession.destroy();
   });
+
+  it('activates a pending next-hunt blessing once when the run starts', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({
+        ...createEmptyGameSave(),
+        gold: 50,
+        nextHuntBuff: 'pending',
+        session: null,
+      }),
+    );
+    const saveSession = createSaveSession(repository);
+    await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    expect(saveSession.getState().nextHuntBuff).toBe('active');
+    await expect(repository.load()).resolves.toMatchObject({
+      nextHuntBuff: 'active',
+      gold: 50,
+    });
+
+    saveSession.destroy();
+    const reloaded = createSaveSession(repository);
+    await reloaded.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    expect(reloaded.getState().nextHuntBuff).toBe('active');
+    await expect(repository.load()).resolves.toMatchObject({
+      nextHuntBuff: 'active',
+      gold: 50,
+    });
+    reloaded.destroy();
+  });
 });

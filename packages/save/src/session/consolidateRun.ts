@@ -58,6 +58,7 @@ export function consolidateRun(draft: SaveDraft, outcome: RunOutcome): void {
   }
 
   draft.session = null;
+  draft.nextHuntBuff = 'none';
   if (outcome === 'died') {
     return;
   }

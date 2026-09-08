@@ -461,6 +461,25 @@ describe('CombatHud', () => {
     hud.destroy();
   });
 
+  it('shows the next-hunt blessing for the length of the run', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement, {
+      preparedHunt: { damagePercent: 25 },
+    });
+
+    hud.render(state());
+
+    expect(byTestId(root, 'combat-prepared-hunt').textContent).toBe(
+      'Prepared hunt: +25% damage until this run ends',
+    );
+    expect(
+      byTestId(root, 'combat-prepared-hunt').getAttribute('data-prepared-hunt'),
+    ).toBe('active');
+
+    hud.destroy();
+  });
+
   it('renders the resolved spell icon and animates a cooldown sweep', () => {
     const document = new FakeDocument();
     const root = document.createElement('div');

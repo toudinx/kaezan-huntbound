@@ -3,6 +3,7 @@ import {
   createEmptyGameSave,
   type GameSave,
   type SaveDraft,
+  SAVE_SCHEMA_VERSION,
 } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import {
@@ -54,7 +55,7 @@ describe('SaveRepository', () => {
     const repository = createSaveRepository(createMemorySaveDriver({ stash }));
 
     await expect(repository.load()).resolves.toMatchObject({
-      schemaVersion: 5,
+      schemaVersion: SAVE_SCHEMA_VERSION,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
@@ -62,6 +63,7 @@ describe('SaveRepository', () => {
       },
       stash,
       gold: 0,
+      nextHuntBuff: 'none',
       completedRuns: 0,
       session: null,
     });
@@ -80,12 +82,15 @@ describe('SaveRepository', () => {
   });
 
   it('rejects a future save version without downgrading it', async () => {
-    const future = { ...createEmptyGameSave(), schemaVersion: 6 };
+    const future = {
+      ...createEmptyGameSave(),
+      schemaVersion: SAVE_SCHEMA_VERSION + 1,
+    };
     const repository = createSaveRepository(createMemorySaveDriver(future));
 
     await expect(repository.load()).rejects.toMatchObject({
       code: 'SAVE_VERSION_UNSUPPORTED',
-      message: expect.stringContaining('5'),
+      message: expect.stringContaining(String(SAVE_SCHEMA_VERSION)),
     });
   });
 
@@ -100,7 +105,7 @@ describe('SaveRepository', () => {
     ).resolves.toBe(1);
 
     await expect(repository.load()).resolves.toMatchObject({
-      schemaVersion: 5,
+      schemaVersion: SAVE_SCHEMA_VERSION,
       completedRuns: 1,
     });
   });
@@ -113,10 +118,10 @@ describe('SaveRepository', () => {
 
   it('rejects a future version from the migration entry point', () => {
     expectMigrationError(
-      { ...createEmptyGameSave(), schemaVersion: 6 },
+      { ...createEmptyGameSave(), schemaVersion: SAVE_SCHEMA_VERSION + 1 },
       {
         code: 'SAVE_VERSION_UNSUPPORTED',
-        message: expect.stringContaining('5'),
+        message: expect.stringContaining(String(SAVE_SCHEMA_VERSION)),
       },
     );
   });
@@ -248,7 +253,7 @@ describe('SaveRepository', () => {
     );
 
     await expect(repository.export()).resolves.toBe(
-      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"schemaVersion":5,"session":null,"stash":[]}\n',
+      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":6,"session":null,"stash":[]}\n',
     );
   });
 
@@ -265,7 +270,10 @@ describe('SaveRepository', () => {
     ['malformed JSON', '{', 'SAVE_DOCUMENT_INVALID'],
     [
       'a future schema version',
-      JSON.stringify({ ...createEmptyGameSave(), schemaVersion: 6 }),
+      JSON.stringify({
+        ...createEmptyGameSave(),
+        schemaVersion: SAVE_SCHEMA_VERSION + 1,
+      }),
       'SAVE_VERSION_UNSUPPORTED',
     ],
     [

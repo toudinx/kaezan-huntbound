@@ -1,5 +1,6 @@
 import type {
   CharacterProgress,
+  NextHuntBuffState,
   RunBagEntry,
 } from '../../../../packages/contracts/src/index.ts';
 
@@ -11,6 +12,7 @@ export interface SaveInventoryState {
   readonly bag: readonly RunBagEntry[];
   readonly stash: readonly RunBagEntry[];
   readonly gold: number;
+  readonly nextHuntBuff: NextHuntBuffState;
   readonly completedRuns: number;
   /** The character the save keeps between runs. Never reset by a death. */
   readonly character: CharacterProgress;

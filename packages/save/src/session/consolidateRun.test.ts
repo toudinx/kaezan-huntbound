@@ -129,11 +129,29 @@ describe('consolidateRun', () => {
       ...createEmptyGameSave(),
       stash: [{ itemKey: 'item:tibia:arrow', count: 2 }],
       completedRuns: 8,
+      nextHuntBuff: 'pending',
     });
 
     expect(() => consolidateRun(draft, 'completed')).not.toThrow();
     expect(draft.completedRuns).toBe(8);
     expect(draft.session).toBeNull();
     expect(draft.stash).toEqual([{ itemKey: 'item:tibia:arrow', count: 2 }]);
+    expect(draft.nextHuntBuff).toBe('pending');
+  });
+
+  it('ends an active next-hunt blessing with the run, including a death', () => {
+    const completed = draftFrom({
+      ...saveWithSession(makeSession()),
+      nextHuntBuff: 'active',
+    });
+    consolidateRun(completed, 'completed');
+    expect(completed.nextHuntBuff).toBe('none');
+
+    const died = draftFrom({
+      ...saveWithSession(makeSession()),
+      nextHuntBuff: 'active',
+    });
+    consolidateRun(died, 'died');
+    expect(died.nextHuntBuff).toBe('none');
   });
 });

@@ -1,7 +1,19 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 5;
+export const SAVE_SCHEMA_VERSION = 6;
+
+/**
+ * Whether a next-hunt blessing is sitting on the character.
+ *
+ * `none` is the empty wallet of blessings: nothing bought, nothing running.
+ * `pending` is paid and waiting for the next run. `active` is already inside
+ * that run. Reloading must not charge again and must not stretch the duration
+ * past the run that consumed it.
+ */
+export const NEXT_HUNT_BUFF_STATES = ['none', 'pending', 'active'] as const;
+
+export type NextHuntBuffState = (typeof NEXT_HUNT_BUFF_STATES)[number];
 
 export interface RunBagEntry {
   readonly itemKey: string;
@@ -68,6 +80,10 @@ export interface GameSave {
   readonly stash: readonly RunBagEntry[];
   /** Gold already banked by the character; it survives runs and reloads. */
   readonly gold: number;
+  /**
+   * The next-hunt blessing. `none` reproduces a save written before PB-13-06.
+   */
+  readonly nextHuntBuff: NextHuntBuffState;
   readonly completedRuns: number;
   readonly session: ActiveRunState | null;
 }
@@ -114,6 +130,7 @@ export function createEmptyGameSave(): GameSave {
     character: createEmptyCharacterProgress(),
     stash: [],
     gold: 0,
+    nextHuntBuff: 'none',
     completedRuns: 0,
     session: null,
   };

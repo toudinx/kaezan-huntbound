@@ -18,11 +18,16 @@ export {
   encodeSaveDocument,
 } from './serialization/saveDocument.ts';
 export {
+  activateNextHuntBuff,
+  type BuffPurchaseFailureReason,
+  type BuffPurchaseResult,
+  buyNextHuntBuff,
   type CheckpointScheduler,
   consolidateRun,
   createCheckpointScheduler,
   decideResume,
   equipFromStash,
+  type FailedBuffPurchase,
   type FailedSale,
   type ResumeDecision,
   type ResumeRejection,
@@ -34,6 +39,7 @@ export {
   sellFromStash,
   type SellItemDetails,
   type SellOptions,
+  type SuccessfulBuffPurchase,
   type SuccessfulSale,
   unequipToStash,
 } from './session/index.ts';

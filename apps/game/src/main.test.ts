@@ -222,6 +222,7 @@ function createTestSaveSession() {
     bag: [],
     stash: [],
     gold: 0,
+    nextHuntBuff: 'none' as const,
     completedRuns: 0,
     character: createEmptyCharacterProgress(),
   };

@@ -129,6 +129,27 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.hunting-places__preparation {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgb(241 215 139 / 28%);
+  background: rgb(28 24 16 / 72%);
+}
+
+.hunting-places__preparation-gold,
+.hunting-places__preparation-benefit,
+.hunting-places__preparation-status {
+  margin: 0;
+  color: #f1d78b;
+  font-size: 0.9rem;
+}
+
+.hunting-places__preparation-status {
+  color: #c7d4ea;
+}
+
 .hunting-places__slots {
   display: grid;
   gap: 0.35rem;
@@ -1115,7 +1136,8 @@ body {
 }
 
 .cockpit-banner__chip[data-posture="none"],
-.cockpit-banner__chip[data-haste="off"] {
+.cockpit-banner__chip[data-haste="off"],
+.cockpit-banner__chip[data-prepared-hunt="off"] {
   display: none;
 }
 
@@ -1131,6 +1153,11 @@ body {
 
 .cockpit-banner__chip[data-haste="active"] {
   border-color: rgb(245 197 66 / 70%);
+  color: #ffe08a;
+}
+
+.cockpit-banner__chip[data-prepared-hunt="active"] {
+  border-color: rgb(241 215 139 / 70%);
   color: #ffe08a;
 }
 

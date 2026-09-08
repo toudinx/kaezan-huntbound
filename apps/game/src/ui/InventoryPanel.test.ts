@@ -15,6 +15,7 @@ interface TestInventoryState {
     readonly count: number;
   }[];
   readonly gold: number;
+  readonly nextHuntBuff: 'none';
   readonly completedRuns: number;
   readonly character: CharacterProgress;
 }
@@ -115,6 +116,7 @@ function state(
     ],
     stash: [{ itemKey: 'item:tibia:arrow', count: 4 }],
     gold: 9,
+    nextHuntBuff: 'none',
     completedRuns: 2,
     character: createEmptyCharacterProgress(),
     ...overrides,

@@ -40,6 +40,7 @@ export interface AppShellOptions {
     readonly transitions?: CombatHudOptions['transitions'];
     readonly playerStart?: CombatHudOptions['playerStart'];
     readonly resolveAsset?: CombatHudOptions['resolveAsset'];
+    readonly preparedHunt?: CombatHudOptions['preparedHunt'];
   };
   readonly save?: {
     readonly source: SaveStateSource;
@@ -188,6 +189,9 @@ export function mountAppShell(
       ...(options.combat?.resolveAsset === undefined
         ? {}
         : { resolveAsset: options.combat.resolveAsset }),
+      ...(options.combat?.preparedHunt === undefined
+        ? {}
+        : { preparedHunt: options.combat.preparedHunt }),
     };
     combatHud = mountCombatHud(combatRoot, combatHudOptions);
     combatHud.render(combatViewModel.snapshot());

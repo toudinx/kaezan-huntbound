@@ -43,7 +43,7 @@ describe('save schema v1 to v2', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.schemaVersion).toBe(6);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.snapshot.spawnSlots).toEqual([]);
   });
@@ -69,7 +69,7 @@ describe('save schema v2 to v3', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.schemaVersion).toBe(6);
     expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
     // Nothing the player had already earned is touched by the bump.
     expect(parsed.value.stash).toEqual([
@@ -133,8 +133,38 @@ describe('save schema v4 to v5', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.schemaVersion).toBe(6);
     expect(parsed.value.gold).toBe(0);
+    expect(parsed.value.nextHuntBuff).toBe('none');
+    expect(parsed.value.stash).toEqual([
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+  });
+});
+
+describe('save schema v5 to v6', () => {
+  it('adds an empty next-hunt blessing without touching gold or stash', () => {
+    const current = saveWithSession(makeSession(), [
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+    const { nextHuntBuff: _nextHuntBuff, ...withoutBuff } = current;
+    void _nextHuntBuff;
+    const v5 = { ...withoutBuff, schemaVersion: 5, gold: 18 };
+
+    const parsed = parseGameSave(migrateSaveDocument(v5));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      throw new Error(
+        `v5 save did not open after 5→6: ${parsed.diagnostics
+          .map((item) => item.message)
+          .join('; ')}`,
+      );
+    }
+
+    expect(parsed.value.schemaVersion).toBe(6);
+    expect(parsed.value.gold).toBe(18);
+    expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);

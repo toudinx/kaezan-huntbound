@@ -14,6 +14,7 @@ import {
   type HuntIndexEntry,
   type HuntIndexLootEntry,
   type ItemDefinition,
+  type NextHuntBuffState,
   type RunBagEntry,
 } from '../../../../packages/contracts/src/index.ts';
 
@@ -37,6 +38,21 @@ export interface HuntingPlacesGear {
   readonly item: (itemKey: string) => ItemDefinition | undefined;
   readonly onEquip: (slot: EquipmentSlot, itemKey: string) => void;
   readonly onUnequip: (slot: EquipmentSlot) => void;
+}
+
+/**
+ * The one between-runs purchase: a blessing that lasts the next hunt.
+ *
+ * Bought here, never from the bag, because charges stay free and this is
+ * not an inventory item. `pending` is paid and waiting; `active` is already
+ * inside a run that a reload brought the player back to the atlas from.
+ */
+export interface HuntingPlacesPreparation {
+  readonly gold: number;
+  readonly status: NextHuntBuffState;
+  readonly price: number;
+  readonly damagePercent: number;
+  readonly onBuy: () => void;
 }
 
 /**
@@ -462,6 +478,71 @@ function createEquipmentPanel(
   return panel;
 }
 
+function createPreparationPanel(
+  document: Document,
+  preparation: HuntingPlacesPreparation,
+): HTMLElement {
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__preparation';
+  panel.setAttribute('data-testid', 'hunt-preparation');
+  panel.setAttribute('data-status', preparation.status);
+
+  const title = createTextElement(
+    document,
+    'h2',
+    'Prepared hunt',
+    'hunting-places__section-title',
+  );
+  const gold = createTextElement(
+    document,
+    'p',
+    `Gold: ${formatInteger(preparation.gold)}`,
+    'hunting-places__preparation-gold',
+  );
+  gold.setAttribute('data-testid', 'hunt-preparation-gold');
+
+  const benefit = createTextElement(
+    document,
+    'p',
+    `+${formatInteger(preparation.damagePercent)}% damage for the next hunt, then it ends. ${formatInteger(preparation.price)} gold.`,
+    'hunting-places__preparation-benefit',
+  );
+  benefit.setAttribute('data-testid', 'hunt-preparation-benefit');
+
+  const status = createTextElement(
+    document,
+    'p',
+    preparation.status === 'pending'
+      ? 'Ready. The next hunt deals the extra damage, then the blessing ends.'
+      : preparation.status === 'active'
+        ? 'Already running in the open hunt. It ends when you leave.'
+        : 'Not bought.',
+    'hunting-places__preparation-status',
+  );
+  status.setAttribute('data-testid', 'hunt-preparation-status');
+
+  const buy = document.createElement('button');
+  buy.type = 'button';
+  buy.className = 'hunting-places__select';
+  buy.setAttribute('data-testid', 'hunt-preparation-buy');
+  const canBuy =
+    preparation.status === 'none' && preparation.gold >= preparation.price;
+  buy.disabled = !canBuy;
+  buy.textContent = canBuy
+    ? `Buy for ${formatInteger(preparation.price)} gold`
+    : preparation.status === 'none'
+      ? `Need ${formatInteger(preparation.price)} gold`
+      : 'Already bought';
+  buy.addEventListener('click', () => {
+    if (buy.disabled) return;
+    buy.disabled = true;
+    preparation.onBuy();
+  });
+
+  panel.append(title, gold, benefit, status, buy);
+  return panel;
+}
+
 /** How much of this place's set the player has already found. */
 function createSetProgress(
   document: Document,
@@ -606,6 +687,7 @@ export function mountHuntingPlaces(
   summary?: HuntRunSummary,
   character?: CharacterProgress,
   gear?: HuntingPlacesGear,
+  preparation?: HuntingPlacesPreparation,
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -641,6 +723,9 @@ export function mountHuntingPlaces(
     if (gear !== undefined) {
       header.append(createEquipmentPanel(document, character, gear));
     }
+  }
+  if (preparation !== undefined) {
+    header.append(createPreparationPanel(document, preparation));
   }
   if (summary !== undefined) {
     header.append(createRunSummary(document, summary));

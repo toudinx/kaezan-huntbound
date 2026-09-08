@@ -20,7 +20,10 @@ import {
   validateKernelScenario,
 } from '@huntbound/contracts';
 
-import type { ContentRegistry } from '../runtime/contentRegistry.ts';
+import {
+  NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
+  scaleByDamageDealtPermille,
+} from '../runtime/nextHuntBuff.ts';
 import {
   abilityIdFromSpellKey,
   abilityShapeFromSpell,
@@ -77,6 +80,11 @@ export interface HuntScenarioBuild {
 
 export interface HuntScenarioBuildOptions {
   readonly postures?: readonly KnightPostureDefinition[];
+  /**
+   * Applies the next-hunt blessing to the player. Off by default so existing
+   * hunt fixtures keep the unbuffed sheet.
+   */
+  readonly preparedHunt?: boolean;
 }
 
 function publicFailure(
@@ -165,6 +173,7 @@ function composePlayer(
   abilityIndices: readonly number[],
   diagnostics: HuntDiagnostic[],
   blueprintIndex: number,
+  preparedHunt: boolean,
 ): ActorBlueprint | null {
   if (!registry.has(character.vocationKey)) {
     diagnostics.push(
@@ -204,6 +213,18 @@ function composePlayer(
     character.skills.sword,
     character.weaponAttack,
   );
+  const attackMinDamage = preparedHunt
+    ? scaleByDamageDealtPermille(
+        melee.minPower,
+        NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
+      )
+    : melee.minPower;
+  const attackMaxDamage = preparedHunt
+    ? scaleByDamageDealtPermille(
+        melee.maxPower,
+        NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
+      )
+    : melee.maxPower;
   return {
     ...source,
     behavior: 'inert',
@@ -216,8 +237,8 @@ function composePlayer(
     resourceRegenAmount: KNIGHT_RESOURCE_REGEN_AMOUNT,
     stepCooldownTicks,
     attackCooldownTicks,
-    attackMinDamage: melee.minPower,
-    attackMaxDamage: melee.maxPower,
+    attackMinDamage,
+    attackMaxDamage,
     attackSkillIndex: 2,
     attackRangeTiles: MELEE_RANGE_TILES,
     aggroRadius: 0,
@@ -653,6 +674,30 @@ function composePostureConditions(
   }));
 }
 
+function applyPreparedHuntDamage<T extends AbilityDefinition>(
+  abilities: readonly T[],
+  preparedHunt: boolean,
+): T[] {
+  if (!preparedHunt) {
+    return [...abilities];
+  }
+  return abilities.map((ability) =>
+    ability.effect === 'damage'
+      ? {
+          ...ability,
+          minPower: scaleByDamageDealtPermille(
+            ability.minPower,
+            NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
+          ),
+          maxPower: scaleByDamageDealtPermille(
+            ability.maxPower,
+            NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
+          ),
+        }
+      : ability,
+  );
+}
+
 function collectMissingLootKeys(
   creatures: readonly CreatureDefinition[],
   registry: ContentRegistry,
@@ -698,12 +743,16 @@ export function buildHuntScenario(
   const hasteAbilities = kitHasHaste
     ? [composeHasteAbility(postureConditions.length)]
     : [];
-  const abilities = [
-    ...spellAbilities,
-    ...postureAbilities,
-    ...challengeAbilities,
-    ...hasteAbilities,
-  ];
+  const preparedHunt = options?.preparedHunt === true;
+  const abilities = applyPreparedHuntDamage(
+    [
+      ...spellAbilities,
+      ...postureAbilities,
+      ...challengeAbilities,
+      ...hasteAbilities,
+    ],
+    preparedHunt,
+  );
   const resolvedAbilityKeys = [
     ...abilityKeys,
     ...(kitHasChallenge ? [CHALLENGE_SPELL_KEY] : []),
@@ -784,6 +833,7 @@ export function buildHuntScenario(
         playerAbilityIndices,
         diagnostics,
         blueprintIndex,
+        preparedHunt,
       );
       if (player !== null) {
         blueprints.push(player);

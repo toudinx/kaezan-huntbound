@@ -6,6 +6,14 @@ export { consolidateRun } from './consolidateRun.ts';
 export { decideResume } from './decideResume.ts';
 export { equipFromStash, unequipToStash } from './equipment.ts';
 export {
+  activateNextHuntBuff,
+  type BuffPurchaseFailureReason,
+  type BuffPurchaseResult,
+  buyNextHuntBuff,
+  type FailedBuffPurchase,
+  type SuccessfulBuffPurchase,
+} from './nextHuntBuff.ts';
+export {
   type FailedSale,
   type SaleFailureReason,
   type SaleResult,

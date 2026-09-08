@@ -1143,6 +1143,51 @@ describe('buildHuntScenario combat blueprints', () => {
       )?.factionId,
     );
   });
+
+  it('scales player melee and damage abilities when the next-hunt blessing is on', () => {
+    const baseline = build();
+    const blessed = unwrapSuccess(
+      buildHuntScenario(
+        syntheticHunt(),
+        character,
+        registry(),
+        seed,
+        { preparedHunt: true },
+      ),
+    );
+    const baselinePlayer = baseline.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    const blessedPlayer = blessed.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    const snake = blessed.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'snake',
+    );
+    const baselineBerserk = baseline.scenario.abilities.find(
+      (ability) => ability.abilityId === 'berserk',
+    );
+    const blessedBerserk = blessed.scenario.abilities.find(
+      (ability) => ability.abilityId === 'berserk',
+    );
+    const baselineHeal = baseline.scenario.abilities.find(
+      (ability) => ability.abilityId === 'wound-cleansing',
+    );
+    const blessedHeal = blessed.scenario.abilities.find(
+      (ability) => ability.abilityId === 'wound-cleansing',
+    );
+
+    expect(baselinePlayer?.attackMaxDamage).toBe(13);
+    expect(blessedPlayer?.attackMaxDamage).toBe(16);
+    expect(blessedPlayer?.attackMinDamage).toBe(
+      baselinePlayer?.attackMinDamage,
+    );
+    expect(blessedBerserk?.maxPower).toBeGreaterThan(
+      baselineBerserk?.maxPower ?? 0,
+    );
+    expect(blessedHeal?.maxPower).toBe(baselineHeal?.maxPower);
+    expect(snake?.attackMaxDamage).toBe(0);
+  });
 });
 
 describe('buildHuntScenario abilities', () => {

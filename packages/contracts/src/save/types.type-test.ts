@@ -9,6 +9,8 @@ function assertGameSaveReadonly(save: GameSave) {
   save.completedRuns = 1;
   // @ts-expect-error gold cannot be replaced on a GameSave.
   save.gold = 1;
+  // @ts-expect-error nextHuntBuff cannot be replaced on a GameSave.
+  save.nextHuntBuff = 'pending';
   // @ts-expect-error stash cannot be replaced on a GameSave.
   save.stash = [];
   // @ts-expect-error session cannot be replaced on a GameSave.
@@ -47,6 +49,7 @@ function assertSaveDraftMutable(draft: SaveDraft) {
   draft.stash = [];
   draft.completedRuns = 2;
   draft.gold = 3;
+  draft.nextHuntBuff = 'none';
   draft.character = { ...createEmptyCharacterProgress(), experience: 3 };
   draft.session = null;
 }

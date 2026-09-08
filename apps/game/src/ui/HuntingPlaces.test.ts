@@ -248,4 +248,46 @@ describe('HuntingPlaces', () => {
     expect(panel.textContent).toContain('Knight · Level 8');
     expect(panel.textContent).toContain('100 / 750 XP to level 9');
   });
+
+  it('sells nothing here: the blessing is a between-runs buy with a clear duration', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    let bought = 0;
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        gold: 80,
+        status: 'none',
+        price: 50,
+        damagePercent: 25,
+        onBuy: () => {
+          bought += 1;
+        },
+      },
+    );
+
+    const panel = findByTestId(root, 'hunt-preparation');
+    if (panel === undefined) {
+      throw new Error('Missing test id hunt-preparation');
+    }
+    expect(panel.getAttribute('data-status')).toBe('none');
+    expect(findByTestId(root, 'hunt-preparation-gold')?.textContent).toBe(
+      'Gold: 80',
+    );
+    expect(
+      findByTestId(root, 'hunt-preparation-benefit')?.textContent,
+    ).toContain('+25% damage');
+    const buy = findByTestId(root, 'hunt-preparation-buy');
+    if (buy === undefined) {
+      throw new Error('Missing test id hunt-preparation-buy');
+    }
+    expect(buy.disabled).toBe(false);
+    buy.dispatch('click');
+    expect(bought).toBe(1);
+  });
 });

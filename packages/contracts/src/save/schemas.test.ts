@@ -5,12 +5,13 @@ import {
   createEmptyGameSave,
   parseGameSave,
   SAVE_SCHEMA_VERSION,
+  SIMULATION_SCHEMA_VERSION,
 } from '../index.ts';
 import type { GameSave } from './types.ts';
 
 function createSnapshot() {
   return {
-    schemaVersion: 5,
+    schemaVersion: SIMULATION_SCHEMA_VERSION,
     rulesVersion: 4,
     scenarioId: 'pb-06-save-contract',
     scenarioRevision: 1,
@@ -29,7 +30,7 @@ function createSnapshot() {
 
 function createEmptyDocument() {
   return {
-    schemaVersion: 5,
+    schemaVersion: SAVE_SCHEMA_VERSION,
     character: {
       experience: 0,
       equipment: createEmptyEquipment(),
@@ -37,6 +38,7 @@ function createEmptyDocument() {
     },
     stash: [] as { itemKey: string; count: number }[],
     gold: 0,
+    nextHuntBuff: 'none' as const,
     completedRuns: 0,
     session: null as {
       huntId: string;
@@ -51,7 +53,7 @@ function createEmptyDocument() {
 
 function createFullSave() {
   return {
-    schemaVersion: 5,
+    schemaVersion: SAVE_SCHEMA_VERSION,
     character: {
       experience: 28_800,
       equipment: createEmptyEquipment(),
@@ -62,6 +64,7 @@ function createFullSave() {
       { itemKey: 'item:tibia:health-potion', count: 2 },
     ],
     gold: 37,
+    nextHuntBuff: 'none' as const,
     completedRuns: 3,
     session: {
       huntId: 'venore-rotworm-cave',
@@ -89,15 +92,15 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 5', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(5);
+  it('pins SAVE_SCHEMA_VERSION at 6', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(6);
   });
 
-  it('createEmptyGameSave produces a valid empty v5 document', () => {
+  it('createEmptyGameSave produces a valid empty v6 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
-      schemaVersion: 5,
+      schemaVersion: SAVE_SCHEMA_VERSION,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
@@ -105,6 +108,7 @@ describe('game save contract', () => {
       },
       stash: [],
       gold: 0,
+      nextHuntBuff: 'none',
       completedRuns: 0,
       session: null,
     });
@@ -112,6 +116,7 @@ describe('game save contract', () => {
       'character',
       'completedRuns',
       'gold',
+      'nextHuntBuff',
       'schemaVersion',
       'session',
       'stash',
@@ -131,7 +136,7 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(5);
+    expect(save.schemaVersion).toBe(6);
     expect(save.character).toEqual({
       experience: 28_800,
       equipment: createEmptyEquipment(),
@@ -139,6 +144,7 @@ describe('game save contract', () => {
     });
     expect(save.stash).toEqual(document.stash);
     expect(save.gold).toBe(37);
+    expect(save.nextHuntBuff).toBe('none');
     expect(save.completedRuns).toBe(3);
     expect(save.session).not.toBeNull();
     expect(save.session?.bag).toEqual(document.session.bag);
@@ -213,6 +219,12 @@ describe('game save contract', () => {
     const fractional = createEmptyDocument();
     fractional.gold = 1.5;
     expectRejectedAt(fractional, ['gold']);
+  });
+
+  it('rejects an unknown nextHuntBuff state', () => {
+    const document = createEmptyDocument();
+    (document as { nextHuntBuff: string }).nextHuntBuff = 'stocked';
+    expectRejectedAt(document, ['nextHuntBuff']);
   });
 
   it('rejects a document without schemaVersion', () => {

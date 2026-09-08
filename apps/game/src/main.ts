@@ -17,6 +17,8 @@ import {
   knightSheetAtLevel,
   levelForExperience,
   loadHuntDefinition,
+  nextHuntBuffDamagePercent,
+  nextHuntBuffOffer,
   parseKnightPostures,
   projectRuntimeBundle,
   resolveEquippedStats,
@@ -36,10 +38,12 @@ import {
   type HuntIndexEntry,
   HuntIndexSchema,
   type ItemDefinition,
+  type NextHuntBuffState,
   type RunBagEntry,
   type SaveDraft,
 } from '../../../packages/contracts/src/index.ts';
 import {
+  buyNextHuntBuff,
   createIndexedDbSaveDriver,
   createSaveRepository,
   equipFromStash,
@@ -72,6 +76,7 @@ import {
 } from './save/SaveSession';
 import { mountAppShell } from './ui/AppShell';
 import {
+  type HuntingPlacesPreparation,
   type HuntingPlacesScreen,
   type HuntRunSummary,
   mountHuntingPlaces,
@@ -307,10 +312,14 @@ export async function bootstrapApp(
   );
   let character: CharacterProgress = createEmptyCharacterProgress();
   let stash: readonly RunBagEntry[] = [];
+  let gold = 0;
+  let nextHuntBuff: NextHuntBuffState = 'none';
   try {
     const loaded = await saveRepository.load();
     character = loaded.character;
     stash = loaded.stash;
+    gold = loaded.gold;
+    nextHuntBuff = loaded.nextHuntBuff;
   } catch {
     // A save that cannot be read is a fresh character, not a dead boot: the
     // session reports the failure properly once a run starts.
@@ -445,6 +454,8 @@ export async function bootstrapApp(
       // the run just finished writing.
       character = settled?.character ?? character;
       stash = settled?.stash ?? stash;
+      gold = settled?.gold ?? gold;
+      nextHuntBuff = settled?.nextHuntBuff ?? nextHuntBuff;
       disposeRunSurfaces();
       await destroyRenderer?.();
       await unloadAssets?.();
@@ -501,7 +512,10 @@ export async function bootstrapApp(
         knight,
         registry,
         huntSeed,
-        { postures },
+        {
+          postures,
+          ...(nextHuntBuff === 'none' ? {} : { preparedHunt: true }),
+        },
       );
 
       if (!scenarioResult.ok) {
@@ -596,6 +610,13 @@ export async function bootstrapApp(
           transitions: hunt.transitions.entries,
           playerStart: hunt.playerStart,
           resolveAsset: resolveHuntAsset,
+          ...(nextHuntBuff === 'none'
+            ? {}
+            : {
+                preparedHunt: {
+                  damagePercent: nextHuntBuffDamagePercent(),
+                },
+              }),
         },
         save: {
           source: saveSession,
@@ -819,6 +840,32 @@ export async function bootstrapApp(
           applyGearChange((draft) => unequipToStash(draft, slot));
         },
       },
+      {
+        gold,
+        status: nextHuntBuff,
+        price: nextHuntBuffOffer().price,
+        damagePercent: nextHuntBuffDamagePercent(),
+        onBuy: () => {
+          const price = nextHuntBuffOffer().price;
+          void saveRepository
+            .transact((draft) => {
+              buyNextHuntBuff(draft, price);
+              return {
+                gold: draft.gold,
+                nextHuntBuff: draft.nextHuntBuff,
+              };
+            })
+            .then((next) => {
+              gold = next.gold;
+              nextHuntBuff = next.nextHuntBuff;
+              showHuntingPlaces(summary);
+            })
+            .catch(() => {
+              // A failed write leaves the atlas showing the wallet that is
+              // still saved.
+            });
+        },
+      } satisfies HuntingPlacesPreparation,
     );
   }
 

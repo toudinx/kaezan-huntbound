@@ -62,13 +62,14 @@ describe('incompatible session discard', () => {
 
     expect(counting.writeCount()).toBe(1);
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 5,
+      schemaVersion: 6,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
       },
       gold: 0,
+      nextHuntBuff: 'none',
       completedRuns: 0,
       session: null,
       stash: [
@@ -114,13 +115,14 @@ describe('incompatible session discard', () => {
     });
 
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 5,
+      schemaVersion: 6,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
       },
       gold: 0,
+      nextHuntBuff: 'none',
       completedRuns: 0,
       session: null,
       stash: [

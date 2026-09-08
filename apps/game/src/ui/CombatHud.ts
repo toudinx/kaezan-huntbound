@@ -52,6 +52,11 @@ export interface CombatHudOptions {
   readonly transitions?: readonly TransitionEntry[];
   readonly playerStart?: GridPosition;
   readonly resolveAsset?: ResolveCockpitAsset;
+  /**
+   * The next-hunt blessing, fixed for the length of the run. Absent means
+   * this hunt was entered without one.
+   */
+  readonly preparedHunt?: { readonly damagePercent: number };
 }
 
 function createElement(
@@ -138,7 +143,7 @@ export function mountCombatHud(
   // numbers they change, so the banner holds them and the rail lost its modes
   // panel; the HUD still writes their text, because the wording is what the
   // hunt specs read.
-  const { posture, haste } = banner;
+  const { posture, haste, preparedHunt } = banner;
 
   const lootPanel = createElement(document, 'section', 'combat-loot');
   lootPanel.className = 'cockpit-panel';
@@ -275,6 +280,15 @@ export function mountCombatHud(
       state.playerHaste === null
         ? 'Haste: Off'
         : `Haste: ${String(Math.ceil((state.playerHaste.remainingTicks * TICK_DURATION_MS) / 1000))}s`;
+    const blessing = options.preparedHunt;
+    preparedHunt.setAttribute(
+      'data-prepared-hunt',
+      blessing === undefined ? 'off' : 'active',
+    );
+    preparedHunt.textContent =
+      blessing === undefined
+        ? 'Prepared hunt: Off'
+        : `Prepared hunt: +${String(blessing.damagePercent)}% damage until this run ends`;
 
     const progress = knightProgressAtExperience(state.experience.total);
     levelReadout.setAttribute('data-level', String(progress.level));

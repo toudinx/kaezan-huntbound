@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 import { SeedSchema } from '../simulation/identity.ts';
 import { SimulationSnapshotSchema } from '../simulation/schemas.ts';
-import { EQUIPMENT_SLOTS, SAVE_SCHEMA_VERSION } from './types.ts';
+import {
+  EQUIPMENT_SLOTS,
+  NEXT_HUNT_BUFF_STATES,
+  SAVE_SCHEMA_VERSION,
+} from './types.ts';
 
 const safeInteger = z.number().safe();
 const nonNegativeInteger = safeInteger.nonnegative();
@@ -114,6 +118,7 @@ export const GameSaveSchema = z
     character: CharacterProgressSchema,
     stash: RunBagEntriesSchema,
     gold: nonNegativeInteger,
+    nextHuntBuff: z.enum(NEXT_HUNT_BUFF_STATES),
     completedRuns: nonNegativeInteger,
     session: ActiveRunStateSchema.nullable(),
   })

@@ -239,12 +239,30 @@ const v4ToV5: SaveMigration = {
   },
 };
 
+/**
+ * PB-13-06 adds the next-hunt blessing. A previous save has no purchase, so
+ * the additive default is `none` and leaves gold, stash and the open run
+ * exactly where they were.
+ */
+const v5ToV6: SaveMigration = {
+  from: 5,
+  to: 6,
+  migrate(document) {
+    return {
+      ...(document as SaveDocument),
+      schemaVersion: 6,
+      nextHuntBuff: 'none',
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
   v2ToV3,
   v3ToV4,
   v4ToV5,
+  v5ToV6,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {

@@ -75,6 +75,11 @@ alterem os IDs de conteúdo importado:
 - habilidade com cargas por hunt: runa e poção reaproveitam a máquina de ability — N cargas,
   recarregadas fora de combate ou entre runs, sem inventário, sem loja, sem `actor/use-item`. Sudden
   Death id 3155 carrega 3; GFB id 3191 carrega 4; HMM id 3198 carrega 10; UH id 3160 carrega 1;
+- **buff de próxima hunt** (PB-13-06, 2026-09-08): uma compra entre runs, paga com o gold da
+  carteira, que vale pela run seguinte e some com ela. Sem inventário, sem uso manual, sem loja de
+  consumíveis e sem `actor/use-item`. Soma à máquina de cargas — não a substitui; cargas continuam
+  de graça. Uma oferta só: +25% de dano causado até o fim da hunt, a 50 gold (preço de uma venda
+  modesta de loot comum, para o gold ter destino sem esvaziar a carteira);
 - stances do Vocation Adjustments 2026, com desvio de proveniência: postura adotada é a de Tibia
   `15.25.3a4a52` (fonte: TibiaWiki), não a do snapshot `157e6f9e`. Vale só para stances; kit, fórmula,
   custo, cooldown, loot e mapa continuam saindo do snapshot. As stances de Sorcerer que dependem de
