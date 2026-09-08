@@ -5,7 +5,7 @@
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
-| PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | COMMIT_SHA |
+| PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `920227d` |
 | PB-13-02 | pending | GPT-5.6 Sol `xhigh` | — | — |
 | PB-13-03 | pending | Claude Opus 5 `xhigh` | — | — |
 | PB-13-04 | pending | Claude Opus 5 `xhigh` | — | — |
