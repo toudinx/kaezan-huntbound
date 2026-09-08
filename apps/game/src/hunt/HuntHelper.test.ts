@@ -4,6 +4,7 @@ import type {
   AbilityDefinition,
   EntityId,
   SimulationEvent,
+  TickIndex,
 } from '../../../../packages/contracts/src/index.ts';
 import {
   createHuntHelper,
@@ -335,9 +336,10 @@ describe('createHuntHelper', () => {
     const helper = createHuntHelper({ modules: { heal: true } });
     helper.noteManualAction({ kind: 'step', direction: 'n' }, 100);
 
-    expect(
-      helper.decide(situation({ tick: 101, health: 200 })),
-    ).toMatchObject({ kind: 'act', module: 'heal' });
+    expect(helper.decide(situation({ tick: 101, health: 200 }))).toMatchObject({
+      kind: 'act',
+      module: 'heal',
+    });
   });
 
   it('collapses a repeated refusal into one standing line', () => {
@@ -358,7 +360,7 @@ describe('createHuntHelper', () => {
 
   it('reports loot only while its module is on', () => {
     const grant: SimulationEvent = {
-      tick: 42,
+      tick: 42 as TickIndex,
       sequence: 1,
       payload: {
         type: 'loot/granted',
