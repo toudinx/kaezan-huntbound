@@ -4548,7 +4548,7 @@
       "item:tibia:plate-legs"
     ],
     "budget": {
-      "maxEntries": 512,
+      "maxEntries": 640,
       "maxBytes": 6291456
     }
   }

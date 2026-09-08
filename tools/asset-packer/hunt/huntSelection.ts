@@ -24,8 +24,15 @@ import {
 } from '../../../packages/assets/src/index.ts';
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 
+/**
+ * A ceiling on what one hunt costs to load, not a claim about the map. Orc
+ * Fortress needs 541 media entries for the real 65x68x3 box the PB-10-13
+ * extraction froze, and 512 predates it; the four other hunts sit between 61
+ * and 226, so the headroom is structural. The byte ceiling is untouched and
+ * remains far from binding.
+ */
 export const HUNT_PACK_BUDGET = {
-  maxEntries: 512,
+  maxEntries: 640,
   maxBytes: 6 * 1024 * 1024,
 } as const;
 
