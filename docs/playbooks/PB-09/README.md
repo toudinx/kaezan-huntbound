@@ -1,5 +1,10 @@
 # PB-09 — Progressão
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 **Status:** **esqueleto**. Não elegível. **Começa por design doc, não por task card.**
 
 **Ordem, 2026-08-26:** o **PB-10 roda primeiro**. Ele foi reescrito como "Catálogo de hunts" e

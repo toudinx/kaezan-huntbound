@@ -1,5 +1,10 @@
 # PB-00R — Estado operacional
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 **Status geral:** done — `APPROVED_WITH_WARNINGS` em 2026-08-11 (PB-00R-05).
 
 **Próxima task elegível:** nenhuma dentro de PB-00R. PB-00R-FIX-01 está concluída; W1 e W2 foram

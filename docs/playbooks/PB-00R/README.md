@@ -1,5 +1,10 @@
 # PB-00R — Correções do gate de fundação
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 > **Para agentes:** use `superpowers:subagent-driven-development` ou
 > `superpowers:executing-plans` para executar uma task por chat. Cada task termina com um prompt
 > completo para copiar e colar. Não execute o playbook inteiro em uma conversa.

@@ -1,5 +1,10 @@
 # PB-11 — O loot vira poder
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 **Status:** **esqueleto**. Não elegível.
 
 **Goal:** a run tem fim, o loot consolida, e o que caiu no chão muda o número na ficha.

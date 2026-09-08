@@ -1,5 +1,10 @@
 # PB-18 — A porta
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 > **Para agentes executores:** **nenhuma skill externa é obrigatória.** Skills operacionais do
 > repositório: `playbook-task`, `run-gates`. Uma task card por chat. O formato e o handoff seguem
 > `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.

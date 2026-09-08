@@ -1,5 +1,10 @@
 # PB-01 — Estado operacional
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 **Playbook:** `docs/playbooks/PB-01/README.md`
 
 **Estado geral:** done

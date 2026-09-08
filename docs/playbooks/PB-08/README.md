@@ -1,5 +1,10 @@
 # PB-08 — O Knight completo
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 > **Para agentes executores:** **nenhuma skill externa é obrigatória.** Teste primeiro e nada
 > afirmado sem saída fresca são regra do `AGENTS.md` e de cada card, não de um plugin. Procedimento
 > operacional nas skills do repositório: `playbook-task`, `run-gates` e `worktree-cycle`. Execute uma

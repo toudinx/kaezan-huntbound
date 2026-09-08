@@ -1,5 +1,10 @@
 # PB-01 — Catálogo curado e contratos de conteúdo
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 > **Para agentes:** execute uma task card por chat. O formato, o handoff e o ciclo automático de
 > integração/limpeza seguem `docs/07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`.
 

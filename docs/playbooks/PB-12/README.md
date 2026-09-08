@@ -1,5 +1,10 @@
 # PB-12 — Hunts moduladas e level sync
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 **Status:** **esqueleto**. Não elegível. **Exige emenda à ADR-05 antes de qualquer task.**
 
 **Goal:** conteúdo de faixa antiga continua jogável e relevante.

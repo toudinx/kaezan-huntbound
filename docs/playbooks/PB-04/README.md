@@ -1,5 +1,10 @@
 # PB-04 — Primeira hunt ponta a ponta
 
+> **Fila encerrada em 2026-09-07:** registro histórico. Implementações e commits abaixo
+> permanecem válidos; pendências não são executáveis por esta fila. Destino no
+> [roteiro vigente](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md). Status antigos abaixo são históricos.
+
+
 > **Para agentes executores:** skill obrigatória por task:
 > `superpowers:test-driven-development` e `superpowers:verification-before-completion`. Execute uma
 > task card por chat. O formato, handoff e ciclo automático de integração/limpeza seguem
