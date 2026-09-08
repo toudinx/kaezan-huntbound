@@ -39,16 +39,16 @@ O tratamento de morte/abandono e o momento de consolidar cada ganho ainda precis
 | Melhorar o set | Drops equipáveis oferecem upgrades e escolhas de build. | Slots iniciais, stats e curva de poder. |
 | Colecionar rares | Encontrar itens raros tem valor de coleção além de equipar ou vender. | Registrar descoberta ou exigir posse; proteção contra venda acidental. |
 | Fazer gold | Vender itens a NPC transforma loot sem uso imediato em dinheiro. | Preços, carteira e regras de compra/venda sem duplicação. |
-| Gastar gold | Preparar a próxima hunt com uma compra útil. | Buff de run, imbuement, poção ou runa; não implementar todos por padrão. |
-| Upar | Matar mobs concede XP e avanço de level. | Curva, ganhos e relação entre nível real e modulado. |
-| Completar bestiary e conquistas | Caçar espécies e cumprir objetivos deixa progresso persistente visível. | Metas, recompensas e tratamento de morte; poder adicional não está decidido. |
+| Gastar gold | Preparar a próxima hunt com uma compra útil. | **Decidido em 2026-09-07:** buff de próxima hunt. Falta o preço e a duração. |
+| Upar | Matar mobs concede XP e avanço de level. | Falta a curva. **Decidido:** um personagem persistente, toda hunt aberta, e a curva concede ataque e não só vida. |
+| Completar bestiary e conquistas | Caçar espécies e cumprir objetivos deixa progresso persistente visível. | Faltam metas e recompensas. **Decidido:** morrer perde a bag e o crédito da run, nunca XP nem level. Poder adicional segue fora. |
 | Farmar builds para conteúdo modulado | Voltar a uma hunt continua oferecendo itens relevantes à build/coleção. | Como gear é modulado e se haverá variação ou reroll em itens. |
 
-**Consumíveis:** se entrarem, devem acrescentar decisão de preparação e custo de gold sem exigir
-spam manual. O helper pode cuidar do uso durante a luta. A existência de um gasto não basta para
-justificar poções/runas; comparar com um buff de próxima hunt ou imbuement de duração clara.
-O modelo atual de cargas/regen/leech precisa ser reconciliado com compras para evitar cobrar por
-algo já gratuito ou tornar sustain obrigatório por acidente. Nenhum consumível foi aprovado ainda.
+**Consumíveis — decidido em 2026-09-07:** o gasto de gold do V0 é **buff de próxima hunt**,
+comprado entre runs e válido pela run seguinte, sem inventário e sem uso manual na luta (PB-13-06).
+Poção e runa continuam **não aprovadas**: competiriam com a máquina de cargas por hunt que a ADR-05
+já congelou como gratuita, e cobrar por algo que já existe grátis era exatamente o risco a evitar.
+O buff é extensão Huntbound nova e entra na ADR-05 antes de ser implementado.
 
 **Itens com RNG/reroll:** hipótese de design levantada pelo usuário, não contrato aprovado. Não
 adotar tiers do Tibia como resposta automática. Primeiro provar drop, equipamento e venda; depois
@@ -64,8 +64,9 @@ para justificar o farm. Os marcos têm fim; o jogo pode continuar oferecendo hun
 ## Limites de produto e critérios de decisão
 
 - **Progressão:** level/XP, equipamento, coleção, bestiary e conquistas entram no loop. Não
-  acrescentar árvore de talentos, skill grind ou Códex com poder por consequência. PB-13-01
-  decide curva e tratamento da morte; “V0 compacto” não determina um level cap arbitrário.
+  acrescentar árvore de talentos, skill grind ou Códex com poder por consequência. Morte e forma
+  do personagem foram congeladas em 2026-09-07 no README do PB-13; a curva concreta é da PB-13-03,
+  e “V0 compacto” não determina um level cap arbitrário.
 - **Itens:** arma, armadura e mão secundária compatível com a vocação como escopo inicial proposto.
   Drops devem oferecer uma escolha compreensível; não importar centenas de itens. RNG/reroll
   permanece hipótese separada, conforme a seção de motivações.

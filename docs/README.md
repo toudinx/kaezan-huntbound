@@ -7,7 +7,7 @@ Phaser 4 + TypeScript + Vite e gacha exclusivamente cosmético.
 
 - [Validação do projeto](VALIDACAO_PROJETO.md): o que existe, lacunas e critérios de diversão.
 - [Roteiro compacto](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md): início, meio, fim e destino do backlog.
-- **Próxima task:** [PB-13-01 — Fechar as decisões do loop](playbooks/PB-13/tasks/PB-13-01-loop.md).
+- **Próxima task:** [PB-13-01 — A escada de poder do Knight](playbooks/PB-13/tasks/PB-13-01-escada.md).
 
 ## Autoridade
 

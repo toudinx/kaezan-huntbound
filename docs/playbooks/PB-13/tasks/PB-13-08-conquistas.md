@@ -1,19 +1,22 @@
 # PB-13-08 — Conquistas do primeiro loop
 
-**Objetivo.** Entregar um conjunto pequeno de conquistas por objetivos de caça e evolução, com
-progresso visível e recompensa única conforme o design.
+**Objetivo.** Entregar um conjunto pequeno de conquistas sobre o que o loop já produz — caçar,
+equipar, vender, subir de level, completar bestiary —, com progresso visível e recompensa única.
 
-**Onde.** packages/contracts/src/save/, packages/save/src/, packages/content/src/,
-apps/game/src/save/, apps/game/src/ui/.
+**Onde.** `packages/contracts/src/save/`, `packages/save/src/`, `packages/content/src/`,
+`apps/game/src/save/`, `apps/game/src/ui/`.
 
-**Fora de escopo.** Diárias, semanais, temporadas, notificações incessantes e árvore de poder.
+**Fora de escopo.** Diárias, semanais, temporadas, notificações repetidas e árvore de poder.
+Conquista que exija mecanismo que ainda não existe.
 
-**Decisões congeladas.** Design PB-13-01. Conquistas devem apontar objetivos compreensíveis; receber
-e persistir recompensa sem duplicação.
+**Decisões congeladas.** README do PB-13. Conquista se apoia no que as tasks 01 a 07 integraram; não
+inventar um contador novo para ter o que premiar. Recompensa é **única** e persiste sem duplicar
+numa recarga. **Autorizado nesta card:** subir `SAVE_SCHEMA_VERSION` para o registro, com campo
+aditivo e default que reproduz o save anterior, e regenerar os goldens de
+`packages/test-fixtures/save/pb06`.
 
-**Gate.** Linhas contracts/simulation/save de `AGENTS.md`: teste afetado, golden pertinente e
-architecture:check; linha transversal só se aplicável; acrescentar content/assets e app conforme o
-diff.
+**Gate.** Linha `packages/save`/`contracts`: teste afetado + `save:check` + `architecture:check`.
+Somar `content:check` se as conquistas entrarem por catálogo.
 
-**O que olhar no jogo.** Completar uma conquista, receber a recompensa e recarregar; mostrar
-claramente o próximo objetivo e o que já foi concluído.
+**O que olhar no jogo.** Completar uma conquista, receber a recompensa e recarregar. A tela deve
+dizer o que já foi concluído e qual é o próximo objetivo.
