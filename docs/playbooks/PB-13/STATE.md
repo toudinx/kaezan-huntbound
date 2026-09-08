@@ -1,7 +1,7 @@
 # PB-13 — Estado
 
 **Estado:** PB-13-01 a PB-13-09 implementadas; gates do B27 rodados em 2026-09-08 e verdes.
-**Próxima:** nenhuma. O playbook fechou; os vermelhos remanescentes estão no B28.
+**Próxima:** nenhuma. O playbook fechou e o B28 fechou junto; a suíte inteira está verde.
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
@@ -118,15 +118,25 @@ fontes; a árvore continuou limpa depois do `content:catalog:rebuild`. O vermelh
 `SimulationEvent` com `tick` sem marca `TickIndex` e a formatação de um assert — corrigido em
 `049b90d`. Resta o B28.
 
-**B28 — aberto, sem task escrita. Três vermelhos reais, nenhum de plataforma.** (1)
-`assets:check` para em `HUNT_PACK_OVER_ENTRIES: Pack has 541 entries; maximum is 512`, contra o
-`maxEntries` de `tools/asset-packer/hunt/huntSelection.ts:28`; o `build` e o staging passam, então o
-jogo roda. (2) `tools/save/migratePb06Legacy.test.ts:40` ainda espera `schemaVersion` 5, e
-`SAVE_SCHEMA_VERSION` está em 8 desde o PB-13-06/07. (3)
-`tools/save/cli.test.ts:253` espera exit 1 ao adulterar o `legacy.json` para `schemaVersion: 4`; o
-CLI sai 2 com `SAVE_DOCUMENT_INVALID`, porque marcar a versão pula os passos de migração que criam
-`character` e convertem `spawnSlots` para `slotId`. Os dois testes de save estão desatualizados, não
-o código: `save:check` verifica o fixture real e passa.
+**B28 — fechado em 2026-09-08.** O teto de entradas do pack subiu de 512 para 640 com autorização
+do usuário, já que é parâmetro congelado do PB-04: o Orc Fortress precisa de 541 entradas para a
+caixa real que o PB-10-13 congelou (509 sprites distintos do mapa mais 32 extras) e as outras quatro
+hunts ficam entre 61 e 226. Os artefatos do Orc, que ainda carregavam 357 entradas, foram
+regenerados pelo CLI em test e product (`995248c`). Os dois testes de save desatualizados foram
+endereçados em `aa61158`: o pino de `schemaVersion` agora lê `SAVE_SCHEMA_VERSION` e vive só em
+`contracts/save/schemas.test.ts`, e o teste de CLI passou a afirmar o exit 2 real.
+
+Ao regenerar apareceram mais três, todos em `781e491`. O validador de profile canonicaliza a raiz
+que recebe e comparava caminhos crus contra ela; no macOS o diretório temporário é symlink, então
+**nenhum profile podia ser construído** — o `build-profile` recusava o próprio catálogo. Junto veio
+a razão de ninguém ter visto: `tools/asset-packer/vitest.config.ts` e `tools/diagnostics/vitest.config.ts`
+nunca estiveram no script `test`, e seis contagens de chave em `huntArtifacts.test.ts` estavam nove
+atrás desde o commit dos ícones de spell. Os dois configs entraram no runner. Por fim, dois testes de
+`packages/content` escritos no PB-13-04 e no PB-13-06 nunca tinham rodado: um somava 21 onde a
+fixture dá 13, o outro lia uma criatura que a hunt do teste não gera.
+
+`corepack pnpm test` fecha verde inteiro pela primeira vez — a falha do tools/save escondia
+`--recursive`, então `content`, `contracts`, `save`, `simulation` e `apps/game` nem chegavam a rodar.
 
 ## Decisões congeladas
 
