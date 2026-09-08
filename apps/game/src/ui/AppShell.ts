@@ -111,9 +111,19 @@ export function mountAppShell(
   controls.setAttribute('data-testid', 'hunt-controls');
   combatRoot.setAttribute('data-testid', 'combat-root');
   inventoryRoot.setAttribute('data-testid', 'save-inventory-root');
+  inventoryRoot.addEventListener(
+    'toggle',
+    () => options.input?.releaseHeld(),
+    true,
+  );
 
   header.append(status);
-  viewportPanel.append(viewport, frameRate);
+  const diagnostics = document.createElement('details');
+  diagnostics.className = 'shell-diagnostics';
+  const diagnosticsToggle = document.createElement('summary');
+  diagnosticsToggle.textContent = 'Performance';
+  diagnostics.append(diagnosticsToggle, viewport, frameRate);
+  viewportPanel.append(diagnostics);
   root.replaceChildren(shell);
 
   /**
@@ -275,7 +285,10 @@ export function mountAppShell(
   const unsubscribe = bridge.subscribe((snapshot) => {
     shell.setAttribute('data-shell-phase', snapshot.phase);
     shell.setAttribute('data-shell-ready', String(snapshot.phase === 'ready'));
-    status.textContent = `${phaseLabels[snapshot.phase]}: ${snapshot.message}`;
+    status.textContent =
+      snapshot.phase === 'ready'
+        ? 'Huntbound'
+        : `${phaseLabels[snapshot.phase]}: ${snapshot.message}`;
     viewport.textContent = formatViewport(snapshot);
   });
 

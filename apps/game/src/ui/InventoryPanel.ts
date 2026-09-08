@@ -43,7 +43,10 @@ function createElement(
 }
 
 function formatItemKey(itemKey: string): string {
-  return itemKey.split(':').at(-1) ?? itemKey;
+  return (itemKey.split(':').at(-1) ?? itemKey)
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
 function compareItemKeys(left: RunBagEntry, right: RunBagEntry): number {
@@ -52,13 +55,6 @@ function compareItemKeys(left: RunBagEntry, right: RunBagEntry): number {
     : left.itemKey < right.itemKey
       ? -1
       : 1;
-}
-
-function formatEntries(entries: readonly RunBagEntry[]): string {
-  return [...entries]
-    .sort(compareItemKeys)
-    .map((entry) => `${formatItemKey(entry.itemKey)} × ${entry.count}`)
-    .join(' | ');
 }
 
 /**
@@ -81,7 +77,13 @@ function renderEntries(
   empty: HTMLElement,
   entries: readonly RunBagEntry[],
 ): void {
-  list.textContent = formatEntries(entries);
+  list.replaceChildren(
+    ...[...entries].sort(compareItemKeys).map((entry) => {
+      const row = list.ownerDocument.createElement('div');
+      row.textContent = `${formatItemKey(entry.itemKey)} × ${entry.count}`;
+      return row;
+    }),
+  );
   empty.setAttribute('data-visible', String(entries.length === 0));
 }
 
@@ -110,7 +112,7 @@ function renderSales(
     row.setAttribute('data-item-key', entry.itemKey);
     const offer = options.getSaleOffer(entry.itemKey);
     const label = createElement(document, 'span', 'save-sale-label');
-    label.textContent = formatItemKey(entry.itemKey);
+    label.textContent = offer?.displayName ?? formatItemKey(entry.itemKey);
     row.append(label);
 
     if (offer === undefined) {
@@ -126,7 +128,7 @@ function renderSales(
     }
 
     const quote = createElement(document, 'span', 'save-sale-quote');
-    quote.textContent = `${offer.displayName} · ${offer.unitPrice} gold each`;
+    quote.textContent = `${offer.unitPrice} gold each · ${entry.count} owned`;
     row.append(quote);
 
     if (offer.protected) {
@@ -215,19 +217,56 @@ export function mountInventoryPanel(
   importButton.type = 'button';
   importButton.textContent = 'Import save';
 
-  panel.append(
-    status,
-    gold,
+  const drawer = document.createElement('details');
+  drawer.className = 'inventory-drawer';
+  const toggle = document.createElement('summary');
+  toggle.textContent = 'Inventory & save';
+  const body = document.createElement('div');
+  body.className = 'inventory-drawer__body';
+  const heading = (text: string): HTMLElement => {
+    const element = document.createElement('h3');
+    element.textContent = text;
+    return element;
+  };
+  const hint = document.createElement('p');
+  hint.className = 'inventory-drawer__hint';
+  hint.textContent = 'Your hunt continues while this panel is open.';
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'inventory-drawer__close';
+  close.textContent = 'Close';
+  close.addEventListener('click', () => {
+    drawer.open = false;
+    toggle.focus();
+  });
+  drawer.addEventListener('keydown', (event) => {
+    event.stopPropagation();
+    if (event.key === 'Escape') {
+      drawer.open = false;
+      toggle.focus();
+    }
+  });
+  drawer.addEventListener('keyup', (event) => event.stopPropagation());
+  body.append(
+    close,
+    hint,
+    heading('This run'),
     runBag,
     runBagEmpty,
+    heading('Stash'),
     stash,
     stashEmpty,
-    ...(salesEnabled ? [sales, salesEmpty] : []),
+    ...(salesEnabled ? [heading('Sell loot'), sales, salesEmpty] : []),
+    heading('Equipped'),
     equipment,
     completedRuns,
+    heading('Save & backup'),
+    status,
     exportButton,
     importButton,
   );
+  drawer.append(toggle, body);
+  panel.append(gold, drawer);
   root.replaceChildren(panel);
 
   const onExport = (): void => {

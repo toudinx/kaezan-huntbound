@@ -340,7 +340,12 @@ function createCharacterPanel(
   experience.setAttribute('data-testid', 'hunt-character-experience');
   experience.setAttribute('data-experience', String(progress.experience));
 
-  panel.append(level, experience);
+  const meter = document.createElement('progress');
+  meter.className = 'hunting-places__experience-bar';
+  meter.max = progress.levelSpan;
+  meter.value = progress.intoLevel;
+  meter.setAttribute('aria-label', `Progress to level ${progress.level + 1}`);
+  panel.append(level, experience, meter);
   return panel;
 }
 
@@ -813,7 +818,7 @@ function createHuntCard(
     ),
     createFact(
       document,
-      'Live actors',
+      'Creatures on the map',
       formatInteger(hunt.maxLiveActors),
       'hunt-place-live-actors',
     ),
@@ -847,9 +852,22 @@ function createHuntCard(
     onSelect(hunt);
   });
 
-  card.append(header, details, summary, creaturesHeading, creatures);
-  if (set !== undefined) card.append(set);
-  card.append(select);
+  const guide = document.createElement('details');
+  guide.className = 'hunting-places__guide';
+  const guideToggle = createTextElement(
+    document,
+    'summary',
+    'Creatures, loot & collection',
+  );
+  guide.append(guideToggle, creaturesHeading, creatures);
+  if (set !== undefined) guide.append(set);
+  const inhabitants = createTextElement(
+    document,
+    'p',
+    hunt.creatures.map((creature) => creature.displayName).join(' · '),
+    'hunting-places__inhabitants',
+  );
+  card.append(header, details, summary, inhabitants, select, guide);
   return card;
 }
 
@@ -871,47 +889,135 @@ export function mountHuntingPlaces(
   screen.setAttribute('data-shell-phase', 'hunting');
   screen.setAttribute('aria-labelledby', 'hunting-places-title');
 
+  const masthead = document.createElement('div');
+  masthead.className = 'hunting-places__masthead';
+  masthead.append(
+    createTextElement(
+      document,
+      'p',
+      'KAEZAN / HUNTBOUND',
+      'hunting-places__brand',
+    ),
+    createTextElement(
+      document,
+      'span',
+      'Your next expedition starts here',
+      'hunting-places__tagline',
+    ),
+  );
   const header = document.createElement('header');
   header.className = 'hunting-places__header';
   const eyebrow = createTextElement(
     document,
     'p',
-    'Huntbound · Field atlas',
+    'THE HUNTER’S CAMP',
     'hunting-places__eyebrow',
   );
   const title = createTextElement(
     document,
     'h1',
-    'Hunting Places',
+    'Choose your next hunt.',
     'hunting-places__title',
   );
   title.id = 'hunting-places-title';
   const intro = createTextElement(
     document,
     'p',
-    'Choose a place to begin your run. Your route sets the field and the recommended kit for now.',
+    'Find your hunting ground. Gather better gear. Return stronger.',
     'hunting-places__intro',
   );
   header.append(eyebrow, title, intro);
-  if (character !== undefined) {
-    header.append(createCharacterPanel(document, character));
-    if (gear !== undefined) {
-      header.append(createEquipmentPanel(document, character, gear));
-    }
-  }
+  const identity = document.createElement('div');
+  identity.className = 'hunting-places__identity';
+  if (character !== undefined)
+    identity.append(createCharacterPanel(document, character));
   if (preparation !== undefined) {
-    header.append(createPreparationPanel(document, preparation));
-  }
-  if (bestiary !== undefined && character !== undefined) {
-    header.append(createBestiaryPanel(document, bestiary, character.bestiary));
-  }
-  if (achievements !== undefined && character !== undefined) {
-    header.append(
-      createAchievementPanel(document, achievements, character.achievements),
+    identity.append(
+      createTextElement(
+        document,
+        'p',
+        `${formatInteger(preparation.gold)} gold`,
+        'hunting-places__wallet',
+      ),
     );
   }
-  if (summary !== undefined) {
-    header.append(createRunSummary(document, summary));
+  const navigation = document.createElement('nav');
+  navigation.className = 'hunting-places__navigation';
+  navigation.setAttribute('aria-label', 'Camp sections');
+  const content = document.createElement('div');
+  content.className = 'hunting-places__content';
+  const pages: { id: string; button: HTMLButtonElement; panel: HTMLElement }[] =
+    [];
+  const selectPage = (id: string): void => {
+    root.dataset.campPage = id;
+    for (const page of pages) {
+      page.panel.hidden = page.id !== id;
+      page.button.setAttribute('aria-pressed', String(page.id === id));
+    }
+  };
+  const addPage = (id: string, label: string): HTMLElement => {
+    const button = createTextElement(
+      document,
+      'button',
+      label,
+      'hunting-places__nav-button',
+    );
+    button.type = 'button';
+    button.setAttribute('aria-controls', `camp-${id}`);
+    const panel = document.createElement('section');
+    panel.className = 'hunting-places__page';
+    panel.id = `camp-${id}`;
+    panel.setAttribute('aria-label', label);
+    button.addEventListener('click', () => selectPage(id));
+    pages.push({ id, button, panel });
+    navigation.append(button);
+    content.append(panel);
+    return panel;
+  };
+  const huntsPage = addPage('hunts', 'Hunting grounds');
+  if (summary !== undefined)
+    huntsPage.append(createRunSummary(document, summary));
+  const toolbar = document.createElement('div');
+  toolbar.className = 'hunting-places__toolbar';
+  toolbar.append(
+    createTextElement(
+      document,
+      'h2',
+      'Pick an expedition',
+      'hunting-places__page-title',
+    ),
+  );
+  const searchLabel = createTextElement(
+    document,
+    'label',
+    'Find a hunt',
+    'hunting-places__search',
+  );
+  const search = document.createElement('input');
+  search.type = 'search';
+  search.placeholder = 'Place or creature name…';
+  searchLabel.append(search);
+  toolbar.append(searchLabel);
+  huntsPage.append(toolbar);
+  if (character !== undefined && gear !== undefined) {
+    const equipmentPage = addPage('equipment', 'Equipment & preparation');
+    equipmentPage.append(createEquipmentPanel(document, character, gear));
+    if (preparation !== undefined)
+      equipmentPage.append(createPreparationPanel(document, preparation));
+  } else if (preparation !== undefined) {
+    addPage('equipment', 'Preparation').append(
+      createPreparationPanel(document, preparation),
+    );
+  }
+  if (bestiary !== undefined && character !== undefined) {
+    addPage('bestiary', 'Bestiary').append(
+      createBestiaryPanel(document, bestiary, character.bestiary),
+    );
+  }
+  if (achievements !== undefined && character !== undefined) {
+    addPage('achievements', 'Achievements').append(
+      createAchievementPanel(document, achievements, character.achievements),
+    );
   }
 
   const list = document.createElement('section');
@@ -923,7 +1029,10 @@ export function mountHuntingPlaces(
       createHuntCard(
         document,
         hunt,
-        onSelect,
+        (selected) => {
+          root.dataset.campPage = 'hunts';
+          onSelect(selected);
+        },
         character !== undefined && gear !== undefined
           ? createSetProgress(document, hunt, character, gear)
           : undefined,
@@ -931,7 +1040,39 @@ export function mountHuntingPlaces(
     ),
   );
 
-  screen.append(header, list);
+  const empty = createTextElement(
+    document,
+    'p',
+    'No hunting grounds found. Try another place or creature name.',
+    'hunting-places__empty',
+  );
+  empty.hidden = true;
+  empty.setAttribute('role', 'status');
+  search.addEventListener('input', () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    let visible = 0;
+    for (const card of list.querySelectorAll<HTMLElement>(
+      '.hunting-places__card',
+    )) {
+      const hunt = index.hunts.find(
+        (entry) => entry.huntId === card.dataset.huntId,
+      );
+      const matches =
+        hunt !== undefined &&
+        `${hunt.displayName} ${hunt.creatures.map((creature) => creature.displayName).join(' ')}`
+          .toLocaleLowerCase()
+          .includes(query);
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    }
+    empty.hidden = visible !== 0;
+  });
+  huntsPage.append(list, empty);
+  const activePage = root.dataset.campPage ?? 'hunts';
+  selectPage(
+    pages.some((page) => page.id === activePage) ? activePage : 'hunts',
+  );
+  screen.append(masthead, header, identity, navigation, content);
   root.replaceChildren(screen);
 
   let destroyed = false;
