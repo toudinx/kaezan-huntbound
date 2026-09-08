@@ -75,6 +75,11 @@ import {
   combatCommandForAction,
 } from '../../hunt/HuntCombatInput';
 import {
+  createHuntHelper,
+  type HelperSituation,
+  type HuntHelper,
+} from '../../hunt/HuntHelper';
+import {
   createHuntPresentation,
   type HuntDrawLayer,
   type HuntPresentation,
@@ -158,6 +163,8 @@ export interface HuntSceneOptions {
   readonly abilities?: readonly AbilityDefinition[];
   readonly conditions?: readonly ScenarioConditionDefinition[];
   readonly targetDetailsByBlueprint?: ReadonlyMap<string, CombatTargetDetails>;
+  /** The scenario's item table, so the helper can name what it looted. */
+  readonly itemKeys?: readonly string[];
   readonly tileSize?: number;
 }
 
@@ -248,8 +255,10 @@ export class HuntScene extends Phaser.Scene {
   private inputCommands: HuntProbeCommand[] = [];
   private readonly targetSelection: CombatTargetSelection =
     createCombatTargetSelection({ playerEntityId: 1 as EntityId });
+  private readonly helper: HuntHelper;
   private unsubscribeEvents: (() => void) | undefined;
   private unsubscribeRestart: (() => void) | undefined;
+  private unsubscribeHelperModule: (() => void) | undefined;
   private uninstallProbe: (() => void) | undefined;
   private readonly unresolvedAssets;
 
@@ -262,6 +271,9 @@ export class HuntScene extends Phaser.Scene {
       options.assets.map((asset) => [asset.key, asset]),
     );
     this.tileSize = options.tileSize ?? HUNT_TILE_SIZE;
+    this.helper = createHuntHelper(
+      options.itemKeys === undefined ? {} : { itemKeys: options.itemKeys },
+    );
     this.unresolvedAssets = createUnresolvedHuntAssetTracker({
       resolvedKeys: new Set(options.assets.map((asset) => asset.key)),
       onDiagnostic: (message) => {
@@ -396,6 +408,8 @@ export class HuntScene extends Phaser.Scene {
         actorPositions,
         previousDecorationIds,
       );
+      this.helper.handle(events, 1 as EntityId);
+      this.publishHelperReport();
       this.targetSelection.handle(events);
       this.clearTargetIfOffFloor();
       this.options.bridge.publishTargetSelected(
@@ -415,9 +429,21 @@ export class HuntScene extends Phaser.Scene {
       this.renderCombatDecorations();
     });
 
+    this.unsubscribeHelperModule = this.options.bridge.subscribeHelperModule(
+      (module, enabled) => {
+        this.helper.setModule(module, enabled);
+        this.publishHelperReport();
+      },
+    );
+    this.publishHelperReport();
+
     this.unsubscribeRestart = this.options.bridge.subscribeRestart(() => {
       this.options.input.releaseHeld();
       this.targetSelection.reset();
+      // Switches survive a restart; what the helper did in the dead run does
+      // not.
+      this.helper.reset();
+      this.publishHelperReport();
       this.options.bridge.publishTargetSelected(null);
       this.invalidateDriverSnapshotCache();
       this.options.driver.restart?.(performance.now());
@@ -434,6 +460,8 @@ export class HuntScene extends Phaser.Scene {
       this.unsubscribeEvents = undefined;
       this.unsubscribeRestart?.();
       this.unsubscribeRestart = undefined;
+      this.unsubscribeHelperModule?.();
+      this.unsubscribeHelperModule = undefined;
       this.uninstallProbe?.();
       this.uninstallProbe = undefined;
       this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
@@ -474,6 +502,15 @@ export class HuntScene extends Phaser.Scene {
 
     if (this.inputGate.take(this.options.driver.tick) && player) {
       const action = this.options.input.drain(this.options.driver.tick)[0];
+      // The player owns the tick. Only a tick they left empty reaches the
+      // helper, and what they did on the ticks they used stands the matching
+      // modules down for a few seconds on top of that.
+      if (action === undefined) {
+        this.runHelper(player.entityId);
+      } else {
+        this.helper.noteManualAction(action, this.options.driver.tick);
+        this.publishHelperReport();
+      }
       if (action?.kind === 'cycle-target') {
         this.targetSelection.cycle(this.combatTargetActors());
         this.commandTarget(this.targetSelection.targetId());
@@ -1504,6 +1541,81 @@ export class HuntScene extends Phaser.Scene {
       entityId: player.entityId,
       targetEntityId: null,
     });
+  }
+
+  private publishHelperReport(): void {
+    this.options.bridge.publishHelper(this.helper.report());
+  }
+
+  /**
+   * What the helper reads, projected from the snapshot the kernel will judge
+   * the next tick against -- not from the interpolated sprites. Range, floor
+   * and cooldown have to be the kernel's numbers, or the helper would issue
+   * commands it could have known would be rejected.
+   */
+  private helperSituation(playerEntityId: EntityId): HelperSituation | null {
+    const snapshot = this.currentDriverSnapshot();
+    const playerBlueprintId = this.options.hunt.playerBlueprintId;
+    const playerActor = snapshot.actors.find(
+      (actor) => actor.entityId === playerEntityId,
+    );
+    if (playerActor === undefined) return null;
+
+    const playerBlueprint = this.options.blueprints?.find(
+      (blueprint) => blueprint.blueprintId === playerBlueprintId,
+    );
+
+    return {
+      tick: this.options.driver.tick,
+      playerEntityId,
+      playerPosition: { ...playerActor.position },
+      health: playerActor.health,
+      maxHealth: this.maxHealthByBlueprint.get(playerBlueprintId) ?? 0,
+      resource: playerActor.resource,
+      targetEntityId: this.targetSelection.targetId(),
+      hostiles: snapshot.actors
+        .filter(
+          (actor) =>
+            actor.entityId !== playerEntityId &&
+            actor.blueprintId !== playerBlueprintId,
+        )
+        .map((actor) => ({
+          entityId: actor.entityId,
+          position: { ...actor.position },
+          displayName:
+            this.options.targetDetailsByBlueprint?.get(actor.blueprintId)
+              ?.displayName ?? actor.blueprintId,
+        })),
+      abilities: this.options.abilities ?? DEFAULT_COMBAT_ABILITIES,
+      abilityIndices: playerBlueprint?.abilityIndices ?? [],
+      abilityReadyAtTick: new Map<number, number>(
+        playerActor.abilityCooldowns.map(
+          (entry) => [entry.abilityIndex, entry.readyAtTick] as const,
+        ),
+      ),
+      groupReadyAtTick: new Map<number, number>(
+        playerActor.groupCooldowns.map(
+          (entry) => [entry.groupIndex, entry.readyAtTick] as const,
+        ),
+      ),
+    };
+  }
+
+  private runHelper(playerEntityId: EntityId): void {
+    const situation = this.helperSituation(playerEntityId);
+    if (situation === null) return;
+
+    const decision = this.helper.decide(situation);
+    this.publishHelperReport();
+    if (decision.kind !== 'act') return;
+
+    // Targeting goes through the same path the click and the cycle key take,
+    // so the highlight, the ring and the shell all learn about it the one way.
+    if (decision.command.type === 'actor/set-target') {
+      this.commandTarget(decision.command.targetEntityId);
+      return;
+    }
+    this.enqueuePlayerCommand(decision.command);
   }
 
   /** The closest creature the player could reach, for the bare attack button. */

@@ -1558,6 +1558,93 @@ body {
   white-space: nowrap;
 }
 
+/* Helper -------------------------------------------------------------- */
+
+.combat-helper {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 9rem;
+  color: #b6c6e2;
+  font-size: 0.58rem;
+}
+
+.combat-helper__header {
+  flex: 0 0 auto;
+  color: #8190a8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.combat-helper__modules {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 0.15rem 0.35rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.combat-helper__module {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  color: #6f7f99;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.combat-helper__module input {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin: 0;
+  accent-color: #7ba1d8;
+}
+
+.combat-helper__module[data-enabled="true"] {
+  color: #cfe0f7;
+}
+
+/* Standing down for a manual action, so the player reads a pause, not a fault. */
+.combat-helper__module[data-held="true"] {
+  color: #f1d78b;
+}
+
+.combat-helper__feed {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.combat-helper__feed:empty::before {
+  color: #5d6b83;
+  content: "Helper idle";
+}
+
+.combat-helper__entry {
+  min-width: 0;
+  overflow: hidden;
+  color: #9fb2cd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-helper__entry[data-kind="refused"] {
+  color: #e0a06a;
+}
+
+.combat-helper__entry[data-kind="gained"] {
+  color: #b9d9b0;
+}
+
 /* Hunt bag ----------------------------------------------------------- */
 
 [data-testid="combat-loot"] {

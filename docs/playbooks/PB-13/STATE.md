@@ -1,7 +1,7 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01 a PB-13-06 implementadas nas fontes; artefatos gerados e gates pendentes.
-**Próxima:** PB-13-07 elegível depois de regenerar catálogo e fixtures de save e rodar os gates (B27).
+**Estado:** PB-13-01 a PB-13-09 implementadas nas fontes; artefatos gerados e gates pendentes.
+**Próxima:** nenhuma. O playbook fechou nas fontes; falta rodar o pipeline e os gates do B27.
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
@@ -13,7 +13,7 @@
 | PB-13-06 | done (gerados e gates pendentes) | GPT-5.6 Sol `xhigh` | Grok 4.6 | `c8a8f72` |
 | PB-13-07 | done | GPT-5.6 Luna `xhigh` | GPT-5 (default) | `e85862f` |
 | PB-13-08 | done | GPT-5.6 Luna `xhigh` | GPT-5 (default) | `124df7e` |
-| PB-13-09 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-13-09 | done (gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `PENDING` |
 
 ## Bloqueios
 
@@ -102,6 +102,13 @@ A PB-13-02 correu no mesmo checkout e herdou o mesmo bloqueio: nenhum gate rodou
 `architecture:check`. Sem toolchain, o que foi verificado no lugar: os arquivos tocados passam o
 syntax-check do Node, e `consolidateRun` foi executado à parte nos quatro casos (`completed`,
 `abandoned`, `died`, chamada dupla). Isso não substitui os gates. Vermelho ali é `PB-13-02-FIX-01`.
+
+A PB-13-09 correu no mesmo checkout macOS, ainda sem runtime Node: `node`, `corepack` e `pnpm` não
+existem no PATH, o `node_modules` presente é o de Windows (o binário nativo do Biome não está
+instalado) e nenhum gate rodou. O diff é só de `apps/game` — nada de contracts, simulation, save ou
+conteúdo —, então a linha da task é `biome check .` mais `apps/game/src/hunt/HuntHelper.test.ts`, o
+teste da lógica pura de decisão, e `typecheck` pelas assinaturas novas de `SceneBridge` e `CombatHud`.
+Como é a última task do playbook, soma `corepack pnpm build`. Vermelho ali é `PB-13-09-FIX-01`.
 
 ## Decisões congeladas
 

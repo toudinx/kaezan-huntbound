@@ -136,6 +136,7 @@ export function mountAppShell(
   let unsubscribeCombatEvents: (() => void) | undefined;
   let unsubscribeCombatTick: (() => void) | undefined;
   let unsubscribeTargetSelection: (() => void) | undefined;
+  let unsubscribeHelper: (() => void) | undefined;
   let inventoryPanel: InventoryPanel | undefined;
 
   if (options.save !== undefined) {
@@ -192,6 +193,11 @@ export function mountAppShell(
       ...(options.combat?.preparedHunt === undefined
         ? {}
         : { preparedHunt: options.combat.preparedHunt }),
+      // The scene owns the helper, so a switch here is a request, and the
+      // report that comes back is what the panel actually draws.
+      onHelperModuleChange: (module, enabled) => {
+        bridge.requestHelperModule(module, enabled);
+      },
     };
     combatHud = mountCombatHud(combatRoot, combatHudOptions);
     combatHud.render(combatViewModel.snapshot());
@@ -206,6 +212,9 @@ export function mountAppShell(
     unsubscribeTargetSelection = bridge.subscribeTargetSelected((entityId) => {
       combatViewModel.setTarget(entityId);
       combatHud?.render(combatViewModel.snapshot());
+    });
+    unsubscribeHelper = bridge.subscribeHelper((report) => {
+      combatHud?.renderHelper(report);
     });
   }
 
@@ -291,6 +300,7 @@ export function mountAppShell(
       unsubscribeCombatEvents?.();
       unsubscribeCombatTick?.();
       unsubscribeTargetSelection?.();
+      unsubscribeHelper?.();
       combatHud?.destroy();
       inventoryPanel?.destroy();
       root.replaceChildren();

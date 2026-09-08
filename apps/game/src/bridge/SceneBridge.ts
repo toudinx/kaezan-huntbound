@@ -2,6 +2,11 @@ import type {
   EntityId,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
+import {
+  HELPER_MODULES_OFF,
+  type HelperModule,
+  type HelperReport,
+} from '../hunt/HuntHelper';
 import type { ShellSnapshot } from '../runtime/ShellSnapshot';
 
 export interface SceneBridge {
@@ -20,6 +25,14 @@ export interface SceneBridge {
   subscribeTargetSelected(
     listener: (entityId: EntityId | null) => void,
   ): () => void;
+  /** What the helper is set to and what it has just done, for the cockpit. */
+  publishHelper(report: HelperReport): void;
+  subscribeHelper(listener: (report: HelperReport) => void): () => void;
+  /** The cockpit switching one module. The scene owns the helper and answers. */
+  requestHelperModule(module: HelperModule, enabled: boolean): void;
+  subscribeHelperModule(
+    listener: (module: HelperModule, enabled: boolean) => void,
+  ): () => void;
 }
 
 export function createSceneBridge(initialSnapshot: ShellSnapshot): SceneBridge {
@@ -31,8 +44,17 @@ export function createSceneBridge(initialSnapshot: ShellSnapshot): SceneBridge {
   const tickListeners = new Set<(tick: number) => void>();
   const restartListeners = new Set<() => void>();
   const targetListeners = new Set<(entityId: EntityId | null) => void>();
+  const helperListeners = new Set<(report: HelperReport) => void>();
+  const helperModuleListeners = new Set<
+    (module: HelperModule, enabled: boolean) => void
+  >();
   let tick = 0;
   let targetEntityId: EntityId | null = null;
+  let helperReport: HelperReport = {
+    modules: HELPER_MODULES_OFF,
+    held: [],
+    log: [],
+  };
 
   return {
     getSnapshot: () => snapshot,
@@ -108,6 +130,32 @@ export function createSceneBridge(initialSnapshot: ShellSnapshot): SceneBridge {
 
       return () => {
         targetListeners.delete(listener);
+      };
+    },
+    publishHelper: (report) => {
+      helperReport = report;
+      for (const listener of helperListeners) {
+        listener(helperReport);
+      }
+    },
+    subscribeHelper: (listener) => {
+      listener(helperReport);
+      helperListeners.add(listener);
+
+      return () => {
+        helperListeners.delete(listener);
+      };
+    },
+    requestHelperModule: (module, enabled) => {
+      for (const listener of helperModuleListeners) {
+        listener(module, enabled);
+      }
+    },
+    subscribeHelperModule: (listener) => {
+      helperModuleListeners.add(listener);
+
+      return () => {
+        helperModuleListeners.delete(listener);
       };
     },
   };

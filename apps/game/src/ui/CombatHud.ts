@@ -8,8 +8,10 @@ import {
   TICK_DURATION_MS,
 } from '../../../../packages/contracts/src/index.ts';
 import type { CombatViewState } from '../hunt/CombatViewModel';
+import type { HelperModule, HelperReport } from '../hunt/HuntHelper';
 import { mountActionDeck } from './cockpit/ActionDeck';
 import type { ResolveCockpitAsset } from './cockpit/AssetFrame';
+import { type HelperPanel, mountHelperPanel } from './cockpit/HelperPanel';
 import { type HuntBag, mountHuntBag } from './cockpit/HuntBag';
 import { type Minimap, mountMinimap } from './cockpit/Minimap';
 import { mountTargetWindow, type TargetWindow } from './cockpit/TargetWindow';
@@ -37,6 +39,13 @@ import { mountVitalBanner, type VitalBanner } from './cockpit/VitalBanner';
  */
 export interface CombatHud {
   render(state: CombatViewState): void;
+  /**
+   * The helper's own surface. It is a second entry point rather than a field
+   * of `CombatViewState` because the helper lives in the scene, beside the
+   * driver it commands, and the view model projects the kernel -- folding one
+   * into the other would make the projection depend on who was playing.
+   */
+  renderHelper(report: HelperReport): void;
   destroy(): void;
 }
 
@@ -57,6 +66,11 @@ export interface CombatHudOptions {
    * this hunt was entered without one.
    */
   readonly preparedHunt?: { readonly damagePercent: number };
+  /** Absent leaves the helper switches disabled rather than dead. */
+  readonly onHelperModuleChange?: (
+    module: HelperModule,
+    enabled: boolean,
+  ) => void;
 }
 
 function createElement(
@@ -156,6 +170,12 @@ export function mountCombatHud(
       : { resolveAsset: options.resolveAsset }),
   });
   rail.append(lootPanel);
+
+  const helperPanel: HelperPanel = mountHelperPanel(rail, {
+    ...(options.onHelperModuleChange === undefined
+      ? {}
+      : { onModuleChange: options.onHelperModuleChange }),
+  });
 
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
@@ -320,6 +340,9 @@ export function mountCombatHud(
   let destroyed = false;
   return {
     render,
+    renderHelper: (report) => {
+      helperPanel.render(report);
+    },
     destroy: () => {
       if (destroyed) return;
       destroyed = true;
@@ -330,6 +353,7 @@ export function mountCombatHud(
       minimap.destroy();
       targetWindow.destroy();
       huntBag.destroy();
+      helperPanel.destroy();
       root.replaceChildren();
     },
   };

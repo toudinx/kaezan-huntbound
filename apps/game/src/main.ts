@@ -790,6 +790,7 @@ export async function bootstrapApp(
         conditions: scenario.conditions,
         targetDetailsByBlueprint:
           activeCombatViewModel.targetDetailsByBlueprint,
+        itemKeys: scenarioResult.value.itemKeys,
       });
       const viewportFactory =
         overrides.createViewportController ?? createViewportController;
