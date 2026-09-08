@@ -84,10 +84,7 @@ export function sellFromStash(
   if (quantity > entry.count) {
     return failure(itemKey, quantity, 'insufficient-quantity');
   }
-  if (
-    !Number.isSafeInteger(details.unitPrice) ||
-    details.unitPrice < 0
-  ) {
+  if (!Number.isSafeInteger(details.unitPrice) || details.unitPrice < 0) {
     return failure(itemKey, quantity, 'invalid-price');
   }
   if (!Number.isSafeInteger(draft.gold) || draft.gold < 0) {

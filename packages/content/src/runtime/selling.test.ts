@@ -1,18 +1,17 @@
+import type { ItemDefinition } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
-import type { ItemDefinition } from '@huntbound/contracts';
-
 import {
-  DEFAULT_CURATED_SELL_PRICE,
   createItemSaleOffer,
+  DEFAULT_CURATED_SELL_PRICE,
   isProtectedSaleItem,
   sellPriceFor,
 } from './selling.ts';
 
 function item(overrides: Partial<ItemDefinition> = {}): ItemDefinition {
   return {
-    guid: 'item:tibia:9301',
-    stableKey: 'item:tibia:fixture-shard',
+    guid: 'item:tibia:9301' as ItemDefinition['guid'],
+    stableKey: 'item:tibia:fixture-shard' as ItemDefinition['stableKey'],
     displayName: 'fixture shard',
     includedFacets: ['identity', 'item'],
     source: {
@@ -24,7 +23,7 @@ function item(overrides: Partial<ItemDefinition> = {}): ItemDefinition {
     },
     aliases: [],
     ...overrides,
-  } as ItemDefinition;
+  } as unknown as ItemDefinition;
 }
 
 describe('selling content', () => {
@@ -39,7 +38,7 @@ describe('selling content', () => {
   it('protects equippable collection pieces', () => {
     const helmet = item({
       displayName: 'legion helmet',
-      stableKey: 'item:tibia:legion-helmet',
+      stableKey: 'item:tibia:legion-helmet' as ItemDefinition['stableKey'],
       armor: 4,
       slotType: 'head',
     });

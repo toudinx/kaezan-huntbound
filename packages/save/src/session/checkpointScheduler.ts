@@ -33,7 +33,18 @@ export function createCheckpointScheduler(
   function startWrite(checkpoint: RunCheckpoint): void {
     inFlight = repository
       .transact((draft) => {
-        draft.session = checkpoint.session;
+        const persistedCursor = draft.session?.lastBestiaryEventSequence ?? 0;
+        draft.session = {
+          ...checkpoint.session,
+          // A checkpoint can have been captured while a kill-credit
+          // transaction was queued. Never let that older capture roll the
+          // idempotency cursor back and make the same event pay twice after a
+          // reload.
+          lastBestiaryEventSequence: Math.max(
+            checkpoint.session.lastBestiaryEventSequence,
+            persistedCursor,
+          ),
+        };
         draft.character = {
           ...draft.character,
           experience: checkpoint.character.experience,

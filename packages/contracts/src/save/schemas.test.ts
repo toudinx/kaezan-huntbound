@@ -35,6 +35,11 @@ function createEmptyDocument() {
       experience: 0,
       equipment: createEmptyEquipment(),
       collection: [] as string[],
+      bestiary: [] as {
+        creatureKey: string;
+        kills: number;
+        rewardClaimed: boolean;
+      }[],
     },
     stash: [] as { itemKey: string; count: number }[],
     gold: 0,
@@ -47,6 +52,7 @@ function createEmptyDocument() {
       seed: string;
       snapshot: ReturnType<typeof createSnapshot>;
       bag: { itemKey: string; count: number }[];
+      lastBestiaryEventSequence: number;
     } | null,
   };
 }
@@ -58,6 +64,7 @@ function createFullSave() {
       experience: 28_800,
       equipment: createEmptyEquipment(),
       collection: [] as string[],
+      bestiary: [],
     },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
@@ -76,6 +83,7 @@ function createFullSave() {
         { itemKey: 'item:tibia:gold-coin', count: 4 },
         { itemKey: 'item:tibia:sword', count: 1 },
       ],
+      lastBestiaryEventSequence: 0,
     },
   };
 }
@@ -92,11 +100,11 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 6', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(6);
+  it('pins SAVE_SCHEMA_VERSION at 7', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(7);
   });
 
-  it('createEmptyGameSave produces a valid empty v6 document', () => {
+  it('createEmptyGameSave produces a valid empty v7 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
@@ -105,6 +113,7 @@ describe('game save contract', () => {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
+        bestiary: [],
       },
       stash: [],
       gold: 0,
@@ -136,11 +145,12 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(6);
+    expect(save.schemaVersion).toBe(7);
     expect(save.character).toEqual({
       experience: 28_800,
       equipment: createEmptyEquipment(),
       collection: [],
+      bestiary: [],
     });
     expect(save.stash).toEqual(document.stash);
     expect(save.gold).toBe(37);
@@ -149,6 +159,38 @@ describe('game save contract', () => {
     expect(save.session).not.toBeNull();
     expect(save.session?.bag).toEqual(document.session.bag);
     expect(save.session?.snapshot.scenarioId).toBe('pb-06-save-contract');
+    expect(save.session?.lastBestiaryEventSequence).toBe(0);
+  });
+
+  it('accepts sorted bestiary progress and rejects duplicates or unsorted entries', () => {
+    const accepted = createEmptyDocument();
+    accepted.character.bestiary = [
+      { creatureKey: 'creature:tibia:orc', kills: 3, rewardClaimed: false },
+      {
+        creatureKey: 'creature:tibia:rotworm',
+        kills: 10,
+        rewardClaimed: true,
+      },
+    ];
+    expect(parseGameSave(accepted).ok).toBe(true);
+
+    const duplicate = createEmptyDocument();
+    duplicate.character.bestiary = [
+      { creatureKey: 'creature:tibia:orc', kills: 1, rewardClaimed: false },
+      { creatureKey: 'creature:tibia:orc', kills: 2, rewardClaimed: false },
+    ];
+    expectRejectedAt(duplicate, ['character', 'bestiary', 1, 'creatureKey']);
+
+    const unsorted = createEmptyDocument();
+    unsorted.character.bestiary = [
+      {
+        creatureKey: 'creature:tibia:rotworm',
+        kills: 1,
+        rewardClaimed: false,
+      },
+      { creatureKey: 'creature:tibia:orc', kills: 2, rewardClaimed: false },
+    ];
+    expectRejectedAt(unsorted, ['character', 'bestiary', 1, 'creatureKey']);
   });
 
   it('rejects count 0, negative, or fractional', () => {
@@ -244,11 +286,11 @@ describe('game save contract', () => {
 
   it('rejects a fractional or negative character experience', () => {
     const fractional = createEmptyDocument();
-    fractional.character = { experience: 1.5 };
+    fractional.character = { ...fractional.character, experience: 1.5 };
     expectRejectedAt(fractional, ['character', 'experience']);
 
     const negative = createEmptyDocument();
-    negative.character = { experience: -1 };
+    negative.character = { ...negative.character, experience: -1 };
     expectRejectedAt(negative, ['character', 'experience']);
   });
 

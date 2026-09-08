@@ -19,7 +19,7 @@ import {
   validateHuntDefinition,
   validateKernelScenario,
 } from '@huntbound/contracts';
-
+import type { ContentRegistry } from '../runtime/contentRegistry.ts';
 import {
   NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
   scaleByDamageDealtPermille,

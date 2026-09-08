@@ -113,6 +113,64 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* The account field guide: readable at a glance, without turning the atlas into a dashboard. */
+.hunting-places__bestiary {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #d4a9ff;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__bestiary-intro {
+  margin: 0.4rem 0 0;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+}
+
+.hunting-places__bestiary-entries {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hunting-places__bestiary-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgb(123 161 216 / 16%);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__bestiary-entry:last-child {
+  border-bottom: 0;
+}
+
+.hunting-places__bestiary-name {
+  color: #e5edff;
+}
+
+.hunting-places__bestiary-count {
+  color: #c9d8f1;
+}
+
+.hunting-places__bestiary-reward {
+  color: #d4a9ff;
+  text-align: right;
+}
+
+.hunting-places__bestiary-entry[data-completed="true"]
+  .hunting-places__bestiary-name,
+.hunting-places__bestiary-entry[data-completed="true"]
+  .hunting-places__bestiary-count {
+  color: #b6f1a4;
+}
+
 /* The set the character is wearing, and what the stash could put on instead. */
 .hunting-places__equipment {
   max-width: 42rem;
@@ -504,6 +562,16 @@ body {
   .hunting-places__loot-count {
     grid-column: 2;
     grid-row: 1;
+  }
+
+  .hunting-places__bestiary-entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .hunting-places__bestiary-reward {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: left;
   }
 }
 

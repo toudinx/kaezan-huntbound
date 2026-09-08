@@ -35,6 +35,7 @@ function createActiveSave(): GameSave {
       experience: 96_800,
       equipment: createEmptyEquipment(),
       collection: [],
+      bestiary: [],
     },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
@@ -53,6 +54,7 @@ function createActiveSave(): GameSave {
         { itemKey: 'item:tibia:gold-coin', count: 4 },
         { itemKey: 'item:tibia:sword', count: 1 },
       ],
+      lastBestiaryEventSequence: 0,
     },
   });
 
@@ -68,7 +70,7 @@ describe('save document serialization', () => {
     const document = createEmptyGameSave();
 
     expect(encodeSaveDocument(document)).toBe(
-      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"gold":0,"nextHuntBuff":"none","schemaVersion":6,"session":null,"stash":[]}\n',
+      '{"character":{"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"gold":0,"nextHuntBuff":"none","schemaVersion":7,"session":null,"stash":[]}\n',
     );
   });
 
@@ -79,6 +81,7 @@ describe('save document serialization', () => {
         experience: 7,
         equipment: createEmptyEquipment(),
         collection: [],
+        bestiary: [],
       },
       stash: [],
       gold: 0,
@@ -93,6 +96,7 @@ describe('save document serialization', () => {
         experience: 7,
         equipment: createEmptyEquipment(),
         collection: [],
+        bestiary: [],
       },
       stash: [],
       gold: 0,
@@ -123,6 +127,7 @@ describe('save document serialization', () => {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
+        bestiary: [],
       },
       stash: [],
       gold: 0,
@@ -154,6 +159,7 @@ describe('save document serialization', () => {
           ],
         },
         bag: [],
+        lastBestiaryEventSequence: 0,
       },
     });
     if (!parsed.ok) {

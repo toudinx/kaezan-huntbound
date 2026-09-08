@@ -1147,13 +1147,9 @@ describe('buildHuntScenario combat blueprints', () => {
   it('scales player melee and damage abilities when the next-hunt blessing is on', () => {
     const baseline = build();
     const blessed = unwrapSuccess(
-      buildHuntScenario(
-        syntheticHunt(),
-        character,
-        registry(),
-        seed,
-        { preparedHunt: true },
-      ),
+      buildHuntScenario(syntheticHunt(), character, registry(), seed, {
+        preparedHunt: true,
+      }),
     );
     const baselinePlayer = baseline.scenario.blueprints.find(
       (blueprint) => blueprint.blueprintId === 'player',

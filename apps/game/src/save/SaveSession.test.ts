@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type BestiarySpecies,
   createEmptyCharacterProgress,
   createEmptyGameSave,
   parseGameSave,
@@ -30,6 +31,13 @@ function createTestDriver(
 ) {
   return createRestartableHuntDriver(testScenario(), TEST_SEED, 0, snapshot);
 }
+
+const ORC_BESTIARY: BestiarySpecies = {
+  creatureKey: 'creature:tibia:orc',
+  displayName: 'Orc',
+  targetKills: 2,
+  rewardGold: 25,
+};
 
 describe('createSaveSession', () => {
   it('resumes a compatible session by rebuilding the driver at its persisted tick', async () => {
@@ -321,7 +329,120 @@ describe('createSaveSession', () => {
     expect(saveSession.getState().character).toEqual({
       ...createEmptyCharacterProgress(),
       experience: 650,
-      collection: ['item:tibia:gold-coin'],
+    });
+    saveSession.destroy();
+  });
+
+  it('persists bestiary kills and does not replay progress or reward after reload', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const options = { bestiary: [ORC_BESTIARY] };
+    const saveSession = createSaveSession(repository, options);
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    saveSession.attachRun({
+      identity: TEST_IDENTITY,
+      driver: boot.driver,
+      getBag: () => [],
+      getExperience: () => 0,
+    });
+
+    await expect(
+      saveSession.recordBestiaryKill(ORC_BESTIARY.creatureKey, 11),
+    ).resolves.toMatchObject({ credited: true, kills: 1 });
+    await expect(repository.load()).resolves.toMatchObject({
+      character: {
+        bestiary: [
+          {
+            creatureKey: ORC_BESTIARY.creatureKey,
+            kills: 1,
+            rewardClaimed: false,
+          },
+        ],
+      },
+      session: { lastBestiaryEventSequence: 11 },
+      gold: 0,
+    });
+    saveSession.destroy();
+
+    const reloaded = createSaveSession(repository, options);
+    const resumed = await reloaded.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    expect(resumed.decision.kind).toBe('resume');
+    reloaded.attachRun({
+      identity: TEST_IDENTITY,
+      driver: resumed.driver,
+      getBag: () => [],
+      getExperience: () => 0,
+    });
+
+    await expect(
+      reloaded.recordBestiaryKill(ORC_BESTIARY.creatureKey, 11),
+    ).resolves.toMatchObject({
+      credited: false,
+      reason: 'duplicate-event',
+      kills: 1,
+    });
+    await expect(
+      reloaded.recordBestiaryKill(ORC_BESTIARY.creatureKey, 12),
+    ).resolves.toMatchObject({
+      credited: true,
+      kills: 2,
+      completed: true,
+      rewardGold: 25,
+    });
+    await expect(repository.load()).resolves.toMatchObject({
+      character: {
+        bestiary: [
+          {
+            creatureKey: ORC_BESTIARY.creatureKey,
+            kills: 2,
+            rewardClaimed: true,
+          },
+        ],
+      },
+      session: { lastBestiaryEventSequence: 12 },
+      gold: 25,
+    });
+    reloaded.destroy();
+  });
+
+  it('keeps bestiary progress and its reward when death clears the run bag', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const saveSession = createSaveSession(repository, {
+      bestiary: [ORC_BESTIARY],
+    });
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    saveSession.attachRun({
+      identity: TEST_IDENTITY,
+      driver: boot.driver,
+      getBag: () => [{ itemKey: 'item:tibia:gold-coin', count: 4 }],
+      getExperience: () => 0,
+    });
+
+    await saveSession.recordBestiaryKill(ORC_BESTIARY.creatureKey, 21);
+    await saveSession.recordBestiaryKill(ORC_BESTIARY.creatureKey, 22);
+    await saveSession.finish('died');
+
+    await expect(repository.load()).resolves.toMatchObject({
+      character: {
+        bestiary: [
+          {
+            creatureKey: ORC_BESTIARY.creatureKey,
+            kills: 2,
+            rewardClaimed: true,
+          },
+        ],
+      },
+      gold: 25,
+      stash: [],
+      session: null,
     });
     saveSession.destroy();
   });
@@ -446,14 +567,14 @@ describe('createSaveSession', () => {
       createDriver: createTestDriver,
     });
 
-    await expect(
-      saveSession.sell('item:tibia:meat', 2),
-    ).resolves.toMatchObject({
-      ok: true,
-      total: 4,
-      gold: 8,
-      remainingCount: 1,
-    });
+    await expect(saveSession.sell('item:tibia:meat', 2)).resolves.toMatchObject(
+      {
+        ok: true,
+        total: 4,
+        gold: 8,
+        remainingCount: 1,
+      },
+    );
     expect(saveSession.getState()).toMatchObject({
       stash: [{ itemKey: 'item:tibia:meat', count: 1 }],
       gold: 8,
@@ -469,9 +590,11 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       createDriver: createTestDriver,
     });
-    await expect(
-      reloaded.sell('item:tibia:meat', 1),
-    ).resolves.toMatchObject({ ok: true, total: 2, gold: 10 });
+    await expect(reloaded.sell('item:tibia:meat', 1)).resolves.toMatchObject({
+      ok: true,
+      total: 2,
+      gold: 10,
+    });
     await expect(repository.load()).resolves.toMatchObject({
       stash: [],
       gold: 10,

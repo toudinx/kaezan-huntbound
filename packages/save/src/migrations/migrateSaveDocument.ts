@@ -256,6 +256,37 @@ const v5ToV6: SaveMigration = {
   },
 };
 
+/**
+ * PB-13-07 adds account bestiary progress and the per-run event cursor that
+ * makes a kill replay-safe. A save from before the feature has no kills to
+ * recover, so the additive defaults are an empty bestiary and a zero cursor.
+ */
+const v6ToV7: SaveMigration = {
+  from: 6,
+  to: 7,
+  migrate(document) {
+    const current = document as SaveDocument;
+    const character = isSaveDocument(current.character)
+      ? current.character
+      : {};
+    const session = isSaveDocument(current.session)
+      ? {
+          ...current.session,
+          lastBestiaryEventSequence: 0,
+        }
+      : current.session;
+    return {
+      ...current,
+      schemaVersion: 7,
+      character: {
+        ...character,
+        bestiary: [],
+      },
+      session,
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
@@ -263,6 +294,7 @@ const saveMigrations: readonly SaveMigration[] = [
   v3ToV4,
   v4ToV5,
   v5ToV6,
+  v6ToV7,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {

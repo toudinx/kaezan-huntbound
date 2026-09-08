@@ -480,7 +480,11 @@ export function facetPayloadHash(
       // on every piece of armor -- hashed the whole facet as `{}` for exactly
       // the entities PB-13-04 gives stats to.
       case 'item':
-        return !('stats' in entity || 'familyKey' in entity || 'words' in entity)
+        return !(
+          'stats' in entity ||
+          'familyKey' in entity ||
+          'words' in entity
+        )
           ? {
               stackable: entity.stackable,
               maxStackSize: entity.maxStackSize,

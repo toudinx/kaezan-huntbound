@@ -32,6 +32,7 @@ describe('save resume neutrality', () => {
         seed: TEST_SEED,
         snapshot: snapshotKernel(firstLeg),
         bag: [{ itemKey: 'item:tibia:gold-coin', count: 2 }],
+        lastBestiaryEventSequence: 0,
       };
     });
 

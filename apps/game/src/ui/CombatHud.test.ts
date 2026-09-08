@@ -546,9 +546,7 @@ describe('CombatHud', () => {
 
     const readout = byTestId(root, 'combat-level');
     expect(readout.getAttribute('data-level')).toBe('8');
-    expect(readout.textContent).toBe(
-      'Level 8 · 100 / 750 XP · +100 this run',
-    );
+    expect(readout.textContent).toBe('Level 8 · 100 / 750 XP · +100 this run');
 
     hud.render(state({ experience: { total: 3_200, runGained: 750 } }));
     expect(byTestId(root, 'combat-level').getAttribute('data-level')).toBe('9');

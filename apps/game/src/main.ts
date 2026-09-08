@@ -9,6 +9,7 @@ import {
 import huntIndexJson from '../../../packages/content/src/generated/hunts/index.json?raw';
 import catalogBundleJson from '../../../packages/content/src/generated/pb-01-contract-coverage.json?raw';
 import {
+  buildBestiaryCatalog,
   buildHuntScenario,
   createContentRegistry,
   createItemSaleOffer,
@@ -62,8 +63,8 @@ import {
   createHuntCombatViewModel,
 } from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
-import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
 import { huntSlug } from './hunt/huntSlug';
+import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
 import { installKernelProbe, installSaveProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
@@ -365,6 +366,11 @@ export async function bootstrapApp(
     });
     return;
   }
+  const appUiRoot = uiRoot;
+  const bestiary = buildBestiaryCatalog(huntIndex);
+  const bestiaryByCreatureKey = new Map(
+    bestiary.map((species) => [species.creatureKey, species]),
+  );
 
   const mountSelection = overrides.mountHuntingPlaces ?? mountHuntingPlaces;
   let selectionScreen: HuntingPlacesScreen | undefined;
@@ -395,6 +401,7 @@ export async function bootstrapApp(
         }
       | undefined;
     let unsubscribeSaveEvents: (() => void) | undefined;
+    let unsubscribeBestiaryActors: (() => void) | undefined;
     let unsubscribeSaveTick: (() => void) | undefined;
     let unsubscribeSaveState: (() => void) | undefined;
     let pageHideHandler: (() => void) | undefined;
@@ -417,6 +424,7 @@ export async function bootstrapApp(
       }
       unsubscribeSaveState?.();
       unsubscribeSaveEvents?.();
+      unsubscribeBestiaryActors?.();
       unsubscribeSaveTick?.();
       saveSession?.destroy();
     };
@@ -549,8 +557,11 @@ export async function bootstrapApp(
       } as const;
 
       saveSession = overrides.createSaveSession
-        ? overrides.createSaveSession(saveRepository, { resolveSellItem })
-        : createSaveSession(saveRepository, { resolveSellItem });
+        ? overrides.createSaveSession(saveRepository, {
+            resolveSellItem,
+            bestiary,
+          })
+        : createSaveSession(saveRepository, { resolveSellItem, bestiary });
       pageHideHandler = (): void => {
         void saveSession?.pagehide();
       };
@@ -575,6 +586,20 @@ export async function bootstrapApp(
       inputMap.attach(inputTarget);
       selectionScreen?.destroy();
       selectionScreen = undefined;
+      // Death events carry an entity id rather than a content key. Keep the
+      // spawn mapping ahead of the HUD's event subscriber so the save layer
+      // can still resolve the species after the view model removes the dead
+      // actor from its live roster.
+      const blueprintByEntityId = new Map<number, string>();
+      unsubscribeBestiaryActors = bridge.subscribeEvents((events) => {
+        for (const event of events) {
+          if (event.payload.type !== 'actor/spawned') continue;
+          blueprintByEntityId.set(
+            event.payload.entityId,
+            event.payload.blueprintId,
+          );
+        }
+      });
       appShell = appShellMount(uiRoot, bridge, {
         input: inputMap,
         combat: {
@@ -657,10 +682,31 @@ export async function bootstrapApp(
           message: state.message,
         });
       });
-      unsubscribeSaveEvents = bridge.subscribeEvents(() => {
+      unsubscribeSaveEvents = bridge.subscribeEvents((events) => {
         const projection = activeCombatViewModel.snapshot();
         saveSession?.updateBag(projection.bag);
         saveSession?.updateExperience(projection.experience.total);
+        // Bestiary progress is account progress, so it is credited at the
+        // death event even when the run later dies and loses its bag. The
+        // event sequence is persisted with the active session; a replay after
+        // reload therefore becomes an idempotent no-op.
+        for (const event of events) {
+          if (
+            event.payload.type !== 'actor/died' ||
+            event.payload.killerEntityId !== (1 as EntityId)
+          ) {
+            continue;
+          }
+          const blueprintId = blueprintByEntityId.get(event.payload.entityId);
+          if (blueprintId === undefined) continue;
+          const creatureKey =
+            activeCombatViewModel.targetDetailsByBlueprint.get(
+              blueprintId,
+            )?.assetKey;
+          if (creatureKey === null || creatureKey === undefined) continue;
+          if (!bestiaryByCreatureKey.has(creatureKey)) continue;
+          void saveSession?.recordBestiaryKill(creatureKey, event.sequence);
+        }
         consolidateOnDeath();
       });
       unsubscribeSaveTick = bridge.subscribeTick((tick) => {
@@ -823,7 +869,7 @@ export async function bootstrapApp(
         });
     };
     selectionScreen = mountSelection(
-      uiRoot,
+      appUiRoot,
       huntIndex,
       (hunt) => {
         void startSelectedHunt(hunt);
@@ -866,6 +912,7 @@ export async function bootstrapApp(
             });
         },
       } satisfies HuntingPlacesPreparation,
+      bestiary,
     );
   }
 

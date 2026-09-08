@@ -93,11 +93,47 @@ const CollectionSchema = z
     }
   });
 
+const BestiaryProgressSchema = z
+  .object({
+    creatureKey: nonEmptyString,
+    kills: nonNegativeInteger,
+    rewardClaimed: z.boolean(),
+  })
+  .strict();
+
+const BestiaryProgressEntriesSchema = z
+  .array(BestiaryProgressSchema)
+  .readonly()
+  .superRefine((entries, context) => {
+    for (let index = 1; index < entries.length; index += 1) {
+      const previous = entries[index - 1];
+      const current = entries[index];
+      if (previous === undefined || current === undefined) {
+        continue;
+      }
+      if (previous.creatureKey === current.creatureKey) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'creatureKey'],
+          message: 'creatureKey must be unique',
+        });
+      } else if (previous.creatureKey > current.creatureKey) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'creatureKey'],
+          message:
+            'entries must be ordered by creatureKey in UTF-16 code unit order',
+        });
+      }
+    }
+  });
+
 export const CharacterProgressSchema = z
   .object({
     experience: nonNegativeInteger,
     equipment: CharacterEquipmentSchema,
     collection: CollectionSchema,
+    bestiary: BestiaryProgressEntriesSchema,
   })
   .strict();
 
@@ -109,6 +145,7 @@ export const ActiveRunStateSchema = z
     seed: SeedSchema,
     snapshot: SimulationSnapshotSchema,
     bag: RunBagEntriesSchema,
+    lastBestiaryEventSequence: nonNegativeInteger,
   })
   .strict();
 

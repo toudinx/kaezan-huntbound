@@ -1,7 +1,7 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 6;
+export const SAVE_SCHEMA_VERSION = 7;
 
 /**
  * Whether a next-hunt blessing is sitting on the character.
@@ -44,6 +44,22 @@ export type CharacterEquipment = {
   readonly [Slot in EquipmentSlot]: string | null;
 };
 
+/** The authored target and the account reward for one catalogued creature. */
+export interface BestiarySpecies {
+  readonly creatureKey: string;
+  readonly displayName: string;
+  readonly targetKills: number;
+  readonly rewardGold: number;
+}
+
+/** Persistent account progress for one creature. */
+export interface BestiaryProgress {
+  readonly creatureKey: string;
+  readonly kills: number;
+  /** Prevents the milestone reward from being paid more than once. */
+  readonly rewardClaimed: boolean;
+}
+
 /**
  * The character the player keeps between runs.
  *
@@ -63,6 +79,8 @@ export interface CharacterProgress {
   readonly equipment: CharacterEquipment;
   /** Unique item keys ever banked, in UTF-16 code unit order. */
   readonly collection: readonly string[];
+  /** Bestiary entries are sparse and ordered by creature key. */
+  readonly bestiary: readonly BestiaryProgress[];
 }
 
 export interface ActiveRunState {
@@ -72,6 +90,8 @@ export interface ActiveRunState {
   readonly seed: Seed;
   readonly snapshot: SimulationSnapshot;
   readonly bag: readonly RunBagEntry[];
+  /** Highest event sequence already credited to the persistent bestiary. */
+  readonly lastBestiaryEventSequence: number;
 }
 
 export interface GameSave {
@@ -106,6 +126,7 @@ export function createEmptyCharacterProgress(): CharacterProgress {
     experience: 0,
     equipment: createEmptyEquipment(),
     collection: [],
+    bestiary: [],
   };
 }
 

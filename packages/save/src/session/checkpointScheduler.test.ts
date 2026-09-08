@@ -5,7 +5,11 @@ import { SaveError } from '../errors/SaveError.ts';
 import { createSaveRepository } from '../repository/SaveRepository.ts';
 import type { SaveDriver, TransactionOutcome } from '../repository/types.ts';
 import { createCheckpointScheduler } from './checkpointScheduler.ts';
-import { createHoldableDriver, makeSession } from './sessionTestUtils.ts';
+import {
+  createHoldableDriver,
+  makeSession,
+  saveWithSession,
+} from './sessionTestUtils.ts';
 import type { RunCheckpoint } from './types.ts';
 
 function checkpoint(
@@ -83,6 +87,29 @@ describe('createCheckpointScheduler', () => {
     await expect(repository.load()).resolves.toMatchObject({
       session: { huntId: 'hunt:tick-4' },
       character: { experience: 2_450 },
+    });
+    scheduler.dispose();
+  });
+
+  it('does not move the bestiary event cursor backwards', async () => {
+    const initial = saveWithSession(
+      makeSession({ lastBestiaryEventSequence: 9 }),
+    );
+    const repository = createSaveRepository(
+      createHoldableDriver(initial).driver,
+    );
+    const scheduler = createCheckpointScheduler(repository, {
+      everyTicks: 4,
+      onError() {
+        throw new Error('onError should not run');
+      },
+    });
+
+    scheduler.onTick(4, () => checkpoint({ lastBestiaryEventSequence: 4 }));
+    await scheduler.flush();
+
+    await expect(repository.load()).resolves.toMatchObject({
+      session: { lastBestiaryEventSequence: 9 },
     });
     scheduler.dispose();
   });

@@ -36,9 +36,7 @@ describe('selling from the stash', () => {
   });
 
   it('refuses an invalid quantity or shortage without touching the draft', () => {
-    const draft = draftWithStash([
-      { itemKey: 'item:tibia:meat', count: 2 },
-    ]);
+    const draft = draftWithStash([{ itemKey: 'item:tibia:meat', count: 2 }]);
     const before = { stash: draft.stash, gold: draft.gold };
 
     expect(

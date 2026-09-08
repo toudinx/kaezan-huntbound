@@ -17,9 +17,7 @@ export interface InventorySaleOffer {
 
 export interface InventoryPanelOptions {
   readonly source: SaveStateSource;
-  readonly getSaleOffer?: (
-    itemKey: string,
-  ) => InventorySaleOffer | undefined;
+  readonly getSaleOffer?: (itemKey: string) => InventorySaleOffer | undefined;
   readonly onSell?: (
     itemKey: string,
     quantity: number,
@@ -98,10 +96,7 @@ function renderSales(
   list.replaceChildren();
   const canSell =
     options.getSaleOffer !== undefined && options.onSell !== undefined;
-  empty.setAttribute(
-    'data-visible',
-    String(!canSell || entries.length === 0),
-  );
+  empty.setAttribute('data-visible', String(!canSell || entries.length === 0));
   if (
     !canSell ||
     options.getSaleOffer === undefined ||
@@ -135,11 +130,7 @@ function renderSales(
     row.append(quote);
 
     if (offer.protected) {
-      const protection = createElement(
-        document,
-        'span',
-        'save-sale-protected',
-      );
+      const protection = createElement(document, 'span', 'save-sale-protected');
       protection.textContent = 'Collection piece — confirmation required';
       row.append(protection);
     }

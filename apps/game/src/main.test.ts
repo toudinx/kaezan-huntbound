@@ -1,5 +1,5 @@
-import { createEmptyCharacterProgress } from '../../../packages/contracts/src/index.ts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEmptyCharacterProgress } from '../../../packages/contracts/src/index.ts';
 import * as cachedMain from './main';
 
 const harness = vi.hoisted(() => ({

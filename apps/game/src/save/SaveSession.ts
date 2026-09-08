@@ -1,5 +1,6 @@
 import {
   type ActiveRunState,
+  type BestiarySpecies,
   type CharacterProgress,
   createEmptyCharacterProgress,
   createEmptyGameSave,
@@ -8,10 +9,12 @@ import {
   type SimulationSnapshot,
 } from '../../../../packages/contracts/src/index.ts';
 import {
-  type CheckpointScheduler,
   activateNextHuntBuff,
+  type BestiaryCreditResult,
+  type CheckpointScheduler,
   consolidateRun,
   createCheckpointScheduler,
+  creditBestiaryKill,
   decideResume,
   type ResumeDecision,
   type RunCheckpoint,
@@ -20,8 +23,8 @@ import {
   type SaleResult,
   SaveError,
   type SaveRepository,
-  sellFromStash,
   type SellItemDetails,
+  sellFromStash,
 } from '../../../../packages/save/src/index.ts';
 
 import type { RestartableHuntDriver } from '../hunt/RestartableHuntDriver';
@@ -54,6 +57,10 @@ export interface SaveSessionController extends SaveStateSource {
   attachRun(run: SaveRunAttachment): void;
   updateBag(bag: readonly RunBagEntry[]): void;
   updateExperience(experience: number): void;
+  recordBestiaryKill(
+    creatureKey: string,
+    eventSequence: number,
+  ): Promise<BestiaryCreditResult>;
   onTick(tick: number): void;
   finish(outcome: RunOutcome): Promise<void>;
   sell(
@@ -71,6 +78,8 @@ export interface SaveSessionOptions {
   readonly everyTicks?: number;
   /** Resolves catalog pricing and collection protection without coupling save to content. */
   readonly resolveSellItem?: (itemKey: string) => SellItemDetails | undefined;
+  /** The seven catalogued species and their one account milestone each. */
+  readonly bestiary?: readonly BestiarySpecies[];
 }
 
 const EMPTY_STATE: SaveInventoryState = {
@@ -176,11 +185,13 @@ function sessionFrom(
   identity: RunIdentity,
   driver: RestartableHuntDriver,
   bag: readonly RunBagEntry[],
+  lastBestiaryEventSequence = 0,
 ): ActiveRunState {
   return {
     ...identity,
     snapshot: driver.snapshot(),
     bag: copyBag(bag),
+    lastBestiaryEventSequence,
   };
 }
 
@@ -194,6 +205,10 @@ export function createSaveSession(
   let scheduler: CheckpointScheduler | undefined;
   let latestBag: readonly RunBagEntry[] = [];
   let latestExperience = 0;
+  let latestBestiaryEventSequence = 0;
+  const bestiaryByKey = new Map(
+    (options.bestiary ?? []).map((species) => [species.creatureKey, species]),
+  );
   // The set the run started with. A run never changes it -- equipping happens
   // in the atlas -- so carrying it here keeps the panel honest without giving
   // the checkpoint a way to write it back.
@@ -220,7 +235,12 @@ export function createSaveSession(
   };
 
   const captureCheckpoint = (run: SaveRunAttachment): RunCheckpoint => ({
-    session: sessionFrom(run.identity, run.driver, latestBag),
+    session: sessionFrom(
+      run.identity,
+      run.driver,
+      latestBag,
+      latestBestiaryEventSequence,
+    ),
     character: { experience: latestExperience },
   });
 
@@ -327,6 +347,10 @@ export function createSaveSession(
 
       latestBag = copyBag(bag);
       latestExperience = save.character.experience;
+      latestBestiaryEventSequence =
+        decision.kind === 'resume'
+          ? decision.session.lastBestiaryEventSequence
+          : 0;
       latestCharacter = save.character;
       const status = loadFailed || state.status === 'error' ? 'error' : 'ready';
       const message =
@@ -370,6 +394,86 @@ export function createSaveSession(
       setExperience(experience);
     },
 
+    async recordBestiaryKill(creatureKey, eventSequence) {
+      const species = bestiaryByKey.get(creatureKey);
+      if (species === undefined) {
+        return {
+          credited: false,
+          creatureKey,
+          displayName: creatureKey,
+          kills: 0,
+          targetKills: 0,
+          completed: false,
+          rewardGold: 0,
+        };
+      }
+      if (destroyed || !runOpen || activeRun === undefined) {
+        return {
+          credited: false,
+          creatureKey,
+          displayName: species.displayName,
+          kills:
+            latestCharacter.bestiary.find(
+              (entry) => entry.creatureKey === creatureKey,
+            )?.kills ?? 0,
+          targetKills: species.targetKills,
+          completed:
+            (latestCharacter.bestiary.find(
+              (entry) => entry.creatureKey === creatureKey,
+            )?.kills ?? 0) >= species.targetKills,
+          rewardGold: 0,
+          reason: 'no-session',
+        };
+      }
+
+      const run = activeRun;
+      latestBag = copyBag(run.getBag());
+      latestExperience = run.getExperience();
+      try {
+        const transaction = await repository.transact((draft) => {
+          // The first kill may happen before the first periodic checkpoint.
+          // Materialise the active run here so its event cursor is persisted
+          // together with the first bestiary count.
+          if (draft.session === null) {
+            draft.session = sessionFrom(
+              run.identity,
+              run.driver,
+              latestBag,
+              latestBestiaryEventSequence,
+            );
+          }
+          const credit = creditBestiaryKill(draft, species, eventSequence);
+          return {
+            credit,
+            character: draft.character,
+            stash: copyBag(draft.stash),
+            gold: draft.gold,
+            nextHuntBuff: draft.nextHuntBuff,
+            completedRuns: draft.completedRuns,
+          };
+        });
+        latestBestiaryEventSequence = Math.max(
+          latestBestiaryEventSequence,
+          eventSequence,
+        );
+        if (!transaction.credit.credited) {
+          return transaction.credit;
+        }
+
+        latestCharacter = transaction.character;
+        const message = transaction.credit.completed
+          ? `Bestiary complete: ${species.displayName} (+${transaction.credit.rewardGold} gold)`
+          : `Bestiary: ${species.displayName} ${transaction.credit.kills}/${transaction.credit.targetKills}`;
+        publish(
+          saveState(transaction, latestBag, 'ready', message, latestCharacter),
+        );
+        return transaction.credit;
+      } catch (error) {
+        publishError('Bestiary credit failed', error);
+        throw error;
+      }
+    },
+
     onTick(tick) {
       if (
         destroyed ||
@@ -410,7 +514,12 @@ export function createSaveSession(
         latestBag = finalBag;
         latestExperience = run.getExperience();
         await activeScheduler?.flush();
-        const session = sessionFrom(run.identity, run.driver, finalBag);
+        const session = sessionFrom(
+          run.identity,
+          run.driver,
+          finalBag,
+          latestBestiaryEventSequence,
+        );
         // The character is written on the way out whatever the outcome. It is
         // the one thing a death does not cost, so banking it here -- outside
         // `consolidateRun`, which only decides what the *run* was worth -- is
@@ -432,6 +541,7 @@ export function createSaveSession(
         });
         latestBag = [];
         latestCharacter = result.character;
+        latestBestiaryEventSequence = 0;
         publish(
           saveState(
             result,

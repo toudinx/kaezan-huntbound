@@ -93,6 +93,7 @@ export function makeSession(
     seed: TEST_SEED,
     snapshot: snapshotKernel(kernel),
     bag: [],
+    lastBestiaryEventSequence: 0,
     ...overrides,
   };
 }

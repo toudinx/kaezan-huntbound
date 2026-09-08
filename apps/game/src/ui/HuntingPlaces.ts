@@ -6,6 +6,8 @@ import {
   resolveEquippedStats,
 } from '../../../../packages/content/src/index.ts';
 import {
+  type BestiaryProgress,
+  type BestiarySpecies,
   type CharacterProgress,
   EQUIPMENT_SLOTS,
   type EquipmentSlot,
@@ -337,6 +339,78 @@ function createCharacterPanel(
   experience.setAttribute('data-experience', String(progress.experience));
 
   panel.append(level, experience);
+  return panel;
+}
+
+function bestiaryProgressFor(
+  progress: readonly BestiaryProgress[],
+  creatureKey: string,
+): BestiaryProgress | undefined {
+  return progress.find((entry) => entry.creatureKey === creatureKey);
+}
+
+/** The persistent field guide, kept compact so the atlas remains a launch screen. */
+function createBestiaryPanel(
+  document: Document,
+  species: readonly BestiarySpecies[],
+  progress: readonly BestiaryProgress[],
+): HTMLElement {
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__bestiary';
+  panel.setAttribute('data-testid', 'hunt-bestiary');
+
+  const title = createTextElement(
+    document,
+    'h2',
+    'Bestiary',
+    'hunting-places__section-title',
+  );
+  const intro = createTextElement(
+    document,
+    'p',
+    'Account progress · each milestone pays gold once.',
+    'hunting-places__bestiary-intro',
+  );
+  const entries = document.createElement('ul');
+  entries.className = 'hunting-places__bestiary-entries';
+
+  for (const entry of species) {
+    const current = bestiaryProgressFor(progress, entry.creatureKey);
+    const kills = current?.kills ?? 0;
+    const completed = current?.rewardClaimed === true;
+    const row = document.createElement('li');
+    row.className = 'hunting-places__bestiary-entry';
+    row.setAttribute('data-testid', 'hunt-bestiary-entry');
+    row.setAttribute('data-creature-key', entry.creatureKey);
+    row.setAttribute('data-kills', String(kills));
+    row.setAttribute('data-target-kills', String(entry.targetKills));
+    row.setAttribute('data-completed', String(completed));
+
+    const name = createTextElement(
+      document,
+      'span',
+      entry.displayName,
+      'hunting-places__bestiary-name',
+    );
+    const count = createTextElement(
+      document,
+      'span',
+      `${formatInteger(kills)} / ${formatInteger(entry.targetKills)} kills`,
+      'hunting-places__bestiary-count',
+    );
+    const reward = createTextElement(
+      document,
+      'span',
+      completed
+        ? `Complete · ${formatInteger(entry.rewardGold)} gold claimed`
+        : `Reward ${formatInteger(entry.rewardGold)} gold`,
+      'hunting-places__bestiary-reward',
+    );
+    row.append(name, count, reward);
+    entries.append(row);
+  }
+
+  panel.append(title, intro, entries);
   return panel;
 }
 
@@ -688,6 +762,7 @@ export function mountHuntingPlaces(
   character?: CharacterProgress,
   gear?: HuntingPlacesGear,
   preparation?: HuntingPlacesPreparation,
+  bestiary?: readonly BestiarySpecies[],
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -726,6 +801,9 @@ export function mountHuntingPlaces(
   }
   if (preparation !== undefined) {
     header.append(createPreparationPanel(document, preparation));
+  }
+  if (bestiary !== undefined && character !== undefined) {
+    header.append(createBestiaryPanel(document, bestiary, character.bestiary));
   }
   if (summary !== undefined) {
     header.append(createRunSummary(document, summary));

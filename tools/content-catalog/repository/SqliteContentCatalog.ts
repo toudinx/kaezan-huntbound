@@ -453,9 +453,7 @@ export class SqliteContentCatalog
             ? {}
             : { maxStackSize: item.max_stack_size }),
           ...(item.weight === null ? {} : { weight: item.weight }),
-          ...(item.sell_price === null
-            ? {}
-            : { sellPrice: item.sell_price }),
+          ...(item.sell_price === null ? {} : { sellPrice: item.sell_price }),
           ...(item.attack === null ? {} : { attack: item.attack }),
           ...(item.defense === null ? {} : { defense: item.defense }),
           ...(item.armor === null ? {} : { armor: item.armor }),

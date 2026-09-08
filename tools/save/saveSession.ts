@@ -289,6 +289,7 @@ async function persistCheckpoint(
       seed: log.header.seed,
       snapshot,
       bag,
+      lastBestiaryEventSequence: 0,
     };
   });
 

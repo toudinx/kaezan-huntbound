@@ -1,4 +1,8 @@
 export {
+  type BestiaryCreditResult,
+  creditBestiaryKill,
+} from './bestiary.ts';
+export {
   type CheckpointScheduler,
   createCheckpointScheduler,
 } from './checkpointScheduler.ts';
@@ -17,10 +21,10 @@ export {
   type FailedSale,
   type SaleFailureReason,
   type SaleResult,
-  sellFromStash,
   type SellItemDetails,
   type SellOptions,
   type SuccessfulSale,
+  sellFromStash,
 } from './sellLoot.ts';
 export type {
   ResumeDecision,

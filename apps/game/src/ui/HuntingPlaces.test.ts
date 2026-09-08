@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { HuntIndex } from '../../../../packages/contracts/src/index.ts';
+import {
+  type BestiarySpecies,
+  createEmptyCharacterProgress,
+  type HuntIndex,
+} from '../../../../packages/contracts/src/index.ts';
 import { mountHuntingPlaces } from './HuntingPlaces';
 
 class TestElement {
@@ -77,6 +81,15 @@ function findByTestId(
     if (result !== undefined) return result;
   }
   return undefined;
+}
+
+function findAllByTestId(root: TestElement, testId: string): TestElement[] {
+  const matches: TestElement[] = [];
+  if (root.getAttribute('data-testid') === testId) matches.push(root);
+  for (const child of root.children) {
+    matches.push(...findAllByTestId(child, testId));
+  }
+  return matches;
 }
 
 const hunt: HuntIndex['hunts'][number] = {
@@ -237,7 +250,7 @@ describe('HuntingPlaces', () => {
       { schemaVersion: 1, hunts: [hunt] },
       () => undefined,
       undefined,
-      { experience: 2_550 },
+      { ...createEmptyCharacterProgress(), experience: 2_550 },
     );
 
     const panel = findByTestId(root, 'hunt-character');
@@ -247,6 +260,63 @@ describe('HuntingPlaces', () => {
     expect(panel.getAttribute('data-level')).toBe('8');
     expect(panel.textContent).toContain('Knight · Level 8');
     expect(panel.textContent).toContain('100 / 750 XP to level 9');
+  });
+
+  it('shows one visible goal and reward state for every catalogued species', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    const bestiary: readonly BestiarySpecies[] = [
+      {
+        creatureKey: 'creature:tibia:orc',
+        displayName: 'Orc',
+        targetKills: 10,
+        rewardGold: 25,
+      },
+      {
+        creatureKey: 'creature:tibia:rotworm',
+        displayName: 'Rotworm',
+        targetKills: 10,
+        rewardGold: 25,
+      },
+    ];
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      undefined,
+      {
+        ...createEmptyCharacterProgress(),
+        bestiary: [
+          {
+            creatureKey: 'creature:tibia:orc',
+            kills: 3,
+            rewardClaimed: false,
+          },
+          {
+            creatureKey: 'creature:tibia:rotworm',
+            kills: 10,
+            rewardClaimed: true,
+          },
+        ],
+      },
+      undefined,
+      undefined,
+      bestiary,
+    );
+
+    const panel = findByTestId(root, 'hunt-bestiary');
+    if (panel === undefined) {
+      throw new Error('Missing test id hunt-bestiary');
+    }
+    const entries = findAllByTestId(panel, 'hunt-bestiary-entry');
+    expect(entries).toHaveLength(2);
+    expect(entries[0]?.getAttribute('data-kills')).toBe('3');
+    expect(entries[0]?.getAttribute('data-completed')).toBe('false');
+    expect(entries[0]?.textContent).toContain('3 / 10 kills');
+    expect(entries[0]?.textContent).toContain('Reward 25 gold');
+    expect(entries[1]?.getAttribute('data-kills')).toBe('10');
+    expect(entries[1]?.getAttribute('data-completed')).toBe('true');
+    expect(entries[1]?.textContent).toContain('Complete · 25 gold claimed');
   });
 
   it('sells nothing here: the blessing is a between-runs buy with a clear duration', () => {

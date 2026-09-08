@@ -291,9 +291,9 @@ describe('InventoryPanel', () => {
 
     expect(confirmations).toBe(1);
     expect(sold).toBe(1);
-    expect(
-      findByTestId(root, 'save-sale-protected').textContent,
-    ).toContain('confirmation required');
+    expect(findByTestId(root, 'save-sale-protected').textContent).toContain(
+      'confirmation required',
+    );
     panel.destroy();
   });
 });

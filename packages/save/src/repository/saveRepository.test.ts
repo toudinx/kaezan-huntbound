@@ -2,8 +2,8 @@ import {
   createEmptyEquipment,
   createEmptyGameSave,
   type GameSave,
-  type SaveDraft,
   SAVE_SCHEMA_VERSION,
+  type SaveDraft,
 } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import {
@@ -60,6 +60,7 @@ describe('SaveRepository', () => {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
+        bestiary: [],
       },
       stash,
       gold: 0,
@@ -253,7 +254,7 @@ describe('SaveRepository', () => {
     );
 
     await expect(repository.export()).resolves.toBe(
-      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":6,"session":null,"stash":[]}\n',
+      '{"character":{"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":7,"session":null,"stash":[]}\n',
     );
   });
 

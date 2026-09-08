@@ -19,12 +19,14 @@ export {
 } from './serialization/saveDocument.ts';
 export {
   activateNextHuntBuff,
+  type BestiaryCreditResult,
   type BuffPurchaseFailureReason,
   type BuffPurchaseResult,
   buyNextHuntBuff,
   type CheckpointScheduler,
   consolidateRun,
   createCheckpointScheduler,
+  creditBestiaryKill,
   decideResume,
   equipFromStash,
   type FailedBuffPurchase,
@@ -36,10 +38,10 @@ export {
   type RunOutcome,
   type SaleFailureReason,
   type SaleResult,
-  sellFromStash,
   type SellItemDetails,
   type SellOptions,
   type SuccessfulBuffPurchase,
   type SuccessfulSale,
+  sellFromStash,
   unequipToStash,
 } from './session/index.ts';

@@ -43,7 +43,7 @@ describe('save schema v1 to v2', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(6);
+    expect(parsed.value.schemaVersion).toBe(7);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.snapshot.spawnSlots).toEqual([]);
   });
@@ -69,7 +69,7 @@ describe('save schema v2 to v3', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(6);
+    expect(parsed.value.schemaVersion).toBe(7);
     expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
     // Nothing the player had already earned is touched by the bump.
     expect(parsed.value.stash).toEqual([
@@ -133,7 +133,7 @@ describe('save schema v4 to v5', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(6);
+    expect(parsed.value.schemaVersion).toBe(7);
     expect(parsed.value.gold).toBe(0);
     expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
@@ -162,9 +162,49 @@ describe('save schema v5 to v6', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(6);
+    expect(parsed.value.schemaVersion).toBe(7);
     expect(parsed.value.gold).toBe(18);
     expect(parsed.value.nextHuntBuff).toBe('none');
+    expect(parsed.value.stash).toEqual([
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+  });
+});
+
+describe('save schema v6 to v7', () => {
+  it('adds an empty bestiary and a zero event cursor', () => {
+    const current = saveWithSession(makeSession(), [
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+    const { bestiary: _bestiary, ...withoutBestiary } = current.character;
+    void _bestiary;
+    const session = current.session;
+    if (session === null) {
+      throw new Error('expected a session to migrate');
+    }
+    const { lastBestiaryEventSequence: _cursor, ...withoutCursor } = session;
+    void _cursor;
+    const v6 = {
+      ...current,
+      schemaVersion: 6,
+      character: withoutBestiary,
+      session: withoutCursor,
+    };
+
+    const parsed = parseGameSave(migrateSaveDocument(v6));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      throw new Error(
+        `v6 save did not open after 6→7: ${parsed.diagnostics
+          .map((item) => item.message)
+          .join('; ')}`,
+      );
+    }
+
+    expect(parsed.value.schemaVersion).toBe(7);
+    expect(parsed.value.character.bestiary).toEqual([]);
+    expect(parsed.value.session?.lastBestiaryEventSequence).toBe(0);
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);
