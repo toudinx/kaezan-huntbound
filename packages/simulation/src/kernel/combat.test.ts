@@ -206,6 +206,65 @@ describe('S3 upkeep', () => {
   });
 });
 
+describe('S4 armor', () => {
+  function armoredScenario(armor: number) {
+    return kernelScenario({
+      scenarioId: 'combat-armor-test',
+      blueprints: [
+        combatNeutralBlueprint('hero', 2, 'inert', {
+          factionId: 1,
+          maxHealth: 40,
+          attackCooldownTicks: 3,
+          attackMinDamage: 4,
+          attackMaxDamage: 6,
+        }),
+        combatNeutralBlueprint('foe', 2, 'inert', {
+          factionId: 2,
+          maxHealth: 40,
+          armor,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(2, 2), facing: 'e' as const },
+        { blueprintId: 'foe', position: at(3, 2), facing: 'w' as const },
+      ],
+    });
+  }
+
+  function firstHit(armor: number) {
+    const kernel = createSimulationKernel(armoredScenario(armor), TEST_SEED);
+    kernel.enqueue(attack(1, 2, 0));
+    const events = kernel.advanceOne();
+    const damaged = payloadsOfType(events, 'combat/damaged')[0];
+    if (damaged === undefined) {
+      throw new Error('expected the attack to land');
+    }
+    return {
+      amount: damaged.amount,
+      remainingHealth: damaged.remainingHealth,
+      draws: streamDrawCount(snapshotKernel(kernel), 'combat'),
+    };
+  }
+
+  it('takes three quarters of armor off the hit and spends no extra draw', () => {
+    const bare = firstHit(0);
+    const armored = firstHit(4);
+
+    // 4 armor is 3 off the same roll: the reduction is flat, and the roll is
+    // the same roll, which is the whole point of not drawing for it.
+    expect(armored.amount).toBe(bare.amount - 3);
+    expect(armored.remainingHealth).toBe(bare.remainingHealth + 3);
+    expect(armored.draws).toBe(bare.draws);
+  });
+
+  it('never turns a hit into healing', () => {
+    const crushing = firstHit(400);
+
+    expect(crushing.amount).toBe(0);
+    expect(crushing.remainingHealth).toBe(40);
+  });
+});
+
 describe('S4 attack', () => {
   it('hits an adjacent foe and emits combat/attacked then combat/damaged', () => {
     const kernel = createSimulationKernel(fighterScenario(), TEST_SEED);

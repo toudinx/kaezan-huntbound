@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseGameSave } from '../../../../packages/contracts/src/index.ts';
+import {
+  createEmptyCharacterProgress,
+  parseGameSave,
+} from '../../../../packages/contracts/src/index.ts';
 
 import {
   createMemorySaveDriver,
@@ -285,7 +288,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       createDriver: createTestDriver,
     });
-    expect(boot.character).toEqual({ experience: 0 });
+    expect(boot.character).toEqual(createEmptyCharacterProgress());
 
     let experience = 0;
     const bag = [{ itemKey: 'item:tibia:gold-coin', count: 7 }];
@@ -314,7 +317,11 @@ describe('createSaveSession', () => {
       completedRuns: 0,
       session: null,
     });
-    expect(saveSession.getState().character).toEqual({ experience: 650 });
+    expect(saveSession.getState().character).toEqual({
+      ...createEmptyCharacterProgress(),
+      experience: 650,
+      collection: ['item:tibia:gold-coin'],
+    });
     saveSession.destroy();
   });
 
@@ -322,7 +329,7 @@ describe('createSaveSession', () => {
     const repository = createSaveRepository(
       createMemorySaveDriver({
         ...saveWithSession(makeSession()),
-        character: { experience: 28_800 },
+        character: { ...createEmptyCharacterProgress(), experience: 28_800 },
       }),
     );
     const saveSession = createSaveSession(repository);
@@ -332,8 +339,9 @@ describe('createSaveSession', () => {
       createDriver: createTestDriver,
     });
 
-    expect(boot.character).toEqual({ experience: 28_800 });
-    expect(saveSession.getState().character).toEqual({ experience: 28_800 });
+    const resumed = { ...createEmptyCharacterProgress(), experience: 28_800 };
+    expect(boot.character).toEqual(resumed);
+    expect(saveSession.getState().character).toEqual(resumed);
     saveSession.destroy();
   });
 

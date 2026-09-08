@@ -1,4 +1,5 @@
 import {
+  createEmptyEquipment,
   createEmptyGameSave,
   type GameSave,
   parseGameSave,
@@ -28,8 +29,12 @@ function createSnapshot() {
 
 function createActiveSave(): GameSave {
   const parsed = parseGameSave({
-    schemaVersion: 3,
-    character: { experience: 96_800 },
+    schemaVersion: 4,
+    character: {
+      experience: 96_800,
+      equipment: createEmptyEquipment(),
+      collection: [],
+    },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -60,14 +65,18 @@ describe('save document serialization', () => {
     const document = createEmptyGameSave();
 
     expect(encodeSaveDocument(document)).toBe(
-      '{"character":{"experience":0},"completedRuns":0,"schemaVersion":3,"session":null,"stash":[]}\n',
+      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"schemaVersion":4,"session":null,"stash":[]}\n',
     );
   });
 
   it('returns the same export for repeated calls and insertion orders', () => {
     const first = {
-      schemaVersion: 3,
-      character: { experience: 7 },
+      schemaVersion: 4,
+      character: {
+        experience: 7,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       stash: [],
       completedRuns: 0,
       session: null,
@@ -75,9 +84,13 @@ describe('save document serialization', () => {
     const second = {
       session: null,
       completedRuns: 0,
-      character: { experience: 7 },
+      character: {
+        experience: 7,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       stash: [],
-      schemaVersion: 3,
+      schemaVersion: 4,
     } as GameSave;
 
     expect(encodeSaveDocument(first)).toBe(encodeSaveDocument(first));
@@ -98,8 +111,12 @@ describe('save document serialization', () => {
 
   it('omits idle forced-target fields from encoded actors', () => {
     const parsed = parseGameSave({
-      schemaVersion: 3,
-      character: { experience: 0 },
+      schemaVersion: 4,
+      character: {
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       stash: [],
       completedRuns: 0,
       session: {
@@ -157,7 +174,7 @@ describe('save document serialization', () => {
   it('maps a future schema version to SAVE_VERSION_UNSUPPORTED', () => {
     const future = JSON.stringify({
       ...createEmptyGameSave(),
-      schemaVersion: 4,
+      schemaVersion: 5,
     });
 
     expect(() => decodeSaveDocument(future)).toThrow(

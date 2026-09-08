@@ -41,6 +41,8 @@ export interface ActorBlueprint {
   readonly lifeLeechPermille: number;
   readonly manaLeechPermille: number;
   readonly attackElement: CombatElement;
+  /** Flat mitigation of incoming damage. Omitted JSON defaults to 0. */
+  readonly armor: number;
   readonly resistances: readonly ElementResistance[];
   readonly immunities: readonly CombatElement[];
 }

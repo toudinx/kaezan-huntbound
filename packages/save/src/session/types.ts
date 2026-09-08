@@ -19,7 +19,15 @@ export type RunOutcome = 'completed' | 'abandoned' | 'died';
  */
 export interface RunCheckpoint {
   readonly session: ActiveRunState;
-  readonly character: CharacterProgress;
+  /**
+   * Only what a run can move.
+   *
+   * Equipment and the collection belong to the atlas, which is the one place
+   * they can be changed and the one place no run is open. Handing the whole
+   * character to a checkpoint would let a mid-run write replace a set the
+   * player put on between runs with the one they wore when the run started.
+   */
+  readonly character: Pick<CharacterProgress, 'experience'>;
 }
 
 export interface RunIdentity {

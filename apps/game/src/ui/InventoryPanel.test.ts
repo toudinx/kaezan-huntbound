@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import {
+  type CharacterProgress,
+  createEmptyCharacterProgress,
+} from '../../../../packages/contracts/src/index.ts';
 import { mountInventoryPanel } from './InventoryPanel';
 
 interface TestInventoryState {
@@ -11,6 +15,7 @@ interface TestInventoryState {
     readonly count: number;
   }[];
   readonly completedRuns: number;
+  readonly character: CharacterProgress;
 }
 
 class TestElement {
@@ -108,6 +113,7 @@ function state(
     ],
     stash: [{ itemKey: 'item:tibia:arrow', count: 4 }],
     completedRuns: 2,
+    character: createEmptyCharacterProgress(),
     ...overrides,
   };
 }

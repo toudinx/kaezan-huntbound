@@ -31,8 +31,15 @@
  *
  * The weapon steps once, at level 70: the plain sword (attack 14) up to there,
  * the two handed sword (attack 30) from there on, which is where the PB-13-01
- * ladder put it. Attack still comes from the sheet and not from an equipped
- * item; gear is PB-13-04.
+ * ladder put it. That pair is now the *innate* weapon -- what a Knight swings
+ * with an empty hand -- and PB-13-04 lets an equipped one replace it. Keeping
+ * it rather than starting the player at attack 0 is decision 3 read literally:
+ * the character is born able to play, and gear is what makes them better.
+ *
+ * A weapon whose `weaponType` is not `sword` swings at
+ * `UNTRAINED_WEAPON_SKILL` instead of the curve. The Knight trains one skill;
+ * picking up a mace does not un-train it, it just does not use it, which is
+ * what makes a higher-attack club the piece you sell rather than the upgrade.
  *
  * ## The experience curve
  *
@@ -60,6 +67,8 @@
  * the interesting question stays "have I finished this band's set" rather than
  * "have I finished this band's bar".
  */
+
+import { type EquippedStats, UNTRAINED_WEAPON_SKILL } from './equipment.ts';
 
 const BASE_SWORD_SKILL = 10;
 const SWORD_ANCHOR_LEVEL = 35;
@@ -93,6 +102,8 @@ export interface KnightSheet {
   readonly weaponAttack: number;
   readonly maxHealth: number;
   readonly maxMana: number;
+  /** Present only when the character wears something. */
+  readonly armor?: number;
 }
 
 /** Where a character stands inside its current level. */
@@ -156,16 +167,30 @@ export function knightMaxMana(level: number): number {
   );
 }
 
-export function knightSheetAtLevel(level: number): KnightSheet {
+export function knightSheetAtLevel(
+  level: number,
+  equipped?: EquippedStats,
+): KnightSheet {
   requireLevel(level);
   const twoHanded = level >= TWO_HANDED_LEVEL;
+  const weapon = equipped?.weapon ?? null;
+  const trained = weapon === null || weapon.trained;
   return {
     level,
-    skills: { sword: knightSwordSkill(level), magic: 0 },
-    weaponItemKey: twoHanded ? TWO_HANDED_SWORD_ITEM_KEY : SWORD_ITEM_KEY,
-    weaponAttack: twoHanded ? TWO_HANDED_SWORD_ATTACK : SWORD_ATTACK,
+    skills: {
+      sword: trained ? knightSwordSkill(level) : UNTRAINED_WEAPON_SKILL,
+      magic: 0,
+    },
+    weaponItemKey:
+      weapon?.itemKey ??
+      (twoHanded ? TWO_HANDED_SWORD_ITEM_KEY : SWORD_ITEM_KEY),
+    weaponAttack:
+      weapon?.attack ?? (twoHanded ? TWO_HANDED_SWORD_ATTACK : SWORD_ATTACK),
     maxHealth: knightMaxHealth(level),
     maxMana: knightMaxMana(level),
+    ...(equipped !== undefined && equipped.armor > 0
+      ? { armor: equipped.armor }
+      : {}),
   };
 }
 

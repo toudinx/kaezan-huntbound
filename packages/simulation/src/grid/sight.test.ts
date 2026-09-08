@@ -50,6 +50,7 @@ function gridOf(blockedTiles: readonly (readonly [number, number])[] = []) {
         lifeLeechPermille: 0,
         manaLeechPermille: 0,
         attackElement: 'physical',
+        armor: 0,
         resistances: [],
         immunities: [],
       },

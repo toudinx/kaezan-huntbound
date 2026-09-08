@@ -26,6 +26,52 @@ describe('parseCanaryItemsXml', () => {
     });
   });
 
+  it('reads the equipment attributes and drops the zeroes Canary spells out', () => {
+    const xml = `<items>
+  <item id="3264" name="sword" article="a">
+    <attribute key="weight" value="3500" />
+    <attribute key="weaponType" value="sword" />
+    <attribute key="slotType" value="hand" />
+    <attribute key="attack" value="14" />
+    <attribute key="defense" value="13" />
+  </item>
+  <item id="3374" name="legion helmet" article="a">
+    <attribute key="armor" value="4" />
+    <attribute key="slotType" value="head" />
+    <attribute key="attack" value="0" />
+    <attribute key="slot" value="head" />
+  </item>
+</items>`;
+
+    const result = parseCanaryItemsXml(xml, {
+      ids: ['3264', '3374'],
+      names: [],
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      value: [
+        {
+          sourceId: '3264',
+          displayName: 'sword',
+          attributes: {
+            article: 'a',
+            attack: 14,
+            defense: 13,
+            slotType: 'hand',
+            weaponType: 'sword',
+            weight: 3500,
+          },
+        },
+        {
+          sourceId: '3374',
+          displayName: 'legion helmet',
+          attributes: { armor: 4, article: 'a', slotType: 'head' },
+        },
+      ],
+    });
+  });
+
   it('selects by normalized name', () => {
     expect(
       parseCanaryItemsXml(fixture, {

@@ -1,15 +1,14 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01, PB-13-02 e PB-13-03 implementadas nas fontes; artefatos gerados e gates
-pendentes.
-**Próxima:** PB-13-04 elegível depois de regenerar catálogo e fixture de save e rodar os gates (B27).
+**Estado:** PB-13-01 a PB-13-04 implementadas nas fontes; artefatos gerados e gates pendentes.
+**Próxima:** PB-13-05 elegível depois de regenerar catálogo e fixtures de save e rodar os gates (B27).
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
 | PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `920227d` |
 | PB-13-02 | done (gates pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `fedebd5` |
 | PB-13-03 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `6ea35e9` |
-| PB-13-04 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-13-04 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | — |
 | PB-13-05 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
 | PB-13-07 | pending | GPT-5.6 Luna `xhigh` | — | — |
@@ -71,6 +70,30 @@ toolchain, regenere com `node --no-warnings --experimental-transform-types tools
 `save:check` depois da regeneração acima e `architecture:check`. `simulation:check`, `hunt:check`,
 `combat:check` e `content:check` **não** deveriam se mover: a escada autorada continua intacta e os
 tools de fixture ainda leem `runtime.characters[0]`. Vermelho ali é `PB-13-03-FIX-01`.
+
+A PB-13-04 correu no mesmo checkout macOS, ainda sem runtime Node e sem snapshot Canary, e é a
+task que mais depende da regeneração: `parseItemsXml` passou a ler `attack`, `defense`, `armor`,
+`slotType` e `weaponType`, mas esses números só entram no catálogo pelo `import-canary`. Até o
+pipeline rodar, nenhum item gerado tem stat de equipamento, o painel de equipamento do atlas mostra
+todos os slots vazios e o set de cada faixa conta `0 / 0`. A sequência do B27 acima resolve isso e
+**precisa incluir** `content:catalog:rebuild` depois da migração nova
+`tools/content-catalog/migrations/006_item_equipment.sql`.
+
+Ela também sobe `SAVE_SCHEMA_VERSION` de 3 para 4 (`character.equipment` e `character.collection`,
+autorizados pela card), o que move os mesmos goldens de save que a PB-13-03 já tinha movido —
+regenere uma vez, com o comando do parágrafo anterior, e cubra as duas. **Não** subiu
+`SIMULATION_SCHEMA_VERSION`: a card autoriza, mas `armor` entrou como campo aditivo com default `0`
+em `ActorBlueprint`, o snapshot não carrega blueprints e cenário sem `armor` replica exatamente como
+antes — subir a versão custaria regenerar quatro fixtures de simulação e hunt sem provar nada. A
+linha da task é `biome check .`, os testes diretamente afetados
+(`packages/content/src/runtime/equipment.test.ts`,
+`packages/content/src/runtime/knightProgression.test.ts`,
+`packages/content/src/importers/canary/xml/parseItemsXml.test.ts`,
+`packages/save/src/session/{equipment,consolidateRun}.test.ts`,
+`packages/simulation/src/kernel/combat.test.ts`, e os testes de save/contrato tocados),
+`save:check` depois da regeneração, `architecture:check` e `content:check` pelo importador.
+`simulation:check`, `hunt:check` e `combat:check` não deveriam se mover. Vermelho ali é
+`PB-13-04-FIX-01`.
 
 A PB-13-02 correu no mesmo checkout e herdou o mesmo bloqueio: nenhum gate rodou. A linha dela é
 `biome check .`, os testes diretamente afetados

@@ -217,6 +217,21 @@ function itemDefinition(
     ...(typeof attributes.weight === 'number'
       ? { weight: attributes.weight }
       : {}),
+    ...(typeof attributes.attack === 'number'
+      ? { attack: attributes.attack }
+      : {}),
+    ...(typeof attributes.defense === 'number'
+      ? { defense: attributes.defense }
+      : {}),
+    ...(typeof attributes.armor === 'number'
+      ? { armor: attributes.armor }
+      : {}),
+    ...(typeof attributes.slotType === 'string'
+      ? { slotType: attributes.slotType }
+      : {}),
+    ...(typeof attributes.weaponType === 'string'
+      ? { weaponType: attributes.weaponType }
+      : {}),
   };
 }
 

@@ -22,6 +22,17 @@ function mergeBagIntoStash(
     .map(([itemKey, count]) => ({ itemKey, count }));
 }
 
+function mergeIntoCollection(
+  collection: readonly string[],
+  bag: readonly RunBagEntry[],
+): readonly string[] {
+  const keys = new Set(collection);
+  for (const entry of bag) {
+    keys.add(entry.itemKey);
+  }
+  return [...keys].sort(compareItemKeys);
+}
+
 /**
  * Closes the active run into the persistent save.
  *
@@ -34,6 +45,11 @@ function mergeBagIntoStash(
  *
  * Clearing the session first is what makes a second call a no-op, which is the
  * only guard against banking the same bag twice.
+ *
+ * The collection grows with the stash and for the same reason: a drop counts as
+ * found once it is banked, so a death costs the discovery exactly as it costs
+ * the loot. That keeps "how much of this band's set do I have" answerable from
+ * one number instead of two that can disagree.
  */
 export function consolidateRun(draft: SaveDraft, outcome: RunOutcome): void {
   const session = draft.session;
@@ -47,6 +63,10 @@ export function consolidateRun(draft: SaveDraft, outcome: RunOutcome): void {
   }
 
   draft.stash = mergeBagIntoStash(draft.stash, session.bag);
+  draft.character = {
+    ...draft.character,
+    collection: mergeIntoCollection(draft.character.collection, session.bag),
+  };
   if (outcome === 'completed') {
     draft.completedRuns += 1;
   }

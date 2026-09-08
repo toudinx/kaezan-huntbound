@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import {
+  type CharacterProgress,
+  createEmptyCharacterProgress,
+} from '../../../../packages/contracts/src/index.ts';
 import { createSceneBridge, type SceneBridge } from '../bridge/SceneBridge';
 import { createDefaultCombatViewModel } from '../hunt/CombatViewModel';
 import { createInputMap } from '../input/InputMap';
@@ -113,7 +117,7 @@ interface TestSaveState {
     readonly count: number;
   }[];
   readonly completedRuns: number;
-  readonly character: { readonly experience: number };
+  readonly character: CharacterProgress;
 }
 
 interface TestSaveSource {
@@ -317,7 +321,7 @@ describe('AppShell', () => {
         bag: [{ itemKey: 'item:tibia:meat', count: 2 }],
         stash: [{ itemKey: 'item:tibia:arrow', count: 8 }],
         completedRuns: 3,
-        character: { experience: 0 },
+        character: createEmptyCharacterProgress(),
       }),
       subscribe: (listener) => {
         listener(saveSource.getState());

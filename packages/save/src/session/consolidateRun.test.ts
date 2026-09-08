@@ -30,6 +30,24 @@ describe('consolidateRun', () => {
     ]);
   });
 
+  it('records everything banked in the collection, and a death records nothing', () => {
+    const bag = [
+      { itemKey: 'item:tibia:sword', count: 1 },
+      { itemKey: 'item:tibia:legion-helmet', count: 1 },
+    ];
+
+    const banked = draftFrom(saveWithSession(makeSession({ bag })));
+    consolidateRun(banked, 'completed');
+    expect(banked.character.collection).toEqual([
+      'item:tibia:legion-helmet',
+      'item:tibia:sword',
+    ]);
+
+    const died = draftFrom(saveWithSession(makeSession({ bag })));
+    consolidateRun(died, 'died');
+    expect(died.character.collection).toEqual([]);
+  });
+
   it('adds counts for itemKeys that already exist in the stash instead of duplicating entries', () => {
     const draft = draftFrom(
       saveWithSession(

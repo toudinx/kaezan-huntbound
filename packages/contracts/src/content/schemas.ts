@@ -429,17 +429,38 @@ export const VocationDefinitionSchema = EntityIdentitySchema.extend({
   });
 export type VocationDefinition = z.infer<typeof VocationDefinitionSchema>;
 
+/**
+ * Canary's own `slotType` and `weaponType`, transcribed rather than mapped.
+ *
+ * They stay open strings on purpose: the importer's job is to carry what
+ * `items.xml` says, and an enum here would turn a word this repository has not
+ * met yet into a failed import of an item that is otherwise fine. Which of
+ * those words a Huntbound slot accepts is a runtime rule, and it lives in
+ * `packages/content/src/runtime/equipment.ts`.
+ */
+const itemSlotType = z.string().trim().min(1);
+
 export const ItemDefinitionSchema = EntityIdentitySchema.extend({
   stackable: z.boolean().optional(),
   maxStackSize: positiveInteger.optional(),
   weight: nonNegativeNumber.optional(),
+  attack: nonNegativeInteger.optional(),
+  defense: nonNegativeInteger.optional(),
+  armor: nonNegativeInteger.optional(),
+  slotType: itemSlotType.optional(),
+  weaponType: itemSlotType.optional(),
 })
   .strict()
   .superRefine((item, context) => {
     if (
       (item.stackable !== undefined ||
         item.maxStackSize !== undefined ||
-        item.weight !== undefined) &&
+        item.weight !== undefined ||
+        item.attack !== undefined ||
+        item.defense !== undefined ||
+        item.armor !== undefined ||
+        item.slotType !== undefined ||
+        item.weaponType !== undefined) &&
       !item.includedFacets.includes('item')
     ) {
       context.addIssue({
@@ -591,6 +612,8 @@ export const CharacterDefinitionSchema = z
       .strict(),
     weaponItemKey: itemContentKey,
     weaponAttack: nonNegativeInteger,
+    /** Armor from what the character wears. Absent means an unarmored sheet. */
+    armor: nonNegativeInteger.optional(),
     maxHealth: positiveInteger,
     maxMana: positiveInteger,
     spellKeys: uniqueReadonlyArray(spellContentKey)

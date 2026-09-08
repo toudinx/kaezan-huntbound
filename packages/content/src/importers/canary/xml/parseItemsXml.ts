@@ -49,16 +49,27 @@ const itemAttributes = new Set([
 
 const itemChildElements = new Set(['attribute']);
 
+/**
+ * The equipment attributes, read from PB-13-04 on.
+ *
+ * They were in `ignoredAttributeKeys` until the set became the axis of
+ * progression: `attack` and `defense` are what a weapon is worth, `armor` is
+ * the stat the kernel now mitigates with, and `slotType` / `weaponType` are the
+ * two words that decide where a piece goes and whether the Knight is trained
+ * for it. `slot` stays ignored -- it is the same fact as `slotType` in the
+ * older half of `items.xml`, and reading both would leave two spellings of one
+ * answer.
+ */
+const numericEquipmentKeys = new Set(['attack', 'defense', 'armor']);
+const textEquipmentKeys = new Set(['slotType', 'weaponType']);
+
 const ignoredAttributeKeys = new Set([
+  'slot',
   'primarytype',
-  'weaponType',
   'shootType',
   'maxhitchance',
   'range',
-  'attack',
-  'defense',
   'extradef',
-  'armor',
   'description',
   'showCount',
   'writeable',
@@ -70,8 +81,6 @@ const ignoredAttributeKeys = new Set([
   'containersize',
   'count',
   'imbuementslot',
-  'slot',
-  'slotType',
   'showCharges',
   'showduration',
   'showattributes',
@@ -297,6 +306,31 @@ function mapSelectedItem(
           ),
         );
       } else attributes[key] = primitive;
+    } else if (numericEquipmentKeys.has(key)) {
+      const parsed = parseRequiredInteger(value, key);
+      if (!parsed.ok) diagnostics.push(parsed.diagnostic);
+      else if (parsed.value < 0) {
+        diagnostics.push(
+          createXmlDiagnostic(
+            'xml.invalid-number',
+            `${key} must be non-negative`,
+          ),
+        );
+      } else if (parsed.value > 0) {
+        // A zero is Canary spelling out the absence of the stat. Keeping it
+        // would make every dagger claim an armor facet it does not have.
+        attributes[key] = parsed.value;
+      }
+    } else if (textEquipmentKeys.has(key)) {
+      const text = value.trim();
+      if (text.length === 0) {
+        diagnostics.push(
+          createXmlDiagnostic(
+            'xml.invalid-attribute',
+            `${key} must not be empty`,
+          ),
+        );
+      } else attributes[key] = text;
     } else if (!ignoredAttributeKeys.has(key)) {
       diagnostics.push(
         createXmlDiagnostic(

@@ -113,7 +113,7 @@ function saveState(
   bag: readonly RunBagEntry[],
   status: SaveInventoryState['status'],
   message: string,
-  experience: number,
+  character: CharacterProgress,
 ): SaveInventoryState {
   return {
     status,
@@ -121,7 +121,7 @@ function saveState(
     bag: copyBag(bag),
     stash: copyBag(save.stash),
     completedRuns: save.completedRuns,
-    character: { experience },
+    character,
   };
 }
 
@@ -147,6 +147,10 @@ export function createSaveSession(
   let scheduler: CheckpointScheduler | undefined;
   let latestBag: readonly RunBagEntry[] = [];
   let latestExperience = 0;
+  // The set the run started with. A run never changes it -- equipping happens
+  // in the atlas -- so carrying it here keeps the panel honest without giving
+  // the checkpoint a way to write it back.
+  let latestCharacter: CharacterProgress = createEmptyCharacterProgress();
   let runOpen = false;
   let finishing = false;
   const listeners = new Set<(next: SaveInventoryState) => void>();
@@ -189,7 +193,8 @@ export function createSaveSession(
     const next = Number.isFinite(experience) ? Math.max(0, experience) : 0;
     if (next === latestExperience) return;
     latestExperience = next;
-    publish({ ...state, character: { experience: latestExperience } });
+    latestCharacter = { ...latestCharacter, experience: latestExperience };
+    publish({ ...state, character: latestCharacter });
   };
 
   return {
@@ -259,6 +264,7 @@ export function createSaveSession(
 
       latestBag = copyBag(bag);
       latestExperience = save.character.experience;
+      latestCharacter = save.character;
       const status = loadFailed || state.status === 'error' ? 'error' : 'ready';
       const message =
         status === 'error'
@@ -268,13 +274,13 @@ export function createSaveSession(
             : decision.kind === 'discard'
               ? 'Incompatible run discarded'
               : 'New run started';
-      publish(saveState(save, latestBag, status, message, latestExperience));
+      publish(saveState(save, latestBag, status, message, latestCharacter));
 
       return {
         decision,
         driver,
         bag: copyBag(latestBag),
-        character: { experience: latestExperience },
+        character: latestCharacter,
       };
     },
 
@@ -346,24 +352,28 @@ export function createSaveSession(
         // the one thing a death does not cost, so banking it here -- outside
         // `consolidateRun`, which only decides what the *run* was worth -- is
         // what keeps the last kills before dying.
-        const character = { experience: latestExperience };
         const result = await repository.transact((draft) => {
           draft.session = session;
-          draft.character = character;
+          draft.character = {
+            ...draft.character,
+            experience: latestExperience,
+          };
           consolidateRun(draft, outcome);
           return {
             stash: copyBag(draft.stash),
             completedRuns: draft.completedRuns,
+            character: draft.character,
           };
         });
         latestBag = [];
+        latestCharacter = result.character;
         publish(
           saveState(
             result,
             [],
             'ready',
             finishMessages[outcome],
-            latestExperience,
+            latestCharacter,
           ),
         );
       } catch (error) {
@@ -393,7 +403,11 @@ export function createSaveSession(
         await repository.import(serialized);
         const save = await repository.load();
         latestBag = copyBag(save.session?.bag ?? []);
-        publish(saveState(save, latestBag, 'ready', 'Save replaced'));
+        latestExperience = save.character.experience;
+        latestCharacter = save.character;
+        publish(
+          saveState(save, latestBag, 'ready', 'Save replaced', latestCharacter),
+        );
       } catch (error) {
         publishError('Save replacement failed', error);
         throw error;

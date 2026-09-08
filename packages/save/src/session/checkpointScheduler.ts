@@ -34,7 +34,10 @@ export function createCheckpointScheduler(
     inFlight = repository
       .transact((draft) => {
         draft.session = checkpoint.session;
-        draft.character = checkpoint.character;
+        draft.character = {
+          ...draft.character,
+          experience: checkpoint.character.experience,
+        };
       })
       .then(
         () => {

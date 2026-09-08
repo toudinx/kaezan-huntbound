@@ -1,4 +1,8 @@
-import type { GameSave, SaveDraft } from './types.ts';
+import {
+  createEmptyCharacterProgress,
+  type GameSave,
+  type SaveDraft,
+} from './types.ts';
 
 function assertGameSaveReadonly(save: GameSave) {
   // @ts-expect-error GameSave fields are readonly at every level.
@@ -11,6 +15,10 @@ function assertGameSaveReadonly(save: GameSave) {
   save.character = { experience: 0 };
   // @ts-expect-error experience is readonly on a GameSave.
   save.character.experience = 1;
+  // @ts-expect-error the worn set is readonly on a GameSave.
+  save.character.equipment.weapon = 'item:tibia:sword';
+  // @ts-expect-error the collection is readonly on a GameSave.
+  save.character.collection = [];
 
   const stashEntry = save.stash[0];
   if (stashEntry !== undefined) {
@@ -36,7 +44,7 @@ function assertSaveDraftMutable(draft: SaveDraft) {
   draft.schemaVersion = 1;
   draft.stash = [];
   draft.completedRuns = 2;
-  draft.character = { experience: 3 };
+  draft.character = { ...createEmptyCharacterProgress(), experience: 3 };
   draft.session = null;
 }
 

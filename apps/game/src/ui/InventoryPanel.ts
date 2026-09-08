@@ -1,4 +1,8 @@
-import type { RunBagEntry } from '../../../../packages/contracts/src/index.ts';
+import {
+  type CharacterEquipment,
+  EQUIPMENT_SLOTS,
+  type RunBagEntry,
+} from '../../../../packages/contracts/src/index.ts';
 import type { SaveInventoryState, SaveStateSource } from '../save/SaveState';
 
 export interface InventoryPanel {
@@ -41,6 +45,21 @@ function formatEntries(entries: readonly RunBagEntry[]): string {
     .join(' | ');
 }
 
+/**
+ * What the character is wearing, read-only.
+ *
+ * The panel is the in-hunt one and gear is chosen in the atlas, so this is a
+ * reminder rather than a control: the kernel was built from this set when the
+ * run started and nothing during the run can move it.
+ */
+function formatEquipment(equipment: CharacterEquipment): string {
+  const worn = EQUIPMENT_SLOTS.flatMap((slot) => {
+    const itemKey = equipment[slot];
+    return itemKey === null ? [] : [`${slot}: ${formatItemKey(itemKey)}`];
+  });
+  return worn.length === 0 ? 'Nothing equipped' : worn.join(' | ');
+}
+
 function renderEntries(
   list: HTMLElement,
   empty: HTMLElement,
@@ -66,6 +85,7 @@ export function mountInventoryPanel(
   const stash = createElement(document, 'div', 'save-stash');
   const stashEmpty = createElement(document, 'p', 'save-stash-empty');
   stashEmpty.textContent = 'Stash empty';
+  const equipment = createElement(document, 'p', 'save-equipment');
   const completedRuns = createElement(document, 'p', 'save-completed-runs');
   const exportButton = createElement(
     document,
@@ -88,6 +108,7 @@ export function mountInventoryPanel(
     runBagEmpty,
     stash,
     stashEmpty,
+    equipment,
     completedRuns,
     exportButton,
     importButton,
@@ -111,6 +132,7 @@ export function mountInventoryPanel(
     status.setAttribute('data-status', state.status);
     renderEntries(runBag, runBagEmpty, state.bag);
     renderEntries(stash, stashEmpty, state.stash);
+    equipment.textContent = formatEquipment(state.character.equipment);
     completedRuns.textContent = `Completed runs: ${state.completedRuns}`;
   };
 

@@ -475,12 +475,21 @@ export function facetPayloadHash(
         return 'conditions' in entity ? { conditions: entity.conditions } : {};
       case 'loot':
         return 'loot' in entity ? { loot: entity.loot } : {};
+      // An item is the union member with no required field of its own, so it
+      // is named by exclusion. Keying off `stackable` -- optional, and absent
+      // on every piece of armor -- hashed the whole facet as `{}` for exactly
+      // the entities PB-13-04 gives stats to.
       case 'item':
-        return 'stackable' in entity
+        return !('stats' in entity || 'familyKey' in entity || 'words' in entity)
           ? {
               stackable: entity.stackable,
               maxStackSize: entity.maxStackSize,
               weight: entity.weight,
+              attack: entity.attack,
+              defense: entity.defense,
+              armor: entity.armor,
+              slotType: entity.slotType,
+              weaponType: entity.weaponType,
             }
           : {};
       case 'progression':

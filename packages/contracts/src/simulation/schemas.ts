@@ -155,6 +155,14 @@ export const ActorBlueprintSchema = z
     lifeLeechPermille: nonNegativeInteger.default(0),
     manaLeechPermille: nonNegativeInteger.default(0),
     attackElement: CombatElementSchema.default('physical'),
+    /**
+     * Flat mitigation of incoming damage, from what the actor wears.
+     *
+     * Additive with a neutral default, so a scenario written before PB-13-04
+     * parses to `0` and replays exactly as it did: nothing that already exists
+     * carries armor, and the kernel spends no random draw on it.
+     */
+    armor: nonNegativeInteger.default(0),
     resistances: z
       .array(
         z

@@ -299,6 +299,22 @@ function setAbilityCooldown(
   return sortedCooldowns(next);
 }
 
+/**
+ * What `armor` takes off a hit.
+ *
+ * Canary rolls the reduction between half the armor and the whole of it; here
+ * it is the three quarters that roll averages to, taken flat. The number is not
+ * the point -- the absence of a draw is: a new stream, or a new call on an
+ * existing one, would shift every later value and break every replay this
+ * repository has, for a stat whose whole job is to be felt as a smaller number.
+ */
+function armorMitigation(armor: number): number {
+  if (armor <= 0) {
+    return 0;
+  }
+  return Math.trunc((armor * 3) / 4);
+}
+
 function applyDamage(
   world: MutableWorld,
   journal: EventJournal,
@@ -312,9 +328,13 @@ function applyDamage(
   conditions: readonly ScenarioConditionDefinition[],
 ): void {
   const targetModifiers = queryConditionModifiers(target, conditions, tick);
-  const incoming = scaleByPermille(
+  const targetBlueprint = blueprints.get(target.blueprintId);
+  const scaled = scaleByPermille(
     amount,
     targetModifiers.damageReceivedPermille,
+  );
+  const incoming = clampNonNegative(
+    scaled - armorMitigation(targetBlueprint?.armor ?? 0),
   );
   let absorbed = 0;
   let resource = target.resource;

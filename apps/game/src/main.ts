@@ -11,11 +11,13 @@ import catalogBundleJson from '../../../packages/content/src/generated/pb-01-con
 import {
   buildHuntScenario,
   createContentRegistry,
+  type EquippedStats,
   knightSheetAtLevel,
   levelForExperience,
   loadHuntDefinition,
   parseKnightPostures,
   projectRuntimeBundle,
+  resolveEquippedStats,
 } from '../../../packages/content/src/index.ts';
 import knightCombatSelectionJson from '../../../packages/content/src/selections/pb-05-knight-combat.json?raw';
 import {
@@ -26,15 +28,21 @@ import {
   createEmptyCharacterProgress,
   createSeed,
   type EntityId,
+  type EquipmentSlot,
   type HuntDefinition,
   type HuntIndex,
   type HuntIndexEntry,
   HuntIndexSchema,
+  type ItemDefinition,
+  type RunBagEntry,
+  type SaveDraft,
 } from '../../../packages/contracts/src/index.ts';
 import {
   createIndexedDbSaveDriver,
   createSaveRepository,
+  equipFromStash,
   type SaveRepository,
+  unequipToStash,
 } from '../../../packages/save/src/index.ts';
 import {
   getAssetCatalogUrl,
@@ -192,13 +200,16 @@ function readKnightPostures() {
  * kit is in hand from the first minute, as decision 3 of the PB-13 README and
  * rule 4 of the ADR-05 curation require.
  */
-function readKnightCharacter(level: number): CharacterDefinition {
+function readKnightCharacter(
+  level: number,
+  equipped: EquippedStats,
+): CharacterDefinition {
   const kit = readKnightCombatSelection().character?.kit;
   if (kit === undefined) {
     throw new Error('PB-05 selection character is missing its kit');
   }
   return CharacterDefinitionSchema.parse({
-    ...knightSheetAtLevel(level),
+    ...knightSheetAtLevel(level, equipped),
     stableKey: 'character:huntbound:knight',
     vocationKey: 'vocation:tibia:knight',
     kit,
@@ -293,12 +304,28 @@ export async function bootstrapApp(
     createIndexedDbSaveDriver(),
   );
   let character: CharacterProgress = createEmptyCharacterProgress();
+  let stash: readonly RunBagEntry[] = [];
   try {
-    character = (await saveRepository.load()).character;
+    const loaded = await saveRepository.load();
+    character = loaded.character;
+    stash = loaded.stash;
   } catch {
     // A save that cannot be read is a fresh character, not a dead boot: the
     // session reports the failure properly once a run starts.
   }
+  // The catalog is a compile-time import, so the atlas can read an item's
+  // stats before any run has been started -- which is the only moment gear can
+  // be changed.
+  const contentRuntime = projectRuntimeBundle(
+    JSON.parse(catalogBundleJson) as CatalogContentBundle,
+  );
+  const itemsByKey = new Map<string, ItemDefinition>(
+    contentRuntime.items.map((item) => [item.stableKey, item]),
+  );
+  const lookupItem = (itemKey: string): ItemDefinition | undefined =>
+    itemsByKey.get(itemKey);
+  const equippedStats = (): EquippedStats =>
+    resolveEquippedStats(character.equipment, lookupItem);
   const appShellMount = overrides.mountAppShell ?? mountAppShell;
   let huntIndex: HuntIndex;
   try {
@@ -401,6 +428,7 @@ export async function bootstrapApp(
       // The atlas is remounted from here, so the character it shows is the one
       // the run just finished writing.
       character = settled?.character ?? character;
+      stash = settled?.stash ?? stash;
       disposeRunSurfaces();
       await destroyRenderer?.();
       await unloadAssets?.();
@@ -440,11 +468,7 @@ export async function bootstrapApp(
         huntEntry,
         assetRuntimeFactory,
       );
-      // The catalog is a compile-time import, so the HUD can know the real
-      // health and mana ceilings before a single asset has loaded.
-      const runtime = projectRuntimeBundle(
-        JSON.parse(catalogBundleJson) as CatalogContentBundle,
-      );
+      const runtime = contentRuntime;
       const hunt = await readHuntDefinition(huntEntry);
       const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
       const registry = createContentRegistry(runtime);
@@ -453,6 +477,7 @@ export async function bootstrapApp(
       // bigger sheet to the next run, which is the same boundary the bag uses.
       const knight = readKnightCharacter(
         levelForExperience(character.experience),
+        equippedStats(),
       );
       const postures = readKnightPostures();
       const scenarioResult = buildHuntScenario(
@@ -512,6 +537,7 @@ export async function bootstrapApp(
       activeCombatViewModel.restoreBag(saveBoot.bag);
       activeCombatViewModel.restoreExperience(saveBoot.character.experience);
       character = saveBoot.character;
+      stash = saveSession?.getState().stash ?? stash;
 
       inputMap = createInputMap();
       const inputTarget =
@@ -731,6 +757,25 @@ export async function bootstrapApp(
     selectionStarted = false;
     bridge.publish(initialShellSnapshot());
     selectionScreen?.destroy();
+    // Equipping rewrites the save and then redraws the atlas from it, so the
+    // slot row, the totals and the set counter can never disagree with what
+    // the next run will actually be built from.
+    const applyGearChange = (change: (draft: SaveDraft) => boolean): void => {
+      void saveRepository
+        .transact((draft) => {
+          change(draft);
+          return { character: draft.character, stash: draft.stash };
+        })
+        .then((next) => {
+          character = next.character;
+          stash = next.stash;
+          showHuntingPlaces(summary);
+        })
+        .catch(() => {
+          // A failed write leaves the atlas showing the set that is still
+          // saved, which is the honest picture of what the next run gets.
+        });
+    };
     selectionScreen = mountSelection(
       uiRoot,
       huntIndex,
@@ -739,6 +784,16 @@ export async function bootstrapApp(
       },
       summary,
       character,
+      {
+        stash,
+        item: lookupItem,
+        onEquip: (slot: EquipmentSlot, itemKey: string) => {
+          applyGearChange((draft) => equipFromStash(draft, slot, itemKey));
+        },
+        onUnequip: (slot: EquipmentSlot) => {
+          applyGearChange((draft) => unequipToStash(draft, slot));
+        },
+      },
     );
   }
 

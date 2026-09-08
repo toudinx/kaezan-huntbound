@@ -82,6 +82,7 @@ export function combatNeutralBlueprint(
     lifeLeechPermille: 0,
     manaLeechPermille: 0,
     attackElement: 'physical',
+    armor: 0,
     resistances: [],
     immunities: [],
     ...overrides,

@@ -1,11 +1,20 @@
-import { knightProgressAtExperience } from '../../../../packages/content/src/index.ts';
-import type {
-  CharacterProgress,
-  HuntIndex,
-  HuntIndexCreature,
-  HuntIndexEntry,
-  HuntIndexLootEntry,
-  RunBagEntry,
+import {
+  bandSetFor,
+  equipmentSlotFor,
+  isTrainedWeapon,
+  knightProgressAtExperience,
+  resolveEquippedStats,
+} from '../../../../packages/content/src/index.ts';
+import {
+  type CharacterProgress,
+  EQUIPMENT_SLOTS,
+  type EquipmentSlot,
+  type HuntIndex,
+  type HuntIndexCreature,
+  type HuntIndexEntry,
+  type HuntIndexLootEntry,
+  type ItemDefinition,
+  type RunBagEntry,
 } from '../../../../packages/contracts/src/index.ts';
 
 export interface HuntingPlacesScreen {
@@ -13,6 +22,22 @@ export interface HuntingPlacesScreen {
 }
 
 export type HuntPlaceSelectionHandler = (hunt: HuntIndexEntry) => void;
+
+/**
+ * Everything the atlas needs to let the player change what they are wearing.
+ *
+ * Gear is chosen here and nowhere else: the kernel is built from the sheet when
+ * a run starts, so a set put on mid-hunt would be a set the simulation never
+ * hears about. Between runs is also where the choice belongs -- decision 5 of
+ * the PB-13 README makes the set of one band the thing that carries you into
+ * the next, which is a decision you make on the way in.
+ */
+export interface HuntingPlacesGear {
+  readonly stash: readonly RunBagEntry[];
+  readonly item: (itemKey: string) => ItemDefinition | undefined;
+  readonly onEquip: (slot: EquipmentSlot, itemKey: string) => void;
+  readonly onUnequip: (slot: EquipmentSlot) => void;
+}
 
 /**
  * What the run the player just left was worth.
@@ -299,10 +324,190 @@ function createCharacterPanel(
   return panel;
 }
 
+const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
+  weapon: 'Weapon',
+  shield: 'Shield',
+  helmet: 'Helmet',
+  armor: 'Armor',
+  legs: 'Legs',
+  boots: 'Boots',
+};
+
+function describeItem(item: ItemDefinition): string {
+  const parts: string[] = [];
+  if (item.attack !== undefined) {
+    parts.push(`Atk ${formatInteger(item.attack)}`);
+  }
+  if (item.defense !== undefined) {
+    parts.push(`Def ${formatInteger(item.defense)}`);
+  }
+  if (item.armor !== undefined) {
+    parts.push(`Arm ${formatInteger(item.armor)}`);
+  }
+  if (item.weaponType !== undefined && !isTrainedWeapon(item)) {
+    parts.push('untrained');
+  }
+  return parts.length === 0 ? 'no stats' : parts.join(' · ');
+}
+
+function createSlotRow(
+  document: Document,
+  slot: EquipmentSlot,
+  character: CharacterProgress,
+  gear: HuntingPlacesGear,
+): HTMLElement {
+  const row = document.createElement('li');
+  row.className = 'hunting-places__slot';
+  row.setAttribute('data-testid', 'hunt-equipment-slot');
+  row.setAttribute('data-slot', slot);
+
+  const wornKey = character.equipment[slot];
+  const worn = wornKey === null ? undefined : gear.item(wornKey);
+  const label = createTextElement(
+    document,
+    'span',
+    SLOT_LABELS[slot],
+    'hunting-places__slot-label',
+  );
+  // A worn key the catalog no longer knows still names itself and still comes
+  // off: the one thing worse than an unreadable piece is one stuck in the slot.
+  const wornText =
+    wornKey === null
+      ? 'empty'
+      : worn === undefined
+        ? `${formatContentName(wornKey)} — unknown to this slice`
+        : `${worn.displayName} — ${describeItem(worn)}`;
+  const value = createTextElement(
+    document,
+    'span',
+    wornText,
+    'hunting-places__slot-value',
+  );
+  value.setAttribute('data-testid', 'hunt-equipment-worn');
+  row.append(label, value);
+
+  if (wornKey !== null) {
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'hunting-places__slot-action';
+    remove.setAttribute('data-testid', 'hunt-equipment-unequip');
+    remove.setAttribute('data-slot', slot);
+    remove.textContent = 'Unequip';
+    remove.addEventListener('click', () => {
+      gear.onUnequip(slot);
+    });
+    row.append(remove);
+  }
+
+  for (const entry of gear.stash) {
+    const item = gear.item(entry.itemKey);
+    if (item === undefined || equipmentSlotFor(item) !== slot) continue;
+    const equip = document.createElement('button');
+    equip.type = 'button';
+    equip.className = 'hunting-places__slot-action';
+    equip.setAttribute('data-testid', 'hunt-equipment-equip');
+    equip.setAttribute('data-slot', slot);
+    equip.setAttribute('data-item-key', entry.itemKey);
+    equip.textContent = `Equip ${item.displayName} (${describeItem(item)})`;
+    equip.addEventListener('click', () => {
+      gear.onEquip(slot, entry.itemKey);
+    });
+    row.append(equip);
+  }
+
+  return row;
+}
+
+/**
+ * What the character is wearing, and what in the stash could replace it.
+ *
+ * Every slot is listed, worn or not, because an empty slot is the clearest
+ * statement of what the band still owes you. A piece the stash holds and the
+ * slot accepts becomes a button next to it, so comparing is reading one line.
+ */
+function createEquipmentPanel(
+  document: Document,
+  character: CharacterProgress,
+  gear: HuntingPlacesGear,
+): HTMLElement {
+  const stats = resolveEquippedStats(character.equipment, gear.item);
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__equipment';
+  panel.setAttribute('data-testid', 'hunt-equipment');
+  panel.setAttribute('data-armor', String(stats.armor));
+
+  const title = createTextElement(
+    document,
+    'h2',
+    'Equipment',
+    'hunting-places__section-title',
+  );
+  const totals = createTextElement(
+    document,
+    'p',
+    `Armor ${formatInteger(stats.armor)} · Defense ${formatInteger(stats.defense)}`,
+    'hunting-places__equipment-totals',
+  );
+  totals.setAttribute('data-testid', 'hunt-equipment-totals');
+
+  const slots = document.createElement('ul');
+  slots.className = 'hunting-places__slots';
+  slots.append(
+    ...EQUIPMENT_SLOTS.map((slot) =>
+      createSlotRow(document, slot, character, gear),
+    ),
+  );
+
+  panel.append(title, totals, slots);
+  return panel;
+}
+
+/** How much of this place's set the player has already found. */
+function createSetProgress(
+  document: Document,
+  hunt: HuntIndexEntry,
+  character: CharacterProgress,
+  gear: HuntingPlacesGear,
+): HTMLElement {
+  const lootKeys = hunt.creatures.flatMap((creature) =>
+    creature.loot.map((entry) => entry.itemKey),
+  );
+  const set = bandSetFor(lootKeys, character.collection, gear.item);
+  const section = document.createElement('div');
+  section.className = 'hunting-places__set';
+  section.setAttribute('data-testid', 'hunt-place-set');
+  section.setAttribute('data-collected', String(set.collected));
+  section.setAttribute('data-total', String(set.total));
+
+  const heading = createTextElement(
+    document,
+    'h3',
+    `Set ${formatInteger(set.collected)} / ${formatInteger(set.total)}`,
+    'hunting-places__section-title',
+  );
+  const pieces = document.createElement('ul');
+  pieces.className = 'hunting-places__set-pieces';
+  pieces.append(
+    ...set.pieces.map((piece) => {
+      const item = document.createElement('li');
+      item.setAttribute('data-testid', 'hunt-place-set-piece');
+      item.setAttribute('data-item-key', piece.itemKey);
+      item.setAttribute('data-collected', String(piece.collected));
+      const suffix = piece.collected ? '' : ' — missing';
+      item.textContent = `${piece.displayName} (${SLOT_LABELS[piece.slot]})${suffix}`;
+      return item;
+    }),
+  );
+
+  section.append(heading, pieces);
+  return section;
+}
+
 function createHuntCard(
   document: Document,
   hunt: HuntIndexEntry,
   onSelect: HuntPlaceSelectionHandler,
+  set?: HTMLElement,
 ): HTMLElement {
   const card = document.createElement('article');
   card.className = 'hunting-places__card';
@@ -388,7 +593,9 @@ function createHuntCard(
     onSelect(hunt);
   });
 
-  card.append(header, details, summary, creaturesHeading, creatures, select);
+  card.append(header, details, summary, creaturesHeading, creatures);
+  if (set !== undefined) card.append(set);
+  card.append(select);
   return card;
 }
 
@@ -398,6 +605,7 @@ export function mountHuntingPlaces(
   onSelect: HuntPlaceSelectionHandler,
   summary?: HuntRunSummary,
   character?: CharacterProgress,
+  gear?: HuntingPlacesGear,
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -430,6 +638,9 @@ export function mountHuntingPlaces(
   header.append(eyebrow, title, intro);
   if (character !== undefined) {
     header.append(createCharacterPanel(document, character));
+    if (gear !== undefined) {
+      header.append(createEquipmentPanel(document, character, gear));
+    }
   }
   if (summary !== undefined) {
     header.append(createRunSummary(document, summary));
@@ -440,7 +651,16 @@ export function mountHuntingPlaces(
   list.setAttribute('data-testid', 'hunting-places-list');
   list.setAttribute('aria-label', 'Available hunting places');
   list.append(
-    ...index.hunts.map((hunt) => createHuntCard(document, hunt, onSelect)),
+    ...index.hunts.map((hunt) =>
+      createHuntCard(
+        document,
+        hunt,
+        onSelect,
+        character !== undefined && gear !== undefined
+          ? createSetProgress(document, hunt, character, gear)
+          : undefined,
+      ),
+    ),
   );
 
   screen.append(header, list);

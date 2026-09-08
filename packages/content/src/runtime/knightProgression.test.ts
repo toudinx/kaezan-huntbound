@@ -89,3 +89,41 @@ describe('knightProgressAtExperience', () => {
     expect(progress.levelSpan).toBe(750);
   });
 });
+
+describe('the sheet a set produces', () => {
+  it('keeps the innate weapon when nothing is equipped', () => {
+    expect(knightSheetAtLevel(35)).toEqual(
+      knightSheetAtLevel(35, { weapon: null, armor: 0, defense: 0 }),
+    );
+  });
+
+  it('replaces the innate weapon with the equipped one, and carries armor', () => {
+    const sheet = knightSheetAtLevel(35, {
+      weapon: { itemKey: 'item:tibia:sword', attack: 14, trained: true },
+      armor: 4,
+      defense: 21,
+    });
+
+    expect(sheet.weaponItemKey).toBe('item:tibia:sword');
+    expect(sheet.weaponAttack).toBe(14);
+    expect(sheet.skills.sword).toBe(60);
+    expect(sheet.armor).toBe(4);
+  });
+
+  it('swings an untrained weapon at the base skill, so attack can mislead', () => {
+    const trained = knightSheetAtLevel(35, {
+      weapon: { itemKey: 'item:tibia:sword', attack: 14, trained: true },
+      armor: 0,
+      defense: 0,
+    });
+    const untrained = knightSheetAtLevel(35, {
+      weapon: { itemKey: 'item:tibia:mace', attack: 16, trained: false },
+      armor: 0,
+      defense: 0,
+    });
+
+    expect(trained.skills.sword).toBe(60);
+    expect(untrained.skills.sword).toBe(10);
+    expect(untrained.weaponAttack).toBeGreaterThan(trained.weaponAttack);
+  });
+});

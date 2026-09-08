@@ -537,6 +537,7 @@ function combatNeutral(
     lifeLeechPermille: 0,
     manaLeechPermille: 0,
     attackElement: 'physical' as const,
+    armor: 0,
     resistances: [] as const,
     immunities: [] as const,
   };

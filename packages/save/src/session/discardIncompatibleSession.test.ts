@@ -1,4 +1,8 @@
-import { parseGameSave, SIMULATION_SCHEMA_VERSION } from '@huntbound/contracts';
+import {
+  createEmptyEquipment,
+  parseGameSave,
+  SIMULATION_SCHEMA_VERSION,
+} from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import { createSaveRepository } from '../repository/SaveRepository.ts';
 import { consolidateRun } from './consolidateRun.ts';
@@ -58,8 +62,12 @@ describe('incompatible session discard', () => {
 
     expect(counting.writeCount()).toBe(1);
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 3,
-      character: { experience: 0 },
+      schemaVersion: 4,
+      character: {
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       completedRuns: 0,
       session: null,
       stash: [
@@ -105,8 +113,12 @@ describe('incompatible session discard', () => {
     });
 
     await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 3,
-      character: { experience: 0 },
+      schemaVersion: 4,
+      character: {
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       completedRuns: 0,
       session: null,
       stash: [

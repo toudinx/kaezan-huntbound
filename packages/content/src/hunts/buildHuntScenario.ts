@@ -233,6 +233,7 @@ function composePlayer(
     lifeLeechPermille: KNIGHT_LIFE_LEECH_PERMILLE,
     manaLeechPermille: KNIGHT_MANA_LEECH_PERMILLE,
     attackElement: 'physical',
+    armor: character.armor ?? 0,
     resistances: [],
     immunities: [],
   };
@@ -322,7 +323,9 @@ function composeCreature(
     combatWindowTicks: 0,
     lifeLeechPermille: 0,
     manaLeechPermille: 0,
-    attackElement: 'physical',
+    // Creature `armor` is in the Lua and is not imported: the band that needs
+    // it is 16 (`HUNT_BANDS.md`), and PB-13-04 is the player's set.
+    armor: 0,
     resistances: [],
     immunities: [],
   };

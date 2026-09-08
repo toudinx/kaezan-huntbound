@@ -22,9 +22,11 @@ export {
   consolidateRun,
   createCheckpointScheduler,
   decideResume,
+  equipFromStash,
   type ResumeDecision,
   type ResumeRejection,
   type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
+  unequipToStash,
 } from './session/index.ts';

@@ -1,5 +1,6 @@
 import {
   createEmptyCharacterProgress,
+  createEmptyEquipment,
   createEmptyGameSave,
   SAVE_SCHEMA_VERSION,
 } from '@huntbound/contracts';
@@ -194,10 +195,38 @@ const v2ToV3: SaveMigration = {
   },
 };
 
+/**
+ * PB-13-04 gives the character slots and a collection. A save written before it
+ * has neither, and there is nothing to reconstruct: what the player was wearing
+ * came from the level curve, not from an item they own, and no drop was ever
+ * recorded as found. They arrive unarmoured with an empty collection, and the
+ * stash they farmed is exactly where the first pieces come from.
+ */
+const v3ToV4: SaveMigration = {
+  from: 3,
+  to: 4,
+  migrate(document) {
+    const current = document as SaveDocument;
+    const character = isSaveDocument(current.character)
+      ? current.character
+      : {};
+    return {
+      ...current,
+      schemaVersion: 4,
+      character: {
+        ...character,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
   v2ToV3,
+  v3ToV4,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {

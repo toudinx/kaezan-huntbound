@@ -1,3 +1,4 @@
+import { createEmptyCharacterProgress } from '../../../packages/contracts/src/index.ts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as cachedMain from './main';
 
@@ -221,7 +222,7 @@ function createTestSaveSession() {
     bag: [],
     stash: [],
     completedRuns: 0,
-    character: { experience: 0 },
+    character: createEmptyCharacterProgress(),
   };
   return {
     getState: () => state,
@@ -235,7 +236,7 @@ function createTestSaveSession() {
       decision: { kind: 'fresh' as const },
       driver: options.createDriver(undefined),
       bag: [],
-      character: { experience: 0 },
+      character: createEmptyCharacterProgress(),
     }),
     attachRun: () => undefined,
     updateBag: () => undefined,

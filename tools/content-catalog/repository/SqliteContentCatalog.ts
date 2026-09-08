@@ -433,6 +433,11 @@ export class SqliteContentCatalog
           readonly stackable: 0 | 1 | null;
           readonly max_stack_size: number | null;
           readonly weight: number | null;
+          readonly attack: number | null;
+          readonly defense: number | null;
+          readonly armor: number | null;
+          readonly slot_type: string | null;
+          readonly weapon_type: string | null;
         };
         return {
           guid: row.entity_guid,
@@ -447,6 +452,13 @@ export class SqliteContentCatalog
             ? {}
             : { maxStackSize: item.max_stack_size }),
           ...(item.weight === null ? {} : { weight: item.weight }),
+          ...(item.attack === null ? {} : { attack: item.attack }),
+          ...(item.defense === null ? {} : { defense: item.defense }),
+          ...(item.armor === null ? {} : { armor: item.armor }),
+          ...(item.slot_type === null ? {} : { slotType: item.slot_type }),
+          ...(item.weapon_type === null
+            ? {}
+            : { weaponType: item.weapon_type }),
         };
       });
 
@@ -832,7 +844,10 @@ export class SqliteContentCatalog
     for (const item of bundle.items) {
       this.database
         .prepare(
-          'INSERT INTO items (slice_key, entity_guid, stackable, max_stack_size, weight) VALUES (?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
+          `INSERT INTO items
+           (slice_key, entity_guid, stackable, max_stack_size, weight, attack, defense, armor, slot_type, weapon_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
           bundle.slice.key,
@@ -840,6 +855,11 @@ export class SqliteContentCatalog
           item.stackable === undefined ? null : item.stackable ? 1 : 0,
           item.maxStackSize ?? null,
           item.weight ?? null,
+          item.attack ?? null,
+          item.defense ?? null,
+          item.armor ?? null,
+          item.slotType ?? null,
+          item.weaponType ?? null,
         );
     }
     for (const creature of bundle.creatures) {
@@ -969,7 +989,10 @@ export class SqliteContentCatalog
     for (const item of bundle.items) {
       this.database
         .prepare(
-          'INSERT INTO items (slice_key, entity_guid, stackable, max_stack_size, weight) VALUES (?, ?, ?, ?, ?) ON CONFLICT(slice_key, entity_guid) DO NOTHING',
+          `INSERT INTO items
+           (slice_key, entity_guid, stackable, max_stack_size, weight, attack, defense, armor, slot_type, weapon_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
           bundle.slice.key,
@@ -977,6 +1000,11 @@ export class SqliteContentCatalog
           item.stackable === undefined ? null : item.stackable ? 1 : 0,
           item.maxStackSize ?? null,
           item.weight ?? null,
+          item.attack ?? null,
+          item.defense ?? null,
+          item.armor ?? null,
+          item.slotType ?? null,
+          item.weaponType ?? null,
         );
     }
     for (const spell of bundle.spells) {

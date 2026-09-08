@@ -113,6 +113,80 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* The set the character is wearing, and what the stash could put on instead. */
+.hunting-places__equipment {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #b6f1a4;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__equipment-totals {
+  margin: 0.4rem 0 0;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__slots {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hunting-places__slot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+
+.hunting-places__slot-label {
+  min-width: 4.5rem;
+  color: #b6f1a4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.hunting-places__slot-value {
+  color: #e5edff;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__slot-action {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid rgb(182 241 164 / 45%);
+  border-radius: 0.2rem;
+  background: transparent;
+  color: #b6f1a4;
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.hunting-places__set {
+  margin: 0.9rem 0 0;
+}
+
+.hunting-places__set-pieces {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+}
+
+.hunting-places__set-pieces li[data-collected="true"] {
+  color: #b6f1a4;
+}
+
 .hunting-places__summary-experience {
   margin: 0.6rem 0 0;
   color: #e5edff;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  createEmptyEquipment,
   createEmptyGameSave,
   parseGameSave,
   SAVE_SCHEMA_VERSION,
@@ -28,8 +29,12 @@ function createSnapshot() {
 
 function createEmptyDocument() {
   return {
-    schemaVersion: 3,
-    character: { experience: 0 },
+    schemaVersion: 4,
+    character: {
+      experience: 0,
+      equipment: createEmptyEquipment(),
+      collection: [] as string[],
+    },
     stash: [] as { itemKey: string; count: number }[],
     completedRuns: 0,
     session: null as {
@@ -45,8 +50,12 @@ function createEmptyDocument() {
 
 function createFullSave() {
   return {
-    schemaVersion: 3,
-    character: { experience: 28_800 },
+    schemaVersion: 4,
+    character: {
+      experience: 28_800,
+      equipment: createEmptyEquipment(),
+      collection: [] as string[],
+    },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -78,16 +87,20 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 3', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(3);
+  it('pins SAVE_SCHEMA_VERSION at 4', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(4);
   });
 
-  it('createEmptyGameSave produces a valid empty v3 document', () => {
+  it('createEmptyGameSave produces a valid empty v4 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
-      schemaVersion: 3,
-      character: { experience: 0 },
+      schemaVersion: 4,
+      character: {
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [],
+      },
       stash: [],
       completedRuns: 0,
       session: null,
@@ -114,8 +127,12 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(3);
-    expect(save.character).toEqual({ experience: 28_800 });
+    expect(save.schemaVersion).toBe(4);
+    expect(save.character).toEqual({
+      experience: 28_800,
+      equipment: createEmptyEquipment(),
+      collection: [],
+    });
     expect(save.stash).toEqual(document.stash);
     expect(save.completedRuns).toBe(3);
     expect(save.session).not.toBeNull();
