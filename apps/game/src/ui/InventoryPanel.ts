@@ -9,8 +9,26 @@ export interface InventoryPanel {
   destroy(): void;
 }
 
+export interface InventorySaleOffer {
+  readonly displayName: string;
+  readonly unitPrice: number;
+  readonly protected: boolean;
+}
+
 export interface InventoryPanelOptions {
   readonly source: SaveStateSource;
+  readonly getSaleOffer?: (
+    itemKey: string,
+  ) => InventorySaleOffer | undefined;
+  readonly onSell?: (
+    itemKey: string,
+    quantity: number,
+    allowProtected: boolean,
+  ) => void | Promise<unknown>;
+  readonly confirmProtectedSale?: (
+    offer: InventorySaleOffer,
+    quantity: number,
+  ) => boolean;
   readonly onExport?: () => void | Promise<void>;
   readonly confirmImport?: () => boolean;
   readonly onImport?: () => void | Promise<void>;
@@ -69,6 +87,104 @@ function renderEntries(
   empty.setAttribute('data-visible', String(entries.length === 0));
 }
 
+function renderSales(
+  list: HTMLElement,
+  empty: HTMLElement,
+  entries: readonly RunBagEntry[],
+  options: InventoryPanelOptions,
+  status: SaveInventoryState['status'],
+): void {
+  const document = list.ownerDocument;
+  list.replaceChildren();
+  const canSell =
+    options.getSaleOffer !== undefined && options.onSell !== undefined;
+  empty.setAttribute(
+    'data-visible',
+    String(!canSell || entries.length === 0),
+  );
+  if (
+    !canSell ||
+    options.getSaleOffer === undefined ||
+    options.onSell === undefined
+  ) {
+    return;
+  }
+
+  for (const entry of entries) {
+    const row = createElement(document, 'div', 'save-sale-entry');
+    row.setAttribute('data-item-key', entry.itemKey);
+    const offer = options.getSaleOffer(entry.itemKey);
+    const label = createElement(document, 'span', 'save-sale-label');
+    label.textContent = formatItemKey(entry.itemKey);
+    row.append(label);
+
+    if (offer === undefined) {
+      const unavailable = createElement(
+        document,
+        'span',
+        'save-sale-unavailable',
+      );
+      unavailable.textContent = 'Not for sale';
+      row.append(unavailable);
+      list.append(row);
+      continue;
+    }
+
+    const quote = createElement(document, 'span', 'save-sale-quote');
+    quote.textContent = `${offer.displayName} · ${offer.unitPrice} gold each`;
+    row.append(quote);
+
+    if (offer.protected) {
+      const protection = createElement(
+        document,
+        'span',
+        'save-sale-protected',
+      );
+      protection.textContent = 'Collection piece — confirmation required';
+      row.append(protection);
+    }
+
+    const quantity = createElement(
+      document,
+      'input',
+      'save-sale-quantity',
+    ) as HTMLInputElement;
+    quantity.type = 'number';
+    quantity.value = String(entry.count);
+    quantity.setAttribute('min', '1');
+    quantity.setAttribute('max', String(entry.count));
+    quantity.setAttribute('inputmode', 'numeric');
+    quantity.setAttribute(
+      'aria-label',
+      `Quantity of ${offer.displayName} to sell`,
+    );
+
+    const sellButton = createElement(
+      document,
+      'button',
+      'save-sell',
+    ) as HTMLButtonElement;
+    sellButton.type = 'button';
+    sellButton.textContent = 'Sell';
+    sellButton.disabled = status !== 'ready';
+    const onSell = (): void => {
+      const requested = Number(quantity.value);
+      if (!Number.isSafeInteger(requested) || requested <= 0) return;
+      if (
+        offer.protected &&
+        (options.confirmProtectedSale === undefined ||
+          !options.confirmProtectedSale(offer, requested))
+      ) {
+        return;
+      }
+      void options.onSell?.(entry.itemKey, requested, offer.protected);
+    };
+    sellButton.addEventListener('click', onSell);
+    row.append(quantity, sellButton);
+    list.append(row);
+  }
+}
+
 export function mountInventoryPanel(
   root: HTMLElement,
   options: InventoryPanelOptions,
@@ -79,12 +195,18 @@ export function mountInventoryPanel(
 
   const status = createElement(document, 'p', 'save-status');
   status.setAttribute('aria-live', 'polite');
+  const gold = createElement(document, 'p', 'save-gold');
   const runBag = createElement(document, 'div', 'save-run-bag');
   const runBagEmpty = createElement(document, 'p', 'save-run-bag-empty');
   runBagEmpty.textContent = 'Run bag empty';
   const stash = createElement(document, 'div', 'save-stash');
   const stashEmpty = createElement(document, 'p', 'save-stash-empty');
   stashEmpty.textContent = 'Stash empty';
+  const sales = createElement(document, 'div', 'save-sales');
+  const salesEmpty = createElement(document, 'p', 'save-sales-empty');
+  salesEmpty.textContent = 'No sellable stash items';
+  const salesEnabled =
+    options.getSaleOffer !== undefined && options.onSell !== undefined;
   const equipment = createElement(document, 'p', 'save-equipment');
   const completedRuns = createElement(document, 'p', 'save-completed-runs');
   const exportButton = createElement(
@@ -104,10 +226,12 @@ export function mountInventoryPanel(
 
   panel.append(
     status,
+    gold,
     runBag,
     runBagEmpty,
     stash,
     stashEmpty,
+    ...(salesEnabled ? [sales, salesEmpty] : []),
     equipment,
     completedRuns,
     exportButton,
@@ -130,8 +254,12 @@ export function mountInventoryPanel(
   const render = (state: SaveInventoryState): void => {
     status.textContent = state.message;
     status.setAttribute('data-status', state.status);
+    gold.textContent = `Gold: ${state.gold}`;
     renderEntries(runBag, runBagEmpty, state.bag);
     renderEntries(stash, stashEmpty, state.stash);
+    if (salesEnabled) {
+      renderSales(sales, salesEmpty, state.stash, options, state.status);
+    }
     equipment.textContent = formatEquipment(state.character.equipment);
     completedRuns.textContent = `Completed runs: ${state.completedRuns}`;
   };

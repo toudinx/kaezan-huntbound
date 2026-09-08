@@ -221,6 +221,7 @@ function createTestSaveSession() {
     message: 'New run started',
     bag: [],
     stash: [],
+    gold: 0,
     completedRuns: 0,
     character: createEmptyCharacterProgress(),
   };
@@ -243,6 +244,12 @@ function createTestSaveSession() {
     updateExperience: () => undefined,
     onTick: () => undefined,
     finish: async () => undefined,
+    sell: async () => ({
+      ok: false as const,
+      itemKey: 'item:tibia:fixture',
+      quantity: 1,
+      reason: 'not-for-sale' as const,
+    }),
     pagehide: async () => undefined,
     export: async () => '{}',
     import: async () => undefined,

@@ -16,8 +16,11 @@ import {
   type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
+  type SaleResult,
   SaveError,
   type SaveRepository,
+  sellFromStash,
+  type SellItemDetails,
 } from '../../../../packages/save/src/index.ts';
 
 import type { RestartableHuntDriver } from '../hunt/RestartableHuntDriver';
@@ -52,10 +55,21 @@ export interface SaveSessionController extends SaveStateSource {
   updateExperience(experience: number): void;
   onTick(tick: number): void;
   finish(outcome: RunOutcome): Promise<void>;
+  sell(
+    itemKey: string,
+    quantity: number,
+    allowProtected?: boolean,
+  ): Promise<SaleResult>;
   pagehide(): Promise<void>;
   export(): Promise<string>;
   import(serialized: string): Promise<void>;
   destroy(): void;
+}
+
+export interface SaveSessionOptions {
+  readonly everyTicks?: number;
+  /** Resolves catalog pricing and collection protection without coupling save to content. */
+  readonly resolveSellItem?: (itemKey: string) => SellItemDetails | undefined;
 }
 
 const EMPTY_STATE: SaveInventoryState = {
@@ -63,6 +77,7 @@ const EMPTY_STATE: SaveInventoryState = {
   message: 'Loading save',
   bag: [],
   stash: [],
+  gold: 0,
   completedRuns: 0,
   character: createEmptyCharacterProgress(),
 };
@@ -89,6 +104,34 @@ function sameBag(
   );
 }
 
+function saleMessage(result: SaleResult, displayName?: string): string {
+  const label = displayName ?? result.itemKey;
+  if (result.ok) {
+    return `Sold ${result.quantity} ${label} for ${result.total} gold`;
+  }
+
+  switch (result.reason) {
+    case 'not-for-sale':
+      return `${label} is not for sale`;
+    case 'invalid-quantity':
+      return 'Choose a positive whole quantity';
+    case 'item-not-in-stash':
+      return `${label} is not in the stash`;
+    case 'insufficient-quantity':
+      return `Not enough ${label} in the stash`;
+    case 'protected-item':
+      return `${label} is protected as a collection piece`;
+    case 'invalid-price':
+      return `${label} has an invalid sale price`;
+    case 'invalid-wallet':
+      return 'The wallet is invalid';
+    case 'amount-overflow':
+      return 'The sale amount is too large';
+    case 'session-destroyed':
+      return 'Save session is destroyed';
+  }
+}
+
 /**
  * What the player is shown when a save operation fails.
  *
@@ -109,7 +152,7 @@ function errorText(error: unknown): string {
 }
 
 function saveState(
-  save: Pick<GameSave, 'stash' | 'completedRuns'>,
+  save: Pick<GameSave, 'stash' | 'gold' | 'completedRuns'>,
   bag: readonly RunBagEntry[],
   status: SaveInventoryState['status'],
   message: string,
@@ -120,6 +163,7 @@ function saveState(
     message,
     bag: copyBag(bag),
     stash: copyBag(save.stash),
+    gold: save.gold,
     completedRuns: save.completedRuns,
     character,
   };
@@ -139,7 +183,7 @@ function sessionFrom(
 
 export function createSaveSession(
   repository: SaveRepository,
-  options: { readonly everyTicks?: number } = {},
+  options: SaveSessionOptions = {},
 ): SaveSessionController {
   let state = EMPTY_STATE;
   let destroyed = false;
@@ -231,12 +275,14 @@ export function createSaveSession(
             consolidateRun(draft, 'abandoned');
             return {
               stash: copyBag(draft.stash),
+              gold: draft.gold,
               completedRuns: draft.completedRuns,
             };
           });
           save = {
             ...save,
             stash: consolidated.stash,
+            gold: consolidated.gold,
             completedRuns: consolidated.completedRuns,
             session: null,
           };
@@ -361,6 +407,7 @@ export function createSaveSession(
           consolidateRun(draft, outcome);
           return {
             stash: copyBag(draft.stash),
+            gold: draft.gold,
             completedRuns: draft.completedRuns,
             character: draft.character,
           };
@@ -382,6 +429,70 @@ export function createSaveSession(
         disposeScheduler();
         activeRun = undefined;
         finishing = false;
+      }
+    },
+
+    async sell(itemKey, quantity, allowProtected = false) {
+      if (destroyed) {
+        return {
+          ok: false,
+          itemKey,
+          quantity,
+          reason: 'session-destroyed',
+        };
+      }
+
+      const details = options.resolveSellItem?.(itemKey);
+      if (details === undefined) {
+        const result: SaleResult = {
+          ok: false,
+          itemKey,
+          quantity,
+          reason: 'not-for-sale',
+        };
+        publish({
+          ...state,
+          status: 'ready',
+          message: saleMessage(result),
+        });
+        return result;
+      }
+
+      try {
+        const transaction = await repository.transact((draft) => {
+          const sale = sellFromStash(draft, itemKey, quantity, details, {
+            allowProtected,
+          });
+          return {
+            sale,
+            stash: copyBag(draft.stash),
+            gold: draft.gold,
+            completedRuns: draft.completedRuns,
+          };
+        });
+
+        if (!transaction.sale.ok) {
+          publish({
+            ...state,
+            status: 'ready',
+            message: saleMessage(transaction.sale, details.displayName),
+          });
+          return transaction.sale;
+        }
+
+        publish(
+          saveState(
+            transaction,
+            latestBag,
+            'ready',
+            saleMessage(transaction.sale, details.displayName),
+            latestCharacter,
+          ),
+        );
+        return transaction.sale;
+      } catch (error) {
+        publishError('Sale failed', error);
+        throw error;
       }
     },
 

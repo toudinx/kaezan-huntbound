@@ -116,6 +116,7 @@ interface TestSaveState {
     readonly itemKey: string;
     readonly count: number;
   }[];
+  readonly gold: number;
   readonly completedRuns: number;
   readonly character: CharacterProgress;
 }
@@ -320,6 +321,7 @@ describe('AppShell', () => {
         message: 'Save ready',
         bag: [{ itemKey: 'item:tibia:meat', count: 2 }],
         stash: [{ itemKey: 'item:tibia:arrow', count: 8 }],
+        gold: 9,
         completedRuns: 3,
         character: createEmptyCharacterProgress(),
       }),

@@ -433,6 +433,7 @@ export class SqliteContentCatalog
           readonly stackable: 0 | 1 | null;
           readonly max_stack_size: number | null;
           readonly weight: number | null;
+          readonly sell_price: number | null;
           readonly attack: number | null;
           readonly defense: number | null;
           readonly armor: number | null;
@@ -452,6 +453,9 @@ export class SqliteContentCatalog
             ? {}
             : { maxStackSize: item.max_stack_size }),
           ...(item.weight === null ? {} : { weight: item.weight }),
+          ...(item.sell_price === null
+            ? {}
+            : { sellPrice: item.sell_price }),
           ...(item.attack === null ? {} : { attack: item.attack }),
           ...(item.defense === null ? {} : { defense: item.defense }),
           ...(item.armor === null ? {} : { armor: item.armor }),
@@ -845,8 +849,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO items
-           (slice_key, entity_guid, stackable, max_stack_size, weight, attack, defense, armor, slot_type, weapon_type)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
@@ -855,6 +859,7 @@ export class SqliteContentCatalog
           item.stackable === undefined ? null : item.stackable ? 1 : 0,
           item.maxStackSize ?? null,
           item.weight ?? null,
+          item.sellPrice ?? null,
           item.attack ?? null,
           item.defense ?? null,
           item.armor ?? null,
@@ -990,8 +995,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO items
-           (slice_key, entity_guid, stackable, max_stack_size, weight, attack, defense, armor, slot_type, weapon_type)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
@@ -1000,6 +1005,7 @@ export class SqliteContentCatalog
           item.stackable === undefined ? null : item.stackable ? 1 : 0,
           item.maxStackSize ?? null,
           item.weight ?? null,
+          item.sellPrice ?? null,
           item.attack ?? null,
           item.defense ?? null,
           item.armor ?? null,

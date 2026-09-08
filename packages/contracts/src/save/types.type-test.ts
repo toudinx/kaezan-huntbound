@@ -7,6 +7,8 @@ import {
 function assertGameSaveReadonly(save: GameSave) {
   // @ts-expect-error GameSave fields are readonly at every level.
   save.completedRuns = 1;
+  // @ts-expect-error gold cannot be replaced on a GameSave.
+  save.gold = 1;
   // @ts-expect-error stash cannot be replaced on a GameSave.
   save.stash = [];
   // @ts-expect-error session cannot be replaced on a GameSave.
@@ -44,6 +46,7 @@ function assertSaveDraftMutable(draft: SaveDraft) {
   draft.schemaVersion = 1;
   draft.stash = [];
   draft.completedRuns = 2;
+  draft.gold = 3;
   draft.character = { ...createEmptyCharacterProgress(), experience: 3 };
   draft.session = null;
 }

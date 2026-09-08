@@ -222,11 +222,29 @@ const v3ToV4: SaveMigration = {
   },
 };
 
+/**
+ * PB-13-05 adds the persistent wallet. A previous save has no credited gold,
+ * so the additive default is zero and leaves every existing inventory and run
+ * exactly where it was.
+ */
+const v4ToV5: SaveMigration = {
+  from: 4,
+  to: 5,
+  migrate(document) {
+    return {
+      ...(document as SaveDocument),
+      schemaVersion: 5,
+      gold: 0,
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
   v2ToV3,
   v3ToV4,
+  v4ToV5,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {

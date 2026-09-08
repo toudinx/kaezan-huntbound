@@ -113,6 +113,7 @@ export const GameSaveSchema = z
     schemaVersion: z.literal(SAVE_SCHEMA_VERSION),
     character: CharacterProgressSchema,
     stash: RunBagEntriesSchema,
+    gold: nonNegativeInteger,
     completedRuns: nonNegativeInteger,
     session: ActiveRunStateSchema.nullable(),
   })

@@ -72,6 +72,33 @@ describe('parseCanaryItemsXml', () => {
     });
   });
 
+  it('maps Canary worth to a non-negative sale price', () => {
+    const xml = `<items>
+      <item id="9301" name="fixture shard" article="a" worth="12" />
+      <item id="9302" name="fixture tonic" article="a">
+        <attribute key="worth" value="25" />
+      </item>
+    </items>`;
+
+    expect(
+      parseCanaryItemsXml(xml, { ids: ['9301', '9302'], names: [] }),
+    ).toEqual({
+      ok: true,
+      value: [
+        {
+          sourceId: '9301',
+          displayName: 'fixture shard',
+          attributes: { article: 'a', sellPrice: 12 },
+        },
+        {
+          sourceId: '9302',
+          displayName: 'fixture tonic',
+          attributes: { article: 'a', sellPrice: 25 },
+        },
+      ],
+    });
+  });
+
   it('selects by normalized name', () => {
     expect(
       parseCanaryItemsXml(fixture, {

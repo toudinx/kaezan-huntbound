@@ -279,6 +279,7 @@ export function createCatalogBundleFixture(): CatalogContentBundle {
         stackable: true,
         maxStackSize: 100,
         weight: 0.1,
+        sellPrice: 1,
       },
     ],
     spells: [

@@ -1,7 +1,7 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 4;
+export const SAVE_SCHEMA_VERSION = 5;
 
 export interface RunBagEntry {
   readonly itemKey: string;
@@ -66,6 +66,8 @@ export interface GameSave {
   readonly schemaVersion: number;
   readonly character: CharacterProgress;
   readonly stash: readonly RunBagEntry[];
+  /** Gold already banked by the character; it survives runs and reloads. */
+  readonly gold: number;
   readonly completedRuns: number;
   readonly session: ActiveRunState | null;
 }
@@ -111,6 +113,7 @@ export function createEmptyGameSave(): GameSave {
     schemaVersion: SAVE_SCHEMA_VERSION,
     character: createEmptyCharacterProgress(),
     stash: [],
+    gold: 0,
     completedRuns: 0,
     session: null,
   };

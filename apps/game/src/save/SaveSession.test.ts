@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createEmptyCharacterProgress,
+  createEmptyGameSave,
   parseGameSave,
 } from '../../../../packages/contracts/src/index.ts';
 
@@ -422,6 +423,93 @@ describe('createSaveSession', () => {
       stash: [{ itemKey: 'item:tibia:meat', count: 4 }],
       session: null,
     });
+    saveSession.destroy();
+  });
+
+  it('sells a stash quantity, updates the wallet, and keeps the result after reload', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({
+        ...createEmptyGameSave(),
+        stash: [{ itemKey: 'item:tibia:meat', count: 3 }],
+        gold: 4,
+        session: null,
+      }),
+    );
+    const resolveSellItem = (itemKey: string) =>
+      itemKey === 'item:tibia:meat'
+        ? { displayName: 'meat', unitPrice: 2, protected: false }
+        : undefined;
+    const saveSession = createSaveSession(repository, { resolveSellItem });
+
+    await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    await expect(
+      saveSession.sell('item:tibia:meat', 2),
+    ).resolves.toMatchObject({
+      ok: true,
+      total: 4,
+      gold: 8,
+      remainingCount: 1,
+    });
+    expect(saveSession.getState()).toMatchObject({
+      stash: [{ itemKey: 'item:tibia:meat', count: 1 }],
+      gold: 8,
+    });
+    await expect(repository.load()).resolves.toMatchObject({
+      stash: [{ itemKey: 'item:tibia:meat', count: 1 }],
+      gold: 8,
+    });
+
+    saveSession.destroy();
+    const reloaded = createSaveSession(repository, { resolveSellItem });
+    await reloaded.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    await expect(
+      reloaded.sell('item:tibia:meat', 1),
+    ).resolves.toMatchObject({ ok: true, total: 2, gold: 10 });
+    await expect(repository.load()).resolves.toMatchObject({
+      stash: [],
+      gold: 10,
+    });
+    reloaded.destroy();
+  });
+
+  it('does not sell a protected collection piece without explicit confirmation', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({
+        ...createEmptyGameSave(),
+        stash: [{ itemKey: 'item:tibia:legion-helmet', count: 1 }],
+        gold: 4,
+      }),
+    );
+    const saveSession = createSaveSession(repository, {
+      resolveSellItem: () => ({
+        displayName: 'legion helmet',
+        unitPrice: 20,
+        protected: true,
+      }),
+    });
+
+    await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    await expect(
+      saveSession.sell('item:tibia:legion-helmet', 1),
+    ).resolves.toMatchObject({ ok: false, reason: 'protected-item' });
+    await expect(repository.load()).resolves.toMatchObject({
+      stash: [{ itemKey: 'item:tibia:legion-helmet', count: 1 }],
+      gold: 4,
+    });
+
+    await expect(
+      saveSession.sell('item:tibia:legion-helmet', 1, true),
+    ).resolves.toMatchObject({ ok: true, gold: 24 });
     saveSession.destroy();
   });
 });

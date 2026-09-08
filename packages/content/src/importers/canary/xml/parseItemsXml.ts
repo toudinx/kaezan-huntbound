@@ -43,6 +43,8 @@ const itemAttributes = new Set([
   'article',
   'plural',
   'weight',
+  'worth',
+  'sellPrice',
   'stackable',
   'maxStackSize',
 ]);
@@ -62,6 +64,7 @@ const itemChildElements = new Set(['attribute']);
  */
 const numericEquipmentKeys = new Set(['attack', 'defense', 'armor']);
 const textEquipmentKeys = new Set(['slotType', 'weaponType']);
+const numericSaleKeys = new Set(['worth', 'sellPrice']);
 
 const ignoredAttributeKeys = new Set([
   'slot',
@@ -247,6 +250,21 @@ function mapSelectedItem(
     } else attributes.weight = weight.value;
   }
 
+  const topLevelSellPrice =
+    xmlAttribute(element, 'sellPrice') ?? xmlAttribute(element, 'worth');
+  if (topLevelSellPrice !== undefined) {
+    const parsed = parseRequiredInteger(topLevelSellPrice, 'sellPrice');
+    if (!parsed.ok) diagnostics.push(parsed.diagnostic);
+    else if (parsed.value < 0) {
+      diagnostics.push(
+        createXmlDiagnostic(
+          'xml.invalid-number',
+          'sellPrice must be non-negative',
+        ),
+      );
+    } else attributes.sellPrice = parsed.value;
+  }
+
   for (const key of ['stackable', 'maxStackSize']) {
     const value = xmlAttribute(element, key);
     if (value === undefined) continue;
@@ -306,6 +324,17 @@ function mapSelectedItem(
           ),
         );
       } else attributes[key] = primitive;
+    } else if (numericSaleKeys.has(key)) {
+      const parsed = parseRequiredInteger(value, 'sellPrice');
+      if (!parsed.ok) diagnostics.push(parsed.diagnostic);
+      else if (parsed.value < 0) {
+        diagnostics.push(
+          createXmlDiagnostic(
+            'xml.invalid-number',
+            'sellPrice must be non-negative',
+          ),
+        );
+      } else attributes.sellPrice = parsed.value;
     } else if (numericEquipmentKeys.has(key)) {
       const parsed = parseRequiredInteger(value, key);
       if (!parsed.ok) diagnostics.push(parsed.diagnostic);

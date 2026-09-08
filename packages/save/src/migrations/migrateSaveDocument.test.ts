@@ -43,7 +43,7 @@ describe('save schema v1 to v2', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(4);
+    expect(parsed.value.schemaVersion).toBe(5);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.snapshot.spawnSlots).toEqual([]);
   });
@@ -69,7 +69,7 @@ describe('save schema v2 to v3', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(4);
+    expect(parsed.value.schemaVersion).toBe(5);
     expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
     // Nothing the player had already earned is touched by the bump.
     expect(parsed.value.stash).toEqual([
@@ -109,6 +109,34 @@ describe('save schema v3 to v4', () => {
     // from, so the stash it sits in is untouched.
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:legion-helmet', count: 1 },
+    ]);
+  });
+});
+
+describe('save schema v4 to v5', () => {
+  it('adds an empty wallet without changing the existing inventory', () => {
+    const current = saveWithSession(makeSession(), [
+      { itemKey: 'item:tibia:meat', count: 4 },
+    ]);
+    const { gold: _gold, ...withoutGold } = current;
+    void _gold;
+    const v4 = { ...withoutGold, schemaVersion: 4 };
+
+    const parsed = parseGameSave(migrateSaveDocument(v4));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      throw new Error(
+        `v4 save did not open after 4→5: ${parsed.diagnostics
+          .map((item) => item.message)
+          .join('; ')}`,
+      );
+    }
+
+    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.gold).toBe(0);
+    expect(parsed.value.stash).toEqual([
+      { itemKey: 'item:tibia:meat', count: 4 },
     ]);
   });
 });

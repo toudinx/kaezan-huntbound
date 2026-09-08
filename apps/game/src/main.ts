@@ -11,7 +11,9 @@ import catalogBundleJson from '../../../packages/content/src/generated/pb-01-con
 import {
   buildHuntScenario,
   createContentRegistry,
+  createItemSaleOffer,
   type EquippedStats,
+  type ItemSaleOffer,
   knightSheetAtLevel,
   levelForExperience,
   loadHuntDefinition,
@@ -324,6 +326,20 @@ export async function bootstrapApp(
   );
   const lookupItem = (itemKey: string): ItemDefinition | undefined =>
     itemsByKey.get(itemKey);
+  const saleOfferFor = (itemKey: string): ItemSaleOffer | undefined => {
+    const item = lookupItem(itemKey);
+    return item === undefined ? undefined : createItemSaleOffer(item);
+  };
+  const resolveSellItem = (itemKey: string) => {
+    const offer = saleOfferFor(itemKey);
+    return offer === undefined
+      ? undefined
+      : {
+          displayName: offer.displayName,
+          unitPrice: offer.unitPrice,
+          protected: offer.protected,
+        };
+  };
   const equippedStats = (): EquippedStats =>
     resolveEquippedStats(character.equipment, lookupItem);
   const appShellMount = overrides.mountAppShell ?? mountAppShell;
@@ -519,8 +535,8 @@ export async function bootstrapApp(
       } as const;
 
       saveSession = overrides.createSaveSession
-        ? overrides.createSaveSession(saveRepository)
-        : createSaveSession(saveRepository);
+        ? overrides.createSaveSession(saveRepository, { resolveSellItem })
+        : createSaveSession(saveRepository, { resolveSellItem });
       pageHideHandler = (): void => {
         void saveSession?.pagehide();
       };
@@ -583,6 +599,15 @@ export async function bootstrapApp(
         },
         save: {
           source: saveSession,
+          getSaleOffer: saleOfferFor,
+          onSell: async (itemKey, quantity, allowProtected) => {
+            await saveSession?.sell(itemKey, quantity, allowProtected);
+          },
+          confirmProtectedSale: (offer, quantity) =>
+            browserWindow.confirm(
+              `${offer.displayName} is a collection piece. Sell ${quantity} ` +
+                `for ${offer.unitPrice * quantity} gold anyway?`,
+            ),
           onExport: async () => {
             const serialized = await saveSession?.export();
             if (serialized !== undefined) {

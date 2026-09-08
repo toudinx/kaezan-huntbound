@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { parseGameSave } from '@huntbound/contracts';
+import {
+  createEmptyCharacterProgress,
+  parseGameSave,
+} from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import { migrateSaveDocument } from '../../packages/save/src/migrations/migrateSaveDocument.ts';
 
@@ -34,8 +37,9 @@ describe('pb06 legacy save migration', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(3);
-    expect(parsed.value.character).toEqual({ experience: 0 });
+    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
+    expect(parsed.value.gold).toBe(0);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.huntId).toBe('hunt:tibia:venore-rotworm-cave');
     expect(parsed.value.session?.snapshot.tick).toBe(1400);

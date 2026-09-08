@@ -29,7 +29,7 @@ function createSnapshot() {
 
 function createActiveSave(): GameSave {
   const parsed = parseGameSave({
-    schemaVersion: 4,
+    schemaVersion: 5,
     character: {
       experience: 96_800,
       equipment: createEmptyEquipment(),
@@ -39,6 +39,7 @@ function createActiveSave(): GameSave {
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
     ],
+    gold: 17,
     completedRuns: 3,
     session: {
       huntId: 'venore-rotworm-cave',
@@ -65,19 +66,20 @@ describe('save document serialization', () => {
     const document = createEmptyGameSave();
 
     expect(encodeSaveDocument(document)).toBe(
-      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"schemaVersion":4,"session":null,"stash":[]}\n',
+      '{"character":{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"gold":0,"schemaVersion":5,"session":null,"stash":[]}\n',
     );
   });
 
   it('returns the same export for repeated calls and insertion orders', () => {
     const first = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       character: {
         experience: 7,
         equipment: createEmptyEquipment(),
         collection: [],
       },
       stash: [],
+      gold: 0,
       completedRuns: 0,
       session: null,
     } as GameSave;
@@ -90,7 +92,8 @@ describe('save document serialization', () => {
         collection: [],
       },
       stash: [],
-      schemaVersion: 4,
+      gold: 0,
+      schemaVersion: 5,
     } as GameSave;
 
     expect(encodeSaveDocument(first)).toBe(encodeSaveDocument(first));
@@ -111,13 +114,14 @@ describe('save document serialization', () => {
 
   it('omits idle forced-target fields from encoded actors', () => {
     const parsed = parseGameSave({
-      schemaVersion: 4,
+      schemaVersion: 5,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
       },
       stash: [],
+      gold: 0,
       completedRuns: 0,
       session: {
         huntId: 'venore-rotworm-cave',
@@ -174,7 +178,7 @@ describe('save document serialization', () => {
   it('maps a future schema version to SAVE_VERSION_UNSUPPORTED', () => {
     const future = JSON.stringify({
       ...createEmptyGameSave(),
-      schemaVersion: 5,
+      schemaVersion: 6,
     });
 
     expect(() => decodeSaveDocument(future)).toThrow(

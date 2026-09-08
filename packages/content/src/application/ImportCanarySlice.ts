@@ -217,6 +217,9 @@ function itemDefinition(
     ...(typeof attributes.weight === 'number'
       ? { weight: attributes.weight }
       : {}),
+    ...(typeof attributes.sellPrice === 'number'
+      ? { sellPrice: attributes.sellPrice }
+      : {}),
     ...(typeof attributes.attack === 'number'
       ? { attack: attributes.attack }
       : {}),

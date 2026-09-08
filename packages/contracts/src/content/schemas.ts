@@ -444,6 +444,7 @@ export const ItemDefinitionSchema = EntityIdentitySchema.extend({
   stackable: z.boolean().optional(),
   maxStackSize: positiveInteger.optional(),
   weight: nonNegativeNumber.optional(),
+  sellPrice: nonNegativeInteger.optional(),
   attack: nonNegativeInteger.optional(),
   defense: nonNegativeInteger.optional(),
   armor: nonNegativeInteger.optional(),
@@ -456,6 +457,7 @@ export const ItemDefinitionSchema = EntityIdentitySchema.extend({
       (item.stackable !== undefined ||
         item.maxStackSize !== undefined ||
         item.weight !== undefined ||
+        item.sellPrice !== undefined ||
         item.attack !== undefined ||
         item.defense !== undefined ||
         item.armor !== undefined ||

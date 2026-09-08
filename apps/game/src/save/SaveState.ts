@@ -10,6 +10,7 @@ export interface SaveInventoryState {
   readonly message: string;
   readonly bag: readonly RunBagEntry[];
   readonly stash: readonly RunBagEntry[];
+  readonly gold: number;
   readonly completedRuns: number;
   /** The character the save keeps between runs. Never reset by a death. */
   readonly character: CharacterProgress;

@@ -29,13 +29,14 @@ function createSnapshot() {
 
 function createEmptyDocument() {
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     character: {
       experience: 0,
       equipment: createEmptyEquipment(),
       collection: [] as string[],
     },
     stash: [] as { itemKey: string; count: number }[],
+    gold: 0,
     completedRuns: 0,
     session: null as {
       huntId: string;
@@ -50,7 +51,7 @@ function createEmptyDocument() {
 
 function createFullSave() {
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     character: {
       experience: 28_800,
       equipment: createEmptyEquipment(),
@@ -60,6 +61,7 @@ function createFullSave() {
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
     ],
+    gold: 37,
     completedRuns: 3,
     session: {
       huntId: 'venore-rotworm-cave',
@@ -87,27 +89,29 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 4', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(4);
+  it('pins SAVE_SCHEMA_VERSION at 5', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(5);
   });
 
-  it('createEmptyGameSave produces a valid empty v4 document', () => {
+  it('createEmptyGameSave produces a valid empty v5 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
-      schemaVersion: 4,
+      schemaVersion: 5,
       character: {
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
       },
       stash: [],
+      gold: 0,
       completedRuns: 0,
       session: null,
     });
     expect(Object.keys(empty).sort()).toEqual([
       'character',
       'completedRuns',
+      'gold',
       'schemaVersion',
       'session',
       'stash',
@@ -127,13 +131,14 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(4);
+    expect(save.schemaVersion).toBe(5);
     expect(save.character).toEqual({
       experience: 28_800,
       equipment: createEmptyEquipment(),
       collection: [],
     });
     expect(save.stash).toEqual(document.stash);
+    expect(save.gold).toBe(37);
     expect(save.completedRuns).toBe(3);
     expect(save.session).not.toBeNull();
     expect(save.session?.bag).toEqual(document.session.bag);
@@ -198,6 +203,16 @@ describe('game save contract', () => {
     const fractional = createEmptyDocument();
     fractional.completedRuns = 1.5;
     expectRejectedAt(fractional, ['completedRuns']);
+  });
+
+  it('rejects gold that is negative or fractional', () => {
+    const negative = createEmptyDocument();
+    negative.gold = -1;
+    expectRejectedAt(negative, ['gold']);
+
+    const fractional = createEmptyDocument();
+    fractional.gold = 1.5;
+    expectRejectedAt(fractional, ['gold']);
   });
 
   it('rejects a document without schemaVersion', () => {

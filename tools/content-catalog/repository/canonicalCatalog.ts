@@ -485,6 +485,9 @@ export function facetPayloadHash(
               stackable: entity.stackable,
               maxStackSize: entity.maxStackSize,
               weight: entity.weight,
+              ...(entity.sellPrice === undefined
+                ? {}
+                : { sellPrice: entity.sellPrice }),
               attack: entity.attack,
               defense: entity.defense,
               armor: entity.armor,

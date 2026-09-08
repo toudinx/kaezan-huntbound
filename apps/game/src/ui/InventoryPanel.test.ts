@@ -14,6 +14,7 @@ interface TestInventoryState {
     readonly itemKey: string;
     readonly count: number;
   }[];
+  readonly gold: number;
   readonly completedRuns: number;
   readonly character: CharacterProgress;
 }
@@ -25,6 +26,7 @@ class TestElement {
   textContent = '';
   disabled = false;
   type = '';
+  value = '';
 
   constructor(
     readonly tagName: string,
@@ -112,6 +114,7 @@ function state(
       { itemKey: 'item:tibia:gold-coin', count: 12 },
     ],
     stash: [{ itemKey: 'item:tibia:arrow', count: 4 }],
+    gold: 9,
     completedRuns: 2,
     character: createEmptyCharacterProgress(),
     ...overrides,
@@ -216,6 +219,79 @@ describe('InventoryPanel', () => {
 
     expect(confirmations).toBe(1);
     expect(imports).toBe(0);
+    panel.destroy();
+  });
+
+  it('shows a quantity control and delegates an ordinary sale', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    const inventorySource = source(state());
+    const sales: Array<{
+      itemKey: string;
+      quantity: number;
+      allowProtected: boolean;
+    }> = [];
+    const panel = mountInventoryPanel(root as unknown as HTMLElement, {
+      source: inventorySource,
+      getSaleOffer: (itemKey) =>
+        itemKey === 'item:tibia:arrow'
+          ? { displayName: 'arrow', unitPrice: 1, protected: false }
+          : undefined,
+      onSell: (itemKey, quantity, allowProtected) => {
+        sales.push({ itemKey, quantity, allowProtected });
+      },
+    });
+
+    const quantity = findByTestId(root, 'save-sale-quantity');
+    expect(quantity.value).toBe('4');
+    expect(quantity.getAttribute('max')).toBe('4');
+    quantity.value = '2';
+    findByTestId(root, 'save-sell').dispatch('click');
+
+    expect(sales).toEqual([
+      {
+        itemKey: 'item:tibia:arrow',
+        quantity: 2,
+        allowProtected: false,
+      },
+    ]);
+    expect(findByTestId(root, 'save-gold').textContent).toBe('Gold: 9');
+    panel.destroy();
+  });
+
+  it('blocks a protected sale until the confirmation callback accepts it', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    const inventorySource = source(
+      state({
+        stash: [{ itemKey: 'item:tibia:legion-helmet', count: 1 }],
+      }),
+    );
+    let confirmations = 0;
+    let sold = 0;
+    const panel = mountInventoryPanel(root as unknown as HTMLElement, {
+      source: inventorySource,
+      getSaleOffer: () => ({
+        displayName: 'legion helmet',
+        unitPrice: 20,
+        protected: true,
+      }),
+      confirmProtectedSale: (_offer, quantity) => {
+        confirmations += quantity;
+        return true;
+      },
+      onSell: (_itemKey, _quantity, allowProtected) => {
+        if (allowProtected) sold += 1;
+      },
+    });
+
+    findByTestId(root, 'save-sell').dispatch('click');
+
+    expect(confirmations).toBe(1);
+    expect(sold).toBe(1);
+    expect(
+      findByTestId(root, 'save-sale-protected').textContent,
+    ).toContain('confirmation required');
     panel.destroy();
   });
 });

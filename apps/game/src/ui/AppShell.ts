@@ -43,6 +43,9 @@ export interface AppShellOptions {
   };
   readonly save?: {
     readonly source: SaveStateSource;
+    readonly getSaleOffer?: InventoryPanelOptions['getSaleOffer'];
+    readonly onSell?: InventoryPanelOptions['onSell'];
+    readonly confirmProtectedSale?: InventoryPanelOptions['confirmProtectedSale'];
     readonly onExport?: InventoryPanelOptions['onExport'];
     readonly confirmImport?: InventoryPanelOptions['confirmImport'];
     readonly onImport?: InventoryPanelOptions['onImport'];
@@ -137,6 +140,15 @@ export function mountAppShell(
   if (options.save !== undefined) {
     const inventoryOptions = {
       source: options.save.source,
+      ...(options.save.getSaleOffer === undefined
+        ? {}
+        : { getSaleOffer: options.save.getSaleOffer }),
+      ...(options.save.onSell === undefined
+        ? {}
+        : { onSell: options.save.onSell }),
+      ...(options.save.confirmProtectedSale === undefined
+        ? {}
+        : { confirmProtectedSale: options.save.confirmProtectedSale }),
       ...(options.save.onExport === undefined
         ? {}
         : { onExport: options.save.onExport }),

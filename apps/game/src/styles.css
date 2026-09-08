@@ -591,6 +591,81 @@ body {
   color: #b9d9b0;
 }
 
+[data-testid="save-gold"] {
+  margin: 0;
+  color: #f1d78b;
+}
+
+[data-testid="save-sales"] {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+[data-testid="save-sale-entry"] {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 1.35rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid rgb(241 215 139 / 28%);
+  background: rgb(35 31 27 / 86%);
+}
+
+[data-testid="save-sale-label"] {
+  color: #b9d9b0;
+}
+
+[data-testid="save-sale-quote"] {
+  color: #f1d78b;
+}
+
+[data-testid="save-sale-protected"] {
+  color: #ffcf9e;
+}
+
+[data-testid="save-sale-unavailable"] {
+  color: #8190a8;
+}
+
+[data-testid="save-sale-quantity"] {
+  width: 3.2rem;
+  min-height: 1.5rem;
+  padding: 0 0.2rem;
+  border: 1px solid rgb(123 161 216 / 48%);
+  border-radius: 0.25rem;
+  color: #dce6f8;
+  background: rgb(6 11 22 / 90%);
+  font: inherit;
+}
+
+[data-testid="save-sell"] {
+  min-height: 1.5rem;
+  padding: 0 0.4rem;
+  border: 1px solid rgb(123 161 216 / 58%);
+  border-radius: 0.35rem;
+  color: #dce6f8;
+  background: rgb(12 23 42 / 92%);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-testid="save-sell"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+[data-testid="save-sales-empty"] {
+  margin: 0;
+  color: #8190a8;
+}
+
+[data-testid="save-sales-empty"][data-visible="false"] {
+  display: none;
+}
+
 [data-testid="save-run-bag-empty"],
 [data-testid="save-stash-empty"] {
   width: 5.4rem;
