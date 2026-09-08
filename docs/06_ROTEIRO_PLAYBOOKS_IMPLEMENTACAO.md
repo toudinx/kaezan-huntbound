@@ -1,6 +1,7 @@
 # Roteiro compacto do V0
 
-**Vigente desde 2026-09-07.** Substitui a fila anterior; IDs antigos não são reutilizados.
+**Vigente desde 2026-09-07.** Substitui a fila anterior; A fila recomeça no PB-13 por pedido do usuário; referências históricas aos antigos PB-13–16
+eram previsões, não estes playbooks. O planejamento provisório PB-19–21 foi substituído.
 Produto e fontes continuam na ADR-05; arquitetura na ADR-03; gates em `AGENTS.md`.
 Diagnóstico e evidências: [validação do projeto](VALIDACAO_PROJETO.md).
 
@@ -18,13 +19,14 @@ aprova novas fórmulas, schemas ou migrações. Druid fica depois do V0.
 
 | Ordem | Playbook | Entrega e limite | Aceite do usuário |
 |---|---|---|---|
-| 1 | [PB-19 — Uma run que vale repetir](playbooks/PB-19/README.md) | Loop com Knight, loot/set/coleção, venda a NPC, gold com uso, level, bestiary/conquistas e helper mínimo. Uma hunt de referência. | Concluir, equipar uma melhoria, recarregar e querer outra run; entender o que o helper faz. |
-| 2 | [PB-20 — Três vocações, encontros distintos](playbooks/PB-20/README.md) | Sorcerer, Paladin e três papéis comportamentais de monstros; ampliar só o conteúdo que demonstra esses papéis. | As três classes funcionam no mesmo encontro; assistir revela diferenças de posição, ataque e risco. |
-| 3 | [PB-21 — Dungeon, modulação e fechamento](playbooks/PB-21/README.md) | Uma dungeon curta, modo modulado, coleção/gacha cosmético mínimo e fechamento das cinco hunts. | Preparar, completar, receber recompensa, voltar à dungeon antiga com desafio e encerrar a sessão com progresso salvo. |
+| 1 | [PB-13 — Uma run que vale repetir](playbooks/PB-13/README.md) | Loop com Knight, loot/set/coleção, venda a NPC, gold com uso, level, bestiary/conquistas e helper mínimo. Uma hunt de referência. | Concluir, equipar uma melhoria, recarregar e querer outra run; entender o que o helper faz. |
+| 2 | [PB-14 — Três vocações, encontros distintos](playbooks/PB-14/README.md) | Sorcerer, Paladin e três papéis comportamentais de monstros; ampliar só o conteúdo que demonstra esses papéis. | As três classes funcionam no mesmo encontro; assistir revela diferenças de posição, ataque e risco. |
+| 3 | [PB-15 — Dungeon, modulação e fechamento](playbooks/PB-15/README.md) | Uma dungeon curta, modo modulado, coleção/gacha cosmético mínimo e fechamento das cinco hunts. | Preparar, completar, receber recompensa, voltar à dungeon antiga com desafio e encerrar a sessão com progresso salvo. |
 
 Execução serial. Nenhuma task declara paralelismo. Uma task por chat; não abrir branch por rotina.
-A primeira card está escrita. Os demais itens são resultados delimitados; suas cards nascem
-quando as decisões e o código anterior existirem. O plano não impõe assinaturas ou camadas futuras.
+As 22 cards estão escritas: 9 no PB-13, 6 no PB-14 e 7 no PB-15. Cada task depende da anterior;
+a task 01 de cada playbook resolve o design necessário às implementações. As cards descrevem
+objetivos e paths, sem impor assinaturas ou camadas futuras.
 
 ## Motivos para repetir — direção confirmada pelo usuário
 
@@ -62,7 +64,7 @@ para justificar o farm. Os marcos têm fim; o jogo pode continuar oferecendo hun
 ## Limites de produto e critérios de decisão
 
 - **Progressão:** level/XP, equipamento, coleção, bestiary e conquistas entram no loop. Não
-  acrescentar árvore de talentos, skill grind ou Códex com poder por consequência. PB-19-01
+  acrescentar árvore de talentos, skill grind ou Códex com poder por consequência. PB-13-01
   decide curva e tratamento da morte; “V0 compacto” não determina um level cap arbitrário.
 - **Itens:** arma, armadura e mão secundária compatível com a vocação como escopo inicial proposto.
   Drops devem oferecer uma escolha compreensível; não importar centenas de itens. RNG/reroll
@@ -90,15 +92,16 @@ convertido artificialmente em aceite de gameplay.
 | Origem | Destino |
 |---|---|
 | PB-00 a PB-05 | Base integrada preservada; sem reexecução de auditorias. |
-| PB-06, pendências de save/QA | PB-19-02 verifica o fluxo afetado; bugs históricos só viram correção se ainda presentes. Browser QA permanece do usuário. |
-| PB-07, tasks congeladas | PB-20 absorve vocações e IA; conteúdo já consumido pelo PB-08/PB-10 não é refeito. |
+| PB-06, pendências de save/QA | PB-13-02 verifica o fluxo afetado; bugs históricos só viram correção se ainda presentes. Browser QA permanece do usuário. |
+| PB-07, tasks congeladas | PB-14 absorve vocações e IA; conteúdo já consumido pelo PB-08/PB-10 não é refeito. |
 | PB-08 | Knight e cockpit preservados; avisos históricos não são nova fila. |
-| PB-09 e PB-11, não implementados | Retirados da fila e absorvidos pelo PB-19. |
-| PB-10-14/15, mapas pendentes | PB-21-04; corrigir antes apenas se impedirem a hunt escolhida para uma entrega. |
-| PB-12, não implementado | PB-21-01/03; proposta de sync deve ser reconciliada com progressão real. |
-| PB-13 a PB-16, só previstos no roteiro | Cosméticos no PB-21-04; helper no PB-19/20; performance somente diante de problema medido. |
-| PB-17, pendência de feedback | PB-19-05 e PB-20-04; ícones, mochila e minimapa integrados preservados. |
-| PB-18, não iniciado | Seleção, preview e retorno ao atlas no PB-19-02; não construir controle vazio de dificuldade. |
+| PB-09 e PB-11, não implementados | Retirados da fila e absorvidos pelo PB-13. |
+| PB-10-14/15, mapas pendentes | PB-15-02 (render) e PB-15-03 (caixas); corrigir antes só se impedirem a hunt de referência. |
+| PB-12, não implementado | PB-15-01/05; proposta de sync deve ser reconciliada com progressão real. |
+| Antiga previsão PB-13 a PB-16 (outfits/gacha/helper/QA) | Cosméticos no PB-15-04; helper no PB-13/20; performance somente diante de problema medido. |
+| PB-17, pendência de feedback | PB-13-09 e PB-14-06; ícones, mochila e minimapa integrados preservados. |
+| PB-18, não iniciado | Seleção, preview e retorno ao atlas no PB-13-02; não construir controle vazio de dificuldade. |
+| PB-19/20/21, planejamento provisório sem implementação | Substituídos por PB-13/14/15; entradas antigas são redirecionamentos. |
 | Map Editor / Borderizer | Ferramentas auxiliares sob demanda, sem bloquear o loop do jogo. |
 
 ## Depois do fim

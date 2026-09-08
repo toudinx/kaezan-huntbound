@@ -1,15 +1,5 @@
-# PB-21 — Estado
+# PB-21 — Planejamento substituído
 
-**Estado:** planejado; nenhuma implementação iniciada.
-**Próxima:** detalhar PB-21-01 após a base anterior estar integrada.
-
-| ID | Status | Commit |
-|---|---|---|
-| PB-21-01 | pending | — |
-| PB-21-02 | pending | — |
-| PB-21-03 | pending | — |
-| PB-21-04 | pending | — |
-
-## Decisões pendentes
-
-Detalhamento depende das entregas anteriores; não executar propostas como contrato congelado.
+Não executar este documento. Em 2026-09-07, o usuário pediu a sequência a partir do PB-13.
+Continue em [PB-15](../PB-15/README.md) e no [roteiro](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
+O planejamento anterior está em `docs/archive/2026-09-07/playbooks/PB-21/`.

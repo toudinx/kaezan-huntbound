@@ -1,5 +1,9 @@
 # PB-18-04 — A escada e a volta
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending. **Depende da PB-18-01. Task de fechamento do playbook.**
 
 **Classe da tarefa:** apresentação, mais um caminho de navegação que hoje não existe.

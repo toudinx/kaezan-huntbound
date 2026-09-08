@@ -1,6 +1,6 @@
 # Emenda à ADR-05 — Sincronização de faixa
 
-> **Replanejamento de 2026-09-07:** proposta técnica histórica, a revisar em PB-21-01.
+> **Replanejamento de 2026-09-07:** proposta técnica histórica, a revisar em PB-15-01.
 > Dungeons/modulação entram no roteiro por pedido do usuário, mas o §5 não foi aceito
 > integralmente. Preset por hunt não equivale a sync de personagem persistente; recompensa
 > por minuto é hipótese de balanceamento. Referências ao PB-12 abaixo pertencem à fila anterior.

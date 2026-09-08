@@ -1,5 +1,9 @@
 # PB-18-01 — O atlas e a porta
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending
 
 **Classe da tarefa:** apresentação. Reorganiza uma tela cujo dado já está inteiro no índice gerado.

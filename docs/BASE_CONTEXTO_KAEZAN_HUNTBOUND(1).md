@@ -5,7 +5,7 @@ O objetivo do V0 é preparar uma build, jogar ou assistir ao helper, completar u
 
 - Produto e fontes: [ADR-05](05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md).
 - Arquitetura: [ADR-03](03_ADR_PHASER4_BROWSER_FIRST.md), Phaser 4 + TypeScript + Vite.
-- Próximo trabalho: [roteiro compacto](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md), PB-19 → PB-20 → PB-21.
+- Próximo trabalho: [roteiro compacto](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md), PB-13 → PB-14 → PB-15.
 - Evidência atual e lacunas: [validação](VALIDACAO_PROJETO.md).
 - Execução e gates: `AGENTS.md`; formato das cards: documento 07; modelos: documento 08.
 

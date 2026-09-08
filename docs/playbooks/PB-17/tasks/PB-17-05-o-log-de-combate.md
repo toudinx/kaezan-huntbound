@@ -1,5 +1,9 @@
 # PB-17-05 — O log de combate
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending. **Task de fechamento do playbook.**
 
 **Classe da tarefa:** superfície nova. A parte difícil é escolher o que **não** entra.

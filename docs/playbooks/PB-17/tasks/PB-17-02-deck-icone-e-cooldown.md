@@ -1,5 +1,9 @@
 # PB-17-02 — O deck com ícone e cooldown que se lê de relance
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending. **Depende da PB-17-01.**
 
 **Classe da tarefa:** apresentação. Superfície pequena, estado já projetado.

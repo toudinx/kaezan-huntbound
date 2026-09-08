@@ -7,7 +7,7 @@ Phaser 4 + TypeScript + Vite e gacha exclusivamente cosmético.
 
 - [Validação do projeto](VALIDACAO_PROJETO.md): o que existe, lacunas e critérios de diversão.
 - [Roteiro compacto](06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md): início, meio, fim e destino do backlog.
-- **Próxima task:** [PB-19-01 — Fechar as decisões do loop](playbooks/PB-19/tasks/PB-19-01-loop.md).
+- **Próxima task:** [PB-13-01 — Fechar as decisões do loop](playbooks/PB-13/tasks/PB-13-01-loop.md).
 
 ## Autoridade
 
@@ -29,15 +29,16 @@ dungeons/modulação no plano não aprova automaticamente sua matemática ou tod
 
 | Playbook | Estado | Resultado |
 |---|---|---|
-| [PB-19](playbooks/PB-19/README.md) | Planejado; primeira task elegível | Run, recompensa útil e helper |
-| [PB-20](playbooks/PB-20/README.md) | Planejado; depende do loop integrado | Mage, Paladin e encontros |
-| [PB-21](playbooks/PB-21/README.md) | Planejado; depende das builds integradas | Dungeon modulada e V0 completo |
+| [PB-13](playbooks/PB-13/README.md) | Planejado; primeira task elegível | Run, recompensa útil e helper |
+| [PB-14](playbooks/PB-14/README.md) | Planejado; depende do loop integrado | Mage, Paladin e encontros |
+| [PB-15](playbooks/PB-15/README.md) | Planejado; depende das builds integradas | Dungeon modulada e V0 completo |
 
 Os `STATE.md` registram execução; estar implementado não significa aceite de diversão.
 
 ## Histórico e referências
 
-PB-00–18, suas specs e cards ficam nos paths originais para preservar referências. Cabeçalhos
+PB-00–12 e os antigos PB-17/18 mantêm specs e cards nos paths originais como histórico.
+PB-19–21 são redirecionamentos; as cópias anteriores estão no arquivo de 2026-09-07. Cabeçalhos
 históricos retiram as pendências da fila; consulte o roteiro para o destino de cada uma.
 O roteiro e os contextos anteriores estão em `archive/2026-09-07/`.
 

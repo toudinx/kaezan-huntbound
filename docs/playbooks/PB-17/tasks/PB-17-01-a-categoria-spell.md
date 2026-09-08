@@ -1,5 +1,9 @@
 # PB-17-01 — A categoria `spell` e os nove ícones
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending
 
 **Classe da tarefa:** **pipeline de asset**. Especificada até o número da coluna; o custo é atravessar

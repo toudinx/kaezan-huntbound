@@ -1,19 +1,5 @@
-# PB-19 — Estado
+# PB-19 — Planejamento substituído
 
-**Estado:** planejado; nenhuma implementação iniciada.
-**Próxima:** PB-19-01.
-
-| ID | Status | Commit |
-|---|---|---|
-| PB-19-01 | pending | — |
-| PB-19-02 | pending | — |
-| PB-19-03 | pending | — |
-| PB-19-04 | pending | — |
-| PB-19-05 | pending | — |
-| PB-19-06 | pending | — |
-| PB-19-07 | pending | — |
-
-## Decisões pendentes
-
-Curva, perda na morte, coleção, recompensas de bestiary/conquistas, uso inicial de gold e
-contratos/save são definidos na 01. Consumíveis, imbuements e RNG/reroll permanecem hipóteses.
+Não executar este documento. Em 2026-09-07, o usuário pediu a sequência a partir do PB-13.
+Continue em [PB-13](../PB-13/README.md) e no [roteiro](../../06_ROTEIRO_PLAYBOOKS_IMPLEMENTACAO.md).
+O planejamento anterior está em `docs/archive/2026-09-07/playbooks/PB-19/`.

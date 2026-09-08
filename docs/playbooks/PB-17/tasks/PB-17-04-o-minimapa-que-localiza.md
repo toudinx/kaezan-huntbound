@@ -1,5 +1,9 @@
 # PB-17-04 — O minimapa que localiza
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending
 
 **Classe da tarefa:** apresentação **com uma decisão de derivação** — por isso a camada frontier.

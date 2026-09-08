@@ -1,5 +1,9 @@
 # PB-17-FIX-02 — Um frame, não a folha inteira
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 ## Objetivo
 
 Achado no playtest de 2026-08-31: o retrato do alvo, os slots da mochila e os nove ícones do deck

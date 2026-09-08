@@ -1,5 +1,9 @@
 # PB-17-03 — A mochila
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending
 
 **Classe da tarefa:** apresentação.

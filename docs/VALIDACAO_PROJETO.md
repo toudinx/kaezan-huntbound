@@ -7,7 +7,7 @@ não é playtest, auditoria exaustiva ou afirmação de que os testes atuais pas
 
 **Complemento do usuário após esta revisão:** os motivos de farm estão definidos: set, rares,
 venda a NPC/gold, XP/level, bestiary e conquistas. Buffs/consumíveis/imbuements e RNG/reroll são
-alternativas em avaliação. O roteiro e PB-19 incorporam essa direção. “Fechar o ciclo” abaixo é
+alternativas em avaliação. O roteiro e PB-13 incorporam essa direção. “Fechar o ciclo” abaixo é
 conectar esses ganhos à persistência e preparação, não substituir a caça por recompensa só no fim.
 
 A base técnica atende à direção de um Tibia solo de browser. O risco principal é completar sistemas

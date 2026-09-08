@@ -1,5 +1,9 @@
 # PB-18-02 — A ficha que a hunt escolhe
 
+> **Histórico; não executar.** A fila vigente recomeça no [PB-13](../../PB-13/README.md).
+> Entregas integradas permanecem; pendências foram absorvidas pelas cards novas.
+
+
 **Status inicial:** pending. **Depende da PB-18-01.**
 
 **Classe da tarefa:** apresentação **com uma decisão de enquadramento**. Frontier por isso.
