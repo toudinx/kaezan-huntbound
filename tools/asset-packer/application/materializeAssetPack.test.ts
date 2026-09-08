@@ -3,6 +3,7 @@ import {
   mkdtemp,
   readdir,
   readFile,
+  realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -53,7 +54,12 @@ async function directoryEntries(path: string): Promise<readonly string[]> {
 }
 
 async function createFixture() {
-  const root = await mkdtemp(join(tmpdir(), 'pb02-materialize-'));
+  // realpath, because the promotion test compares a path the materializer
+  // reports against this one: the macOS temp directory is a symlink and the
+  // raw mkdtemp result never matches what the filesystem hands back.
+  const root = await realpath(
+    await mkdtemp(join(tmpdir(), 'pb02-materialize-')),
+  );
   roots.push(root);
   const sourceRoot = join(root, 'source');
   const destination = join(root, 'output', 'pack');

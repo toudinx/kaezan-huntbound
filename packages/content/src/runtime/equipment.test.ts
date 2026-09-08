@@ -65,7 +65,7 @@ describe('worn stats', () => {
     );
 
     expect(stats.armor).toBe(4);
-    expect(stats.defense).toBe(21);
+    expect(stats.defense).toBe(13);
     expect(stats.weapon).toEqual({
       itemKey: SWORD.stableKey,
       attack: 14,

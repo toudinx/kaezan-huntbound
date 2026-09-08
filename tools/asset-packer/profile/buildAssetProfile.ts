@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 
@@ -240,8 +240,12 @@ export async function buildAssetProfile(input: {
     };
   }
 
-  const temporaryRoot = await mkdtemp(
-    join(tmpdir(), 'huntbound-asset-profile-build-'),
+  // realpath, because the validator canonicalises the profile root it is
+  // handed: on macOS the system temp directory is a symlink (/var ->
+  // /private/var) and every path built from the raw mkdtemp result then reads
+  // as outside its own root.
+  const temporaryRoot = await realpath(
+    await mkdtemp(join(tmpdir(), 'huntbound-asset-profile-build-')),
   );
   try {
     const generatedPackRoot = join(temporaryRoot, 'packs', directory);

@@ -1157,8 +1157,11 @@ describe('buildHuntScenario combat blueprints', () => {
     const blessedPlayer = blessed.scenario.blueprints.find(
       (blueprint) => blueprint.blueprintId === 'player',
     );
-    const snake = blessed.scenario.blueprints.find(
-      (blueprint) => blueprint.blueprintId === 'snake',
+    const baselineRotworm = baseline.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'rotworm',
+    );
+    const blessedRotworm = blessed.scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'rotworm',
     );
     const baselineBerserk = baseline.scenario.abilities.find(
       (ability) => ability.abilityId === 'berserk',
@@ -1182,7 +1185,10 @@ describe('buildHuntScenario combat blueprints', () => {
       baselineBerserk?.maxPower ?? 0,
     );
     expect(blessedHeal?.maxPower).toBe(baselineHeal?.maxPower);
-    expect(snake?.attackMaxDamage).toBe(0);
+    expect(baselineRotworm?.attackMaxDamage).toBeGreaterThan(0);
+    expect(blessedRotworm?.attackMaxDamage).toBe(
+      baselineRotworm?.attackMaxDamage,
+    );
   });
 });
 

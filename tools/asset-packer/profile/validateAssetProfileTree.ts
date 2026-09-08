@@ -1,3 +1,4 @@
+import { realpath } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 
 import {
@@ -104,6 +105,14 @@ function prefixPackDiagnostics(
   );
 }
 
+async function canonicalise(path: string): Promise<string> {
+  try {
+    return await realpath(path);
+  } catch {
+    return path;
+  }
+}
+
 async function validateCatalog(
   profileRoot: string,
   catalogPath: string,
@@ -116,8 +125,11 @@ async function validateCatalog(
     }
   | { readonly ok: false; readonly diagnostics: readonly AssetDiagnostic[] }
 > {
+  // The profile root arrives canonicalised, so an absolute catalog path has to
+  // be canonicalised too before the two are compared: on macOS the system temp
+  // directory is a symlink and /var/... would read as outside /private/var/...
   const requestedPath = isAbsolute(catalogPath)
-    ? resolve(catalogPath)
+    ? await canonicalise(resolve(catalogPath))
     : resolve(profileRoot, ...catalogPath.split('/'));
   if (!isProfilePathWithin(profileRoot, requestedPath)) {
     return {
