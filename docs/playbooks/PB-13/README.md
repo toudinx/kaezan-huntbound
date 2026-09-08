@@ -24,8 +24,16 @@ fórmulas de `combatConversion.ts:110` são dominadas por `(skill + attack)`, co
 das cinco fichas; só o termo `level * 0.2` se move. A criatura, essa, vai de orc a dragão. É por isso
 que toda hunt além da primeira é desgaste — não é dificuldade de desenho, é a escada que não sobe.
 
-A PB-13-01 corrige isso como conteúdo, antes da máquina de progressão, para que as cinco hunts sejam
-jogáveis enquanto o resto do playbook é implementado.
+E a faixa 1 está no nível errado. `HUNT_BANDS.md:105`, a escada congelada pela PB-10-02, diz
+**"Faixa 1 — Venore Rotworm Cave — nível 8"**, e o índice gerado concorda (`recommendedLevel: 8`).
+A ficha diz 35 — é o Knight original do PB-04/PB-05, anterior à escada, que ninguém baixou porque
+baixá-lo move aqueles goldens. O `HUNT_BANDS` projetou quatro hits de rotworm contra `HP(8) = 185`
+como 87% da barra, *"tutorial, a barra quase some se errar o kit"*; com HP 590 isso vira 27%. A hunt
+mais simples não é simples de propósito: é a única em que se está 27 níveis acima da faixa. O mesmo
+doc já dizia que o skill deveria interpolar 10→60 entre os níveis 8 e 35, e ele está travado em 60.
+
+A PB-13-01 corrige as duas coisas como conteúdo, antes da máquina de progressão, para que as cinco
+hunts sejam jogáveis enquanto o resto do playbook é implementado.
 
 ## Decisões congeladas
 
@@ -39,14 +47,29 @@ implementação. Roteiro 06 e ADR-05 regem o resto do produto; ADR-03 rege arqui
    e não sobra preset como fallback — duas fontes de verdade para a ficha é o que a PB-13-03 existe
    para acabar. Isso encerra a extensão *"personagem resolvido pela hunt escolhida, temporário até o
    PB-09"* da ADR-05, que aponta para um playbook removido; a PB-13-03 edita esse bullet.
-3. **A curva concede ataque, não só vida.** Subir de level move `sword` e o ataque efetivo, não
+3. **Nasce no nível 1, com o kit inteiro.** As cinco spells estão na mão desde o primeiro minuto,
+   porque a regra 4 da *Curadoria de conteúdo* da ADR-05 já congelou que **nenhuma ação é trancada
+   por level**. O HP sai do próprio Canary e não se inventa: `healthmax = 150` no nível 1, +5 nos
+   níveis 2–8, `gainhp = 15` do Knight a partir do 9 (`HUNT_BANDS.md:340`). O trecho 1→8 é rampa
+   curta, não conteúdo faltando: o que dá graça à gameplay é o kit, e ele já está lá.
+4. **O eixo de progressão é o set, não o level.** Subir de nível é ritmo, e é barato: chegar ao 130
+   não é o desafio e não deve custar dezenas de horas. O que prende o jogador na faixa é **completar
+   o set e os rares daquela faixa** — é a conta que evolui, não o contador. Consequência direta na
+   curva: a fórmula do Tibia cobraria 82 h para atravessar as cinco hunts, com 34 h paradas em
+   Cyclopolis e outras 34 em Dragon Lair; ela **não** é adotada. A PB-13-03 autora uma curva
+   Huntbound comprimida, calibrada contra o `experiencePerHour` que o índice de hunts já calcula.
+5. **O set de uma faixa é o que sustenta a faixa seguinte.** É isso que faz o farm empurrar para
+   frente sem depender de modulação: você fica no Orc Fortress porque o set dele é o que segura o
+   Cyclopolis. Voltar a uma faixa antiga já superada para *completar* coleção é outro problema, e é
+   do PB-15 — ver B25 no `STATE.md`.
+6. **A curva concede ataque, não só vida.** Subir de level move `sword` e o ataque efetivo, não
    apenas `maxHealth`. Uma curva que só engorda HP reproduz exatamente o defeito acima.
-4. **Gasto de gold: buff de próxima hunt.** Comprado entre runs, dura a run seguinte, sem inventário
+7. **Gasto de gold: buff de próxima hunt.** Comprado entre runs, dura a run seguinte, sem inventário
    e sem uso manual durante a luta. Escolhido por convivência: a ADR-05 já congelou cargas por hunt
    *"sem inventário, sem loja, sem `actor/use-item`"*, e poção comprável competiria com essa máquina
    em vez de somar. É extensão Huntbound nova e a PB-13-06 escreve o bullet na ADR-05 antes de
    implementar.
-5. **Contrato, schema e golden estão autorizados**, task a task, pelo texto de cada card. Onde a card
+8. **Contrato, schema e golden estão autorizados**, task a task, pelo texto de cada card. Onde a card
    autoriza, o executor **bumpa e regenera em vez de parar**; as condições de parada de `AGENTS.md`
    seguem valendo para tudo que a card não nomear.
 

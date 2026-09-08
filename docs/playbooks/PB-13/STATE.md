@@ -30,11 +30,26 @@ Cyclopolis (45) e Dragon Lair (70), autorados em
 máximo cresce 8% enquanto a vida cresce 153% e a criatura vai de orc a dragão. Reportado pelo usuário
 jogando; medido em 2026-09-07.
 
+**B25 — aberto, endereçado pela PB-13-01.** A ficha da faixa 1 contradiz a escada congelada em 27
+níveis: `HUNT_BANDS.md:105` e o `recommendedLevel` do índice gerado dizem **nível 8**;
+`validateSliceSelection.ts:106` autora **35**. É o Knight do PB-04/PB-05, anterior à escada, nunca
+baixado porque baixá-lo move aqueles goldens. Quatro hits de rotworm foram projetados para 87% de
+`HP(8) = 185` e valem 27% de HP 590 — a hunt tutorial é a única em que o jogador está acima da faixa,
+e é o degrau que ensina o jogo que se perde.
+
+**B26 — aberto, sem task escrita. Não é do PB-13.** O eixo de progressão é o set da faixa e o level
+é barato (README, decisões 4 e 5). Isso resolve o farm para frente — o set de uma faixa segura a
+seguinte —, mas deixa em aberto **voltar a uma faixa já superada para completar coleção**: com level
+alto e sem modulação, a hunt antiga é trivial e o farm de coleção fica sem tensão. É exatamente o
+problema que o PB-15-01/05 existe para resolver, e esta decisão torna aquela modulação
+**estruturante, não opcional**. Registrado aqui porque nasceu do desenho do PB-13.
+
 ## Decisões congeladas
 
-Vivem no `README.md`, seção "Decisões congeladas": morte, personagem persistente, curva que concede
-ataque, buff de próxima hunt como gasto de gold, e autorização de contrato/schema/golden por card.
-Foram fechadas pelo usuário em 2026-09-07 e não se reabrem dentro de uma task de implementação.
+Vivem no `README.md`, seção "Decisões congeladas": morte, personagem persistente, nascer no nível 1
+com o kit inteiro, o set como eixo de progressão, curva comprimida que concede ataque, buff de
+próxima hunt como gasto de gold, e autorização de contrato/schema/golden por card. Foram fechadas
+pelo usuário em 2026-09-07 e não se reabrem dentro de uma task de implementação.
 
 ## Regra de atualização
 

@@ -36,11 +36,11 @@ O tratamento de morte/abandono e o momento de consolidar cada ganho ainda precis
 
 | Motivação | Resultado pretendido | Decisão ainda aberta |
 |---|---|---|
-| Melhorar o set | Drops equipáveis oferecem upgrades e escolhas de build. | Slots iniciais, stats e curva de poder. |
+| Melhorar o set | Drops equipáveis oferecem upgrades e escolhas de build. | **Decidido em 2026-09-07:** o set da faixa é o eixo de progressão, e completá-lo é o que sustenta a faixa seguinte. Faltam slots e stats. |
 | Colecionar rares | Encontrar itens raros tem valor de coleção além de equipar ou vender. | Registrar descoberta ou exigir posse; proteção contra venda acidental. |
 | Fazer gold | Vender itens a NPC transforma loot sem uso imediato em dinheiro. | Preços, carteira e regras de compra/venda sem duplicação. |
 | Gastar gold | Preparar a próxima hunt com uma compra útil. | **Decidido em 2026-09-07:** buff de próxima hunt. Falta o preço e a duração. |
-| Upar | Matar mobs concede XP e avanço de level. | Falta a curva. **Decidido:** um personagem persistente, toda hunt aberta, e a curva concede ataque e não só vida. |
+| Upar | Matar mobs concede XP e avanço de level. | **Decidido:** nasce no nível 1 com o kit inteiro, um personagem persistente, toda hunt aberta, curva **comprimida** que concede ataque e não só vida. Level é ritmo, não o desafio; a curva do Tibia (82 h para as cinco hunts) não é adotada. |
 | Completar bestiary e conquistas | Caçar espécies e cumprir objetivos deixa progresso persistente visível. | Faltam metas e recompensas. **Decidido:** morrer perde a bag e o crédito da run, nunca XP nem level. Poder adicional segue fora. |
 | Farmar builds para conteúdo modulado | Voltar a uma hunt continua oferecendo itens relevantes à build/coleção. | Como gear é modulado e se haverá variação ou reroll em itens. |
 
@@ -79,7 +79,8 @@ para justificar o farm. Os marcos têm fim; o jogo pode continuar oferecendo hun
   ocorreu, sem encobrir tiles, alvo ou ameaças. Não equiparar mais partículas a diversão.
 - **Dungeon:** encontros curados com começo, boss e fim; alvo inicial de sessão de 10–20 minutos,
   hipótese de playtest, não métrica já validada. Sem gerador procedural ou campanha narrativa.
-- **Modulação:** separar nível efetivo, dificuldade e recompensa. Primeiro modo livre e modulado;
+- **Modulação:** virou **estruturante** em 2026-09-07, não mais opcional: se o eixo de progressão é o set da faixa e o level é barato, voltar a uma faixa superada para completar coleção precisa de tensão, e é a modulação que a devolve (B26 no `STATE.md` do PB-13).
+  Separar nível efetivo, dificuldade e recompensa. Primeiro modo livre e modulado;
   dial adicional somente se o playtest mostrar necessidade. Nenhuma redução permanente do save.
   A emenda 09 é proposta técnica; seu texto antigo não foi aceito integralmente por este plano.
 - **Gacha:** somente outfits, seguindo o contrato já aceito da ADR-05; sem dinheiro real ou poder.
