@@ -233,7 +233,13 @@ describe('save cli verify and check-hashes', () => {
     expect(result.stderr).toContain('divergence');
   });
 
-  it('exits 1 when the legacy document version changes', async () => {
+  /**
+   * The fixture carries the shape a save had before the first migration step,
+   * so declaring a version on it is a lie: the ladder skips the steps that
+   * discard the indexed spawn slots and create the character, and what comes
+   * out no longer parses. A real v4 save carries the v4 shape and migrates.
+   */
+  it('exits 2 when the legacy document declares a schema version', async () => {
     expect(sharedFixture).toBeDefined();
     if (sharedFixture === undefined) {
       return;
@@ -250,8 +256,8 @@ describe('save cli verify and check-hashes', () => {
     );
 
     const result = await runCli(['verify', '--dir', root]);
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('divergence');
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain('SAVE_DOCUMENT_INVALID');
   });
 
   it('exits 2 when the golden files are missing', async () => {

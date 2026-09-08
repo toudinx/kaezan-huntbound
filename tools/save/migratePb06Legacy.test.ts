@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import {
   createEmptyCharacterProgress,
   parseGameSave,
+  SAVE_SCHEMA_VERSION,
 } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 import { migrateSaveDocument } from '../../packages/save/src/migrations/migrateSaveDocument.ts';
@@ -37,7 +38,7 @@ describe('pb06 legacy save migration', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(5);
+    expect(parsed.value.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
     expect(parsed.value.gold).toBe(0);
     expect(parsed.value.session).not.toBeNull();
