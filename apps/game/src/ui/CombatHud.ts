@@ -41,6 +41,11 @@ export interface CombatHud {
 
 export interface CombatHudOptions {
   readonly onRestart?: () => void;
+  /**
+   * Leaves the hunt for the atlas. Wired only by the shell that owns the run,
+   * so a HUD mounted without it simply has no exit rather than a dead button.
+   */
+  readonly onLeave?: () => void;
   readonly region?: MapRegion;
   /** The hunt's floor links and drop-in cell, drawn as minimap landmarks. */
   readonly transitions?: readonly TransitionEntry[];
@@ -148,7 +153,20 @@ export function mountCombatHud(
 
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
-  alerts.append(rejection);
+
+  // The way out of the hunt sits over the top edge of the play window, in the
+  // one band that is already reserved for things that talk to the player about
+  // the run rather than about the fight.
+  const leave = createElement(
+    document,
+    'button',
+    'combat-leave',
+  ) as HTMLButtonElement;
+  leave.type = 'button';
+  leave.setAttribute('aria-label', 'Leave hunt and bank the run');
+  leave.textContent = 'Leave hunt';
+  leave.hidden = options.onLeave === undefined;
+  alerts.append(leave, rejection);
 
   const deathOverlay = createElement(
     document,
@@ -166,7 +184,18 @@ export function mountCombatHud(
   restart.type = 'button';
   restart.setAttribute('aria-label', 'Restart hunt');
   restart.textContent = 'Restart hunt';
-  deathOverlay.append(deathMessage, restart);
+  // The overlay covers the whole viewport, so without its own way out a death
+  // is a dead end: the only other exit is underneath it.
+  const deathLeave = createElement(
+    document,
+    'button',
+    'combat-death-leave',
+  ) as HTMLButtonElement;
+  deathLeave.type = 'button';
+  deathLeave.setAttribute('aria-label', 'Back to the hunting places');
+  deathLeave.textContent = 'Back to atlas';
+  deathLeave.hidden = options.onLeave === undefined;
+  deathOverlay.append(deathMessage, restart, deathLeave);
 
   hud.append(vitalsLeft, vitalsRight, rail, alerts, deckBand, deathOverlay);
   root.replaceChildren(hud);
@@ -189,7 +218,12 @@ export function mountCombatHud(
   const onRestart = (): void => {
     options.onRestart?.();
   };
+  const onLeave = (): void => {
+    options.onLeave?.();
+  };
   restart.addEventListener('click', onRestart);
+  leave.addEventListener('click', onLeave);
+  deathLeave.addEventListener('click', onLeave);
 
   const render = (state: CombatViewState): void => {
     if (state.player === null) {
@@ -245,6 +279,8 @@ export function mountCombatHud(
     if (lootLog.textContent !== lootText) lootLog.textContent = lootText;
     huntBag.render(state.bag);
     deathOverlay.setAttribute('data-visible', String(state.playerDead));
+    // A dead run has nothing left to bank, and the overlay carries its own exit.
+    leave.hidden = options.onLeave === undefined || state.playerDead;
   };
 
   let destroyed = false;
@@ -254,6 +290,8 @@ export function mountCombatHud(
       if (destroyed) return;
       destroyed = true;
       restart.removeEventListener('click', onRestart);
+      leave.removeEventListener('click', onLeave);
+      deathLeave.removeEventListener('click', onLeave);
       deck.destroy();
       minimap.destroy();
       targetWindow.destroy();

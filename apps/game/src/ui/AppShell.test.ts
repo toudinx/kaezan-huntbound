@@ -347,7 +347,7 @@ describe('AppShell', () => {
     shell.destroy();
   });
 
-  it('lets the save callback capture the bag before restart clears the view model', () => {
+  it('clears the view model before the restart callback, so the reopened run carries no loot', () => {
     const root = createRoot();
     const bridge = createSceneBridge(snapshot('booting'));
     const viewModel = createDefaultCombatViewModel();
@@ -365,7 +365,11 @@ describe('AppShell', () => {
 
     findByTestId(root, 'combat-restart').dispatch('click');
 
-    expect(capturedBag).toEqual([{ itemKey: 'item:tibia:meat', count: 3 }]);
+    // This used to run the other way around, because restarting banked the bag
+    // on its way out. Decision 1 of the PB-13 README made a death cost the bag,
+    // so the shell reattaches the run through this view model and must not find
+    // the dead run's loot still in it.
+    expect(capturedBag).toEqual([]);
     expect(viewModel.snapshot().bag).toEqual([]);
     shell.destroy();
   });

@@ -34,6 +34,7 @@ class FakeElement {
   textContent = '';
   className = '';
   disabled = false;
+  hidden = false;
 
   constructor(
     readonly ownerDocument: FakeDocument,
@@ -366,6 +367,42 @@ describe('CombatHud', () => {
       byTestId(remountedRoot, 'combat-posture').getAttribute('data-posture'),
     ).toBe('blood-rage');
     remountedHud.destroy();
+  });
+
+  it('offers the exit while the run is alive and again on the death overlay', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const onLeave = vi.fn();
+    const hud = mountCombatHud(root as unknown as HTMLElement, { onLeave });
+
+    hud.render(state({ playerDead: false }));
+    const leave = byTestId(root, 'combat-leave');
+    const deathLeave = byTestId(root, 'combat-death-leave');
+    expect(leave.hidden).toBe(false);
+    leave.dispatch('click');
+    expect(onLeave).toHaveBeenCalledTimes(1);
+
+    // Dying hides the in-run exit -- there is nothing left to bank, and the
+    // overlay that covers it carries the way back to the atlas.
+    hud.render(state({ playerDead: true }));
+    expect(leave.hidden).toBe(true);
+    deathLeave.dispatch('click');
+    expect(onLeave).toHaveBeenCalledTimes(2);
+
+    hud.destroy();
+    deathLeave.dispatch('click');
+    expect(onLeave).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves no exit control behind when the shell wires no way out', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement, {});
+
+    hud.render(state({ playerDead: false }));
+    expect(byTestId(root, 'combat-leave').hidden).toBe(true);
+    expect(byTestId(root, 'combat-death-leave').hidden).toBe(true);
+    hud.destroy();
   });
 
   it('shows the empty posture state when no stance is active', () => {

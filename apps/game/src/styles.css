@@ -76,6 +76,53 @@ body {
 }
 
 .hunting-places__header,
+/* The run the player just left, read where the next one is chosen. */
+.hunting-places__summary {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #f1d78b;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__summary[data-outcome="died"] {
+  border-left-color: #ffb5a8;
+}
+
+.hunting-places__summary-title {
+  margin: 0;
+  color: #f1d78b;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hunting-places__summary[data-outcome="died"] .hunting-places__summary-title {
+  color: #ffb5a8;
+}
+
+.hunting-places__summary-banked {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: #e5edff;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__summary-empty {
+  color: #9fb4d5;
+}
+
+.hunting-places__summary-totals {
+  margin: 0.6rem 0 0;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .hunting-places__list {
   width: min(100%, 78rem);
   margin: 0 auto;
@@ -1417,6 +1464,31 @@ body {
   pointer-events: none;
 }
 
+/* The way out of the run. It shares the alerts band, which is inert by
+   default, so it has to opt back into the pointer itself. */
+[data-testid="combat-leave"] {
+  min-height: 1.6rem;
+  padding: 0.15rem 0.7rem;
+  border: 1px solid rgb(241 215 139 / 52%);
+  border-radius: 0.35rem;
+  color: #f1d78b;
+  background: rgb(12 23 42 / 88%);
+  font: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+[data-testid="combat-leave"]:hover,
+[data-testid="combat-leave"]:focus-visible {
+  border-color: #fff0b7;
+  color: #fff0b7;
+  outline: none;
+}
+
 [data-testid="combat-rejection"] {
   margin: 0;
   padding: 0.25rem 0.5rem;
@@ -1774,7 +1846,8 @@ body {
   text-transform: uppercase;
 }
 
-[data-testid="combat-restart"] {
+[data-testid="combat-restart"],
+[data-testid="combat-death-leave"] {
   min-height: 2rem;
   border: 1px solid rgb(123 161 216 / 58%);
   border-radius: 0.35rem;
@@ -1786,7 +1859,9 @@ body {
 }
 
 [data-testid="combat-restart"]:hover,
-[data-testid="combat-restart"]:focus-visible {
+[data-testid="combat-restart"]:focus-visible,
+[data-testid="combat-death-leave"]:hover,
+[data-testid="combat-death-leave"]:focus-visible {
   border-color: #9ec4ff;
   background: rgb(45 102 170 / 78%);
   outline: none;

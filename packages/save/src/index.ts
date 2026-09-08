@@ -25,4 +25,5 @@ export {
   type ResumeDecision,
   type ResumeRejection,
   type RunIdentity,
+  type RunOutcome,
 } from './session/index.ts';

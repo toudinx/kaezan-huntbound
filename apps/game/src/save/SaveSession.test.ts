@@ -242,6 +242,39 @@ describe('createSaveSession', () => {
     saveSession.destroy();
   });
 
+  it('drops the bag and the credit when the run ends in a death, checkpoint included', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const saveSession = createSaveSession(repository, { everyTicks: 1 });
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    const bag = [{ itemKey: 'item:tibia:gold-coin', count: 7 }];
+    saveSession.attachRun({
+      identity: TEST_IDENTITY,
+      driver: boot.driver,
+      getBag: () => bag,
+    });
+
+    // The checkpoint writes the bag first, so the death has to clear a session
+    // that is already on disk rather than one that only exists in memory.
+    saveSession.onTick(1);
+    await saveSession.pagehide();
+    await expect(repository.load()).resolves.toMatchObject({
+      session: { bag },
+    });
+
+    await saveSession.finish('died');
+
+    await expect(repository.load()).resolves.toMatchObject({
+      stash: [],
+      completedRuns: 0,
+      session: null,
+    });
+    expect(saveSession.getState().bag).toEqual([]);
+    saveSession.destroy();
+  });
+
   it('flushes an in-flight checkpoint on pagehide', async () => {
     const held = createHoldableDriver();
     held.holdNextWrite();

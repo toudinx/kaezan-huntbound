@@ -64,6 +64,27 @@ describe('consolidateRun', () => {
     expect(draft.stash).toEqual([{ itemKey: 'item:tibia:meat', count: 2 }]);
   });
 
+  it('dying clears the session without banking the bag or crediting the run', () => {
+    const draft = draftFrom(
+      saveWithSession(
+        makeSession({
+          bag: [
+            { itemKey: 'item:tibia:gold-coin', count: 9 },
+            { itemKey: 'item:tibia:meat', count: 2 },
+          ],
+        }),
+        [{ itemKey: 'item:tibia:arrow', count: 12 }],
+        5,
+      ),
+    );
+
+    consolidateRun(draft, 'died');
+
+    expect(draft.completedRuns).toBe(5);
+    expect(draft.session).toBeNull();
+    expect(draft.stash).toEqual([{ itemKey: 'item:tibia:arrow', count: 12 }]);
+  });
+
   it('consolidating twice adds the bag only once', () => {
     const draft = draftFrom(
       saveWithSession(

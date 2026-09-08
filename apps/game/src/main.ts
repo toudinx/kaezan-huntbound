@@ -39,7 +39,10 @@ import {
 import { installAssetRuntimeProbe } from './assets/AssetRuntimeProbe';
 import { createAssetRuntime } from './assets/createAssetRuntime';
 import { createSceneBridge } from './bridge/SceneBridge';
-import { createHuntCombatViewModel } from './hunt/CombatViewModel';
+import {
+  type CombatViewModel,
+  createHuntCombatViewModel,
+} from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
 import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
 import { huntSlug, readHuntCharacter } from './hunt/readHuntCharacter';
@@ -56,6 +59,7 @@ import {
 import { mountAppShell } from './ui/AppShell';
 import {
   type HuntingPlacesScreen,
+  type HuntRunSummary,
   mountHuntingPlaces,
 } from './ui/HuntingPlaces';
 
@@ -331,6 +335,16 @@ export async function bootstrapApp(
     let unsubscribeSaveTick: (() => void) | undefined;
     let unsubscribeSaveState: (() => void) | undefined;
     let pageHideHandler: (() => void) | undefined;
+    let combatViewModel: CombatViewModel | undefined;
+    let destroyRenderer: (() => Promise<void>) | undefined;
+    let unloadAssets: (() => Promise<void>) | undefined;
+    // Death consolidates the run the moment it happens rather than when a
+    // button is pressed, so a reload on the death overlay cannot bring the lost
+    // bag back. The promise is kept because restarting and leaving both have to
+    // wait for that write before they touch the session again.
+    let deathConsolidation: Promise<void> | undefined;
+    let leaving = false;
+    const runDisposers: (() => void)[] = [];
     const onSaveError = (error: unknown): void => {
       publishSaveError(bridge, error);
     };
@@ -342,6 +356,45 @@ export async function bootstrapApp(
       unsubscribeSaveEvents?.();
       unsubscribeSaveTick?.();
       saveSession?.destroy();
+    };
+    const disposeRunSurfaces = (): void => {
+      for (const dispose of runDisposers.splice(0)) dispose();
+      inputMap?.detach();
+      disposeSave();
+      appShell?.destroy();
+      appShell = undefined;
+      setAssetReadiness(shellRoot, false, 0);
+    };
+    const isPlayerDead = (): boolean =>
+      combatViewModel?.snapshot().playerDead === true;
+    const consolidateOnDeath = (): void => {
+      if (deathConsolidation !== undefined || leaving || !isPlayerDead()) {
+        return;
+      }
+      deathConsolidation = saveSession?.finish('died');
+    };
+    const leaveRun = async (): Promise<void> => {
+      if (leaving) return;
+      leaving = true;
+      await deathConsolidation;
+      const dead = isPlayerDead();
+      // The bag the run is about to bank, read where `finish` reads it, so the
+      // atlas lists exactly what reached the stash.
+      const banked = dead ? [] : (combatViewModel?.snapshot().bag ?? []);
+      if (!dead) {
+        await saveSession?.finish('completed');
+      }
+      const settled = saveSession?.getState();
+      disposeRunSurfaces();
+      await destroyRenderer?.();
+      await unloadAssets?.();
+      showHuntingPlaces({
+        outcome: dead ? 'died' : 'completed',
+        huntName: huntEntry.displayName,
+        banked,
+        stash: settled?.stash ?? [],
+        completedRuns: settled?.completedRuns ?? 0,
+      });
     };
     const publishHuntBootstrapError = (error: unknown): void => {
       inputMap?.detach();
@@ -400,7 +453,7 @@ export async function bootstrapApp(
       let huntAssetsByKey = new Map<string, ResolvedAsset>();
       const resolveHuntAsset = (key: string): ResolvedAsset | undefined =>
         huntAssetsByKey.get(key);
-      const combatViewModel = createHuntCombatViewModel(
+      const activeCombatViewModel = createHuntCombatViewModel(
         runtime,
         1 as EntityId,
         'player',
@@ -410,6 +463,7 @@ export async function bootstrapApp(
         character,
         scenarioResult.value.itemKeys,
       );
+      combatViewModel = activeCombatViewModel;
       const identity = {
         huntId: hunt.huntId,
         scenarioId: scenario.scenarioId,
@@ -434,8 +488,8 @@ export async function bootstrapApp(
       const activeDriver = saveBoot.driver;
       driver = activeDriver;
       runIdentity = identity;
-      combatViewModel.restoreSnapshot(activeDriver.snapshot());
-      combatViewModel.restoreBag(saveBoot.bag);
+      activeCombatViewModel.restoreSnapshot(activeDriver.snapshot());
+      activeCombatViewModel.restoreBag(saveBoot.bag);
 
       inputMap = createInputMap();
       const inputTarget =
@@ -446,7 +500,7 @@ export async function bootstrapApp(
       appShell = appShellMount(uiRoot, bridge, {
         input: inputMap,
         combat: {
-          viewModel: combatViewModel,
+          viewModel: activeCombatViewModel,
           onRestart: () => {
             const activeDriver = driver;
             const activeIdentity = runIdentity;
@@ -457,13 +511,20 @@ export async function bootstrapApp(
             ) {
               return;
             }
-            void saveSession.finish('abandoned').then(() => {
+            // The death write is already in flight; reattaching before it
+            // settles would hand the reopened run to the transaction's own
+            // cleanup and leave it without a checkpoint scheduler.
+            void Promise.resolve(deathConsolidation).then(() => {
+              deathConsolidation = undefined;
               saveSession?.attachRun({
                 identity: activeIdentity,
                 driver: activeDriver,
-                getBag: () => combatViewModel.snapshot().bag,
+                getBag: () => activeCombatViewModel.snapshot().bag,
               });
             });
+          },
+          onLeave: () => {
+            void leaveRun();
           },
           region: hunt.region,
           transitions: hunt.transitions.entries,
@@ -501,7 +562,8 @@ export async function bootstrapApp(
         });
       });
       unsubscribeSaveEvents = bridge.subscribeEvents(() => {
-        saveSession?.updateBag(combatViewModel.snapshot().bag);
+        saveSession?.updateBag(activeCombatViewModel.snapshot().bag);
+        consolidateOnDeath();
       });
       unsubscribeSaveTick = bridge.subscribeTick((tick) => {
         saveSession?.onTick(tick);
@@ -536,8 +598,15 @@ export async function bootstrapApp(
       saveSession.attachRun({
         identity,
         driver: activeDriver,
-        getBag: () => combatViewModel.snapshot().bag,
+        getBag: () => activeCombatViewModel.snapshot().bag,
       });
+      // A run resumed from a save written after the player died comes back
+      // already dead, and its bag is owed to the same rule as a fresh death.
+      consolidateOnDeath();
+      unloadAssets = async () => {
+        await activeAssetRuntime.unload();
+        await huntAssetRuntime.unload();
+      };
       const gameFactory = overrides.createGame ?? createGame;
       const gameRuntime = gameFactory(gameRoot, bridge, {
         hunt,
@@ -549,7 +618,8 @@ export async function bootstrapApp(
         driver: activeDriver,
         abilities: scenario.abilities,
         conditions: scenario.conditions,
-        targetDetailsByBlueprint: combatViewModel.targetDetailsByBlueprint,
+        targetDetailsByBlueprint:
+          activeCombatViewModel.targetDetailsByBlueprint,
       });
       const viewportFactory =
         overrides.createViewportController ?? createViewportController;
@@ -598,13 +668,18 @@ export async function bootstrapApp(
         });
       }
 
+      // Leaving the hunt and a hot reload tear down the same surfaces; the only
+      // difference is that HMR hands the Phaser teardown to the next module
+      // instead of waiting for it here.
+      runDisposers.push(
+        unsubscribePerformanceMark,
+        disposeLifecycle,
+        disposeViewport,
+      );
+      destroyRenderer = destroyGame;
+
       function disposeShell(data: ShellHmrData) {
-        unsubscribePerformanceMark();
-        disposeSave();
-        inputMap?.detach();
-        disposeLifecycle();
-        disposeViewport();
-        appShell?.destroy();
+        disposeRunSurfaces();
         data.phaserDestroyed = destroyGame();
       }
 
@@ -616,9 +691,30 @@ export async function bootstrapApp(
     }
   };
 
-  selectionScreen = mountSelection(uiRoot, huntIndex, (hunt) => {
-    void startSelectedHunt(hunt);
-  });
+  /**
+   * The atlas is a screen the player comes back to, not a splash the boot
+   * sequence passes through once. Remounting it here -- with the shell torn
+   * down and the bridge published back to `hunting` -- is what makes leaving a
+   * hunt a move inside the app instead of a reload.
+   *
+   * A declaration rather than a `const`, because it and `startSelectedHunt`
+   * each reach for the other and only one of the two can be second.
+   */
+  function showHuntingPlaces(summary?: HuntRunSummary): void {
+    selectionStarted = false;
+    bridge.publish(initialShellSnapshot());
+    selectionScreen?.destroy();
+    selectionScreen = mountSelection(
+      uiRoot,
+      huntIndex,
+      (hunt) => {
+        void startSelectedHunt(hunt);
+      },
+      summary,
+    );
+  }
+
+  showHuntingPlaces();
 }
 
 if (typeof document !== 'undefined') {

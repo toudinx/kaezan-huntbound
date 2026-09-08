@@ -1,12 +1,12 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01 implementada nas fontes; artefatos gerados pendentes de regeneração.
-**Próxima:** PB-13-02 elegível depois de regenerar o catálogo (B27).
+**Estado:** PB-13-01 e PB-13-02 implementadas nas fontes; artefatos gerados e gates pendentes.
+**Próxima:** PB-13-03 elegível depois de regenerar o catálogo e rodar os gates (B27).
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
 | PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `920227d` |
-| PB-13-02 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-13-02 | done (gates pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | — |
 | PB-13-03 | pending | Claude Opus 5 `xhigh` | — | — |
 | PB-13-04 | pending | Claude Opus 5 `xhigh` | — | — |
 | PB-13-05 | pending | GPT-5.6 Luna `xhigh` | — | — |
@@ -17,10 +17,10 @@
 
 ## Bloqueios
 
-**B21 — aberto, endereçado pela PB-13-02.** Herdado do PB-10. `finish('completed')` não tem call
-site em código de produção: `apps/game/src/main.ts:460` só chama `'abandoned'` no `pagehide`,
-enquanto `packages/save/src/session/consolidateRun.ts:34` já implementa o ramo `'completed'`.
-`completedRuns` é permanentemente 0 e não existe momento de recompensa.
+**B21 — fechado pela PB-13-02.** Herdado do PB-10. `finish('completed')` agora tem call site: o
+botão `combat-leave` sai da hunt, consolida a run uma vez e devolve o jogador ao atlas sem F5, com o
+resumo do que foi depositado. A morte passou a consolidar como `'died'` no instante em que acontece,
+que é a decisão 1 do README aplicada ao save.
 
 **B24 — endereçado pela PB-13-01 nas fontes; fecha com a regeneração do B27.** A escada de poder
 do Knight não sobe do lado ofensivo: `sword: 60` e `weaponAttack: 14` são idênticos no Orc Fortress
@@ -55,6 +55,14 @@ Numa máquina com toolchain e `HUNTBOUND_CANARY_SOURCE`: `node tools/content-cat
 import-canary`, `corepack pnpm content:catalog:rebuild`, `corepack pnpm content:generate`, depois
 `biome check .`, `corepack pnpm test:content` e `corepack pnpm content:check`. Vermelho ali é
 `PB-13-01-FIX-01`.
+
+A PB-13-02 correu no mesmo checkout e herdou o mesmo bloqueio: nenhum gate rodou. A linha dela é
+`biome check .`, os testes diretamente afetados
+(`packages/save/src/session/consolidateRun.test.ts`, `apps/game/src/save/SaveSession.test.ts`,
+`apps/game/src/ui/{CombatHud,AppShell,HuntingPlaces}.test.ts`), `save:check` e
+`architecture:check`. Sem toolchain, o que foi verificado no lugar: os arquivos tocados passam o
+syntax-check do Node, e `consolidateRun` foi executado à parte nos quatro casos (`completed`,
+`abandoned`, `died`, chamada dupla). Isso não substitui os gates. Vermelho ali é `PB-13-02-FIX-01`.
 
 ## Decisões congeladas
 

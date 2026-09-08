@@ -35,6 +35,7 @@ export interface AppShellOptions {
   readonly combat?: {
     readonly viewModel: CombatViewModel;
     readonly onRestart?: () => void;
+    readonly onLeave?: () => void;
     readonly region?: CombatHudOptions['region'];
     readonly transitions?: CombatHudOptions['transitions'];
     readonly playerStart?: CombatHudOptions['playerStart'];
@@ -152,11 +153,17 @@ export function mountAppShell(
   if (combatViewModel !== undefined) {
     const combatHudOptions: CombatHudOptions = {
       onRestart: () => {
-        options.combat?.onRestart?.();
+        // The projection is cleared before the shell is told, because the
+        // shell reattaches the run and reads the bag through this view model:
+        // told first, it would reattach carrying the dead run's loot.
         combatViewModel.reset();
         combatHud?.render(combatViewModel.snapshot());
+        options.combat?.onRestart?.();
         bridge.requestRestart();
       },
+      ...(options.combat?.onLeave === undefined
+        ? {}
+        : { onLeave: options.combat.onLeave }),
       ...(options.combat?.region === undefined
         ? {}
         : { region: options.combat.region }),

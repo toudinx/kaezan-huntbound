@@ -537,7 +537,7 @@ for (const viewport of VIEWPORTS) {
     expectQuiet(watch);
   });
 
-  test(`abandons the run and keeps its loot without a pending session at ${viewport.width}x${viewport.height}`, async ({
+  test(`banks the run through the explicit exit and returns to the atlas at ${viewport.width}x${viewport.height}`, async ({
     saveBrowser,
   }) => {
     const watch: PageWatch = {
@@ -556,31 +556,39 @@ for (const viewport of VIEWPORTS) {
       'Run resumed',
     );
 
-    await page.locator('[data-testid="combat-restart"]').dispatchEvent('click');
-    await expect(page.locator('[data-testid="save-status"]')).toHaveText(
-      'Run abandoned',
+    // Leaving tears the cockpit down, so the save panel goes with it and the
+    // probe is the only reader left. The atlas is what the player sees, and it
+    // is where the run's credit is reported back.
+    await page.locator('[data-testid="combat-leave"]').click();
+    await expect(page.locator('[data-testid="hunt-run-summary"]')).toHaveCount(
+      1,
       { timeout: 15_000 },
     );
-    const afterAbandon = await waitForStash(page);
-    expect(afterAbandon.session).toBeNull();
-    expect(afterAbandon.completedRuns).toBe(0);
-    await expect(page.locator('[data-testid="save-run-bag"]')).toHaveText('');
+    await expect(
+      page.locator('[data-testid="hunt-run-summary"]'),
+    ).toHaveAttribute('data-outcome', 'completed');
+    const afterExit = await waitForStash(page);
+    expect(afterExit.session).toBeNull();
+    expect(afterExit.completedRuns).toBe(1);
 
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    // Re-entering without a reload is the point of the exit: the same page
+    // boots a fresh run over the banked stash.
     await selectHunt(page);
+    await waitForHuntBoot(page);
     await expect(page.locator('[data-testid="save-status"]')).toHaveText(
       'New run started',
       { timeout: 15_000 },
     );
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await selectHunt(page);
     await waitForHuntBoot(page);
-    const afterReload = await waitForStash(page);
-    expect(afterReload.session).toBeNull();
-    expect(afterReload.stash).toEqual(afterAbandon.stash);
+    const afterReload = await waitForStash(page, false);
     // Not `FIXTURE_STASH_TEXT`: the run keeps playing between resume and the
-    // restart click, and since PB-08-01 made the cave dense that window
-    // actually earns loot, so the count is wall-clock dependent. What must
-    // hold is that the panel renders exactly the stash the save kept, and that
-    // the stash is not empty.
+    // exit click, and since PB-08-01 made the cave dense that window actually
+    // earns loot, so the count is wall-clock dependent. What must hold is that
+    // the banked stash survived the reload and did not double.
+    expect(afterReload.stash).toEqual(afterExit.stash);
     expect(afterReload.stash.length).toBeGreaterThan(0);
     await expect(page.locator('[data-testid="save-stash"]')).toHaveText(
       formatStash(afterReload.stash),

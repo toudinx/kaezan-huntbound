@@ -150,4 +150,68 @@ describe('HuntingPlaces', () => {
     screen.destroy();
     expect(root.children).toHaveLength(0);
   });
+
+  it('reports what the completed run banked, and omits the summary when there is no run behind it', () => {
+    const document = new TestDocument();
+    const bare = document.createElement('div');
+    mountHuntingPlaces(
+      bare as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+    );
+    expect(findByTestId(bare, 'hunt-run-summary')).toBeUndefined();
+
+    const root = document.createElement('div');
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      {
+        outcome: 'completed',
+        huntName: 'Fabricated Cave',
+        banked: [{ itemKey: 'item:tibia:gold-coin', count: 14 }],
+        stash: [
+          { itemKey: 'item:tibia:gold-coin', count: 20 },
+          { itemKey: 'item:tibia:meat', count: 3 },
+        ],
+        completedRuns: 2,
+      },
+    );
+
+    const summary = findByTestId(root, 'hunt-run-summary');
+    if (summary === undefined) {
+      throw new Error('Missing test id hunt-run-summary');
+    }
+    expect(summary.getAttribute('data-outcome')).toBe('completed');
+    expect(summary.textContent).toContain('Left Fabricated Cave with the bag');
+    expect(summary.textContent).toContain('Gold Coin × 14');
+    expect(summary.textContent).toContain(
+      'Stash: 23 items · Runs completed: 2',
+    );
+  });
+
+  it('says the bag was lost when the run ended in a death', () => {
+    const document = new TestDocument();
+    const root = document.createElement('div');
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      {
+        outcome: 'died',
+        huntName: 'Fabricated Cave',
+        banked: [],
+        stash: [],
+        completedRuns: 0,
+      },
+    );
+
+    const summary = findByTestId(root, 'hunt-run-summary');
+    if (summary === undefined) {
+      throw new Error('Missing test id hunt-run-summary');
+    }
+    expect(summary.getAttribute('data-outcome')).toBe('died');
+    expect(summary.textContent).toContain('Died in Fabricated Cave');
+    expect(summary.textContent).toContain('The bag was lost');
+  });
 });

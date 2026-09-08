@@ -3,6 +3,7 @@ import type {
   HuntIndexCreature,
   HuntIndexEntry,
   HuntIndexLootEntry,
+  RunBagEntry,
 } from '../../../../packages/contracts/src/index.ts';
 
 export interface HuntingPlacesScreen {
@@ -10,6 +11,21 @@ export interface HuntingPlacesScreen {
 }
 
 export type HuntPlaceSelectionHandler = (hunt: HuntIndexEntry) => void;
+
+/**
+ * What the run the player just left was worth.
+ *
+ * The atlas is where a run ends, so it is the only place the reward can be
+ * read. `banked` is what the bag added to the stash, which is empty on a death
+ * by decision 1 of the PB-13 README.
+ */
+export interface HuntRunSummary {
+  readonly outcome: 'completed' | 'died';
+  readonly huntName: string;
+  readonly banked: readonly RunBagEntry[];
+  readonly stash: readonly RunBagEntry[];
+  readonly completedRuns: number;
+}
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
@@ -167,6 +183,67 @@ function createCreature(
   return article;
 }
 
+function countItems(entries: readonly RunBagEntry[]): number {
+  return entries.reduce((total, entry) => total + entry.count, 0);
+}
+
+function createRunSummary(
+  document: Document,
+  summary: HuntRunSummary,
+): HTMLElement {
+  const section = document.createElement('section');
+  section.className = 'hunting-places__summary';
+  section.setAttribute('data-testid', 'hunt-run-summary');
+  section.setAttribute('data-outcome', summary.outcome);
+  section.setAttribute('role', 'status');
+
+  const title = createTextElement(
+    document,
+    'h2',
+    summary.outcome === 'completed'
+      ? `Left ${summary.huntName} with the bag`
+      : `Died in ${summary.huntName}`,
+    'hunting-places__summary-title',
+  );
+  title.setAttribute('data-testid', 'hunt-run-summary-title');
+
+  const banked = document.createElement('ul');
+  banked.className = 'hunting-places__summary-banked';
+  banked.setAttribute('data-testid', 'hunt-run-summary-banked');
+  if (summary.banked.length === 0) {
+    banked.append(
+      createTextElement(
+        document,
+        'li',
+        summary.outcome === 'completed'
+          ? 'Nothing to bank'
+          : 'The bag was lost',
+        'hunting-places__summary-empty',
+      ),
+    );
+  } else {
+    banked.append(
+      ...summary.banked.map((entry) => {
+        const item = document.createElement('li');
+        item.setAttribute('data-testid', 'hunt-run-summary-banked-entry');
+        item.textContent = `${formatContentName(entry.itemKey)} × ${formatInteger(entry.count)}`;
+        return item;
+      }),
+    );
+  }
+
+  const totals = createTextElement(
+    document,
+    'p',
+    `Stash: ${formatInteger(countItems(summary.stash))} items · Runs completed: ${formatInteger(summary.completedRuns)}`,
+    'hunting-places__summary-totals',
+  );
+  totals.setAttribute('data-testid', 'hunt-run-summary-totals');
+
+  section.append(title, banked, totals);
+  return section;
+}
+
 function createHuntCard(
   document: Document,
   hunt: HuntIndexEntry,
@@ -264,6 +341,7 @@ export function mountHuntingPlaces(
   root: HTMLElement,
   index: HuntIndex,
   onSelect: HuntPlaceSelectionHandler,
+  summary?: HuntRunSummary,
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -294,6 +372,9 @@ export function mountHuntingPlaces(
     'hunting-places__intro',
   );
   header.append(eyebrow, title, intro);
+  if (summary !== undefined) {
+    header.append(createRunSummary(document, summary));
+  }
 
   const list = document.createElement('section');
   list.className = 'hunting-places__list';

@@ -8,4 +8,5 @@ export type {
   ResumeDecision,
   ResumeRejection,
   RunIdentity,
+  RunOutcome,
 } from './types.ts';

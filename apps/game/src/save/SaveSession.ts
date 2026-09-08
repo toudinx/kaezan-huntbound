@@ -12,6 +12,7 @@ import {
   decideResume,
   type ResumeDecision,
   type RunIdentity,
+  type RunOutcome,
   SaveError,
   type SaveRepository,
 } from '../../../../packages/save/src/index.ts';
@@ -43,7 +44,7 @@ export interface SaveSessionController extends SaveStateSource {
   attachRun(run: SaveRunAttachment): void;
   updateBag(bag: readonly RunBagEntry[]): void;
   onTick(tick: number): void;
-  finish(outcome: 'completed' | 'abandoned'): Promise<void>;
+  finish(outcome: RunOutcome): Promise<void>;
   pagehide(): Promise<void>;
   export(): Promise<string>;
   import(serialized: string): Promise<void>;
@@ -56,6 +57,12 @@ const EMPTY_STATE: SaveInventoryState = {
   bag: [],
   stash: [],
   completedRuns: 0,
+};
+
+const finishMessages: Record<RunOutcome, string> = {
+  completed: 'Run completed',
+  abandoned: 'Run abandoned',
+  died: 'Run lost',
 };
 
 function copyBag(bag: readonly RunBagEntry[]): readonly RunBagEntry[] {
@@ -311,14 +318,7 @@ export function createSaveSession(
           };
         });
         latestBag = [];
-        publish(
-          saveState(
-            result,
-            [],
-            'ready',
-            outcome === 'completed' ? 'Run completed' : 'Run abandoned',
-          ),
-        );
+        publish(saveState(result, [], 'ready', finishMessages[outcome]));
       } catch (error) {
         publishError('Run consolidation failed', error);
       } finally {
