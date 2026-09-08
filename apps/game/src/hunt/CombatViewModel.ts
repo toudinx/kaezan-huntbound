@@ -31,6 +31,8 @@ export interface CombatViewModelOptions {
   readonly itemKeys: readonly string[];
   readonly maxHealthByBlueprint: ReadonlyMap<string, number>;
   readonly maxResourceByBlueprint: ReadonlyMap<string, number>;
+  /** What each creature is worth when the player is the one who killed it. */
+  readonly experienceByBlueprint?: ReadonlyMap<string, number>;
   readonly targetDetailsByBlueprint?: ReadonlyMap<string, CombatTargetDetails>;
   readonly initialFloor?: number;
 }
@@ -102,6 +104,19 @@ export interface CombatLootLogEntry {
   readonly tick: number;
 }
 
+/**
+ * The persistent character's experience, seen from inside a run.
+ *
+ * `total` is what the save holds; `runGained` is the slice of it this run
+ * produced, which is what the atlas reports when the run ends. Death keeps both
+ * -- decision 1 of the PB-13 README puts the risk inside the run, never on the
+ * account.
+ */
+export interface CombatExperienceView {
+  readonly total: number;
+  readonly runGained: number;
+}
+
 export interface CombatViewState {
   readonly tick: number;
   readonly player: CombatVitalsView | null;
@@ -121,6 +136,7 @@ export interface CombatViewState {
   } | null;
   readonly lootLog: readonly CombatLootLogEntry[];
   readonly bag: readonly RunBagEntry[];
+  readonly experience: CombatExperienceView;
   readonly playerDead: boolean;
   readonly lastRejection: CombatCommandRejection | null;
 }
@@ -129,6 +145,7 @@ export interface CombatViewModel {
   readonly targetDetailsByBlueprint: ReadonlyMap<string, CombatTargetDetails>;
   handle(events: readonly SimulationEvent[]): void;
   restoreBag(bag: readonly RunBagEntry[]): void;
+  restoreExperience(total: number): void;
   restoreSnapshot(snapshot: SimulationSnapshot): void;
   setTick(tick: number): void;
   setTarget(entityId: EntityId | null): void;
@@ -212,6 +229,8 @@ export function createCombatViewModel(
    */
   let sawRoster = false;
   let bag: readonly RunBagEntry[] = [];
+  let experienceTotal = 0;
+  let experienceRunGained = 0;
   let lootLog: readonly CombatLootLogEntry[] = [];
   let lastRejection: CombatCommandRejection | null = null;
   let minimapRevision = 0;
@@ -373,6 +392,9 @@ export function createCombatViewModel(
     if (!preserveBag) {
       bag = [];
     }
+    // The banked total survives a restart -- it was written the moment the
+    // player died -- but the run's own share starts over with the run.
+    experienceRunGained = 0;
     lootLog = [];
     lastRejection = null;
     targetSelection.reset();
@@ -524,6 +546,17 @@ export function createCombatViewModel(
           if (event.payload.entityId === options.playerEntityId) {
             playerDead = true;
           } else {
+            // Experience follows the same rule the kernel already applies to
+            // loot: it goes to whoever landed the kill, and only then.
+            if (event.payload.killerEntityId === options.playerEntityId) {
+              const blueprintId = actorFor(event.payload.entityId)?.blueprintId;
+              const reward =
+                blueprintId === undefined
+                  ? 0
+                  : (options.experienceByBlueprint?.get(blueprintId) ?? 0);
+              experienceTotal += reward;
+              experienceRunGained += reward;
+            }
             actorsById.delete(event.payload.entityId);
             invalidateMinimap();
           }
@@ -698,6 +731,7 @@ export function createCombatViewModel(
       playerHaste,
       lootLog: Object.freeze(lootLog.map((entry) => ({ ...entry }))),
       bag: Object.freeze(bag.map((entry) => ({ ...entry }))),
+      experience: { total: experienceTotal, runGained: experienceRunGained },
       // A run resumed from a save written after the player died never replays
       // his `actor/died`, so the absence of him from the roster is the only
       // evidence left that he is gone. Without this the hunt came back
@@ -715,6 +749,10 @@ export function createCombatViewModel(
     handle,
     restoreBag: (entries) => {
       bag = entries.map((entry) => ({ ...entry }));
+    },
+    restoreExperience: (total) => {
+      experienceTotal = Number.isFinite(total) ? Math.max(0, total) : 0;
+      experienceRunGained = 0;
     },
     restoreSnapshot: (state) => {
       clearProjectionState(true);
@@ -1046,6 +1084,7 @@ export function createHuntCombatViewModel(
     : conditions;
   const maxHealthByBlueprint = new Map<string, number>();
   const maxResourceByBlueprint = new Map<string, number>();
+  const experienceByBlueprint = new Map<string, number>();
   const blueprintById = new Map(
     blueprints.map((blueprint) => [blueprint.blueprintId, blueprint]),
   );
@@ -1061,6 +1100,7 @@ export function createHuntCombatViewModel(
     if (blueprintId === undefined) continue;
     maxHealthByBlueprint.set(blueprintId, creature.stats.health);
     maxResourceByBlueprint.set(blueprintId, 0);
+    experienceByBlueprint.set(blueprintId, creature.stats.experience);
     targetDetailsByBlueprint.set(blueprintId, {
       blueprintId,
       displayName: creature.displayName,
@@ -1081,6 +1121,7 @@ export function createHuntCombatViewModel(
     itemKeys,
     maxHealthByBlueprint,
     maxResourceByBlueprint,
+    experienceByBlueprint,
     targetDetailsByBlueprint,
   });
 }

@@ -24,6 +24,7 @@ export {
   decideResume,
   type ResumeDecision,
   type ResumeRejection,
+  type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
 } from './session/index.ts';

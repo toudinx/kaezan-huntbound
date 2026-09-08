@@ -175,6 +175,7 @@ describe('HuntingPlaces', () => {
           { itemKey: 'item:tibia:meat', count: 3 },
         ],
         completedRuns: 2,
+        experienceGained: 1_240,
       },
     );
 
@@ -188,6 +189,7 @@ describe('HuntingPlaces', () => {
     expect(summary.textContent).toContain(
       'Stash: 23 items · Runs completed: 2',
     );
+    expect(summary.textContent).toContain('Experience earned: 1,240 XP');
   });
 
   it('says the bag was lost when the run ended in a death', () => {
@@ -203,6 +205,7 @@ describe('HuntingPlaces', () => {
         banked: [],
         stash: [],
         completedRuns: 0,
+        experienceGained: 810,
       },
     );
 
@@ -213,5 +216,36 @@ describe('HuntingPlaces', () => {
     expect(summary.getAttribute('data-outcome')).toBe('died');
     expect(summary.textContent).toContain('Died in Fabricated Cave');
     expect(summary.textContent).toContain('The bag was lost');
+    // Decision 1: the risk lives inside the run. The bag is gone, the
+    // experience is not.
+    expect(summary.textContent).toContain('Experience earned: 810 XP');
+  });
+
+  it('shows the persistent character above the list, whatever hunt is chosen', () => {
+    const document = new TestDocument();
+    const bare = document.createElement('div');
+    mountHuntingPlaces(
+      bare as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+    );
+    expect(findByTestId(bare, 'hunt-character')).toBeUndefined();
+
+    const root = document.createElement('div');
+    mountHuntingPlaces(
+      root as unknown as HTMLElement,
+      { schemaVersion: 1, hunts: [hunt] },
+      () => undefined,
+      undefined,
+      { experience: 2_550 },
+    );
+
+    const panel = findByTestId(root, 'hunt-character');
+    if (panel === undefined) {
+      throw new Error('Missing test id hunt-character');
+    }
+    expect(panel.getAttribute('data-level')).toBe('8');
+    expect(panel.textContent).toContain('Knight · Level 8');
+    expect(panel.textContent).toContain('100 / 750 XP to level 9');
   });
 });

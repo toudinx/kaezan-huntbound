@@ -1,13 +1,14 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01 e PB-13-02 implementadas nas fontes; artefatos gerados e gates pendentes.
-**Próxima:** PB-13-03 elegível depois de regenerar o catálogo e rodar os gates (B27).
+**Estado:** PB-13-01, PB-13-02 e PB-13-03 implementadas nas fontes; artefatos gerados e gates
+pendentes.
+**Próxima:** PB-13-04 elegível depois de regenerar catálogo e fixture de save e rodar os gates (B27).
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
 | PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `920227d` |
 | PB-13-02 | done (gates pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `fedebd5` |
-| PB-13-03 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-13-03 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `PENDING` |
 | PB-13-04 | pending | Claude Opus 5 `xhigh` | — | — |
 | PB-13-05 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
@@ -55,6 +56,21 @@ Numa máquina com toolchain e `HUNTBOUND_CANARY_SOURCE`: `node tools/content-cat
 import-canary`, `corepack pnpm content:catalog:rebuild`, `corepack pnpm content:generate`, depois
 `biome check .`, `corepack pnpm test:content` e `corepack pnpm content:check`. Vermelho ali é
 `PB-13-01-FIX-01`.
+
+A PB-13-03 correu no mesmo checkout e herdou o mesmo bloqueio, com uma consequência a mais: ela
+sobe `SAVE_SCHEMA_VERSION` de 2 para 3 (campo `character`, autorizado pela card), e isso **move os
+goldens de save** — `packages/test-fixtures/save/pb06/{checkpoint.golden.json,export.golden.txt,
+migrated.golden.json}`, seus `.sha256` e `hashes.md`. Eles não foram regenerados porque o CLI precisa
+de Node, e o guard de agente recusa edição manual de `.golden.` — corretamente. Numa máquina com
+toolchain, regenere com `node --no-warnings --experimental-transform-types tools/save/cli.ts run
+--dir packages/test-fixtures/save/pb06` e depois rode `corepack pnpm save:check`. A linha da task é
+`biome check .`, os testes diretamente afetados
+(`packages/content/src/runtime/knightProgression.test.ts`,
+`packages/save/src/{migrations/migrateSaveDocument,session/checkpointScheduler}.test.ts`,
+`apps/game/src/{save/SaveSession,hunt/CombatViewModel,ui/CombatHud,ui/HuntingPlaces,main}.test.ts`),
+`save:check` depois da regeneração acima e `architecture:check`. `simulation:check`, `hunt:check`,
+`combat:check` e `content:check` **não** deveriam se mover: a escada autorada continua intacta e os
+tools de fixture ainda leem `runtime.characters[0]`. Vermelho ali é `PB-13-03-FIX-01`.
 
 A PB-13-02 correu no mesmo checkout e herdou o mesmo bloqueio: nenhum gate rodou. A linha dela é
 `biome check .`, os testes diretamente afetados

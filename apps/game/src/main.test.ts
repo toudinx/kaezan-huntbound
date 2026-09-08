@@ -113,6 +113,7 @@ vi.mock('./hunt/CombatViewModel', () => ({
     return {
       handle: () => undefined,
       restoreBag: () => undefined,
+      restoreExperience: () => undefined,
       restoreSnapshot: (snapshot: unknown) => {
         harness.events.push('restoreSnapshot');
         harness.restoredSnapshots.push(snapshot);
@@ -120,7 +121,10 @@ vi.mock('./hunt/CombatViewModel', () => ({
       setTick: () => undefined,
       setTarget: () => undefined,
       selectTarget: () => undefined,
-      snapshot: () => ({ bag: [] }),
+      snapshot: () => ({
+        bag: [],
+        experience: { total: 0, runGained: 0 },
+      }),
       reset: () => undefined,
     };
   },
@@ -217,6 +221,7 @@ function createTestSaveSession() {
     bag: [],
     stash: [],
     completedRuns: 0,
+    character: { experience: 0 },
   };
   return {
     getState: () => state,
@@ -230,9 +235,11 @@ function createTestSaveSession() {
       decision: { kind: 'fresh' as const },
       driver: options.createDriver(undefined),
       bag: [],
+      character: { experience: 0 },
     }),
     attachRun: () => undefined,
     updateBag: () => undefined,
+    updateExperience: () => undefined,
     onTick: () => undefined,
     finish: async () => undefined,
     pagehide: async () => undefined,
@@ -372,7 +379,7 @@ describe('main asset bootstrap', () => {
     );
   });
 
-  it('boots Orc Fortress with its own hunt character, not the first knight in the catalog', async () => {
+  it('boots every hunt with the one persistent character, at the level the save holds', async () => {
     harness.selectedHuntId = 'hunt:tibia:orc-fortress';
     const roots = createRoots();
     const main = await loadBootstrapApp();
@@ -397,11 +404,13 @@ describe('main asset bootstrap', () => {
     expect(harness.shellSnapshots.at(-1)?.phase).not.toBe('error');
     expect(harness.viewModelCalls).toHaveLength(1);
     const viewModelCharacter = harness.viewModelCalls[0]?.[6] as
-      | { readonly stableKey?: string }
+      | { readonly stableKey?: string; readonly level?: number }
       | undefined;
-    expect(viewModelCharacter?.stableKey).toBe(
-      'character:huntbound:knight-orc-fortress',
-    );
+    // Choosing Orc Fortress used to hand the player a level 25 sheet built for
+    // it. The hunt now names a place and nothing else: a fresh save walks in at
+    // level 1, and the hunt stays open anyway.
+    expect(viewModelCharacter?.stableKey).toBe('character:huntbound:knight');
+    expect(viewModelCharacter?.level).toBe(1);
   });
 
   it('mounts the shell before reporting an invalid hunt bootstrap', async () => {

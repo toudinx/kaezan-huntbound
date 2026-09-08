@@ -1,3 +1,4 @@
+import { knightProgressAtExperience } from '../../../../packages/content/src/index.ts';
 import type {
   GridPosition,
   TransitionEntry,
@@ -154,6 +155,13 @@ export function mountCombatHud(
   const rejection = createElement(document, 'p', 'combat-rejection');
   rejection.setAttribute('aria-live', 'polite');
 
+  // Level and experience live in the same band as the exit, because both talk
+  // about the character and the run rather than about the fight in front of
+  // the player.
+  const levelReadout = createElement(document, 'p', 'combat-level');
+  levelReadout.className = 'combat-hud__level';
+  levelReadout.setAttribute('aria-live', 'polite');
+
   // The way out of the hunt sits over the top edge of the play window, in the
   // one band that is already reserved for things that talk to the player about
   // the run rather than about the fight.
@@ -166,7 +174,7 @@ export function mountCombatHud(
   leave.setAttribute('aria-label', 'Leave hunt and bank the run');
   leave.textContent = 'Leave hunt';
   leave.hidden = options.onLeave === undefined;
-  alerts.append(leave, rejection);
+  alerts.append(levelReadout, leave, rejection);
 
   const deathOverlay = createElement(
     document,
@@ -267,6 +275,18 @@ export function mountCombatHud(
       state.playerHaste === null
         ? 'Haste: Off'
         : `Haste: ${String(Math.ceil((state.playerHaste.remainingTicks * TICK_DURATION_MS) / 1000))}s`;
+
+    const progress = knightProgressAtExperience(state.experience.total);
+    levelReadout.setAttribute('data-level', String(progress.level));
+    levelReadout.setAttribute('data-experience', String(progress.experience));
+    levelReadout.setAttribute(
+      'data-run-experience',
+      String(state.experience.runGained),
+    );
+    const levelText = `Level ${progress.level} · ${progress.intoLevel} / ${progress.levelSpan} XP · +${state.experience.runGained} this run`;
+    if (levelReadout.textContent !== levelText) {
+      levelReadout.textContent = levelText;
+    }
 
     deck.render(state);
 

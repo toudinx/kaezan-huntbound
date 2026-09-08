@@ -48,6 +48,12 @@ const RunBagEntriesSchema = z
   .readonly()
   .superRefine(refineUniqueSortedItemKeys);
 
+export const CharacterProgressSchema = z
+  .object({
+    experience: nonNegativeInteger,
+  })
+  .strict();
+
 export const ActiveRunStateSchema = z
   .object({
     huntId: nonEmptyString,
@@ -62,6 +68,7 @@ export const ActiveRunStateSchema = z
 export const GameSaveSchema = z
   .object({
     schemaVersion: z.literal(SAVE_SCHEMA_VERSION),
+    character: CharacterProgressSchema,
     stash: RunBagEntriesSchema,
     completedRuns: nonNegativeInteger,
     session: ActiveRunStateSchema.nullable(),

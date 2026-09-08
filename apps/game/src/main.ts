@@ -11,6 +11,8 @@ import catalogBundleJson from '../../../packages/content/src/generated/pb-01-con
 import {
   buildHuntScenario,
   createContentRegistry,
+  knightSheetAtLevel,
+  levelForExperience,
   loadHuntDefinition,
   parseKnightPostures,
   projectRuntimeBundle,
@@ -20,6 +22,8 @@ import {
   type CatalogContentBundle,
   type CharacterDefinition,
   CharacterDefinitionSchema,
+  type CharacterProgress,
+  createEmptyCharacterProgress,
   createSeed,
   type EntityId,
   type HuntDefinition,
@@ -45,7 +49,7 @@ import {
 } from './hunt/CombatViewModel';
 import { createHuntRuntime } from './hunt/huntRuntime';
 import { createRestartableHuntDriver } from './hunt/RestartableHuntDriver';
-import { huntSlug, readHuntCharacter } from './hunt/readHuntCharacter';
+import { huntSlug } from './hunt/huntSlug';
 import { installKernelProbe, installSaveProbe } from './index';
 import { createInputMap } from './input/InputMap';
 import { createGame } from './phaser/createGame';
@@ -165,13 +169,6 @@ async function readHuntDefinition(
   );
 }
 
-function resolveHuntCharacter(
-  characters: readonly CharacterDefinition[],
-  hunt: Pick<HuntIndexEntry, 'huntId' | 'soloVocation'>,
-): CharacterDefinition {
-  return readKnightCharacter(readHuntCharacter(characters, hunt));
-}
-
 function readKnightCombatSelection(): {
   readonly character?: { readonly kit?: unknown };
   readonly postures?: unknown;
@@ -186,25 +183,26 @@ function readKnightPostures() {
   return parseKnightPostures(readKnightCombatSelection().postures);
 }
 
-function readKnightCharacter(
-  catalogCharacter: CharacterDefinition,
-): CharacterDefinition {
+/**
+ * The player's own character sheet at the level their save says they are.
+ *
+ * The hunt is no longer part of this: it names a place, not a build. Stats come
+ * from the Huntbound curve in `knightSheetAtLevel`, and the kit comes from the
+ * PB-05 selection, which is one open band from level 1 -- the whole five-action
+ * kit is in hand from the first minute, as decision 3 of the PB-13 README and
+ * rule 4 of the ADR-05 curation require.
+ */
+function readKnightCharacter(level: number): CharacterDefinition {
   const kit = readKnightCombatSelection().character?.kit;
   if (kit === undefined) {
     throw new Error('PB-05 selection character is missing its kit');
   }
   return CharacterDefinitionSchema.parse({
-    ...catalogCharacter,
-    spellKeys: undefined,
+    ...knightSheetAtLevel(level),
+    stableKey: 'character:huntbound:knight',
+    vocationKey: 'vocation:tibia:knight',
     kit,
   });
-}
-
-function createBrowserSaveSession(): SaveSessionController {
-  const repository: SaveRepository = createSaveRepository(
-    createIndexedDbSaveDriver(),
-  );
-  return createSaveSession(repository);
 }
 
 function downloadSave(document: Document, serialized: string): void {
@@ -288,6 +286,19 @@ export async function bootstrapApp(
 
   setAssetReadiness(shellRoot, false, 0);
   const bridge = createSceneBridge(initialShellSnapshot());
+  // One repository for the whole app rather than one per run: the atlas is a
+  // screen the player comes back to, and it has to be able to read the
+  // character before any run has been started.
+  const saveRepository: SaveRepository = createSaveRepository(
+    createIndexedDbSaveDriver(),
+  );
+  let character: CharacterProgress = createEmptyCharacterProgress();
+  try {
+    character = (await saveRepository.load()).character;
+  } catch {
+    // A save that cannot be read is a fresh character, not a dead boot: the
+    // session reports the failure properly once a run starts.
+  }
   const appShellMount = overrides.mountAppShell ?? mountAppShell;
   let huntIndex: HuntIndex;
   try {
@@ -381,10 +392,15 @@ export async function bootstrapApp(
       // The bag the run is about to bank, read where `finish` reads it, so the
       // atlas lists exactly what reached the stash.
       const banked = dead ? [] : (combatViewModel?.snapshot().bag ?? []);
+      const experienceGained =
+        combatViewModel?.snapshot().experience.runGained ?? 0;
       if (!dead) {
         await saveSession?.finish('completed');
       }
       const settled = saveSession?.getState();
+      // The atlas is remounted from here, so the character it shows is the one
+      // the run just finished writing.
+      character = settled?.character ?? character;
       disposeRunSurfaces();
       await destroyRenderer?.();
       await unloadAssets?.();
@@ -394,6 +410,7 @@ export async function bootstrapApp(
         banked,
         stash: settled?.stash ?? [],
         completedRuns: settled?.completedRuns ?? 0,
+        experienceGained,
       });
     };
     const publishHuntBootstrapError = (error: unknown): void => {
@@ -431,11 +448,16 @@ export async function bootstrapApp(
       const hunt = await readHuntDefinition(huntEntry);
       const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
       const registry = createContentRegistry(runtime);
-      const character = resolveHuntCharacter(runtime.characters, huntEntry);
+      // The sheet is fixed for the length of the run: the kernel is built from
+      // it. Levelling mid-hunt therefore banks the experience now and hands the
+      // bigger sheet to the next run, which is the same boundary the bag uses.
+      const knight = readKnightCharacter(
+        levelForExperience(character.experience),
+      );
       const postures = readKnightPostures();
       const scenarioResult = buildHuntScenario(
         hunt,
-        character,
+        knight,
         registry,
         huntSeed,
         { postures },
@@ -460,7 +482,7 @@ export async function bootstrapApp(
         scenario.abilities,
         scenario.conditions,
         scenario.blueprints,
-        character,
+        knight,
         scenarioResult.value.itemKeys,
       );
       combatViewModel = activeCombatViewModel;
@@ -472,10 +494,8 @@ export async function bootstrapApp(
       } as const;
 
       saveSession = overrides.createSaveSession
-        ? overrides.createSaveSession(
-            createSaveRepository(createIndexedDbSaveDriver()),
-          )
-        : createBrowserSaveSession();
+        ? overrides.createSaveSession(saveRepository)
+        : createSaveSession(saveRepository);
       pageHideHandler = (): void => {
         void saveSession?.pagehide();
       };
@@ -490,6 +510,8 @@ export async function bootstrapApp(
       runIdentity = identity;
       activeCombatViewModel.restoreSnapshot(activeDriver.snapshot());
       activeCombatViewModel.restoreBag(saveBoot.bag);
+      activeCombatViewModel.restoreExperience(saveBoot.character.experience);
+      character = saveBoot.character;
 
       inputMap = createInputMap();
       const inputTarget =
@@ -520,6 +542,8 @@ export async function bootstrapApp(
                 identity: activeIdentity,
                 driver: activeDriver,
                 getBag: () => activeCombatViewModel.snapshot().bag,
+                getExperience: () =>
+                  activeCombatViewModel.snapshot().experience.total,
               });
             });
           },
@@ -562,7 +586,9 @@ export async function bootstrapApp(
         });
       });
       unsubscribeSaveEvents = bridge.subscribeEvents(() => {
-        saveSession?.updateBag(activeCombatViewModel.snapshot().bag);
+        const projection = activeCombatViewModel.snapshot();
+        saveSession?.updateBag(projection.bag);
+        saveSession?.updateExperience(projection.experience.total);
         consolidateOnDeath();
       });
       unsubscribeSaveTick = bridge.subscribeTick((tick) => {
@@ -599,6 +625,7 @@ export async function bootstrapApp(
         identity,
         driver: activeDriver,
         getBag: () => activeCombatViewModel.snapshot().bag,
+        getExperience: () => activeCombatViewModel.snapshot().experience.total,
       });
       // A run resumed from a save written after the player died comes back
       // already dead, and its bag is owed to the same rule as a fresh death.
@@ -711,6 +738,7 @@ export async function bootstrapApp(
         void startSelectedHunt(hunt);
       },
       summary,
+      character,
     );
   }
 

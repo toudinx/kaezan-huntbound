@@ -56,10 +56,14 @@ alterem os IDs de conteúdo importado:
 - dash, caso o playtest demonstre que melhora o combate;
 - instrumentação, replay, debug e ferramentas de importação;
 - UI/UX para browser, touch e acessibilidade;
-- personagem resolvido pela hunt escolhida, **temporário até o PB-09**: escolher a hunt escolhe a
-  faixa e o personagem recomendado. A tela de seleção já cabe em UI/UX; esta resolução de personagem
-  não. Enquanto não houver progressão, quatro das cinco faixas seriam triviais ou letais com um
-  único Knight de nível fixo;
+- **personagem persistente com level e experiência** (PB-13-03, 2026-09-08): um Knight só, nascido no
+  nível 1 com o kit inteiro, que sobrevive à troca de hunt e sobe caçando. A ficha é derivada do
+  nível por curva (`packages/content/src/runtime/knightProgression.ts`), calibrada contra a escada de
+  `HUNT_BANDS.md`; a experiência vive no save e a morte nunca a custa. **Toda hunt continua aberta**:
+  entrar acima da própria faixa é permitido e apenas perigoso. Isto substitui a extensão anterior
+  — *personagem resolvido pela hunt escolhida, temporário até o PB-09* —, que resolvia
+  `character:huntbound:<vocação>-<hunt>` em runtime e apontava para um playbook removido; ela existia
+  só porque não havia progressão, e agora há;
 - leech de vida e mana: fração do dano efetivamente aplicado devolve vida e mana à fonte, depois do
   clamp, sem ultrapassar o máximo. O snapshot já conhece life leech e mana leech como skills de
   criatura e como imbuement da espada id 3264; sem imbuing e sem item usável, o Huntbound promove

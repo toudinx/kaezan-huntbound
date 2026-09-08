@@ -1,4 +1,5 @@
 import {
+  createEmptyGameSave,
   type GameSave,
   SIMULATION_RULES_VERSION,
   SIMULATION_SCHEMA_VERSION,
@@ -14,12 +15,7 @@ import {
 } from './sessionTestUtils.ts';
 
 function emptySave(): GameSave {
-  return {
-    schemaVersion: 2,
-    stash: [],
-    completedRuns: 0,
-    session: null,
-  };
+  return createEmptyGameSave();
 }
 
 describe('decideResume', () => {

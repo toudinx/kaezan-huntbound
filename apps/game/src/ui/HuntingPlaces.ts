@@ -1,4 +1,6 @@
+import { knightProgressAtExperience } from '../../../../packages/content/src/index.ts';
 import type {
+  CharacterProgress,
   HuntIndex,
   HuntIndexCreature,
   HuntIndexEntry,
@@ -25,6 +27,8 @@ export interface HuntRunSummary {
   readonly banked: readonly RunBagEntry[];
   readonly stash: readonly RunBagEntry[];
   readonly completedRuns: number;
+  /** Experience the run earned. A death keeps it: only the bag is lost. */
+  readonly experienceGained: number;
 }
 
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -232,6 +236,18 @@ function createRunSummary(
     );
   }
 
+  const experience = createTextElement(
+    document,
+    'p',
+    `Experience earned: ${formatInteger(summary.experienceGained)} XP`,
+    'hunting-places__summary-experience',
+  );
+  experience.setAttribute('data-testid', 'hunt-run-summary-experience');
+  experience.setAttribute(
+    'data-experience-gained',
+    String(summary.experienceGained),
+  );
+
   const totals = createTextElement(
     document,
     'p',
@@ -240,8 +256,47 @@ function createRunSummary(
   );
   totals.setAttribute('data-testid', 'hunt-run-summary-totals');
 
-  section.append(title, banked, totals);
+  section.append(title, banked, experience, totals);
   return section;
+}
+
+/**
+ * The character, on the screen where hunts are chosen.
+ *
+ * It sits above the list because that is the point PB-13-03 is making: the
+ * character is the player's and the same one whichever place they walk into.
+ * Every hunt stays open -- entering above your band is allowed, and only
+ * dangerous.
+ */
+function createCharacterPanel(
+  document: Document,
+  character: CharacterProgress,
+): HTMLElement {
+  const progress = knightProgressAtExperience(character.experience);
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__character';
+  panel.setAttribute('data-testid', 'hunt-character');
+  panel.setAttribute('data-level', String(progress.level));
+
+  const level = createTextElement(
+    document,
+    'p',
+    `Knight · Level ${formatInteger(progress.level)}`,
+    'hunting-places__character-level',
+  );
+  level.setAttribute('data-testid', 'hunt-character-level');
+
+  const experience = createTextElement(
+    document,
+    'p',
+    `${formatInteger(progress.intoLevel)} / ${formatInteger(progress.levelSpan)} XP to level ${formatInteger(progress.level + 1)} · ${formatInteger(progress.experience)} total`,
+    'hunting-places__character-experience',
+  );
+  experience.setAttribute('data-testid', 'hunt-character-experience');
+  experience.setAttribute('data-experience', String(progress.experience));
+
+  panel.append(level, experience);
+  return panel;
 }
 
 function createHuntCard(
@@ -342,6 +397,7 @@ export function mountHuntingPlaces(
   index: HuntIndex,
   onSelect: HuntPlaceSelectionHandler,
   summary?: HuntRunSummary,
+  character?: CharacterProgress,
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -372,6 +428,9 @@ export function mountHuntingPlaces(
     'hunting-places__intro',
   );
   header.append(eyebrow, title, intro);
+  if (character !== undefined) {
+    header.append(createCharacterPanel(document, character));
+  }
   if (summary !== undefined) {
     header.append(createRunSummary(document, summary));
   }

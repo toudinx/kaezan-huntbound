@@ -196,6 +196,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver,
       getBag: () => [],
+      getExperience: () => 0,
     });
 
     saveSession.onTick(1);
@@ -222,6 +223,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver: boot.driver,
       getBag: () => bag,
+      getExperience: () => 0,
     });
 
     saveSession.onTick(3);
@@ -254,6 +256,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver: boot.driver,
       getBag: () => bag,
+      getExperience: () => 0,
     });
 
     // The checkpoint writes the bag first, so the death has to clear a session
@@ -275,6 +278,65 @@ describe('createSaveSession', () => {
     saveSession.destroy();
   });
 
+  it('keeps the experience the run earned even when it ends in a death', async () => {
+    const repository = createSaveRepository(createMemorySaveDriver());
+    const saveSession = createSaveSession(repository, { everyTicks: 1 });
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+    expect(boot.character).toEqual({ experience: 0 });
+
+    let experience = 0;
+    const bag = [{ itemKey: 'item:tibia:gold-coin', count: 7 }];
+    saveSession.attachRun({
+      identity: TEST_IDENTITY,
+      driver: boot.driver,
+      getBag: () => bag,
+      getExperience: () => experience,
+    });
+
+    // A kill before the last checkpoint, and one after it: the second is the
+    // one only `finish` can bank.
+    experience = 400;
+    saveSession.onTick(1);
+    await saveSession.pagehide();
+    await expect(repository.load()).resolves.toMatchObject({
+      character: { experience: 400 },
+    });
+
+    experience = 650;
+    await saveSession.finish('died');
+
+    await expect(repository.load()).resolves.toMatchObject({
+      character: { experience: 650 },
+      stash: [],
+      completedRuns: 0,
+      session: null,
+    });
+    expect(saveSession.getState().character).toEqual({ experience: 650 });
+    saveSession.destroy();
+  });
+
+  it('reopens a run at the experience the save already holds', async () => {
+    const repository = createSaveRepository(
+      createMemorySaveDriver({
+        ...saveWithSession(makeSession()),
+        character: { experience: 28_800 },
+      }),
+    );
+    const saveSession = createSaveSession(repository);
+
+    const boot = await saveSession.boot({
+      identity: TEST_IDENTITY,
+      createDriver: createTestDriver,
+    });
+
+    expect(boot.character).toEqual({ experience: 28_800 });
+    expect(saveSession.getState().character).toEqual({ experience: 28_800 });
+    saveSession.destroy();
+  });
+
   it('flushes an in-flight checkpoint on pagehide', async () => {
     const held = createHoldableDriver();
     held.holdNextWrite();
@@ -288,6 +350,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver: boot.driver,
       getBag: () => [],
+      getExperience: () => 0,
     });
     saveSession.onTick(4);
 
@@ -316,6 +379,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver: boot.driver,
       getBag: () => [],
+      getExperience: () => 0,
     });
     saveSession.onTick(4);
     saveSession.onTick(8);
@@ -339,6 +403,7 @@ describe('createSaveSession', () => {
       identity: TEST_IDENTITY,
       driver: boot.driver,
       getBag: () => bag,
+      getExperience: () => 0,
     });
 
     const finishing = saveSession.finish('abandoned');

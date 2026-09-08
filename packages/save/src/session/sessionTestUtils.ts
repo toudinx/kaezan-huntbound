@@ -1,5 +1,6 @@
 import {
   type ActiveRunState,
+  createEmptyGameSave,
   createSeed,
   type GameSave,
   type KernelScenario,
@@ -101,7 +102,7 @@ export function saveWithSession(
   completedRuns = 0,
 ): GameSave {
   return {
-    schemaVersion: 2,
+    ...createEmptyGameSave(),
     stash,
     completedRuns,
     session,

@@ -11,7 +11,7 @@ const legacyPath = resolve(
 );
 
 describe('pb06 legacy save migration', () => {
-  it('opens the unversioned fixture after migrating to schema 2', () => {
+  it('opens the unversioned fixture after migrating to the current schema', () => {
     const legacy = JSON.parse(readFileSync(legacyPath, 'utf8')) as {
       schemaVersion?: unknown;
       session: { snapshot: { spawnSlots: readonly unknown[] } };
@@ -28,13 +28,14 @@ describe('pb06 legacy save migration', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) {
       throw new Error(
-        `legacy save did not open after 1→2: ${parsed.diagnostics
+        `legacy save did not open after migrating: ${parsed.diagnostics
           .map((item) => item.message)
           .join('; ')}`,
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(2);
+    expect(parsed.value.schemaVersion).toBe(3);
+    expect(parsed.value.character).toEqual({ experience: 0 });
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.huntId).toBe('hunt:tibia:venore-rotworm-cave');
     expect(parsed.value.session?.snapshot.tick).toBe(1400);

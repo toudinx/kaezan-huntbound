@@ -1,10 +1,26 @@
-import type { ActiveRunState, Seed } from '@huntbound/contracts';
+import type {
+  ActiveRunState,
+  CharacterProgress,
+  Seed,
+} from '@huntbound/contracts';
 
 /**
  * How a run ended, and therefore what it was worth. `died` exists because
  * decision 1 of the PB-13 README makes death cost the bag and the credit.
  */
 export type RunOutcome = 'completed' | 'abandoned' | 'died';
+
+/**
+ * One write's worth of state: where the run is, and where the character is.
+ *
+ * They travel together because they have to agree. A checkpoint rewinds the
+ * run to the tick it captured; if the experience earned after that tick had
+ * been banked separately, resuming would hand the player the same kills twice.
+ */
+export interface RunCheckpoint {
+  readonly session: ActiveRunState;
+  readonly character: CharacterProgress;
+}
 
 export interface RunIdentity {
   readonly huntId: string;

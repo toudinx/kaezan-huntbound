@@ -245,6 +245,7 @@ function state(overrides: Partial<CombatViewState> = {}): CombatViewState {
     playerHaste: null,
     lootLog: [{ itemKey: 'item:tibia:dead-rotworm', count: 2, tick: 8 }],
     bag: [{ itemKey: 'item:tibia:dead-rotworm', count: 2 }],
+    experience: { total: 2_550, runGained: 100 },
     playerDead: true,
     lastRejection: null,
     ...overrides,
@@ -513,6 +514,25 @@ describe('CombatHud', () => {
         '--cooldown-sweep',
       ),
     ).toBe('1.25%');
+
+    hud.destroy();
+  });
+
+  it('reads the character level and the experience the run has earned', () => {
+    const document = new FakeDocument();
+    const root = document.createElement('div');
+    const hud = mountCombatHud(root as unknown as HTMLElement);
+
+    hud.render(state({ experience: { total: 2_550, runGained: 100 } }));
+
+    const readout = byTestId(root, 'combat-level');
+    expect(readout.getAttribute('data-level')).toBe('8');
+    expect(readout.textContent).toBe(
+      'Level 8 · 100 / 750 XP · +100 this run',
+    );
+
+    hud.render(state({ experience: { total: 3_200, runGained: 750 } }));
+    expect(byTestId(root, 'combat-level').getAttribute('data-level')).toBe('9');
 
     hud.destroy();
   });

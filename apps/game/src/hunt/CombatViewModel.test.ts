@@ -421,6 +421,76 @@ describe('CombatViewModel', () => {
     ]);
   });
 
+  it('credits experience only for the kills the player landed', () => {
+    const viewModel = createCombatViewModel({
+      ...options,
+      experienceByBlueprint: new Map([['rotworm', 40]]),
+    });
+    viewModel.restoreExperience(2_450);
+
+    const spawnRotworm = (entityId: number) =>
+      event(0, {
+        type: 'actor/spawned',
+        entityId: entityId as EntityId,
+        blueprintId: 'rotworm',
+        position: { x: 6, y: 5, z: 8 },
+        facing: 'w',
+      });
+
+    viewModel.handle([
+      spawnRotworm(2),
+      spawnRotworm(3),
+      event(4, {
+        type: 'actor/died',
+        entityId: 2 as EntityId,
+        killerEntityId: 1 as EntityId,
+        position: { x: 6, y: 5, z: 8 },
+      }),
+      // Something else finished this one; it is worth nothing to the player.
+      event(5, {
+        type: 'actor/died',
+        entityId: 3 as EntityId,
+        killerEntityId: null,
+        position: { x: 6, y: 5, z: 8 },
+      }),
+    ]);
+
+    expect(viewModel.snapshot().experience).toEqual({
+      total: 2_490,
+      runGained: 40,
+    });
+  });
+
+  it('keeps the banked experience across a restart and starts the run share over', () => {
+    const viewModel = createCombatViewModel({
+      ...options,
+      experienceByBlueprint: new Map([['rotworm', 40]]),
+    });
+    viewModel.restoreExperience(1_000);
+
+    viewModel.handle([
+      event(0, {
+        type: 'actor/spawned',
+        entityId: 2 as EntityId,
+        blueprintId: 'rotworm',
+        position: { x: 6, y: 5, z: 8 },
+        facing: 'w',
+      }),
+      event(4, {
+        type: 'actor/died',
+        entityId: 2 as EntityId,
+        killerEntityId: 1 as EntityId,
+        position: { x: 6, y: 5, z: 8 },
+      }),
+    ]);
+    viewModel.reset();
+
+    expect(viewModel.snapshot().experience).toEqual({
+      total: 1_040,
+      runGained: 0,
+    });
+  });
+
   it('projects health, target health, mana, cooldowns, loot and death from events', () => {
     const viewModel = createCombatViewModel(options);
     viewModel.selectTarget(2 as EntityId, [

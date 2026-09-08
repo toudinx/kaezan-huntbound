@@ -1,3 +1,4 @@
+import { createEmptyGameSave } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { consolidateRun } from './consolidateRun.ts';
@@ -107,10 +108,9 @@ describe('consolidateRun', () => {
 
   it('is a silent no-op when there is no session', () => {
     const draft = draftFrom({
-      schemaVersion: 2,
+      ...createEmptyGameSave(),
       stash: [{ itemKey: 'item:tibia:arrow', count: 2 }],
       completedRuns: 8,
-      session: null,
     });
 
     expect(() => consolidateRun(draft, 'completed')).not.toThrow();

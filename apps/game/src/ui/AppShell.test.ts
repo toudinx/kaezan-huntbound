@@ -113,6 +113,7 @@ interface TestSaveState {
     readonly count: number;
   }[];
   readonly completedRuns: number;
+  readonly character: { readonly experience: number };
 }
 
 interface TestSaveSource {
@@ -316,6 +317,7 @@ describe('AppShell', () => {
         bag: [{ itemKey: 'item:tibia:meat', count: 2 }],
         stash: [{ itemKey: 'item:tibia:arrow', count: 8 }],
         completedRuns: 3,
+        character: { experience: 0 },
       }),
       subscribe: (listener) => {
         listener(saveSource.getState());

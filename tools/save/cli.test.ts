@@ -242,7 +242,7 @@ describe('save cli verify and check-hashes', () => {
     const original = await readFile(join(root, 'legacy.json'), 'utf8');
     const document = JSON.parse(original) as Record<string, unknown>;
     expect(document.schemaVersion).toBeUndefined();
-    document.schemaVersion = 3;
+    document.schemaVersion = 4;
     await writeFile(
       join(root, 'legacy.json'),
       `${JSON.stringify(document)}\n`,

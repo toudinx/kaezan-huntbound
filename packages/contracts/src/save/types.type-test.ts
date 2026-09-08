@@ -7,6 +7,10 @@ function assertGameSaveReadonly(save: GameSave) {
   save.stash = [];
   // @ts-expect-error session cannot be replaced on a GameSave.
   save.session = null;
+  // @ts-expect-error the character cannot be replaced on a GameSave.
+  save.character = { experience: 0 };
+  // @ts-expect-error experience is readonly on a GameSave.
+  save.character.experience = 1;
 
   const stashEntry = save.stash[0];
   if (stashEntry !== undefined) {
@@ -32,6 +36,7 @@ function assertSaveDraftMutable(draft: SaveDraft) {
   draft.schemaVersion = 1;
   draft.stash = [];
   draft.completedRuns = 2;
+  draft.character = { experience: 3 };
   draft.session = null;
 }
 

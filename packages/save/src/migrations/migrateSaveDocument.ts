@@ -1,4 +1,8 @@
-import { createEmptyGameSave, SAVE_SCHEMA_VERSION } from '@huntbound/contracts';
+import {
+  createEmptyCharacterProgress,
+  createEmptyGameSave,
+  SAVE_SCHEMA_VERSION,
+} from '@huntbound/contracts';
 
 import { SaveError } from '../errors/SaveError.ts';
 
@@ -171,7 +175,30 @@ const v1ToV2: SaveMigration = {
   },
 };
 
-const saveMigrations: readonly SaveMigration[] = [unversionedToV1, v1ToV2];
+/**
+ * Every save written before PB-13-03 belongs to a player who had no character
+ * of their own -- the sheet came from the hunt. There is no experience to
+ * recover from those documents, so the character they gain is the one they
+ * would have been created with today: level 1, nothing earned. The stash and
+ * the run credit they did accumulate are untouched.
+ */
+const v2ToV3: SaveMigration = {
+  from: 2,
+  to: 3,
+  migrate(document) {
+    return {
+      ...(document as SaveDocument),
+      schemaVersion: 3,
+      character: createEmptyCharacterProgress(),
+    };
+  },
+};
+
+const saveMigrations: readonly SaveMigration[] = [
+  unversionedToV1,
+  v1ToV2,
+  v2ToV3,
+];
 
 export function migrateSaveDocument(document: unknown): unknown {
   return applySaveMigrations(document, saveMigrations, SAVE_SCHEMA_VERSION);

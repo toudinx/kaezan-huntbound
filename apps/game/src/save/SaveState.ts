@@ -1,4 +1,7 @@
-import type { RunBagEntry } from '../../../../packages/contracts/src/index.ts';
+import type {
+  CharacterProgress,
+  RunBagEntry,
+} from '../../../../packages/contracts/src/index.ts';
 
 export type SaveStatus = 'loading' | 'ready' | 'saving' | 'error';
 
@@ -8,6 +11,8 @@ export interface SaveInventoryState {
   readonly bag: readonly RunBagEntry[];
   readonly stash: readonly RunBagEntry[];
   readonly completedRuns: number;
+  /** The character the save keeps between runs. Never reset by a death. */
+  readonly character: CharacterProgress;
 }
 
 export interface SaveStateSource {

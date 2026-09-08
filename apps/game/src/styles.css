@@ -89,6 +89,37 @@ body {
   border-left-color: #ffb5a8;
 }
 
+/* The character, which is the same one whichever place is chosen. */
+.hunting-places__character {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #8fd0ff;
+  background: rgb(5 12 24 / 46%);
+}
+
+.hunting-places__character-level {
+  margin: 0;
+  color: #8fd0ff;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hunting-places__character-experience {
+  margin: 0.4rem 0 0;
+  color: #9fb4d5;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunting-places__summary-experience {
+  margin: 0.6rem 0 0;
+  color: #e5edff;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .hunting-places__summary-title {
   margin: 0;
   color: #f1d78b;
@@ -1462,6 +1493,17 @@ body {
   padding-top: 0.15rem;
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+/* Level and experience, above the play window and beside the way out. */
+.combat-hud__level {
+  margin: 0 0 0.15rem;
+  color: #8fd0ff;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgb(2 6 14 / 90%);
 }
 
 /* The way out of the run. It shares the alerts band, which is inert by

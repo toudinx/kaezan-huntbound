@@ -1,5 +1,7 @@
 import {
   type ActiveRunState,
+  type CharacterProgress,
+  createEmptyCharacterProgress,
   createEmptyGameSave,
   type GameSave,
   type RunBagEntry,
@@ -11,6 +13,7 @@ import {
   createCheckpointScheduler,
   decideResume,
   type ResumeDecision,
+  type RunCheckpoint,
   type RunIdentity,
   type RunOutcome,
   SaveError,
@@ -31,18 +34,22 @@ export interface SaveSessionBootResult {
   readonly decision: ResumeDecision;
   readonly driver: RestartableHuntDriver;
   readonly bag: readonly RunBagEntry[];
+  readonly character: CharacterProgress;
 }
 
 export interface SaveRunAttachment {
   readonly identity: RunIdentity;
   readonly driver: RestartableHuntDriver;
   readonly getBag: () => readonly RunBagEntry[];
+  /** The character's total experience, read where the bag is read. */
+  readonly getExperience: () => number;
 }
 
 export interface SaveSessionController extends SaveStateSource {
   boot(options: SaveSessionBootOptions): Promise<SaveSessionBootResult>;
   attachRun(run: SaveRunAttachment): void;
   updateBag(bag: readonly RunBagEntry[]): void;
+  updateExperience(experience: number): void;
   onTick(tick: number): void;
   finish(outcome: RunOutcome): Promise<void>;
   pagehide(): Promise<void>;
@@ -57,6 +64,7 @@ const EMPTY_STATE: SaveInventoryState = {
   bag: [],
   stash: [],
   completedRuns: 0,
+  character: createEmptyCharacterProgress(),
 };
 
 const finishMessages: Record<RunOutcome, string> = {
@@ -105,6 +113,7 @@ function saveState(
   bag: readonly RunBagEntry[],
   status: SaveInventoryState['status'],
   message: string,
+  experience: number,
 ): SaveInventoryState {
   return {
     status,
@@ -112,6 +121,7 @@ function saveState(
     bag: copyBag(bag),
     stash: copyBag(save.stash),
     completedRuns: save.completedRuns,
+    character: { experience },
   };
 }
 
@@ -136,6 +146,7 @@ export function createSaveSession(
   let activeRun: SaveRunAttachment | undefined;
   let scheduler: CheckpointScheduler | undefined;
   let latestBag: readonly RunBagEntry[] = [];
+  let latestExperience = 0;
   let runOpen = false;
   let finishing = false;
   const listeners = new Set<(next: SaveInventoryState) => void>();
@@ -157,8 +168,10 @@ export function createSaveSession(
     publishError('Save checkpoint failed', error);
   };
 
-  const captureActiveSession = (run: SaveRunAttachment): ActiveRunState =>
-    sessionFrom(run.identity, run.driver, latestBag);
+  const captureCheckpoint = (run: SaveRunAttachment): RunCheckpoint => ({
+    session: sessionFrom(run.identity, run.driver, latestBag),
+    character: { experience: latestExperience },
+  });
 
   const disposeScheduler = (): void => {
     scheduler?.dispose();
@@ -170,6 +183,13 @@ export function createSaveSession(
     if (sameBag(latestBag, next)) return;
     latestBag = next;
     publish({ ...state, bag: copyBag(latestBag) });
+  };
+
+  const setExperience = (experience: number): void => {
+    const next = Number.isFinite(experience) ? Math.max(0, experience) : 0;
+    if (next === latestExperience) return;
+    latestExperience = next;
+    publish({ ...state, character: { experience: latestExperience } });
   };
 
   return {
@@ -238,6 +258,7 @@ export function createSaveSession(
       }
 
       latestBag = copyBag(bag);
+      latestExperience = save.character.experience;
       const status = loadFailed || state.status === 'error' ? 'error' : 'ready';
       const message =
         status === 'error'
@@ -247,9 +268,14 @@ export function createSaveSession(
             : decision.kind === 'discard'
               ? 'Incompatible run discarded'
               : 'New run started';
-      publish(saveState(save, latestBag, status, message));
+      publish(saveState(save, latestBag, status, message, latestExperience));
 
-      return { decision, driver, bag: copyBag(latestBag) };
+      return {
+        decision,
+        driver,
+        bag: copyBag(latestBag),
+        character: { experience: latestExperience },
+      };
     },
 
     attachRun(run) {
@@ -264,10 +290,15 @@ export function createSaveSession(
         onError: publishSchedulerError,
       });
       setBag(latestBag);
+      setExperience(run.getExperience());
     },
 
     updateBag(bag) {
       setBag(bag);
+    },
+
+    updateExperience(experience) {
+      setExperience(experience);
     },
 
     onTick(tick) {
@@ -284,11 +315,12 @@ export function createSaveSession(
       const run = activeRun;
       try {
         latestBag = copyBag(run.getBag());
+        latestExperience = run.getExperience();
         // `capture` is lazy on purpose: the scheduler only calls it on the
         // ticks that actually write. Building the session eagerly snapshotted
         // the kernel twenty times a second and discarded all but one in two
         // hundred of them.
-        scheduler.onTick(tick, () => captureActiveSession(run));
+        scheduler.onTick(tick, () => captureCheckpoint(run));
       } catch (error) {
         publishError('Save checkpoint capture failed', error);
       }
@@ -307,10 +339,17 @@ export function createSaveSession(
       try {
         const finalBag = copyBag(run.getBag());
         latestBag = finalBag;
+        latestExperience = run.getExperience();
         await activeScheduler?.flush();
         const session = sessionFrom(run.identity, run.driver, finalBag);
+        // The character is written on the way out whatever the outcome. It is
+        // the one thing a death does not cost, so banking it here -- outside
+        // `consolidateRun`, which only decides what the *run* was worth -- is
+        // what keeps the last kills before dying.
+        const character = { experience: latestExperience };
         const result = await repository.transact((draft) => {
           draft.session = session;
+          draft.character = character;
           consolidateRun(draft, outcome);
           return {
             stash: copyBag(draft.stash),
@@ -318,7 +357,15 @@ export function createSaveSession(
           };
         });
         latestBag = [];
-        publish(saveState(result, [], 'ready', finishMessages[outcome]));
+        publish(
+          saveState(
+            result,
+            [],
+            'ready',
+            finishMessages[outcome],
+            latestExperience,
+          ),
+        );
       } catch (error) {
         publishError('Run consolidation failed', error);
       } finally {

@@ -28,7 +28,8 @@ function createSnapshot() {
 
 function createEmptyDocument() {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
+    character: { experience: 0 },
     stash: [] as { itemKey: string; count: number }[],
     completedRuns: 0,
     session: null as {
@@ -44,7 +45,8 @@ function createEmptyDocument() {
 
 function createFullSave() {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
+    character: { experience: 28_800 },
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -76,20 +78,22 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 2', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(2);
+  it('pins SAVE_SCHEMA_VERSION at 3', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(3);
   });
 
-  it('createEmptyGameSave produces a valid empty v2 document', () => {
+  it('createEmptyGameSave produces a valid empty v3 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
+      character: { experience: 0 },
       stash: [],
       completedRuns: 0,
       session: null,
     });
     expect(Object.keys(empty).sort()).toEqual([
+      'character',
       'completedRuns',
       'schemaVersion',
       'session',
@@ -110,7 +114,8 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(2);
+    expect(save.schemaVersion).toBe(3);
+    expect(save.character).toEqual({ experience: 28_800 });
     expect(save.stash).toEqual(document.stash);
     expect(save.completedRuns).toBe(3);
     expect(save.session).not.toBeNull();
@@ -191,6 +196,23 @@ describe('game save contract', () => {
       typeof createSnapshot
     >;
     expectRejectedAt(document, ['session', 'snapshot', 'rulesVersion']);
+  });
+
+  it('rejects a fractional or negative character experience', () => {
+    const fractional = createEmptyDocument();
+    fractional.character = { experience: 1.5 };
+    expectRejectedAt(fractional, ['character', 'experience']);
+
+    const negative = createEmptyDocument();
+    negative.character = { experience: -1 };
+    expectRejectedAt(negative, ['character', 'experience']);
+  });
+
+  it('rejects a document without a character', () => {
+    const { character: _character, ...withoutCharacter } =
+      createEmptyDocument();
+    void _character;
+    expectRejectedAt(withoutCharacter, ['character']);
   });
 
   it('rejects an unknown field on the document', () => {

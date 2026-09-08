@@ -1,10 +1,9 @@
-import type { ActiveRunState } from '@huntbound/contracts';
-
 import { SaveError } from '../errors/SaveError.ts';
 import type { SaveRepository } from '../repository/types.ts';
+import type { RunCheckpoint } from './types.ts';
 
 export interface CheckpointScheduler {
-  onTick(tick: number, capture: () => ActiveRunState): void;
+  onTick(tick: number, capture: () => RunCheckpoint): void;
   flush(): Promise<void>;
   dispose(): void;
 }
@@ -28,13 +27,14 @@ export function createCheckpointScheduler(
 ): CheckpointScheduler {
   const { everyTicks, onError } = options;
   let inFlight: Promise<void> | undefined;
-  let pending: ActiveRunState | undefined;
+  let pending: RunCheckpoint | undefined;
   let disposed = false;
 
-  function startWrite(session: ActiveRunState): void {
+  function startWrite(checkpoint: RunCheckpoint): void {
     inFlight = repository
       .transact((draft) => {
-        draft.session = session;
+        draft.session = checkpoint.session;
+        draft.character = checkpoint.character;
       })
       .then(
         () => {
@@ -59,15 +59,15 @@ export function createCheckpointScheduler(
       );
   }
 
-  function enqueue(session: ActiveRunState): void {
+  function enqueue(checkpoint: RunCheckpoint): void {
     if (disposed) {
       return;
     }
     if (inFlight !== undefined) {
-      pending = session;
+      pending = checkpoint;
       return;
     }
-    startWrite(session);
+    startWrite(checkpoint);
   }
 
   return {
