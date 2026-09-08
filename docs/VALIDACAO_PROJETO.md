@@ -39,7 +39,7 @@ a economia, competição ou quantidade de níveis do WAKFU. A duração e a dive
 | Elementos | `combat.ts` já lê `attackElement` no modificador ofensivo; não há leitura de `resistances`/`immunities` nesse arquivo | A afirmação antiga de que todos esses campos são inertes está parcialmente errada. Validar defesa na task, não copiar a spec. |
 | Helper | Nenhum módulo de helper completo foi localizado na busca; IA `hunter` pertence às criaturas | Planejar helper explicitamente; não deduzir entrega pela presença de autoataque ou IA de mob. |
 | Cockpit | PB-17-01–04 e FIX integrados | Ícones, cooldown, bag e minimapa são base; feedback restante acompanha o loop. |
-| Dungeon/sync/gacha | PB-12 e emenda são propostas; PB-13/14 eram previsão do roteiro | Resultados futuros, sem alegação de implementação. |
+| Dungeon/sync/gacha | A emenda 09 é proposta e o PB-15 é quem a executa; PB-13/14 eram previsão do roteiro | Resultados futuros, sem alegação de implementação. |
 
 ## Problemas documentais encontrados
 

@@ -7,12 +7,13 @@
 
 
 **Status:** **proposta. Não vigente.** Nada nesta página vale enquanto o dono não aceitar; até lá a
-ADR-05 continua como está e o PB-12 continua não elegível.
+ADR-05 continua como está e o modo modulado do PB-15 continua não elegível.
 
 **Emenda:** `docs/05_ADR_CANARY_PERSONAL_OUTFIT_GACHA.md`, seção *Extensões Huntbound permitidas* —
 um bullet substituído e um parágrafo reescrito. O texto exato está no §5.
 
-**Pré-requisito de:** `docs/playbooks/PB-12/README.md`, que declara esta emenda como bloqueio.
+**Pré-requisito de:** `docs/playbooks/PB-15/README.md`, tasks 01 e 05. O PB-12 que declarava esta
+emenda como bloqueio foi removido em 2026-09-07; a sincronização passou ao PB-15.
 
 **Escrita em:** 2026-08-30, contra o catálogo gerado da mesma data.
 
@@ -139,7 +140,7 @@ gosto:
 
 > **Consequência de escopo, ainda não decidida:** a regra 1 cria obsolescência entre faixas —
 > conteúdo antigo morre quando o jogador o ultrapassa. A resposta prevista é sincronização de nível e
-> de gear (`docs/playbooks/PB-12/README.md`), que **não existe no Tibia** e portanto exigirá emenda
+> de gear (`docs/playbooks/PB-15/README.md`, tasks 01 e 05), que **não existe no Tibia** e portanto exigirá emenda
 > própria a esta seção antes de ser implementada.
 
 **Entra:**

@@ -11,6 +11,10 @@ O mapa responde três perguntas e só elas: **qual é a escada inteira**, **qual
 degrau**, e **o que as faixas 1 a 5 realmente são no snapshot**. Ele não redesenha o princípio de
 design nem as decisões congeladas do README — ele os aplica contra o arquivo.
 
+> **Nota de 2026-09-07:** "PB-11" abaixo é o playbook de equipamento da fila anterior, removido
+> do disco. O escopo de `armor`, shielding, mitigação elemental e eixo de arma passou ao
+> **PB-13-03/04**; boss e fim de faixa alta, ao **PB-15**. As tabelas seguem congeladas como estão.
+
 ## Proveniência
 
 Toda linha das faixas 1 a 5 carrega `sourceFile` e `sha256`. Snapshot Canary `157e6f9e`, lido em

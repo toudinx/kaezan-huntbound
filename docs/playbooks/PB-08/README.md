@@ -222,9 +222,9 @@ de `support` parece travada pelo cooldown de ataque.
 A spec do redesenho é `docs/superpowers/specs/2026-08-25-pb-08-cockpit-hud-design.md`, e ela carrega
 o layout aprovado e as quatro propostas recusadas antes dele. Duas mudanças de escopo vieram junto:
 
-- **`Arma como eixo de build` saiu do PB-08** para `docs/playbooks/PB-11/`. O card já se declarava
+- **`Arma como eixo de build` saiu do PB-08** para o playbook de equipamento. O card já se declarava
   meia-task — *"fecha no PB-11, quando o equipamento existir"* — e o equipamento também foi para lá.
-- **O equipamento saiu do HUD do PB-08.** Vira janela no PB-11, onde existe stat de item para
+- **O equipamento saiu do HUD do PB-08.** Vira janela no playbook de equipamento, onde existe stat de item para
   mostrar. Com isso os três painéis da rail leem dado que já existe, e não sobra placeholder na tela.
 
 **As cards de 01 a 07 continuam como estavam** — estão integradas e viraram histórico.

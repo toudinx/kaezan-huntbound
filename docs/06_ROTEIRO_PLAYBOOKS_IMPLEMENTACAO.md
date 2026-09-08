@@ -95,9 +95,10 @@ convertido artificialmente em aceite de gameplay.
 | PB-06, pendências de save/QA | PB-13-02 verifica o fluxo afetado; bugs históricos só viram correção se ainda presentes. Browser QA permanece do usuário. |
 | PB-07, tasks congeladas | PB-14 absorve vocações e IA; conteúdo já consumido pelo PB-08/PB-10 não é refeito. |
 | PB-08 | Knight e cockpit preservados; avisos históricos não são nova fila. |
-| PB-09 e PB-11, não implementados | Retirados da fila e absorvidos pelo PB-13. |
+| PB-09, não implementado | Retirado da fila e absorvido pelo PB-13. |
+| PB-11, não implementado | Absorvido pelo PB-13-03/04. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
 | PB-10-14/15, mapas pendentes | PB-15-02 (render) e PB-15-03 (caixas); corrigir antes só se impedirem a hunt de referência. |
-| PB-12, não implementado | PB-15-01/05; proposta de sync deve ser reconciliada com progressão real. |
+| PB-12, não implementado | PB-15-01/05; proposta de sync deve ser reconciliada com progressão real. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
 | Antiga previsão PB-13 a PB-16 (outfits/gacha/helper/QA) | Cosméticos no PB-15-04; helper no PB-13/20; performance somente diante de problema medido. |
 | PB-17, pendência de feedback | PB-13-09 e PB-14-06; ícones, mochila e minimapa integrados preservados. |
 | PB-18, não iniciado | Seleção, preview e retorno ao atlas no PB-13-02; não construir controle vazio de dificuldade. |
