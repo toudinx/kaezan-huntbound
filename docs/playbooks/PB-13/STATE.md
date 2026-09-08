@@ -8,7 +8,7 @@
 | PB-13-01 | done (gerados pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `920227d` |
 | PB-13-02 | done (gates pendentes) | GPT-5.6 Sol `xhigh` | Claude Opus 5 `xhigh` | `fedebd5` |
 | PB-13-03 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `6ea35e9` |
-| PB-13-04 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | — |
+| PB-13-04 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `2f7a107` |
 | PB-13-05 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
 | PB-13-07 | pending | GPT-5.6 Luna `xhigh` | — | — |
