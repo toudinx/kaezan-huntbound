@@ -3,17 +3,17 @@
 **Estado:** planejado; nenhuma implementação iniciada.
 **Próxima:** PB-13-01 elegível.
 
-| ID | Status | Commit | Modelo / effort usado |
-|---|---|---|---|
-| PB-13-01 | pending | — | — |
-| PB-13-02 | pending | — | — |
-| PB-13-03 | pending | — | — |
-| PB-13-04 | pending | — | — |
-| PB-13-05 | pending | — | — |
-| PB-13-06 | pending | — | — |
-| PB-13-07 | pending | — | — |
-| PB-13-08 | pending | — | — |
-| PB-13-09 | pending | — | — |
+| ID | Status | Modelo previsto | Modelo / effort usado | Commit |
+|---|---|---|---|---|
+| PB-13-01 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-13-02 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-13-03 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-13-04 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-13-05 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-13-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-13-07 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-13-08 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-13-09 | pending | Claude Opus 5 `xhigh` | — | — |
 
 ## Bloqueios
 

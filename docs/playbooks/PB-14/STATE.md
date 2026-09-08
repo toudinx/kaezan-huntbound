@@ -3,14 +3,14 @@
 **Estado:** planejado; nenhuma implementação iniciada.
 **Próxima:** PB-14-01, após PB-13 integrado.
 
-| ID | Status | Commit | Modelo / effort usado |
-|---|---|---|---|
-| PB-14-01 | pending | — | — |
-| PB-14-02 | pending | — | — |
-| PB-14-03 | pending | — | — |
-| PB-14-04 | pending | — | — |
-| PB-14-05 | pending | — | — |
-| PB-14-06 | pending | — | — |
+| ID | Status | Modelo previsto | Modelo / effort usado | Commit |
+|---|---|---|---|---|
+| PB-14-01 | pending | Claude Opus 5 `xhigh` | — | — |
+| PB-14-02 | pending | Grok 4.6 `xhigh` | — | — |
+| PB-14-03 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-14-04 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-14-05 | pending | Grok 4.6 `xhigh` | — | — |
+| PB-14-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
 
 ## Decisões pendentes
 

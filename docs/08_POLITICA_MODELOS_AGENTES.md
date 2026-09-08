@@ -117,6 +117,12 @@ O `README.md` de cada playbook pode recomendar modelo, effort e motivo por task,
 pelo usuário para PB-13–15. Essa tabela orienta a abertura do chat; o STATE registra o executor
 real. Tasks complexas começam diretamente na camada frontier, conforme a classificação acima.
 
+A recomendação também aparece como coluna **`Modelo previsto`** no `STATE.md`, ao lado do modelo
+efetivamente usado — padrão herdado do PB-10 e restaurado nos PB-13–15 em 2026-09-07. O motivo é
+operacional: o prompt padrão de execução manda ler o `AGENTS.md` e o `STATE.md`, não o `README.md`,
+então quem abre o chat encontra a recomendação sem precisar de um terceiro arquivo. O `README.md`
+continua sendo onde vive o **motivo** de cada alocação; o `STATE.md` carrega só previsto e usado.
+
 A card declara paralelismo apenas quando ele existe — o `README.md` do playbook é quem nomeia as
 tasks que rodam ao mesmo tempo, e só elas usam branch e worktree.
 
