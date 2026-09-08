@@ -11,7 +11,7 @@
 | PB-13-04 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `2f7a107` |
 | PB-13-05 | done (gerados e gates pendentes) | GPT-5.6 Luna `xhigh` | GPT-5 (default) | `30939af` |
 | PB-13-06 | done (gerados e gates pendentes) | GPT-5.6 Sol `xhigh` | Grok 4.6 | `c8a8f72` |
-| PB-13-07 | pending | GPT-5.6 Luna `xhigh` | — | — |
+| PB-13-07 | done | GPT-5.6 Luna `xhigh` | GPT-5 (default) | `e85862f` |
 | PB-13-08 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-09 | pending | Claude Opus 5 `xhigh` | — | — |
 
