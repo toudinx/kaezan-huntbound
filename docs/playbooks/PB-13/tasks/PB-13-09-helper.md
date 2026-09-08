@@ -1,5 +1,7 @@
 # PB-13-09 — Helper mínimo e feedback
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar cura, alvo, ações e loot como módulos desligáveis que respeitam a intervenção
 manual, e explicar no cockpit o que o helper fez, o que recusou e o que você ganhou — sem cobrir o
 combate.

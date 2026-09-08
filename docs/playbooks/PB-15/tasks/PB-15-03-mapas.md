@@ -1,5 +1,7 @@
 # PB-15-03 — Completar as caixas das hunts
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Trazer Rotworm, Cyclopolis, Dragon Lair e Hero Cave para suas caixas curadas completas
 usando o pipeline existente. Preservar circuitos, spawns e transições válidos.
 

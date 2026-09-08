@@ -1,5 +1,7 @@
 # PB-14-05 — Comportamentos dos monstros
 
+**Modelo sugerido.** Grok 4.6, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Dar às espécies curadas os papéis melee perseguidor, atacante ranged e conjurador de
 área/suporte previstos na 01. Reutilizar conjuração existente e integrar sinais visuais necessários.
 

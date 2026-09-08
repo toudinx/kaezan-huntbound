@@ -1,5 +1,7 @@
 # PB-14-06 — Encontros das três vocações
 
+**Modelo sugerido.** GPT-5.6 Sol, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Compor encontros com as espécies selecionadas nas hunts existentes e ajustar a leitura
 e o helper de cada classe. Corrigir somente impedimentos concretos ao combate integrado.
 

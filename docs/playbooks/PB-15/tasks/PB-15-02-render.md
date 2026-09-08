@@ -1,5 +1,7 @@
 # PB-15-02 — Renderizar as hunts grandes
 
+**Modelo sugerido.** GPT-5.6 Sol, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Limitar o desenho do andar à vizinhança visível para que as caixas completas não
 instanciem sprites do mapa inteiro. Preservar câmera, atores e transições.
 

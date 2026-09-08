@@ -1,5 +1,7 @@
 # PB-13-08 — Conquistas do primeiro loop
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar um conjunto pequeno de conquistas sobre o que o loop já produz — caçar,
 equipar, vender, subir de level, completar bestiary —, com progresso visível e recompensa única.
 

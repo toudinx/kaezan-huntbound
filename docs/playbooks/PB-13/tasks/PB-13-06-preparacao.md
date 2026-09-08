@@ -1,5 +1,7 @@
 # PB-13-06 — Buff de próxima hunt
 
+**Modelo sugerido.** GPT-5.6 Sol, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Dar ao gold um destino: uma compra entre runs, com preço, benefício e duração claros,
 que vale pela run seguinte e termina de forma legível.
 

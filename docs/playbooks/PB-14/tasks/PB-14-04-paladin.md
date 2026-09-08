@@ -1,5 +1,7 @@
 # PB-14-04 — Paladin no loop completo
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar Paladin selecionável com kit ranged, equipamento, apresentação, persistência
 e helper coerentes no loop existente.
 

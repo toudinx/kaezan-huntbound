@@ -1,5 +1,7 @@
 # PB-15-05 — Modo modulado
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Aplicar o modo modulado à build real conforme a 01, com preview de ficha/gear,
 recompensa útil e retorno seguro ao modo livre.
 

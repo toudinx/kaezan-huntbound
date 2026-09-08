@@ -1,5 +1,7 @@
 # PB-14-02 — Suporte aos kits curados
 
+**Modelo sugerido.** Grok 4.6, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Implementar somente as lacunas de combate compartilhadas identificadas na 01 que
 impedem os kits selecionados. Preservar o comportamento existente onde a mudança não é intencional.
 

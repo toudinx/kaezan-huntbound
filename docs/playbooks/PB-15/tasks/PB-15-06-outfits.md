@@ -1,5 +1,7 @@
 # PB-15-06 — Coleção visual de outfits
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar um pool pequeno de famílias de outfit do acervo com preview, seleção, addons
 e cores conforme ADR-05. Preparar a coleção persistente usada pelo gacha.
 

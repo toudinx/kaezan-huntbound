@@ -108,20 +108,27 @@ Indisponibilidade nunca transforma uma task complexa em pequena.
 
 ## Contrato das task cards
 
-A card tem **teto de 40 linhas** e seis seções (`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`). Classe da
-tarefa, modelo sugerido, effort, validador e rota de skills **saíram do cabeçalho**: quem abre o chat
-escolhe modelo e effort na hora, por este documento, e registra no `STATE.md` o que **efetivamente**
-usou. Um campo que só era copiado da card para o `STATE.md` não decidia nada.
+A card tem **teto de 40 linhas** e sete seções (`07_PADRAO_PLAYBOOKS_TASKS_PORTAVEIS.md`). Classe da
+tarefa, validador e rota de skills continuam **fora** do cabeçalho.
 
-O `README.md` de cada playbook pode recomendar modelo, effort e motivo por task, como solicitado
-pelo usuário para PB-13–15. Essa tabela orienta a abertura do chat; o STATE registra o executor
-real. Tasks complexas começam diretamente na camada frontier, conforme a classificação acima.
+**Modelo e effort sugeridos voltaram à card em 2026-09-07, por decisão do usuário.** A card é o
+arquivo que ele abre para começar a task; mandá-lo a um segundo arquivo só para descobrir em que
+modelo abrir o chat era atrito sem contrapartida. A objeção anterior — "um campo que só era copiado
+da card para o `STATE.md` não decidia nada" — continua verdadeira e continua sendo o motivo de a
+linha ser **recomendação, não trava**: quem abre o chat escolhe por este documento e pode divergir.
 
-A recomendação também aparece como coluna **`Modelo previsto`** no `STATE.md`, ao lado do modelo
-efetivamente usado — padrão herdado do PB-10 e restaurado nos PB-13–15 em 2026-09-07. O motivo é
-operacional: o prompt padrão de execução manda ler o `AGENTS.md` e o `STATE.md`, não o `README.md`,
-então quem abre o chat encontra a recomendação sem precisar de um terceiro arquivo. O `README.md`
-continua sendo onde vive o **motivo** de cada alocação; o `STATE.md` carrega só previsto e usado.
+A recomendação vive, então, em três lugares com papéis distintos, e nenhum deles é redundante:
+
+| Arquivo | O que carrega | Para quem |
+|---|---|---|
+| `tasks/<card>.md` | uma linha: modelo e effort sugeridos | quem abre o chat da task |
+| `README.md` do playbook | modelo, effort e **o motivo** da alocação | quem planeja ou revisa a fila |
+| `STATE.md` do playbook | `Modelo previsto` e modelo/effort **efetivamente usados** | quem audita o que rodou |
+
+Divergência entre card e usado é desvio registrável no `STATE.md`, não erro. Ao mudar a alocação de
+uma task, mude a card **e** a linha do `README.md`: são o mesmo fato em dois lugares, e envelhecer
+separados é o custo que este arranjo aceita em troca de o executor não precisar de um segundo
+arquivo. Tasks complexas começam diretamente na camada frontier, conforme a classificação acima.
 
 A card declara paralelismo apenas quando ele existe — o `README.md` do playbook é quem nomeia as
 tasks que rodam ao mesmo tempo, e só elas usam branch e worktree.

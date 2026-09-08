@@ -1,5 +1,7 @@
 # PB-13-04 — O set da faixa e a coleção de rares
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Dar à hunt de referência um **set próprio da faixa**, farmável e completável, que muda
 o combate e persiste no personagem. É este set — não o level — que é o motivo de ficar na hunt, e é
 ele que sustenta a faixa seguinte.

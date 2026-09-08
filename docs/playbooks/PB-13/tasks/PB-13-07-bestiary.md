@@ -1,5 +1,7 @@
 # PB-13-07 — Bestiary por espécie
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Registrar progresso persistente de caça por espécie, com metas visíveis e uma
 recompensa por meta cumprida. Não creditar duas vezes ao retomar a sessão.
 

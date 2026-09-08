@@ -1,5 +1,7 @@
 # PB-14-03 — Sorcerer no loop completo
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar Sorcerer selecionável com kit, equipamento, apresentação, persistência e
 helper coerentes. A mesma hunt deve funcionar com sua identidade mágica.
 

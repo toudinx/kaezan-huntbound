@@ -1,5 +1,7 @@
 # PB-15-07 — Gacha cosmético e V0 integrado
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Conectar moeda obtida jogando ao pool pequeno de outfits, garantia de novidade,
 duplicatas e tokens da ADR-05. Fechar o ciclo de coleção integrado às hunts e dungeon.
 

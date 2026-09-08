@@ -1,5 +1,7 @@
 # PB-15-04 — Dungeon com começo e fim
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Implementar a dungeon definida na 01, com encontros curados, boss, derrota, saída e
 recompensa no loop existente.
 

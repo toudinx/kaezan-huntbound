@@ -1,5 +1,7 @@
 # PB-13-03 — Level e XP persistentes
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Um personagem que nasce no nível 1, sobrevive à troca de hunt e sobe de nível caçando.
 Substituir a ficha autorada por hunt como fonte de progresso.
 

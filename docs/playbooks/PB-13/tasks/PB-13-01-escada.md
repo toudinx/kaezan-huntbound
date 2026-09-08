@@ -1,5 +1,7 @@
 # PB-13-01 — A escada de poder do Knight
 
+**Modelo sugerido.** GPT-5.6 Sol, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Pôr as cinco fichas na faixa a que pertencem. Hoje a faixa 1 é autorada no nível 35
 quando a escada congelada diz 8, e quatro das cinco fichas têm `sword: 60` e `weaponAttack: 14`
 idênticos — o dano máximo anda 8% do Orc Fortress ao Dragon Lair enquanto a vida anda 153% e a

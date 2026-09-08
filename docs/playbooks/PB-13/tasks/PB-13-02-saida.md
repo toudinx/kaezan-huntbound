@@ -1,5 +1,7 @@
 # PB-13-02 — Escolher, concluir e voltar à hunt
 
+**Modelo sugerido.** GPT-5.6 Sol, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Entregar seleção com preview, saída explícita e retorno ao atlas sem F5. Consolidar os
 ganhos da run uma única vez, preservando retomada, abandono e backup.
 

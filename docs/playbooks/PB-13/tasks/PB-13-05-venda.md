@@ -1,5 +1,7 @@
 # PB-13-05 — Vender loot a NPC
 
+**Modelo sugerido.** GPT-5.6 Luna, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Permitir vender loot a NPC por gold com preços curados, carteira persistente e
 quantidade clara. Proteger a coleção de rares da venda acidental.
 

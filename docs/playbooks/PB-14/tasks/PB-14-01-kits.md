@@ -1,5 +1,7 @@
 # PB-14-01 — Kits, comportamento e lacunas reais
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Curar Sorcerer, Paladin e três papéis de monstro a partir do Canary. Registrar kits,
 equipamentos, elementos, alcance e decisões de helper; definir as lacunas de contrato antes das
 próximas cards.

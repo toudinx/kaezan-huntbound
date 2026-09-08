@@ -1,5 +1,7 @@
 # PB-15-01 — Dungeon e modulação da build
 
+**Modelo sugerido.** Claude Opus 5, effort `xhigh` — recomendação de `docs/08_POLITICA_MODELOS_AGENTES.md`; o `STATE.md` registra o que foi usado.
+
 **Objetivo.** Definir uma dungeon curta com conteúdo Canary, encontros/boss, saída e recompensa.
 Decidir modo livre/modulado, tratamento de level/gear e compatibilidade de save; reconciliar emenda
 09 e ADR-05.

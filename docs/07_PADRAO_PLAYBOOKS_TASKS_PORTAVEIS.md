@@ -34,10 +34,12 @@ docs/playbooks/<PB-ID>/
 **Teto de 40 linhas.** Se passou disso, ou a task é grande demais e deve ser dividida, ou você está
 escrevendo a implementação em vez da task.
 
-Seis seções, nesta ordem. Nada além delas:
+Sete seções, nesta ordem. Nada além delas:
 
 ```markdown
 # PB-NN-MM — Título
+
+**Modelo sugerido.** Modelo e effort recomendados, por `08_POLITICA_MODELOS_AGENTES.md`. Uma linha.
 
 **Objetivo.** Uma ou duas frases: qual problema limitado some ao fim disto.
 
@@ -80,8 +82,11 @@ Removidos porque custavam tempo e não protegiam nenhum dos quatro motivos:
 - **Definition of Done com checkbox.** Vira lista de comprovação e faz o executor rodar gates para
   produzir evidência em vez de para saber se quebrou. O aceite é o usuário jogando.
 - **"Cole a saída fresca no relatório."** Idem.
-- **Classe da tarefa, modelo/effort sugerido, validador sugerido, rota de skills.** Modelo e effort
-  são escolhidos por quem abre o chat, na hora, conforme `08_POLITICA_MODELOS_AGENTES.md`.
+- **Classe da tarefa, validador sugerido, rota de skills.** Modelo e effort **voltaram** à card em
+  2026-09-07, por decisão do usuário: a card é o arquivo que ele abre para começar a task, e mandá-lo
+  a um segundo arquivo só para saber em que modelo abrir o chat era atrito sem contrapartida. É uma
+  linha, é recomendação, e quem abre o chat continua podendo divergir — o `STATE.md` registra o que
+  foi efetivamente usado. O resto do antigo cabeçalho continua fora.
 - **Leitura mínima numerada com oito itens.** "Onde" já diz o que ler.
 - **Ciclo de conclusão, branch-base, worktree, modo de integração.** Está em `AGENTS.md` e é o mesmo
   para toda task: commite na `main`.
