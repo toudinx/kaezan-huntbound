@@ -8,11 +8,23 @@ Entregar uma dungeon modulada, completar os mapas existentes e fechar a coleçã
 
 ## Decisões congeladas
 
-Roteiro 06 e ADR-05 regem produto; ADR-03 rege arquitetura. A task 01 registra decisões
-pendentes, fontes, mudanças de contrato e rollback num design curto em `docs/superpowers/specs/`.
-Cards seguintes leem esse design. Escolhas reversíveis seguem o protocolo; destruição de dado,
-contrato/schema/golden integrado seguem as condições de parada de `AGENTS.md`. Não tratar uma
-hipótese de RNG, consumível ou modulação como autorização implícita.
+Roteiro 06 e ADR-05 regem produto; ADR-03 rege arquitetura. **Herda inteiras as decisões congeladas
+do `README.md` do PB-13** — morte, personagem persistente nascendo no nível 1 com o kit completo, o
+set da faixa como eixo de progressão, curva comprimida, buff de próxima hunt. Elas não se reabrem
+aqui.
+
+**A modulação deixou de ser opcional.** Com o level barato e o set da faixa como eixo, o jogador
+chega ao topo com coleções antigas por fechar, e voltar a uma faixa superada não tem tensão nenhuma:
+a hunt vira trivial e o farm de coleção, vazio. É o B26 no `STATE.md` do PB-13, e é este playbook que
+o resolve. A modulação é o que devolve risco ao conteúdo antigo — não é um modo alternativo simpático,
+é o que faz o eixo de progressão do V0 fechar. Trate a PB-15-05 como entrega central, não como extra.
+
+A task 01 registra decisões pendentes, fontes, mudanças de contrato e rollback num design curto em
+`docs/superpowers/specs/`; cards seguintes leem esse design. **Contrato, schema e golden estão
+autorizados task a task pelo texto de cada card**: onde a card autoriza, o executor bumpa e regenera
+em vez de parar, e as condições de parada de `AGENTS.md` seguem valendo para tudo que a card não
+nomear. Escolhas reversíveis seguem o protocolo. Não tratar hipótese de RNG ou reroll como
+autorização implícita.
 
 ## Tasks e dependências
 

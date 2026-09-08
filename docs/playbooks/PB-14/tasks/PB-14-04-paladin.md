@@ -9,7 +9,8 @@ apps/game/src/hunt/, apps/game/src/ui/, apps/game/src/save/.
 **Fora de escopo.** Subclasses, munição como nova economia não decidida, novas hunts.
 
 **Decisões congeladas.** Design PB-14-01. Distância e posição precisam importar conforme o kit
-curado. Não importar decisões de munição de uma card congelada sem reconciliação.
+curado. Não importar decisões de munição de uma card congelada sem reconciliação. O Paladin entra com
+o **set da faixa dele**, curado na 01, pelo mesmo motivo da 03.
 
 **Gate.** Linhas content/assets de `AGENTS.md`: teste afetado se mudar lógica, content:check e
 assets:check; architecture:check para imports; app e typecheck conforme o diff. Aplicar linhas

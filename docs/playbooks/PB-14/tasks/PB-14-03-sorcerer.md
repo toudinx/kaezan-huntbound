@@ -9,7 +9,9 @@ apps/game/src/hunt/, apps/game/src/ui/, apps/game/src/save/.
 **Fora de escopo.** Druid, subclasses, segunda economia e novas hunts.
 
 **Decisões congeladas.** Design PB-14-01 e suporte da 02. Usar manifesto para FX/ícones. Custos,
-habilidades e dados seguem a curadoria; não copiar o Knight mudando números.
+habilidades e dados seguem a curadoria; não copiar o Knight mudando números. O Sorcerer entra com o
+**set da faixa dele**, curado na 01 — o eixo de progressão é o set, e herdar o do Knight esvazia o
+farm da classe.
 
 **Gate.** Linhas content/assets de `AGENTS.md`: teste afetado se mudar lógica, content:check e
 assets:check; architecture:check para imports; app e typecheck conforme o diff. Aplicar linhas

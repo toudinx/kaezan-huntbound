@@ -10,9 +10,13 @@ packages/simulation/src/kernel/, packages/contracts/src/.
 
 **Fora de escopo.** Implementar classes, criar bestiário massivo, Druid ou boss autoral.
 
-**Decisões congeladas.** PB-13 integrado; ADR-05. Começar por espécies existentes. Não presumir que
-attackElement está inerte; conferir consumidores. Registrar proveniência e qualquer extensão
-necessária.
+**Decisões congeladas.** PB-13 integrado, com as decisões congeladas do seu `README.md`; ADR-05.
+Começar por espécies existentes. Não presumir que `attackElement` está inerte; conferir consumidores.
+Registrar proveniência e qualquer extensão necessária. **Duas decisões que esta card deve fechar,
+porque o PB-13 as criou:** (a) a conta guarda três personagens independentes ou um que troca de
+vocação — é decisão de save, não de tela; (b) o set de cada vocação, já que o eixo de progressão é o
+set da faixa e Sorcerer e Paladin não herdam o do Knight. Vale a regra 4 da *Curadoria* da ADR-05:
+nenhuma ação é trancada por level, então os três kits nascem completos.
 
 **Gate.** Documentação: `corepack pnpm exec biome check .`.
 

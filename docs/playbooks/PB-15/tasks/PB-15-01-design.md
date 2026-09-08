@@ -11,9 +11,12 @@ docs/content/; consultar packages/contracts/src/, packages/save/src/, packages/c
 **Fora de escopo.** Implementação, dial Stasis obrigatório, ranking, novos afixos ou aprovação
 automática de reroll.
 
-**Decisões congeladas.** PB-14 integrado. Sync deriva da build real e não reduz progresso
-permanentemente. Recompensa/minuto é hipótese, não igualdade garantida. Rares, set e gold devem
-continuar úteis.
+**Decisões congeladas.** PB-14 integrado, e as decisões congeladas do `README.md` do PB-13. Sync
+deriva da build real e **não reduz progresso permanentemente**. Recompensa/minuto é hipótese, não
+igualdade garantida. **A modulação é entrega central, não modo alternativo:** com o level barato e o
+set da faixa como eixo, voltar a uma faixa superada só tem sentido se a modulação devolver risco — é
+o B26 do PB-13, e este design é quem o fecha. Rares, set e gold precisam continuar úteis
+atravessando os modos.
 
 **Gate.** Documentação: `corepack pnpm exec biome check .`.
 

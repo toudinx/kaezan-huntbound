@@ -10,11 +10,15 @@ packages/content/src/, packages/contracts/src/, apps/game/src/hunt/, packages/as
 próxima etapa.
 
 **Decisões congeladas.** Design PB-14-01. Determinismo, RNG seedado e regras de alvo/alcance
-permanecem; comportamentos vêm do acervo ou de extensão explícita.
+permanecem; comportamentos vêm do acervo ou de extensão explícita. **Autorizado nesta card:** subir
+`SIMULATION_SCHEMA_VERSION` (`packages/contracts/src/simulation/identity.ts:8`) e/ou
+`SAVE_SCHEMA_VERSION` (`packages/contracts/src/save/types.ts:4`) quando a entrega exigir, sempre com
+campo aditivo, default que reproduz o comportamento anterior e **sem novo draw de RNG** — deslocar os
+streams quebraria todo replay —, regenerando os goldens que isso mover.
 
-**Gate.** Linhas contracts/simulation/save de `AGENTS.md`: teste afetado, golden pertinente e
-architecture:check; linha transversal só se aplicável; acrescentar content/assets e app conforme o
-diff.
+**Gate.** Linha `packages/simulation`/`contracts`/`save`: teste afetado + os goldens que este diff
+mover (`simulation:check`, `hunt:check`, `combat:check`, `save:check`) + `architecture:check`. Somar
+`content:check`/`assets:check` pelo que o diff tocar em conteúdo.
 
 **O que olhar no jogo.** Enfrentar os três papéis; perceber suas diferenças e uma resposta possível.
 Monstro fora de tela continua simulado.

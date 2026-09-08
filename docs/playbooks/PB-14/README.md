@@ -8,11 +8,25 @@ Entregar Sorcerer e Paladin, suporte necessário aos kits e encontros com compor
 
 ## Decisões congeladas
 
-Roteiro 06 e ADR-05 regem produto; ADR-03 rege arquitetura. A task 01 registra decisões
-pendentes, fontes, mudanças de contrato e rollback num design curto em `docs/superpowers/specs/`.
-Cards seguintes leem esse design. Escolhas reversíveis seguem o protocolo; destruição de dado,
-contrato/schema/golden integrado seguem as condições de parada de `AGENTS.md`. Não tratar uma
-hipótese de RNG, consumível ou modulação como autorização implícita.
+Roteiro 06 e ADR-05 regem produto; ADR-03 rege arquitetura. **Herda inteiras as decisões congeladas
+do `README.md` do PB-13** — morte, personagem persistente nascendo no nível 1 com o kit completo, o
+set da faixa como eixo de progressão, curva comprimida, buff de próxima hunt. Elas não se reabrem
+aqui.
+
+Duas consequências que este playbook precisa resolver e que o PB-13 criou:
+
+1. **Três vocações contra um personagem persistente.** O PB-13 congelou *um* personagem, e este
+   playbook acrescenta dois. A PB-14-01 decide se a conta guarda três personagens independentes ou
+   um que troca de vocação, e registra a escolha — é decisão de save, não de tela.
+2. **Cada vocação precisa do seu set.** Se o eixo de progressão é o set da faixa, Sorcerer e Paladin
+   não herdam o do Knight. A PB-14-01 cura o set de cada uma junto com o kit.
+
+A task 01 registra decisões pendentes, fontes, mudanças de contrato e rollback num design curto em
+`docs/superpowers/specs/`; cards seguintes leem esse design. **Contrato, schema e golden estão
+autorizados task a task pelo texto de cada card**: onde a card autoriza, o executor bumpa e regenera
+em vez de parar, e as condições de parada de `AGENTS.md` seguem valendo para tudo que a card não
+nomear. Escolhas reversíveis seguem o protocolo. Não tratar hipótese de RNG, consumível ou modulação
+como autorização implícita.
 
 ## Tasks e dependências
 

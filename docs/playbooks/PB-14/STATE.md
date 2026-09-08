@@ -14,5 +14,10 @@
 
 ## Decisões pendentes
 
-A task 01 registra o design antes da implementação dependente. Nenhuma migração ou mudança de
-golden foi realizada por este planejamento. Modelos/effort efetivos serão registrados por task.
+A task 01 registra o design antes da implementação dependente e **fecha duas decisões que o PB-13
+criou**: se a conta guarda três personagens independentes ou um que troca de vocação, e qual é o set
+de cada vocação, já que o eixo de progressão é o set da faixa e Sorcerer e Paladin não herdam o do
+Knight. Detalhe no `README.md`.
+
+Contrato, schema e golden estão autorizados por card; nenhuma migração foi feita por este
+planejamento. Modelos/effort efetivos são registrados por task.
