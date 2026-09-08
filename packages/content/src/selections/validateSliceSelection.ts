@@ -81,38 +81,52 @@ const expectedSourceFiles = [
 ] as const;
 
 /**
- * Unfrozen on 2026-08-19. The level 8 / sword 10 sheet capped melee at 13
- * damage against a 65 HP rotworm and could not legally cast Berserk, which
- * `berserk.lua` gates at level 35: the hunt was unwinnable by arithmetic.
- * Level 35 with sword 60 is the ordinary knight the cave is written for.
+ * The five sheets are one ladder, not five loadouts. Level and health come
+ * from `docs/content/HUNT_BANDS.md`: the bands are 8 / 25 / 45 / 70 / 130 and
+ * `HP(L) = 185 + 15 * (L - 8)`.
  *
- * The Hero Cave sheet unfrozen again on 2026-08-26, for the same reason one
- * band up. It carried level 130 over the level 35 kit -- sword 60, a plain
- * sword (`3264`, attack 14) and 185 mana -- which caps melee at 97 per 2 s,
- * about 31 HP/s. Hero heals 200-250 at 20 % per 2 s, so 22,5 HP/s of that is
- * undone before it lands: one Hero took near three minutes to fall while
- * dealing 0-240 per 2 s into 2015 HP. Unwinnable by arithmetic, again, and
- * the player reported it as such.
+ * `sword` is the ordinary trained knight's skill at that level, interpolated
+ * between the three anchors the docs already froze -- 10 at level 8 and 60 at
+ * level 35 (`HUNT_BANDS.md:360`), 90 at level 130 (the Hero Cave sheet). That
+ * gives 41 at 25, 63 at 45 and 71 at 70.
  *
- * The three numbers now follow level 130 instead of level 35. Sword 90 is the
- * ordinary trained knight at that level. The weapon is the two handed sword
- * (`3265`, attack 30, `weaponType` sword, level 20) -- the strongest sword the
- * slice carries, and one Hero itself drops. Mana is Canary's own progression
- * rather than a copied literal: 35 at level 8 plus `gainMana` 5 per level is
- * 645 at 130. By that same formula the level 35 sheet should read 170, not
- * 185; it stays as it is, because the PB-04 and PB-05 goldens were replayed
- * against 185 and nothing about the rotworm cave is broken.
+ * The weapon steps once, at band 4. The plain sword (`3264`, attack 14) caps
+ * melee at 98 per 2 s, and a Dragon Lair built on it is eleven swings per
+ * dragon against two per orc -- duration, not difficulty. The two handed sword
+ * (`3265`, attack 30, `weaponType` sword, level 20) is the strongest sword the
+ * slice carries; the Hero Cave sheet already carries it. Attack still comes
+ * from the sheet, not from an equipped item: gear is PB-13-04.
+ *
+ * What the ladder buys, per band: melee 13 / 54 / 84 / 195 / 256, Berserk max
+ * 41 / 96 / 136 / 182 / 226, and the band's own creature falls in 5 / 2 / 4 /
+ * 6 / 6 auto-attacks. Before PB-13-01 four of the five sheets shared
+ * `sword: 60` and `weaponAttack: 14`, so Berserk moved 128 -> 138 across three
+ * bands while creature health moved 65 -> 1000.
+ *
+ * Mana is not on the ladder. 185 is the pool that keeps the five-action kit
+ * individually castable -- Groundshaker alone costs 160 -- and V0 has no
+ * potions; Canary's own progression (35 at level 8 plus `gainMana` 5 per
+ * level) would lock two of the five spells below band 4. Band 5 keeps 645
+ * because Canary's number is already above the floor there.
+ *
+ * History. The rotworm cave sheet was unfrozen to level 35 on 2026-08-19,
+ * because at level 8 it could not legally cast Berserk, which `berserk.lua`
+ * gates at 35. PB-08 removed that gate: the kit is `unrestricted` and Canary
+ * spell levels no longer apply, so the sheet goes back to the band it belongs
+ * to. The Hero Cave sheet was unfrozen on 2026-08-26 for the opposite reason:
+ * it carried level 130 over the level 35 kit and could not out-damage a Hero's
+ * own heal. Both are the same defect this ladder exists to prevent.
  */
 const expectedCharacters: readonly FrozenCharacter[] = [
   {
     stableKey: 'character:huntbound:knight-venore-rotworm-cave',
     vocationKey: 'vocation:tibia:knight',
-    level: 35,
-    skills: { sword: 60, magic: 0 },
+    level: 8,
+    skills: { sword: 10, magic: 0 },
     weaponItemKey: 'item:tibia:sword',
     weaponSourceId: '3264',
     weaponAttack: 14,
-    maxHealth: 590,
+    maxHealth: 185,
     maxMana: 185,
     spellKeys: [
       'spell:tibia:berserk',
@@ -126,7 +140,7 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     stableKey: 'character:huntbound:knight-orc-fortress',
     vocationKey: 'vocation:tibia:knight',
     level: 25,
-    skills: { sword: 60, magic: 0 },
+    skills: { sword: 41, magic: 0 },
     weaponItemKey: 'item:tibia:sword',
     weaponSourceId: '3264',
     weaponAttack: 14,
@@ -144,7 +158,7 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     stableKey: 'character:huntbound:knight-cyclopolis',
     vocationKey: 'vocation:tibia:knight',
     level: 45,
-    skills: { sword: 60, magic: 0 },
+    skills: { sword: 63, magic: 0 },
     weaponItemKey: 'item:tibia:sword',
     weaponSourceId: '3264',
     weaponAttack: 14,
@@ -162,10 +176,10 @@ const expectedCharacters: readonly FrozenCharacter[] = [
     stableKey: 'character:huntbound:knight-dragon-lair',
     vocationKey: 'vocation:tibia:knight',
     level: 70,
-    skills: { sword: 60, magic: 0 },
-    weaponItemKey: 'item:tibia:sword',
-    weaponSourceId: '3264',
-    weaponAttack: 14,
+    skills: { sword: 71, magic: 0 },
+    weaponItemKey: 'item:tibia:two-handed-sword',
+    weaponSourceId: '3265',
+    weaponAttack: 30,
     maxHealth: 1115,
     maxMana: 185,
     spellKeys: [
