@@ -1,7 +1,7 @@
 # PB-13 — Estado
 
-**Estado:** PB-13-01 a PB-13-04 implementadas nas fontes; artefatos gerados e gates pendentes.
-**Próxima:** PB-13-05 elegível depois de regenerar catálogo e fixtures de save e rodar os gates (B27).
+**Estado:** PB-13-01 a PB-13-06 implementadas nas fontes; artefatos gerados e gates pendentes.
+**Próxima:** PB-13-07 elegível depois de regenerar catálogo e fixtures de save e rodar os gates (B27).
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
@@ -10,7 +10,7 @@
 | PB-13-03 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `6ea35e9` |
 | PB-13-04 | done (gerados e gates pendentes) | Claude Opus 5 `xhigh` | Claude Opus 5 `xhigh` | `2f7a107` |
 | PB-13-05 | done (gerados e gates pendentes) | GPT-5.6 Luna `xhigh` | GPT-5 (default) | `30939af` |
-| PB-13-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-13-06 | done (gerados e gates pendentes) | GPT-5.6 Sol `xhigh` | Grok 4.6 | `c8a8f72` |
 | PB-13-07 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-08 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-13-09 | pending | Claude Opus 5 `xhigh` | — | — |
