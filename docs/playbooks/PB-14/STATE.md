@@ -5,7 +5,7 @@
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
 |---|---|---|---|---|
-| PB-14-01 | done | Claude Opus 5 `xhigh` | Claude Opus 5 (effort alto) | pendente |
+| PB-14-01 | done | Claude Opus 5 `xhigh` | Claude Opus 5 (effort alto) | `7e2f807` |
 | PB-14-02 | pending | Grok 4.6 `xhigh` | — | — |
 | PB-14-03 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-14-04 | pending | GPT-5.6 Luna `xhigh` | — | — |
