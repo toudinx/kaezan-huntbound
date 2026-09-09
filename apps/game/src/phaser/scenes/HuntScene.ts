@@ -95,7 +95,10 @@ import {
   installHuntProbe,
 } from '../../hunt/HuntProbe';
 import { huntFloorSync } from '../../hunt/huntFloorSync';
-import { playfieldCameraOffset } from '../../hunt/playfieldViewport';
+import {
+  playfieldCameraOffset,
+  playfieldRect,
+} from '../../hunt/playfieldViewport';
 import { presentationStepCooldownTicks } from '../../hunt/presentationStepCooldown';
 import {
   resolveTargetRing,
@@ -738,7 +741,6 @@ export class HuntScene extends Phaser.Scene {
       viewportWidth: width,
       viewportHeight: height,
       zoom: framing.zoom,
-      ...(this.cameraBounds === undefined ? {} : { bounds: this.cameraBounds }),
     });
   }
 
@@ -1949,13 +1951,45 @@ export class HuntScene extends Phaser.Scene {
     const zoom = this.cameras.main.zoom;
     if (bounds === undefined || !(zoom > 0)) return { scrollX, scrollY };
 
+    const render = { width: this.scale.width, height: this.scale.height };
+    const viewport = canvasViewportBox(this.game.canvas, render);
+    if (
+      !(viewport.width > 0) ||
+      !(viewport.height > 0) ||
+      !(render.width > 0) ||
+      !(render.height > 0)
+    ) {
+      return { scrollX, scrollY };
+    }
+
+    const playfield = playfieldRect(viewport);
+    // The camera renders the full-bleed canvas, but the player reads the
+    // smaller playfield left between the cockpit bands. Expand the ground box
+    // by the hidden canvas margins so a player at a map edge is held against
+    // the playfield edge rather than underneath the rail or the deck.
+    const renderScaleX = render.width / viewport.width;
+    const renderScaleY = render.height / viewport.height;
+    const leftMargin = (playfield.x * renderScaleX) / zoom;
+    const rightMargin =
+      ((viewport.width - playfield.x - playfield.width) * renderScaleX) / zoom;
+    const topMargin = (playfield.y * renderScaleY) / zoom;
+    const bottomMargin =
+      ((viewport.height - playfield.y - playfield.height) * renderScaleY) /
+      zoom;
+    const framedBounds = {
+      minX: bounds.minX - leftMargin,
+      minY: bounds.minY - topMargin,
+      maxX: bounds.maxX + rightMargin,
+      maxY: bounds.maxY + bottomMargin,
+    };
+
     return clampCameraScroll({
       scrollX,
       scrollY,
       viewportWidth: this.scale.width,
       viewportHeight: this.scale.height,
       zoom,
-      bounds,
+      bounds: framedBounds,
     });
   }
 
