@@ -15,7 +15,8 @@ obrigatória.
 Canary e identidade estável de spawns. Aceite de diversão é do usuário.
 
 **Gate.** Linhas content/assets de `AGENTS.md`: teste afetado se mudar lógica, content:check e
-assets:check; architecture:check para imports; app e typecheck conforme o diff. Última task: build.
+assets:check; architecture:check para imports; app e typecheck conforme o diff. A task de
+fechamento passou a ser a PB-14-07 em 2026-09-09; esta não roda mais `build`.
 
 **O que olhar no jogo.** Jogar e assistir ao helper no mesmo encontro com as três classes;
 identificar perigo, resposta e resultado sem o HUD ocultar tiles.

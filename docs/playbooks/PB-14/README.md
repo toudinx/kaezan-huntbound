@@ -42,6 +42,7 @@ a existência da card não elimina sua dependência. As recomendações abaixo a
 | PB-14-04 | [Paladin no loop completo](tasks/PB-14-04-paladin.md) | GPT-5.6 Luna | `xhigh` | Reaplica o caminho da Sorcerer com kit ranged já decidido. |
 | PB-14-05 | [Comportamentos dos monstros](tasks/PB-14-05-comportamentos.md) | Grok 4.6 | `xhigh` | IA determinística; continuidade com a conjuração de mobs já implementada. |
 | PB-14-06 | [Encontros das três vocações](tasks/PB-14-06-encontros.md) | GPT-5.6 Sol | `xhigh` | Integração de composição, apresentação e helper das três classes. |
+| PB-14-07 | [O log de combate](tasks/PB-14-07-log-de-combate.md) | Claude Opus 5 | `xhigh` | Superfície nova de leitura; herdada da `PB-17-05` em 2026-09-09. **Fecha o playbook: roda `build`.** |
 
 ## Como escolher o executor
 

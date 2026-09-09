@@ -1,6 +1,6 @@
 # PB-14 — Estado
 
-**Estado:** PB-14-02 implementada; 03 a 06 pendentes.
+**Estado:** PB-14-02 implementada; 03 a 07 pendentes.
 **Próxima:** PB-14-03.
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
@@ -11,6 +11,15 @@
 | PB-14-04 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-14-05 | pending | Grok 4.6 `xhigh` | — | — |
 | PB-14-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
+| PB-14-07 | pending | Claude Opus 5 `xhigh` | — | — |
+
+## Escopo recebido em 2026-09-09
+
+A revisão dos playbooks 15, 17 e 18 trouxe a antiga `PB-17-05` para cá como **PB-14-07**, o log de
+combate. Ela era dada como absorvida pelo roteiro, mas não era: a PB-13-09 entregou o feed do
+*helper*, que narra o que o helper fez, não dano, cura, leech, regen, loot, morte nem recusa de
+comando. Com três vocações no mesmo encontro, é ela que torna a diferença entre elas legível. Passa
+a ser a task de fechamento e roda `build`.
 
 ## Decisões pendentes
 

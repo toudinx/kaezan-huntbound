@@ -20,12 +20,14 @@ aprova novas fórmulas, schemas ou migrações. Druid fica depois do V0.
 | Ordem | Playbook | Entrega e limite | Aceite do usuário |
 |---|---|---|---|
 | 1 | [PB-13 — Uma run que vale repetir](playbooks/PB-13/README.md) | Loop com Knight, loot/set/coleção, venda a NPC, gold com uso, level, bestiary/conquistas e helper mínimo. Uma hunt de referência. | Concluir, equipar uma melhoria, recarregar e querer outra run; entender o que o helper faz. |
-| 2 | [PB-14 — Três vocações, encontros distintos](playbooks/PB-14/README.md) | Sorcerer, Paladin e três papéis comportamentais de monstros; ampliar só o conteúdo que demonstra esses papéis. | As três classes funcionam no mesmo encontro; assistir revela diferenças de posição, ataque e risco. |
-| 3 | [PB-15 — Dungeon, modulação e fechamento](playbooks/PB-15/README.md) | Uma dungeon curta, modo modulado, coleção/gacha cosmético mínimo e fechamento das cinco hunts. | Preparar, completar, receber recompensa, voltar à dungeon antiga com desafio e encerrar a sessão com progresso salvo. |
+| 2 | [PB-14 — Três vocações, encontros distintos](playbooks/PB-14/README.md) | Sorcerer, Paladin, três papéis comportamentais de monstros e o log de combate; ampliar só o conteúdo que demonstra esses papéis. | As três classes funcionam no mesmo encontro; assistir revela diferenças de posição, ataque e risco, e o log diz o que acabou de acontecer. |
+| 3 | [PB-15 — Dungeon, modulação e fechamento](playbooks/PB-15/README.md) | Uma dungeon curta, modo modulado e fechamento das cinco hunts. Cosmético saiu do V0 em 2026-09-09. | Preparar, completar, receber recompensa, voltar à dungeon antiga com desafio e encerrar a sessão com progresso salvo. |
 
 Execução serial. Nenhuma task declara paralelismo. Uma task por chat; não abrir branch por rotina.
-As 22 cards estão escritas: 9 no PB-13, 6 no PB-14 e 7 no PB-15. Cada task depende da anterior;
-a task 01 de cada playbook resolve o design necessário às implementações. As cards descrevem
+As 21 cards estão escritas: 9 no PB-13, 7 no PB-14 e 5 no PB-15. A revisão de 2026-09-09 moveu o log
+de combate da antiga `PB-17-05` para `PB-14-07` e tirou a coleção cosmética do V0 — detalhes no
+`README.md` de cada playbook. Cada task depende da anterior; a task 01 de cada playbook resolve o
+design necessário às implementações. As cards descrevem
 objetivos e paths, sem impor assinaturas ou camadas futuras.
 
 ## Motivos para repetir — direção confirmada pelo usuário
@@ -83,7 +85,15 @@ para justificar o farm. Os marcos têm fim; o jogo pode continuar oferecendo hun
   Separar nível efetivo, dificuldade e recompensa. Primeiro modo livre e modulado;
   dial adicional somente se o playtest mostrar necessidade. Nenhuma redução permanente do save.
   A emenda 09 é proposta técnica; seu texto antigo não foi aceito integralmente por este plano.
-- **Gacha:** somente outfits, seguindo o contrato já aceito da ADR-05; sem dinheiro real ou poder.
+- **Gacha e outfits:** **fora do V0 desde 2026-09-09.** O contrato da ADR-05 continua válido —
+  somente outfits, sem dinheiro real e sem poder —, mas declarado não é agendado. Dois motivos: o
+  gacha não toca o eixo de progressão do V0, que é o set da faixa mais a modulação, porque por
+  contrato ele concede *somente* outfit; e estava na última posição do playbook cobrando migração de
+  save e transação atômica de moeda, prêmio, garantia e duplicata por uma feature cosmética, no
+  ponto do V0 em que um bug custa o save. O acervo pessoal já está na máquina, então falta de arte
+  **não** é o motivo — mas o B18, o cisalhamento de outfits 32 × 32 no export pessoal, continua
+  aberto e atinge exatamente as famílias que o gacha premiaria. Vai para a reserva de ideias;
+  nenhuma linha de gacha existe no código.
 
 ## Destino do backlog antigo
 
@@ -101,17 +111,19 @@ convertido artificialmente em aceite de gameplay.
 | PB-11, não implementado | Absorvido pelo PB-13-03/04. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
 | PB-10-14/15, mapas pendentes | PB-15-02 (render) e PB-15-03 (caixas); corrigir antes só se impedirem a hunt de referência. |
 | PB-12, não implementado | PB-15-01/05; proposta de sync deve ser reconciliada com progressão real. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
-| Antiga previsão PB-13 a PB-16 (outfits/gacha/helper/QA) | Cosméticos no PB-15-04; helper no PB-13/20; performance somente diante de problema medido. |
-| PB-17, pendência de feedback | PB-13-09 e PB-14-06; ícones, mochila e minimapa integrados preservados. |
-| PB-18, não iniciado | Seleção, preview e retorno ao atlas no PB-13-02; não construir controle vazio de dificuldade. |
+| Antiga previsão PB-13 a PB-16 (outfits/gacha/helper/QA) | Cosméticos fora do V0 desde 2026-09-09; helper no PB-13-09; performance somente diante de problema medido. |
+| PB-17, pendência de feedback | Ícones, mochila e minimapa integrados preservados. A **PB-17-05, o log de combate, não tinha sido absorvida** — a PB-13-09 entregou o feed do *helper*, não dano/cura/leech/regen/loot/morte/recusa. Virou **PB-14-07** em 2026-09-09. |
+| PB-18, não iniciado | Descartado em 2026-09-09: a premissa ("uma ficha por hunt") foi falsificada pelo PB-13-03, o retorno ao atlas é da PB-13-02 e a escada é da PB-13-01. Diretório reduzido a stub; conteúdo em `docs/archive/2026-09-09/playbooks/PB-18/`. Sobra uma linha de backlog: porta com detalhe e retrato. |
 | PB-19/20/21, planejamento provisório sem implementação | Substituídos por PB-13/14/15; entradas antigas são redirecionamentos. |
 | Map Editor / Borderizer | Ferramentas auxiliares sob demanda, sem bloquear o loop do jogo. |
 
 ## Depois do fim
 
-Druid, mais hunts/dungeons, subclasses, charms, craft completo, bestiary com poder adicional,
-diárias/semanais, desafios sazonais, helper de navegação, touch completo e wrappers ficam numa
-reserva de ideias. Nada disso é requisito oculto de fechamento. Multiplayer, mercado entre jogadores,
+Druid, **a coleção de outfits e o gacha cosmético**, **a porta com detalhe e retrato** (a lista de
+hunts ainda despeja todas as criaturas e a tabela de loot inline, e não mostra arte nenhuma), mais
+hunts/dungeons, subclasses, charms, craft completo, bestiary com poder adicional, diárias/semanais,
+desafios sazonais, helper de navegação, touch completo e wrappers ficam numa reserva de ideias. As
+duas primeiras esbarram no B18 enquanto ele estiver aberto. Nada disso é requisito oculto de fechamento. Multiplayer, mercado entre jogadores,
 backend, publicação comercial e substituição visual pertencem a outra fase de produto.
 
 O V0 termina com os três resultados aceitos no playtest, sem tarefa central pendente e sem perda ou

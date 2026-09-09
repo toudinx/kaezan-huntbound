@@ -82,7 +82,7 @@ Em conflito, nesta ordem:
 | PB-17-02 | o deck desenha o ícone e o cooldown vira varredura, não só um número | 01 |
 | PB-17-03 | a mochila: sprite, empilhamento, nome no hover e o loot chegando visível | — |
 | PB-17-04 | o minimapa localiza: cor de chão real, seta com facing, andar, saídas | — |
-| PB-17-05 | o log de combate: dano, cura, leech, regen, loot, morte e recusa de comando. **Task de fechamento — roda `build`.** | — |
+| ~~PB-17-05~~ | o log de combate: dano, cura, leech, regen, loot, morte e recusa de comando. **Movida para `PB-14-07` em 2026-09-09** — era a única pendência viva desta fila e não tinha sido absorvida por ninguém. | — |
 | PB-17-FIX-02 | os painéis do HUD desenham um frame do atlas, não a folha inteira — bug do playtest de 2026-08-31 | 02, 03 |
 
 **Serial na `main`, sem worktree.** As cinco tocam `apps/game/src/styles.css`, então elas não são

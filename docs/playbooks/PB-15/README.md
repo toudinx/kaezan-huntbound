@@ -1,10 +1,21 @@
-# PB-15 — Dungeon, modulação e coleção
+# PB-15 — Dungeon, modulação e fechamento
 
 **Status:** planejado. Depende do código integrado de PB-14.
 
 ## Objetivo e escopo
 
-Entregar uma dungeon modulada, completar os mapas existentes e fechar a coleção cosmética. Sem multiplayer, monetização, ranking ou conteúdo procedural.
+Entregar uma dungeon modulada e completar os mapas existentes. Sem multiplayer, monetização, ranking
+ou conteúdo procedural.
+
+**A coleção cosmética saiu do V0 em 2026-09-09.** As antigas PB-15-06 (famílias de outfit) e
+PB-15-07 (gacha) foram arquivadas em `docs/archive/2026-09-09/playbooks/PB-15/tasks/` e viraram
+reserva de ideias no roteiro. Dois motivos: o gacha concede somente outfit por contrato, então não
+toca o eixo de progressão do V0, que é o set da faixa mais a modulação; e era a task mais
+cara em risco — migração de save e transação atômica de moeda, prêmio, garantia e duplicata por uma
+feature cosmética, na última posição do playbook, onde um bug custa o save. O acervo pessoal já está
+nesta máquina, então falta de arte não é o motivo; mas o B18, o cisalhamento de outfits 32 × 32 no
+export pessoal, continua aberto e atinge as famílias que o gacha premiaria. O contrato do gacha
+continua na ADR-05 — declarado não é agendado, e não implementá-lo agora não reabre a ADR.
 
 ## Decisões congeladas
 
@@ -17,7 +28,8 @@ aqui.
 chega ao topo com coleções antigas por fechar, e voltar a uma faixa superada não tem tensão nenhuma:
 a hunt vira trivial e o farm de coleção, vazio. É o B26 no `STATE.md` do PB-13, e é este playbook que
 o resolve. A modulação é o que devolve risco ao conteúdo antigo — não é um modo alternativo simpático,
-é o que faz o eixo de progressão do V0 fechar. Trate a PB-15-05 como entrega central, não como extra.
+é o que faz o eixo de progressão do V0 fechar. Trate a PB-15-05 como entrega central, e agora também como task de
+fechamento do playbook.
 
 A task 01 registra decisões pendentes, fontes, mudanças de contrato e rollback num design curto em
 `docs/superpowers/specs/`; cards seguintes leem esse design. **Contrato, schema e golden estão
@@ -38,9 +50,7 @@ a existência da card não elimina sua dependência. As recomendações abaixo a
 | PB-15-02 | [Renderizar as hunts grandes](tasks/PB-15-02-render.md) | GPT-5.6 Sol | `xhigh` | Investigação e implementação de performance no renderer. |
 | PB-15-03 | [Completar as caixas das hunts](tasks/PB-15-03-mapas.md) | GPT-5.6 Luna | `xhigh` | Pipeline e caixas já definidos; reextração com checks objetivos. |
 | PB-15-04 | [Dungeon com começo e fim](tasks/PB-15-04-dungeon.md) | Claude Opus 5 | `xhigh` | Novo fluxo de encontros/boss com kernel, conteúdo e persistência. |
-| PB-15-05 | [Modo modulado](tasks/PB-15-05-modulacao.md) | Claude Opus 5 | `xhigh` | Transformação reversível de poder/gear e compatibilidade de sessão. |
-| PB-15-06 | [Coleção visual de outfits](tasks/PB-15-06-outfits.md) | GPT-5.6 Luna | `xhigh` | Contrato de família e pipeline visual já estabelecidos. |
-| PB-15-07 | [Gacha cosmético e V0 integrado](tasks/PB-15-07-gacha.md) | Claude Opus 5 | `xhigh` | Economia e transação atômica de moeda, prêmio, garantia e duplicata. |
+| PB-15-05 | [Modo modulado](tasks/PB-15-05-modulacao.md) | Claude Opus 5 | `xhigh` | Transformação reversível de poder/gear e compatibilidade de sessão. **Fecha o playbook e o V0: roda `build`.** |
 
 ## Como escolher o executor
 

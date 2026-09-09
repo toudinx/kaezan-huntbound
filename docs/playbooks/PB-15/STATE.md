@@ -10,8 +10,13 @@
 | PB-15-03 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-15-04 | pending | Claude Opus 5 `xhigh` | — | — |
 | PB-15-05 | pending | Claude Opus 5 `xhigh` | — | — |
-| PB-15-06 | pending | GPT-5.6 Luna `xhigh` | — | — |
-| PB-15-07 | pending | Claude Opus 5 `xhigh` | — | — |
+
+## Escopo retirado em 2026-09-09
+
+As antigas PB-15-06 (famílias de outfit) e PB-15-07 (gacha cosmético) saíram do V0 na revisão dos
+playbooks 15, 17 e 18. As cards estão em `docs/archive/2026-09-09/playbooks/PB-15/tasks/` e o motivo
+está no `README.md`. Nenhuma linha de gacha existe no código, então não há migração a desfazer. Com
+isso a PB-15-05 passou a ser a task de fechamento e roda `build`.
 
 ## Bloqueios
 

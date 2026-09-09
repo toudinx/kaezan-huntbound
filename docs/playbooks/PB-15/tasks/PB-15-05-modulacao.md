@@ -20,6 +20,8 @@ anterior e **sem novo draw de RNG**, regenerando os goldens que isso mover.
 
 **Gate.** Linha `packages/simulation`/`contracts`/`save`: teste afetado + os goldens que este diff
 mover (`simulation:check`, `hunt:check`, `combat:check`, `save:check`) + `architecture:check`.
+**Última task do playbook desde 2026-09-09, quando a coleção cosmética saiu do V0: rodar
+`corepack pnpm build` uma vez.**
 
 **O que olhar no jogo.** Comparar livre/modulado, entrar com equipamento próprio, sair e recarregar;
 ficha real deve permanecer íntegra e revisitar deve ter recompensa compreensível.
