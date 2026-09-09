@@ -68,6 +68,7 @@ import { effectFrame } from '../../hunt/EffectAnimation';
 import {
   groundBounds,
   groundEdgeCells,
+  resolveGroundSample,
   unresolvedGroundCells,
 } from '../../hunt/GroundCompositor';
 import {
@@ -81,6 +82,7 @@ import {
 } from '../../hunt/HuntHelper';
 import {
   createHuntPresentation,
+  type HuntActorDrawCommand,
   type HuntDrawLayer,
   type HuntPresentation,
 } from '../../hunt/HuntPresentation';
@@ -133,6 +135,25 @@ export const WORLD_EDGE_COLOR = 0x241812;
  * beside it, so the boundary becomes a surface instead of an edge.
  */
 export const WORLD_EDGE_RIM_COLOR = 0x3a281c;
+
+/**
+ * A readable floor under a missing or transparent tile pack. The real tile is
+ * still drawn above this layer when it is available; this is the reserve that
+ * keeps a hunt playable while a personal pack is incomplete.
+ */
+export const RESERVE_GROUND_DEPTH = WORLD_EDGE_DEPTH + 0.1;
+
+const RESERVE_GROUND_COLORS = [
+  0x51483f, 0x5a4c40, 0x4b4641, 0x635142, 0x554a48,
+] as const;
+
+function reserveGroundColor(serverId: number, cellIndex: number): number {
+  const hash = Math.abs(Math.imul(serverId, 31) + Math.imul(cellIndex, 17));
+  return (
+    RESERVE_GROUND_COLORS[hash % RESERVE_GROUND_COLORS.length] ??
+    RESERVE_GROUND_COLORS[0]
+  );
+}
 
 export interface HuntSimulationDriver {
   readonly tick: TickIndex;
@@ -201,6 +222,10 @@ export class HuntScene extends Phaser.Scene {
     EntityId,
     Phaser.GameObjects.Sprite
   >();
+  private readonly fallbackActorMarkers = new Map<
+    EntityId,
+    Phaser.GameObjects.Graphics
+  >();
   private readonly healthBars = new Map<
     EntityId,
     Phaser.GameObjects.Graphics
@@ -210,6 +235,8 @@ export class HuntScene extends Phaser.Scene {
   private healthBarRedraws = 0;
   private readonly maxHealthByBlueprint = new Map<string, number>();
   private targetRing: Phaser.GameObjects.Graphics | undefined;
+  private groundReserve: Phaser.GameObjects.Graphics | undefined;
+  private readonly reservedGroundCells = new Set<number>();
   private worldEdge: Phaser.GameObjects.Graphics | undefined;
   private worldEdgeCreations = 0;
   private readonly worldEdgeCells = new Set<number>();
@@ -472,6 +499,9 @@ export class HuntScene extends Phaser.Scene {
       this.targetRing?.destroy();
       this.targetRing = undefined;
       this.destroyCreatureHealthBars();
+      this.groundReserve?.destroy();
+      this.groundReserve = undefined;
+      this.reservedGroundCells.clear();
       this.worldEdge?.destroy();
       this.worldEdge = undefined;
       this.worldEdgeCells.clear();
@@ -568,6 +598,8 @@ export class HuntScene extends Phaser.Scene {
     const actors: HuntProbeActor[] = (presentation?.actors() ?? []).map(
       (actor) => {
         const sprite = this.actorSprites.get(actor.entityId);
+        const marker = this.fallbackActorMarkers.get(actor.entityId);
+        const visual = sprite ?? marker;
 
         return {
           entityId: actor.entityId,
@@ -575,10 +607,10 @@ export class HuntScene extends Phaser.Scene {
           key: actor.key,
           position: { ...actor.position },
           facing: actor.facing,
-          sprite: sprite ? { x: sprite.x, y: sprite.y } : null,
+          sprite: visual ? { x: visual.x, y: visual.y } : null,
           frame: sprite ? sprite.frame.name : null,
           flipX: sprite?.flipX ?? false,
-          visible: sprite?.visible ?? false,
+          visible: visual?.visible ?? false,
         };
       },
     );
@@ -784,6 +816,10 @@ export class HuntScene extends Phaser.Scene {
     }
     this.sprites = [];
     this.actorSprites.clear();
+    for (const marker of this.fallbackActorMarkers.values()) {
+      marker.destroy();
+    }
+    this.fallbackActorMarkers.clear();
     this.destroyCreatureHealthBars();
   }
 
@@ -805,7 +841,9 @@ export class HuntScene extends Phaser.Scene {
         position: actor.position,
         visible:
           actor.position.z === presentation?.floor() &&
-          (this.actorSprites.get(actor.entityId)?.visible ?? false),
+          (this.actorSprites.get(actor.entityId)?.visible ??
+            this.fallbackActorMarkers.get(actor.entityId)?.visible ??
+            false),
       })),
     );
   }
@@ -922,9 +960,13 @@ export class HuntScene extends Phaser.Scene {
     this.destroySprites();
     this.drawnGroundCells.clear();
     this.syncCameraBounds();
+    this.renderGroundReserve();
     for (const command of presentation.drawCommands()) {
       const asset = this.assetByKey.get(command.key);
-      if (!asset) continue;
+      if (!asset) {
+        if (command.kind === 'actor') this.createFallbackActorMarker(command);
+        continue;
+      }
 
       const sprite = this.add.sprite(0, 0, command.key);
       const anchor = this.anchorFor(asset, command);
@@ -982,6 +1024,52 @@ export class HuntScene extends Phaser.Scene {
             maxY: (cells.maxY + 1) * this.tileSize,
           };
     this.cameraController = this.makeCameraController();
+  }
+
+  private ensureGroundReserve(): Phaser.GameObjects.Graphics {
+    if (this.groundReserve !== undefined) return this.groundReserve;
+
+    const reserve = this.add
+      .graphics()
+      .setDepth(RESERVE_GROUND_DEPTH)
+      .setData('hunt-ground-reserve', true);
+    this.groundReserve = reserve;
+    return reserve;
+  }
+
+  /**
+   * Paints a warm, tile-sized reserve below the real art. Personal packs can
+   * be partial or contain transparent placeholders; the walkable area should
+   * still read as a cave instead of a black canvas in that state.
+   */
+  private renderGroundReserve(): void {
+    const presentation = this.presentation;
+    if (!presentation) return;
+
+    const region = this.options.hunt.region;
+    const reserve = this.ensureGroundReserve();
+    reserve.clear();
+    this.reservedGroundCells.clear();
+
+    for (let index = 0; index < region.width * region.height; index += 1) {
+      const sample = resolveGroundSample(region, presentation.floor(), index);
+      if (sample === undefined) continue;
+
+      const serverId = region.palette[sample.paletteIndex] ?? 0;
+      const x = index % region.width;
+      const y = Math.floor(index / region.width);
+      reserve
+        .fillStyle(reserveGroundColor(serverId, index), 1)
+        .fillRect(
+          x * this.tileSize,
+          y * this.tileSize,
+          this.tileSize,
+          this.tileSize,
+        );
+      this.reservedGroundCells.add(index);
+    }
+
+    reserve.setVisible(this.reservedGroundCells.size > 0);
   }
 
   private ensureWorldEdge(): Phaser.GameObjects.Graphics {
@@ -1055,6 +1143,29 @@ export class HuntScene extends Phaser.Scene {
     });
   }
 
+  private createFallbackActorMarker(
+    command: HuntActorDrawCommand,
+  ): Phaser.GameObjects.Graphics {
+    const marker = this.add.graphics();
+    const player = command.blueprintId === this.options.hunt.playerBlueprintId;
+    const size = this.tileSize * 0.68;
+    const shadow = player ? 0x5b4218 : 0x4c2222;
+    const body = player ? 0xffd76a : 0xe06a5f;
+
+    marker
+      .fillStyle(shadow, 0.95)
+      .fillRect(-size / 2, -size, size, size)
+      .fillStyle(body, 1)
+      .fillRect(-size * 0.34, -size * 0.92, size * 0.68, size * 0.68)
+      .setDepth(this.depthFor(command.layer, command, 0))
+      .setData('hunt-layer', command.layer)
+      .setData('hunt-fallback-actor', true)
+      .setVisible(false);
+
+    this.fallbackActorMarkers.set(command.entityId, marker);
+    return marker;
+  }
+
   /**
    * Adds the sprites for actors that just spawned and drops the ones that just
    * died, leaving the floor untouched.
@@ -1067,10 +1178,17 @@ export class HuntScene extends Phaser.Scene {
     for (const command of presentation.drawCommands()) {
       if (command.kind !== 'actor') continue;
       live.add(command.entityId);
-      if (this.actorSprites.has(command.entityId)) continue;
+      if (
+        this.actorSprites.has(command.entityId) ||
+        this.fallbackActorMarkers.has(command.entityId)
+      )
+        continue;
 
       const asset = this.assetByKey.get(command.key);
-      if (!asset) continue;
+      if (!asset) {
+        this.createFallbackActorMarker(command);
+        continue;
+      }
 
       const sprite = this.add.sprite(0, 0, command.key);
       const anchor = this.anchorFor(asset, command);
@@ -1090,6 +1208,12 @@ export class HuntScene extends Phaser.Scene {
       const index = this.sprites.indexOf(sprite);
       if (index >= 0) this.sprites.splice(index, 1);
       sprite.destroy();
+    }
+
+    for (const [entityId, marker] of [...this.fallbackActorMarkers]) {
+      if (live.has(entityId)) continue;
+      this.fallbackActorMarkers.delete(entityId);
+      marker.destroy();
     }
 
     this.syncTargetHighlight();
@@ -1121,8 +1245,12 @@ export class HuntScene extends Phaser.Scene {
     this.combatImpulses.advance(renderTimeMs);
     for (const actor of presentation.actors()) {
       const sprite = this.actorSprites.get(actor.entityId);
+      const marker = this.fallbackActorMarkers.get(actor.entityId);
       const asset = this.assetByKey.get(actor.key);
-      if (!sprite || !asset || actor.position.z !== presentation.floor()) {
+      if (
+        (sprite === undefined && marker === undefined) ||
+        actor.position.z !== presentation.floor()
+      ) {
         continue;
       }
 
@@ -1137,40 +1265,59 @@ export class HuntScene extends Phaser.Scene {
       const position = stepping
         ? sampleActorMotion(motion, actorRenderTick)
         : actor.position;
-      const anchor = this.anchorFor(asset, position);
+      const anchor =
+        asset === undefined
+          ? cellAnchor({
+              cell: position,
+              cellWidth: 32,
+              cellHeight: 32,
+              scale: 1,
+              tileSize: this.tileSize,
+            })
+          : this.anchorFor(asset, position);
       const lungeOffset = this.combatImpulses.lungeOffset(
         actor.entityId,
         renderTimeMs,
       );
-      sprite.setPosition(anchor.x + lungeOffset.x, anchor.y + lungeOffset.y);
       // The floor is only rebuilt when it changes, so an actor that keeps its
       // boot-time depth sorts against the tile it spawned on for the rest of
       // the hunt: it would walk in front of every wall it ever passes.
-      sprite.setDepth(
-        actorDepth({
-          from: stepping ? motion.from : actor.position,
-          to: stepping ? motion.to : actor.position,
-          regionWidth: this.options.hunt.region.width,
-        }),
-      );
-      if (asset.atlasFrameCount > 1) {
-        sprite.setFrame(
-          actorFrameAtTick({
-            asset,
-            facing: actor.facing,
-            motion: actor.motion,
-            renderTick: actorRenderTick,
-          }),
-          false,
-          false,
-        );
+      const depth = actorDepth({
+        from: stepping ? motion.from : actor.position,
+        to: stepping ? motion.to : actor.position,
+        regionWidth: this.options.hunt.region.width,
+      });
+
+      if (sprite !== undefined && asset !== undefined) {
+        sprite.setPosition(anchor.x + lungeOffset.x, anchor.y + lungeOffset.y);
+        sprite.setDepth(depth);
+        if (asset.atlasFrameCount > 1) {
+          sprite.setFrame(
+            actorFrameAtTick({
+              asset,
+              facing: actor.facing,
+              motion: actor.motion,
+              renderTick: actorRenderTick,
+            }),
+            false,
+            false,
+          );
+        }
+        sprite.setVisible(true);
+      } else if (marker !== undefined) {
+        marker
+          .setPosition(anchor.x + lungeOffset.x, anchor.y + lungeOffset.y)
+          .setDepth(depth)
+          .setVisible(true);
       }
-      sprite.setVisible(true);
       visible.add(actor.entityId);
     }
 
     for (const [entityId, sprite] of this.actorSprites) {
       if (!visible.has(entityId)) sprite.setVisible(false);
+    }
+    for (const [entityId, marker] of this.fallbackActorMarkers) {
+      if (!visible.has(entityId)) marker.setVisible(false);
     }
 
     this.syncCreatureHealthBars();
@@ -1203,7 +1350,10 @@ export class HuntScene extends Phaser.Scene {
         entityId: actor.entityId,
         health: healthByEntity.get(actor.entityId) ?? 0,
         maxHealth: this.maxHealthByBlueprint.get(actor.blueprintId) ?? 0,
-        onScreen: this.actorSprites.get(actor.entityId)?.visible ?? false,
+        onScreen:
+          this.actorSprites.get(actor.entityId)?.visible ??
+          this.fallbackActorMarkers.get(actor.entityId)?.visible ??
+          false,
         isPlayer: actor.blueprintId === this.options.hunt.playerBlueprintId,
       })),
     );
@@ -1212,8 +1362,10 @@ export class HuntScene extends Phaser.Scene {
     const drawn = new Set<EntityId>();
 
     for (const bar of bars) {
-      const sprite = this.actorSprites.get(bar.entityId);
-      if (sprite === undefined) continue;
+      const visual =
+        this.actorSprites.get(bar.entityId) ??
+        this.fallbackActorMarkers.get(bar.entityId);
+      if (visual === undefined) continue;
 
       drawn.add(bar.entityId);
       this.paintCreatureHealthBar(bar, geometry)
@@ -1223,10 +1375,10 @@ export class HuntScene extends Phaser.Scene {
           // size -- and the tile, not the cell, is what the bar hangs over. A
           // rotworm is a 32px figure in a 64px cell, so measuring from the top
           // of the cell floated its bar a whole tile above its head.
-          sprite.x - this.tileSize / 2,
-          sprite.y - this.tileSize - geometry.gap,
+          visual.x - this.tileSize / 2,
+          visual.y - this.tileSize - geometry.gap,
         )
-        .setDepth(sprite.depth + CREATURE_HEALTH_BAR_DEPTH_OFFSET)
+        .setDepth(visual.depth + CREATURE_HEALTH_BAR_DEPTH_OFFSET)
         .setVisible(true);
     }
 
@@ -1234,7 +1386,10 @@ export class HuntScene extends Phaser.Scene {
       if (drawn.has(entityId)) continue;
       // A creature that stepped to another floor keeps its bar, hidden: it is
       // coming back. One whose sprite is gone is dead, and so is its bar.
-      if (this.actorSprites.has(entityId)) {
+      if (
+        this.actorSprites.has(entityId) ||
+        this.fallbackActorMarkers.has(entityId)
+      ) {
         graphics.setVisible(false);
         continue;
       }
@@ -1922,6 +2077,7 @@ export class HuntScene extends Phaser.Scene {
         const index = this.cellIndex(x, y);
         if (
           !this.drawnGroundCells.has(index) &&
+          !this.reservedGroundCells.has(index) &&
           !this.worldEdgeCells.has(index)
         ) {
           untreated += 1;

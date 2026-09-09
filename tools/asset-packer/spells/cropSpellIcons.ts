@@ -312,15 +312,93 @@ function cropIcon(atlas: DecodedPng, clientId: number): Buffer {
   });
 }
 
-export function createVisibleFallbackPng(seed: number): Buffer {
+export type VisibleFallbackKind = 'spell' | 'tile';
+
+export function createVisibleFallbackPng(
+  seed: number,
+  kind: VisibleFallbackKind = 'spell',
+): Buffer {
   const pixels = Buffer.alloc(SPELL_ICON_SIZE * SPELL_ICON_SIZE * 4);
+  const spellPalettes = [
+    {
+      background: [24, 31, 54],
+      border: [111, 123, 153],
+      rune: [238, 190, 91],
+      accent: [89, 172, 220],
+    },
+    {
+      background: [28, 43, 52],
+      border: [106, 147, 149],
+      rune: [101, 220, 188],
+      accent: [225, 202, 104],
+    },
+    {
+      background: [45, 29, 50],
+      border: [145, 111, 155],
+      rune: [225, 120, 170],
+      accent: [244, 193, 91],
+    },
+    {
+      background: [39, 39, 29],
+      border: [139, 132, 87],
+      rune: [239, 207, 103],
+      accent: [173, 112, 66],
+    },
+  ] as const;
+  const tilePalettes = [
+    [72, 63, 56],
+    [81, 69, 57],
+    [67, 67, 61],
+    [86, 70, 61],
+  ] as const;
+  const paletteIndex = Math.abs(seed) % spellPalettes.length;
+  const spellPalette = spellPalettes[paletteIndex] ?? spellPalettes[0];
+  const tilePalette = tilePalettes[paletteIndex] ?? tilePalettes[0];
+
   for (let row = 0; row < SPELL_ICON_SIZE; row += 1) {
     for (let column = 0; column < SPELL_ICON_SIZE; column += 1) {
       const offset = (row * SPELL_ICON_SIZE + column) * 4;
-      const stripe = (row + column + seed) % 8 < 4;
-      pixels[offset] = stripe ? 255 : 35;
-      pixels[offset + 1] = stripe ? 60 : 20;
-      pixels[offset + 2] = stripe ? 220 : 35;
+      if (kind === 'tile') {
+        const block = (Math.floor(row / 8) + Math.floor(column / 8) + seed) % 2;
+        const shade = block === 0 ? 0 : 10;
+        const seam = row % 8 === 0 || column % 8 === 0;
+        pixels[offset] = Math.max(0, tilePalette[0] - shade - (seam ? 18 : 0));
+        pixels[offset + 1] = Math.max(
+          0,
+          tilePalette[1] - shade - (seam ? 15 : 0),
+        );
+        pixels[offset + 2] = Math.max(
+          0,
+          tilePalette[2] - shade - (seam ? 12 : 0),
+        );
+      } else {
+        const dx = column - 15.5;
+        const dy = row - 15.5;
+        const radius = Math.sqrt(dx * dx + dy * dy);
+        const ring = radius >= 9 && radius <= 11;
+        const cross = Math.abs(dx) <= 1.5 || Math.abs(dy) <= 1.5;
+        const diagonal = Math.abs(Math.abs(dx) - Math.abs(dy)) <= 1.2;
+        const rune = (ring || cross || diagonal) && radius <= 12;
+        const highlight =
+          rune &&
+          ((row + column + seed) % 5 === 0 ||
+            (row * 3 + column + seed) % 11 === 0);
+        const border =
+          row < 2 ||
+          column < 2 ||
+          row >= SPELL_ICON_SIZE - 2 ||
+          column >= SPELL_ICON_SIZE - 2;
+        const color = border
+          ? spellPalette.border
+          : rune
+            ? highlight
+              ? spellPalette.accent
+              : spellPalette.rune
+            : spellPalette.background;
+        pixels[offset] = color[0];
+        pixels[offset + 1] = color[1];
+        pixels[offset + 2] = color[2];
+      }
       pixels[offset + 3] = 255;
     }
   }

@@ -11,6 +11,7 @@ import { sourceMapForAsset } from '../source/sourceManifest.ts';
 import {
   createVisibleFallbackPng,
   cropSpellIconAtlas,
+  type VisibleFallbackKind,
 } from '../spells/cropSpellIcons.ts';
 import {
   getHuntPipelineEntry,
@@ -31,6 +32,7 @@ const preparedPersonalSpellRoots = new Set<string>();
 const preparedPersonalFallbackRoots = new Set<string>();
 const allowPersonalDevFallbacks =
   process.env.HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS === '1';
+const PERSONAL_FALLBACK_CELL_SIZE = 32;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -69,6 +71,15 @@ function sourceEntry(file: string) {
   };
 }
 
+/** Keeps a generated placeholder at the same scale as one world sqm. */
+function personalFallbackSourceEntry(file: string) {
+  return {
+    ...sourceEntry(file),
+    cellW: PERSONAL_FALLBACK_CELL_SIZE,
+    cellH: PERSONAL_FALLBACK_CELL_SIZE,
+  };
+}
+
 function sourcePathForEntry(
   entry: AssetSelectionManifest['entries'][number],
 ): string {
@@ -99,16 +110,24 @@ async function ensurePersonalFallbackAssets(
       existingEntry !== undefined && typeof existingEntry.file === 'string'
         ? existingEntry.file
         : sourcePathForEntry(entry);
+    const isGeneratedFallback =
+      existingEntry?.name === '' &&
+      existingEntry?.cellW === 1 &&
+      existingEntry?.cellH === 1 &&
+      existingEntry?.cols === 1 &&
+      isRecord(existingEntry.groups);
 
-    if (existingEntry === undefined) {
-      map[key] = sourceEntry(sourcePath);
+    if (existingEntry === undefined || isGeneratedFallback) {
+      map[key] = personalFallbackSourceEntry(sourcePath);
       manifestChanged = true;
     }
 
     const mediaPath = join(sourceRoot, sourcePath);
     if (!(await isFile(mediaPath))) {
       await mkdir(dirname(mediaPath), { recursive: true });
-      await writeFile(mediaPath, createVisibleFallbackPng(id));
+      const fallbackKind: VisibleFallbackKind =
+        entry.category === 'object' ? 'tile' : 'spell';
+      await writeFile(mediaPath, createVisibleFallbackPng(id, fallbackKind));
     }
     manifest[name] = map;
   }

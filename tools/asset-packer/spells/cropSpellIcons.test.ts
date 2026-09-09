@@ -196,7 +196,7 @@ describe('spell icon cropper', () => {
     expect(firstPixel(await readFile(join(root, 'spells/2.png')))).toEqual({
       width: 32,
       height: 32,
-      rgb: [255, 60, 220],
+      rgb: [145, 111, 155],
     });
   });
 });

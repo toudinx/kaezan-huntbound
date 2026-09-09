@@ -29,6 +29,14 @@ const personalDevFallbackVariable =
   'HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS';
 const devPersonalSourceRoot = '.cache/huntbound-personal-source';
 const devPersonalSourceMarker = '.cache/huntbound-personal-source.txt';
+const devPersonalSourceCacheVersion = '2';
+const personalSourceRefreshedVariable =
+  'HUNTBOUND_DEV_PERSONAL_SOURCE_REFRESHED';
+const personalTileCellSize = 32;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 export function parseEnvFile(content: string): Record<string, string> {
   const environment: Record<string, string> = {};
@@ -155,6 +163,42 @@ async function arePersonalHuntProfilesPresent(root: string): Promise<boolean> {
     ) {
       return false;
     }
+
+    const packPath = resolve(
+      root,
+      'apps/game/public/assets/personal',
+      entry.runtimeDirectory,
+      'packs',
+      entry.packKey,
+      'pack.json',
+    );
+    try {
+      const pack = JSON.parse(await readFile(packPath, 'utf8')) as unknown;
+      if (!isRecord(pack) || !Array.isArray(pack.entries)) return false;
+
+      let hasTile = false;
+      for (const candidate of pack.entries) {
+        if (!isRecord(candidate)) return false;
+        if (
+          typeof candidate.key !== 'string' ||
+          !candidate.key.startsWith('tile:tibia:')
+        ) {
+          continue;
+        }
+        hasTile = true;
+        if (
+          typeof candidate.cellWidth !== 'number' ||
+          candidate.cellWidth < personalTileCellSize ||
+          typeof candidate.cellHeight !== 'number' ||
+          candidate.cellHeight < personalTileCellSize
+        ) {
+          return false;
+        }
+      }
+      if (!hasTile) return false;
+    } catch {
+      return false;
+    }
   }
   return true;
 }
@@ -187,22 +231,28 @@ async function preparePersonalDevEnvironment(
   let cacheReady = false;
   try {
     cacheReady =
-      (await readFile(markerPath, 'utf8')).trim() === resolvedSourceRoot &&
+      (await readFile(markerPath, 'utf8')).trim() ===
+        `${devPersonalSourceCacheVersion}\n${resolvedSourceRoot}` &&
       (await lstat(join(cacheRoot, 'manifest.json'))).isFile();
   } catch {
     cacheReady = false;
   }
 
+  const cacheRefreshed = !cacheReady;
   if (!cacheReady) {
     await rm(cacheRoot, { recursive: true, force: true });
     await cp(resolvedSourceRoot, cacheRoot, { recursive: true });
     await mkdir(dirname(markerPath), { recursive: true });
-    await writeFile(markerPath, `${resolvedSourceRoot}\n`);
+    await writeFile(
+      markerPath,
+      `${devPersonalSourceCacheVersion}\n${resolvedSourceRoot}\n`,
+    );
   }
 
   return {
     ...environment,
     [personalSourceVariable]: cacheRoot,
+    [personalSourceRefreshedVariable]: cacheRefreshed ? '1' : '0',
   };
 }
 
@@ -256,7 +306,9 @@ export async function runDevLauncher(
   const plan = createDevPlan(profile, environment, {
     devServerRunning: await isDevServerRunning(),
     personalProfileExists:
-      profile === 'personal' && (await arePersonalHuntProfilesPresent(root)),
+      profile === 'personal' &&
+      environment[personalSourceRefreshedVariable] !== '1' &&
+      (await arePersonalHuntProfilesPresent(root)),
   });
 
   if (!plan.ok) {
