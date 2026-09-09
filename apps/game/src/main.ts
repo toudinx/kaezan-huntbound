@@ -554,6 +554,10 @@ export async function bootstrapApp(
       }
 
       const scenario = scenarioResult.value.scenario;
+      const effectiveHunt = {
+        ...hunt,
+        playerStart: scenarioResult.value.playerStart,
+      };
       let huntAssets: readonly ResolvedAsset[] = [];
       let huntAssetsByKey = new Map<string, ResolvedAsset>();
       const resolveHuntAsset = (key: string): ResolvedAsset | undefined =>
@@ -656,9 +660,9 @@ export async function bootstrapApp(
           onLeave: () => {
             void leaveRun();
           },
-          region: hunt.region,
-          transitions: hunt.transitions.entries,
-          playerStart: hunt.playerStart,
+          region: effectiveHunt.region,
+          transitions: effectiveHunt.transitions.entries,
+          playerStart: effectiveHunt.playerStart,
           resolveAsset: resolveHuntAsset,
           ...(nextHuntBuff === 'none'
             ? {}
@@ -779,7 +783,7 @@ export async function bootstrapApp(
       };
       const gameFactory = overrides.createGame ?? createGame;
       const gameRuntime = gameFactory(gameRoot, bridge, {
-        hunt,
+        hunt: effectiveHunt,
         // The caps the kernel was built with. `hunt.blueprints` still carries the
         // movement-era placeholders.
         blueprints: scenario.blueprints,

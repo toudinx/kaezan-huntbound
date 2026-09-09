@@ -81,7 +81,7 @@ function regionIdFor(huntKey: string): string {
  * Picks the player's starting cell.
  *
  * The rule is deterministic and keeps the start reachable from the hunt: the
- * walkable cell nearest to the first spawn group's center on that group's
+ * walkable cell nearest to the densest spawn group's center on that group's
  * floor, excluding cells occupied by a spawn and breaking ties by `(y, x)`.
  * Without spawn groups it falls back to the first walkable cell in canonical
  * order.
@@ -235,23 +235,29 @@ export function extractHunt(
     ),
   ].sort((left, right) => left.blueprintId.localeCompare(right.blueprintId));
 
+  let densestSpawnGroup = spawns.table.groups[0];
+  for (const group of spawns.table.groups) {
+    if (
+      densestSpawnGroup === undefined ||
+      group.slots.length > densestSpawnGroup.slots.length
+    ) {
+      densestSpawnGroup = group;
+    }
+  }
+  const spawnPositions = new Set(
+    spawns.table.groups.flatMap((group) =>
+      group.slots.map((slot) =>
+        positionKey({
+          x: group.center.x + slot.offsetX,
+          y: group.center.y + slot.offsetY,
+          z: group.center.z + slot.offsetZ,
+        }),
+      ),
+    ),
+  );
   const playerStart =
     layout?.playerStart ??
-    pickPlayerStart(
-      built.region,
-      spawns.table.groups[0]?.center,
-      new Set(
-        spawns.table.groups.flatMap((group) =>
-          group.slots.map((slot) =>
-            positionKey({
-              x: group.center.x + slot.offsetX,
-              y: group.center.y + slot.offsetY,
-              z: group.center.z + slot.offsetZ,
-            }),
-          ),
-        ),
-      ),
-    );
+    pickPlayerStart(built.region, densestSpawnGroup?.center, spawnPositions);
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,

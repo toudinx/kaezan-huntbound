@@ -77,6 +77,7 @@ export interface HuntScenarioBuild {
   readonly scenario: KernelScenario;
   readonly itemKeys: readonly string[];
   readonly abilityKeys: readonly string[];
+  readonly playerStart: GridPosition;
 }
 
 export interface HuntScenarioBuildOptions {
@@ -110,12 +111,13 @@ function positionKey(position: GridPosition): string {
 }
 
 /**
- * Keeps legacy/generated hunts from putting the player on top of a creature.
+ * Repairs starts from generated hunts that have no authored layout.
  *
- * The extracted Orc Fortress entry predates the spawn-overlap check and shares
- * its cell with the first Orc Shaman. The player must still start near that
- * entry, but a distinct walkable cell makes both actors readable and gives the
- * presentation a chance to show the encounter before combat begins.
+ * The extracted Orc Fortress entry was anchored to the first spawn group: a
+ * one-creature Orc Shaman pocket on floor 6. The actual fortress population
+ * is the larger group on floor 7, so use the densest group as the presentation
+ * anchor and then choose a free walkable cell beside it. Authored starts keep
+ * their exact location unless they overlap a creature.
  */
 function playerStartForScenario(hunt: HuntDefinition): GridPosition {
   const spawnPositions = new Set(
@@ -129,12 +131,33 @@ function playerStartForScenario(hunt: HuntDefinition): GridPosition {
       ),
     ),
   );
-  if (!spawnPositions.has(positionKey(hunt.playerStart))) {
+
+  const firstSpawnGroup = hunt.spawns.groups[0];
+  let densestSpawnGroup = firstSpawnGroup;
+  for (const group of hunt.spawns.groups) {
+    if (
+      densestSpawnGroup === undefined ||
+      group.slots.length > densestSpawnGroup.slots.length
+    ) {
+      densestSpawnGroup = group;
+    }
+  }
+  const legacyStart =
+    firstSpawnGroup !== undefined &&
+    hunt.playerStart.x === firstSpawnGroup.center.x &&
+    hunt.playerStart.y === firstSpawnGroup.center.y &&
+    hunt.playerStart.z === firstSpawnGroup.center.z;
+  const anchor =
+    legacyStart && densestSpawnGroup !== undefined
+      ? densestSpawnGroup.center
+      : hunt.playerStart;
+
+  if (!legacyStart && !spawnPositions.has(positionKey(hunt.playerStart))) {
     return hunt.playerStart;
   }
 
   const floor = hunt.region.floors.find(
-    (candidate) => candidate.z === hunt.playerStart.z,
+    (candidate) => candidate.z === anchor.z,
   );
   if (floor === undefined) return hunt.playerStart;
 
@@ -151,8 +174,8 @@ function playerStartForScenario(hunt: HuntDefinition): GridPosition {
     if (spawnPositions.has(positionKey(candidate))) continue;
 
     const distance = Math.max(
-      Math.abs(candidate.x - hunt.playerStart.x),
-      Math.abs(candidate.y - hunt.playerStart.y),
+      Math.abs(candidate.x - anchor.x),
+      Math.abs(candidate.y - anchor.y),
     );
     if (
       distance < bestDistance ||
@@ -171,6 +194,7 @@ function playerStartForScenario(hunt: HuntDefinition): GridPosition {
 
 function scenarioGeometry(
   hunt: HuntDefinition,
+  playerStart: GridPosition,
 ): Omit<
   KernelScenario,
   'abilities' | 'lootTables' | 'conditions' | 'blueprints'
@@ -210,7 +234,7 @@ function scenarioGeometry(
     initialActors: [
       {
         blueprintId: hunt.playerBlueprintId,
-        position: playerStartForScenario(hunt),
+        position: playerStart,
         facing: 's',
       },
     ],
@@ -959,8 +983,9 @@ export function buildHuntScenario(
     return publicFailure(diagnostics);
   }
 
+  const playerStart = playerStartForScenario(validatedHunt.value);
   const scenario: KernelScenario = {
-    ...scenarioGeometry(validatedHunt.value),
+    ...scenarioGeometry(validatedHunt.value, playerStart),
     abilities,
     lootTables,
     conditions,
@@ -978,6 +1003,7 @@ export function buildHuntScenario(
       scenario: validatedScenario.value,
       itemKeys,
       abilityKeys: resolvedAbilityKeys,
+      playerStart,
     },
   };
 }

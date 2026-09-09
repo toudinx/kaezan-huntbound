@@ -188,6 +188,23 @@ describe('extractHunt', () => {
     expect(hunt.playerStart).toEqual({ x: 1, y: 1, z: 8 });
   });
 
+  it('anchors an un-authored start to the densest spawn group', () => {
+    const denseXml =
+      `<?xml version="1.0"?><monsters>` +
+      `<monster centerx="${MIN_X + 2}" centery="${MIN_Y + 2}" ` +
+      `centerz="8" radius="2"><monster name="Rotworm" x="0" y="0" ` +
+      `z="8" spawntime="90" /></monster>` +
+      `<monster centerx="${MIN_X + 1}" centery="${MIN_Y + 1}" ` +
+      `centerz="7" radius="2"><monster name="Rotworm" x="0" y="0" ` +
+      `z="7" spawntime="90" /><monster name="Rotworm" x="1" y="0" ` +
+      `z="7" spawntime="90" /></monster>` +
+      `</monsters>`;
+
+    const { hunt } = extract(filledAreas(), denseXml);
+
+    expect(hunt.playerStart).toEqual({ x: 0, y: 0, z: 7 });
+  });
+
   it('emits the transitions derived from the floor change items', () => {
     const { hunt } = extract(
       filledAreas(

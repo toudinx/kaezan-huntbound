@@ -762,6 +762,55 @@ describe('buildHuntScenario', () => {
     ]);
   });
 
+  it('moves a legacy first-group start beside the densest floor', () => {
+    const source = syntheticHunt();
+    const firstGroup = source.spawns.groups[0];
+    if (firstGroup === undefined) {
+      throw new Error('Expected the synthetic hunt to have a spawn group');
+    }
+    const legacyGroup = {
+      ...firstGroup,
+      center: { x: 1, y: 1, z: 7 },
+      slots: firstGroup.slots.map((slot) => ({
+        ...slot,
+        source: { ...slot.source, z: 7 },
+      })),
+      sourceCenter: { x: 1, y: 1, z: 7 },
+    };
+    const denseGroup = {
+      center: { x: 1, y: 1, z: 8 },
+      radius: 2,
+      slots: [0, 1, 2].map((index) => ({
+        creatureKey: 'creature:tibia:rotworm' as ContentKey,
+        blueprintId: 'rotworm',
+        offsetX: index === 1 ? 1 : 0,
+        offsetY: index === 2 ? 1 : 0,
+        offsetZ: 0,
+        respawnTicks: 1800,
+        source: {
+          x: 1 + (index === 1 ? 1 : 0),
+          y: 1 + (index === 2 ? 1 : 0),
+          z: 8,
+        },
+      })),
+      sourceCenter: { x: 1, y: 1, z: 8 },
+    };
+    const hunt: HuntDefinition = {
+      ...source,
+      playerStart: legacyGroup.center,
+      spawns: {
+        ...source.spawns,
+        groups: [legacyGroup, denseGroup],
+      },
+    };
+
+    const { scenario, playerStart } = build(hunt);
+
+    expect(playerStart.z).toBe(8);
+    expect(playerStart).not.toEqual(legacyGroup.center);
+    expect(scenario.initialActors[0]?.position).toEqual(playerStart);
+  });
+
   it('returns a scenario accepted by the kernel validator', () => {
     const { scenario } = build();
 
