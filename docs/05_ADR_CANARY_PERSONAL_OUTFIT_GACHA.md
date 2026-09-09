@@ -56,8 +56,13 @@ alterem os IDs de conteúdo importado:
 - dash, caso o playtest demonstre que melhora o combate;
 - instrumentação, replay, debug e ferramentas de importação;
 - UI/UX para browser, touch e acessibilidade;
-- **personagem persistente com level e experiência** (PB-13-03, 2026-09-08): um Knight só, nascido no
-  nível 1 com o kit inteiro, que sobrevive à troca de hunt e sobe caçando. A ficha é derivada do
+- **personagem persistente com level e experiência** (PB-13-03, 2026-09-08; ampliado pela PB-14-01 em
+  2026-09-09): **um personagem por vocação**, cada um nascido no nível 1 com o kit inteiro, que
+  sobrevive à troca de hunt e sobe caçando. A conta guarda os três e escolhe qual joga entre runs;
+  eles **não** compartilham level, equipamento nem coleção, porque o eixo de progressão é o set da
+  faixa e um personagem único entregaria ao Sorcerer o farm do Knight. Bestiary, conquistas, gold,
+  stash e buff de próxima hunt continuam da conta. Detalhe e migração em
+  `docs/superpowers/specs/2026-09-09-pb-14-01-kits-design.md`. A ficha é derivada do
   nível por curva (`packages/content/src/runtime/knightProgression.ts`), calibrada contra a escada de
   `HUNT_BANDS.md`; a experiência vive no save e a morte nunca a custa. **Toda hunt continua aberta**:
   entrar acima da própria faixa é permitido e apenas perigoso. Isto substitui a extensão anterior
