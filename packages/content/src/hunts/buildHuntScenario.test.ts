@@ -749,6 +749,19 @@ describe('buildHuntScenario', () => {
     });
   });
 
+  it('moves an overlapping player start to the nearest free walkable cell', () => {
+    const hunt = {
+      ...syntheticHunt(),
+      playerStart: { x: 1, y: 2, z: 8 },
+    };
+
+    const { scenario } = build(hunt);
+
+    expect(scenario.initialActors).toEqual([
+      { blueprintId: 'player', position: { x: 0, y: 1, z: 8 }, facing: 's' },
+    ]);
+  });
+
   it('returns a scenario accepted by the kernel validator', () => {
     const { scenario } = build();
 

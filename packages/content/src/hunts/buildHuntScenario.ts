@@ -7,6 +7,7 @@ import {
   characterKitBandAtLevel,
   characterSpellKeysAtLevel,
   formatSpawnSlotId,
+  type GridPosition,
   type HuntDefinition,
   type HuntDiagnostic,
   type KernelScenario,
@@ -104,6 +105,70 @@ function diagnostic(
   return { code, message, path };
 }
 
+function positionKey(position: GridPosition): string {
+  return `${position.x}:${position.y}:${position.z}`;
+}
+
+/**
+ * Keeps legacy/generated hunts from putting the player on top of a creature.
+ *
+ * The extracted Orc Fortress entry predates the spawn-overlap check and shares
+ * its cell with the first Orc Shaman. The player must still start near that
+ * entry, but a distinct walkable cell makes both actors readable and gives the
+ * presentation a chance to show the encounter before combat begins.
+ */
+function playerStartForScenario(hunt: HuntDefinition): GridPosition {
+  const spawnPositions = new Set(
+    hunt.spawns.groups.flatMap((group) =>
+      group.slots.map((slot) =>
+        positionKey({
+          x: group.center.x + slot.offsetX,
+          y: group.center.y + slot.offsetY,
+          z: group.center.z + slot.offsetZ,
+        }),
+      ),
+    ),
+  );
+  if (!spawnPositions.has(positionKey(hunt.playerStart))) {
+    return hunt.playerStart;
+  }
+
+  const floor = hunt.region.floors.find(
+    (candidate) => candidate.z === hunt.playerStart.z,
+  );
+  if (floor === undefined) return hunt.playerStart;
+
+  const blocked = new Set(floor.collision);
+  let best: GridPosition | undefined;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < floor.ground.length; index += 1) {
+    if (blocked.has(index)) continue;
+    const candidate: GridPosition = {
+      x: index % hunt.region.width,
+      y: Math.floor(index / hunt.region.width),
+      z: floor.z,
+    };
+    if (spawnPositions.has(positionKey(candidate))) continue;
+
+    const distance = Math.max(
+      Math.abs(candidate.x - hunt.playerStart.x),
+      Math.abs(candidate.y - hunt.playerStart.y),
+    );
+    if (
+      distance < bestDistance ||
+      (distance === bestDistance &&
+        (best === undefined ||
+          candidate.y < best.y ||
+          (candidate.y === best.y && candidate.x < best.x)))
+    ) {
+      best = candidate;
+      bestDistance = distance;
+    }
+  }
+
+  return best ?? hunt.playerStart;
+}
+
 function scenarioGeometry(
   hunt: HuntDefinition,
 ): Omit<
@@ -145,7 +210,7 @@ function scenarioGeometry(
     initialActors: [
       {
         blueprintId: hunt.playerBlueprintId,
-        position: hunt.playerStart,
+        position: playerStartForScenario(hunt),
         facing: 's',
       },
     ],

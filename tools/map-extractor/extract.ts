@@ -82,12 +82,14 @@ function regionIdFor(huntKey: string): string {
  *
  * The rule is deterministic and keeps the start reachable from the hunt: the
  * walkable cell nearest to the first spawn group's center on that group's
- * floor, ties broken by `(y, x)`. Without spawn groups it falls back to the
- * first walkable cell in canonical order.
+ * floor, excluding cells occupied by a spawn and breaking ties by `(y, x)`.
+ * Without spawn groups it falls back to the first walkable cell in canonical
+ * order.
  */
 function pickPlayerStart(
   region: MapRegion,
   anchor: GridPosition | undefined,
+  spawnPositions: ReadonlySet<string>,
 ): GridPosition | undefined {
   const floors =
     anchor === undefined
@@ -109,6 +111,7 @@ function pickPlayerStart(
         y: Math.floor(index / region.width),
         z: floor.z,
       };
+      if (spawnPositions.has(positionKey(candidate))) continue;
       if (anchor === undefined) return candidate;
       const distance = Math.max(
         Math.abs(candidate.x - anchor.x),
@@ -124,6 +127,10 @@ function pickPlayerStart(
   }
 
   return undefined;
+}
+
+function positionKey(position: GridPosition): string {
+  return `${position.x}:${position.y}:${position.z}`;
 }
 
 function budgetDiagnostics(region: MapRegion): readonly ExtractionDiagnostic[] {
@@ -230,7 +237,21 @@ export function extractHunt(
 
   const playerStart =
     layout?.playerStart ??
-    pickPlayerStart(built.region, spawns.table.groups[0]?.center);
+    pickPlayerStart(
+      built.region,
+      spawns.table.groups[0]?.center,
+      new Set(
+        spawns.table.groups.flatMap((group) =>
+          group.slots.map((slot) =>
+            positionKey({
+              x: group.center.x + slot.offsetX,
+              y: group.center.y + slot.offsetY,
+              z: group.center.z + slot.offsetZ,
+            }),
+          ),
+        ),
+      ),
+    );
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,

@@ -176,6 +176,18 @@ describe('extractHunt', () => {
     expect(floor?.collision).not.toContain(index);
   });
 
+  it('does not start the player on a creature spawn cell', () => {
+    const overlappingXml =
+      `<?xml version="1.0"?><monsters><monster centerx="${MIN_X + 2}" ` +
+      `centery="${MIN_Y + 2}" centerz="8" radius="2"><monster ` +
+      `name="Rotworm" x="0" y="0" z="8" spawntime="90" />` +
+      `</monster></monsters>`;
+    const { hunt } = extract(filledAreas(), overlappingXml);
+
+    expect(hunt.playerStart).not.toEqual({ x: 2, y: 2, z: 8 });
+    expect(hunt.playerStart).toEqual({ x: 1, y: 1, z: 8 });
+  });
+
   it('emits the transitions derived from the floor change items', () => {
     const { hunt } = extract(
       filledAreas(
