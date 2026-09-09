@@ -26,7 +26,7 @@ describe('creditBestiaryKill', () => {
       completed: false,
       rewardGold: 0,
     });
-    expect(draft.character.bestiary).toEqual([
+    expect(draft.bestiary).toEqual([
       { creatureKey: ORC.creatureKey, kills: 1, rewardClaimed: false },
     ]);
     expect(draft.gold).toBe(0);
@@ -38,7 +38,7 @@ describe('creditBestiaryKill', () => {
       rewardGold: 25,
     });
     expect(draft.gold).toBe(25);
-    expect(draft.character.bestiary).toEqual([
+    expect(draft.bestiary).toEqual([
       { creatureKey: ORC.creatureKey, kills: 2, rewardClaimed: true },
     ]);
 
@@ -66,7 +66,7 @@ describe('creditBestiaryKill', () => {
 
     consolidateRun(draft, 'died');
     expect(draft.session).toBeNull();
-    expect(draft.character.bestiary).toEqual([
+    expect(draft.bestiary).toEqual([
       { creatureKey: ORC.creatureKey, kills: 1, rewardClaimed: false },
     ]);
   });

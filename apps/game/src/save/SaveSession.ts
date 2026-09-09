@@ -1,12 +1,15 @@
 import {
   type AchievementDefinition,
   type ActiveRunState,
+  activeCharacter,
   type BestiarySpecies,
   type CharacterProgress,
   createEmptyCharacterProgress,
   createEmptyGameSave,
+  DEFAULT_KNIGHT_VOCATION_KEY,
   type GameSave,
   type RunBagEntry,
+  replaceCharacter,
   type SimulationSnapshot,
 } from '../../../../packages/contracts/src/index.ts';
 import {
@@ -95,6 +98,10 @@ const EMPTY_STATE: SaveInventoryState = {
   gold: 0,
   nextHuntBuff: 'none',
   completedRuns: 0,
+  activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+  characters: createEmptyGameSave().characters,
+  bestiary: [],
+  achievements: [],
   character: createEmptyCharacterProgress(),
 };
 
@@ -177,7 +184,13 @@ function errorText(error: unknown): string {
 }
 
 function saveState(
-  save: Pick<GameSave, 'stash' | 'gold' | 'completedRuns' | 'nextHuntBuff'>,
+  save: Pick<GameSave, 'stash' | 'gold' | 'completedRuns' | 'nextHuntBuff'> &
+    Partial<
+      Pick<
+        GameSave,
+        'activeVocationKey' | 'characters' | 'bestiary' | 'achievements'
+      >
+    >,
   bag: readonly RunBagEntry[],
   status: SaveInventoryState['status'],
   message: string,
@@ -191,6 +204,13 @@ function saveState(
     gold: save.gold,
     nextHuntBuff: save.nextHuntBuff,
     completedRuns: save.completedRuns,
+    activeVocationKey:
+      save.activeVocationKey ??
+      character.vocationKey ??
+      DEFAULT_KNIGHT_VOCATION_KEY,
+    characters: save.characters ?? [character],
+    bestiary: save.bestiary ?? [],
+    achievements: save.achievements ?? [],
     character,
   };
 }
@@ -203,6 +223,7 @@ function sessionFrom(
 ): ActiveRunState {
   return {
     ...identity,
+    vocationKey: identity.vocationKey ?? DEFAULT_KNIGHT_VOCATION_KEY,
     snapshot: driver.snapshot(),
     bag: copyBag(bag),
     lastBestiaryEventSequence,
@@ -316,6 +337,10 @@ export function createSaveSession(
               gold: draft.gold,
               nextHuntBuff: draft.nextHuntBuff,
               completedRuns: draft.completedRuns,
+              characters: draft.characters,
+              activeVocationKey: draft.activeVocationKey,
+              bestiary: draft.bestiary,
+              achievements: draft.achievements,
             };
           });
           save = {
@@ -324,6 +349,10 @@ export function createSaveSession(
             gold: consolidated.gold,
             nextHuntBuff: consolidated.nextHuntBuff,
             completedRuns: consolidated.completedRuns,
+            characters: consolidated.characters,
+            activeVocationKey: consolidated.activeVocationKey,
+            bestiary: consolidated.bestiary,
+            achievements: consolidated.achievements,
             session: null,
           };
           bag = [];
@@ -364,34 +393,37 @@ export function createSaveSession(
       if (achievementDefinitions.length > 0) {
         try {
           const refreshed = await repository.transact((draft) => {
-            const achievements = refreshAchievements(
-              draft,
-              achievementDefinitions,
-            );
+            const updates = refreshAchievements(draft, achievementDefinitions);
             return {
-              achievements,
-              character: draft.character,
+              characters: draft.characters,
+              activeVocationKey: draft.activeVocationKey,
+              bestiary: draft.bestiary,
+              achievements: draft.achievements,
               gold: draft.gold,
+              updates,
             };
           });
           save = {
             ...save,
-            character: refreshed.character,
+            characters: refreshed.characters,
+            activeVocationKey: refreshed.activeVocationKey,
+            bestiary: refreshed.bestiary,
+            achievements: refreshed.achievements,
             gold: refreshed.gold,
           };
-          bootAchievementMessage = achievementMessage(refreshed.achievements);
+          bootAchievementMessage = achievementMessage(refreshed.updates);
         } catch (error) {
           publishError('Achievement progress could not be refreshed', error);
         }
       }
 
       latestBag = copyBag(bag);
-      latestExperience = save.character.experience;
+      latestCharacter = activeCharacter(save);
+      latestExperience = latestCharacter.experience;
       latestBestiaryEventSequence =
         decision.kind === 'resume'
           ? decision.session.lastBestiaryEventSequence
           : 0;
-      latestCharacter = save.character;
       const status = loadFailed || state.status === 'error' ? 'error' : 'ready';
       const message =
         status === 'error'
@@ -449,19 +481,16 @@ export function createSaveSession(
         };
       }
       if (destroyed || !runOpen || activeRun === undefined) {
+        const current = state.bestiary.find(
+          (entry) => entry.creatureKey === creatureKey,
+        );
         return {
           credited: false,
           creatureKey,
           displayName: species.displayName,
-          kills:
-            latestCharacter.bestiary.find(
-              (entry) => entry.creatureKey === creatureKey,
-            )?.kills ?? 0,
+          kills: current?.kills ?? 0,
           targetKills: species.targetKills,
-          completed:
-            (latestCharacter.bestiary.find(
-              (entry) => entry.creatureKey === creatureKey,
-            )?.kills ?? 0) >= species.targetKills,
+          completed: (current?.kills ?? 0) >= species.targetKills,
           rewardGold: 0,
           reason: 'no-session',
         };
@@ -484,13 +513,17 @@ export function createSaveSession(
             );
           }
           const credit = creditBestiaryKill(draft, species, eventSequence);
-          const achievements = credit.credited
+          const updates = credit.credited
             ? refreshAchievements(draft, achievementDefinitions)
             : [];
           return {
             credit,
-            achievements,
-            character: draft.character,
+            updates,
+            character: activeCharacter(draft),
+            characters: draft.characters,
+            activeVocationKey: draft.activeVocationKey,
+            bestiary: draft.bestiary,
+            achievements: draft.achievements,
             stash: copyBag(draft.stash),
             gold: draft.gold,
             nextHuntBuff: draft.nextHuntBuff,
@@ -509,7 +542,7 @@ export function createSaveSession(
         const bestiaryMessage = transaction.credit.completed
           ? `Bestiary complete: ${species.displayName} (+${transaction.credit.rewardGold} gold)`
           : `Bestiary: ${species.displayName} ${transaction.credit.kills}/${transaction.credit.targetKills}`;
-        const unlocked = achievementMessage(transaction.achievements);
+        const unlocked = achievementMessage(transaction.updates);
         const message =
           unlocked === undefined
             ? bestiaryMessage
@@ -576,29 +609,33 @@ export function createSaveSession(
         // what keeps the last kills before dying.
         const result = await repository.transact((draft) => {
           draft.session = session;
-          draft.character = {
-            ...draft.character,
+          replaceCharacter(draft, {
+            ...activeCharacter(draft),
             experience: latestExperience,
-          };
+          });
           consolidateRun(draft, outcome);
-          const achievements = refreshAchievements(
+          const updates = refreshAchievements(
             draft,
             achievementDefinitions,
             outcome === 'completed' ? 'hunt-completed' : undefined,
           );
           return {
-            achievements,
+            updates,
+            character: activeCharacter(draft),
+            characters: draft.characters,
+            activeVocationKey: draft.activeVocationKey,
+            bestiary: draft.bestiary,
+            achievements: draft.achievements,
             stash: copyBag(draft.stash),
             gold: draft.gold,
             nextHuntBuff: draft.nextHuntBuff,
             completedRuns: draft.completedRuns,
-            character: draft.character,
           };
         });
         latestBag = [];
         latestCharacter = result.character;
         latestBestiaryEventSequence = 0;
-        const unlocked = achievementMessage(result.achievements);
+        const unlocked = achievementMessage(result.updates);
         publish(
           saveState(
             result,
@@ -654,13 +691,17 @@ export function createSaveSession(
             ? refreshAchievements(draft, achievementDefinitions, 'item-sold')
             : [];
           return {
-            achievements,
+            updates: achievements,
             sale,
+            character: activeCharacter(draft),
+            characters: draft.characters,
+            activeVocationKey: draft.activeVocationKey,
+            bestiary: draft.bestiary,
+            achievements: draft.achievements,
             stash: copyBag(draft.stash),
             gold: draft.gold,
             nextHuntBuff: draft.nextHuntBuff,
             completedRuns: draft.completedRuns,
-            character: draft.character,
           };
         });
 
@@ -674,7 +715,7 @@ export function createSaveSession(
         }
 
         latestCharacter = transaction.character;
-        const unlocked = achievementMessage(transaction.achievements);
+        const unlocked = achievementMessage(transaction.updates);
         const saleStatus = saleMessage(transaction.sale, details.displayName);
         publish(
           saveState(
@@ -711,22 +752,17 @@ export function createSaveSession(
         let importedAchievementMessage: string | undefined;
         if (achievementDefinitions.length > 0) {
           const refreshed = await repository.transact((draft) => {
-            const achievements = refreshAchievements(
-              draft,
-              achievementDefinitions,
-            );
-            return { achievements };
+            const updates = refreshAchievements(draft, achievementDefinitions);
+            return { updates };
           });
-          importedAchievementMessage = achievementMessage(
-            refreshed.achievements,
-          );
+          importedAchievementMessage = achievementMessage(refreshed.updates);
         }
         const save = await repository.load();
         latestBag = copyBag(save.session?.bag ?? []);
-        latestExperience = save.character.experience;
+        latestCharacter = activeCharacter(save);
+        latestExperience = latestCharacter.experience;
         latestBestiaryEventSequence =
           save.session?.lastBestiaryEventSequence ?? 0;
-        latestCharacter = save.character;
         publish(
           saveState(
             save,

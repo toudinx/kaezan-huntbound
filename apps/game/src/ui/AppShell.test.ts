@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type AchievementProgress,
+  type BestiaryProgress,
   type CharacterProgress,
   createEmptyCharacterProgress,
 } from '../../../../packages/contracts/src/index.ts';
@@ -119,6 +121,10 @@ interface TestSaveState {
   readonly gold: number;
   readonly nextHuntBuff: 'none';
   readonly completedRuns: number;
+  readonly activeVocationKey: string;
+  readonly characters: readonly CharacterProgress[];
+  readonly bestiary: readonly BestiaryProgress[];
+  readonly achievements: readonly AchievementProgress[];
   readonly character: CharacterProgress;
 }
 
@@ -325,6 +331,10 @@ describe('AppShell', () => {
         gold: 9,
         nextHuntBuff: 'none',
         completedRuns: 3,
+        activeVocationKey: 'vocation:tibia:knight',
+        characters: [createEmptyCharacterProgress()],
+        bestiary: [],
+        achievements: [],
         character: createEmptyCharacterProgress(),
       }),
       subscribe: (listener) => {

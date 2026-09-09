@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   createEmptyEquipment,
   createEmptyGameSave,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_PALADIN_VOCATION_KEY,
+  DEFAULT_SORCERER_VOCATION_KEY,
   parseGameSave,
   SAVE_SCHEMA_VERSION,
   SIMULATION_SCHEMA_VERSION,
@@ -31,26 +34,43 @@ function createSnapshot() {
 function createEmptyDocument() {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    character: {
-      experience: 0,
-      equipment: createEmptyEquipment(),
-      collection: [] as string[],
-      bestiary: [] as {
-        creatureKey: string;
-        kills: number;
-        rewardClaimed: boolean;
-      }[],
-      achievements: [] as {
-        achievementId: string;
-        progress: number;
-        rewardClaimed: boolean;
-      }[],
-    },
+    characters: [
+      {
+        vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+      {
+        vocationKey: DEFAULT_PALADIN_VOCATION_KEY,
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+      {
+        vocationKey: DEFAULT_SORCERER_VOCATION_KEY,
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+    ],
+    activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+    bestiary: [] as {
+      creatureKey: string;
+      kills: number;
+      rewardClaimed: boolean;
+    }[],
+    achievements: [] as {
+      achievementId: string;
+      progress: number;
+      rewardClaimed: boolean;
+    }[],
     stash: [] as { itemKey: string; count: number }[],
     gold: 0,
     nextHuntBuff: 'none' as const,
     completedRuns: 0,
     session: null as {
+      vocationKey: string;
       huntId: string;
       scenarioId: string;
       scenarioRevision: number;
@@ -65,13 +85,29 @@ function createEmptyDocument() {
 function createFullSave() {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    character: {
-      experience: 28_800,
-      equipment: createEmptyEquipment(),
-      collection: [] as string[],
-      bestiary: [],
-      achievements: [],
-    },
+    characters: [
+      {
+        vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+        experience: 28_800,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+      {
+        vocationKey: DEFAULT_PALADIN_VOCATION_KEY,
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+      {
+        vocationKey: DEFAULT_SORCERER_VOCATION_KEY,
+        experience: 0,
+        equipment: createEmptyEquipment(),
+        collection: [] as string[],
+      },
+    ],
+    activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+    bestiary: [],
+    achievements: [],
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -80,6 +116,7 @@ function createFullSave() {
     nextHuntBuff: 'none' as const,
     completedRuns: 3,
     session: {
+      vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
       huntId: 'venore-rotworm-cave',
       scenarioId: 'pb-06-save-contract',
       scenarioRevision: 1,
@@ -106,22 +143,38 @@ function expectRejectedAt(value: unknown, path: readonly (string | number)[]) {
 }
 
 describe('game save contract', () => {
-  it('pins SAVE_SCHEMA_VERSION at 8', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(8);
+  it('pins SAVE_SCHEMA_VERSION at 9', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(9);
   });
 
-  it('createEmptyGameSave produces a valid empty v8 document', () => {
+  it('createEmptyGameSave produces a valid empty v9 document', () => {
     const empty = createEmptyGameSave();
 
     expect(empty).toEqual({
       schemaVersion: SAVE_SCHEMA_VERSION,
-      character: {
-        experience: 0,
-        equipment: createEmptyEquipment(),
-        collection: [],
-        bestiary: [],
-        achievements: [],
-      },
+      characters: [
+        {
+          vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+          experience: 0,
+          equipment: createEmptyEquipment(),
+          collection: [],
+        },
+        {
+          vocationKey: DEFAULT_PALADIN_VOCATION_KEY,
+          experience: 0,
+          equipment: createEmptyEquipment(),
+          collection: [],
+        },
+        {
+          vocationKey: DEFAULT_SORCERER_VOCATION_KEY,
+          experience: 0,
+          equipment: createEmptyEquipment(),
+          collection: [],
+        },
+      ],
+      activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+      bestiary: [],
+      achievements: [],
       stash: [],
       gold: 0,
       nextHuntBuff: 'none',
@@ -129,7 +182,10 @@ describe('game save contract', () => {
       session: null,
     });
     expect(Object.keys(empty).sort()).toEqual([
-      'character',
+      'achievements',
+      'activeVocationKey',
+      'bestiary',
+      'characters',
       'completedRuns',
       'gold',
       'nextHuntBuff',
@@ -152,13 +208,12 @@ describe('game save contract', () => {
     }
 
     const save: GameSave = parsed.value;
-    expect(save.schemaVersion).toBe(8);
-    expect(save.character).toEqual({
+    expect(save.schemaVersion).toBe(9);
+    expect(save.characters[0]).toEqual({
+      vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
       experience: 28_800,
       equipment: createEmptyEquipment(),
       collection: [],
-      bestiary: [],
-      achievements: [],
     });
     expect(save.stash).toEqual(document.stash);
     expect(save.gold).toBe(37);
@@ -172,7 +227,7 @@ describe('game save contract', () => {
 
   it('accepts sorted bestiary progress and rejects duplicates or unsorted entries', () => {
     const accepted = createEmptyDocument();
-    accepted.character.bestiary = [
+    accepted.bestiary = [
       { creatureKey: 'creature:tibia:orc', kills: 3, rewardClaimed: false },
       {
         creatureKey: 'creature:tibia:rotworm',
@@ -183,14 +238,14 @@ describe('game save contract', () => {
     expect(parseGameSave(accepted).ok).toBe(true);
 
     const duplicate = createEmptyDocument();
-    duplicate.character.bestiary = [
+    duplicate.bestiary = [
       { creatureKey: 'creature:tibia:orc', kills: 1, rewardClaimed: false },
       { creatureKey: 'creature:tibia:orc', kills: 2, rewardClaimed: false },
     ];
-    expectRejectedAt(duplicate, ['character', 'bestiary', 1, 'creatureKey']);
+    expectRejectedAt(duplicate, ['bestiary', 1, 'creatureKey']);
 
     const unsorted = createEmptyDocument();
-    unsorted.character.bestiary = [
+    unsorted.bestiary = [
       {
         creatureKey: 'creature:tibia:rotworm',
         kills: 1,
@@ -198,12 +253,12 @@ describe('game save contract', () => {
       },
       { creatureKey: 'creature:tibia:orc', kills: 2, rewardClaimed: false },
     ];
-    expectRejectedAt(unsorted, ['character', 'bestiary', 1, 'creatureKey']);
+    expectRejectedAt(unsorted, ['bestiary', 1, 'creatureKey']);
   });
 
   it('accepts sorted achievement progress and rejects duplicates or unsorted entries', () => {
     const accepted = createEmptyDocument();
-    accepted.character.achievements = [
+    accepted.achievements = [
       {
         achievementId: 'achievement:huntbound:first-hunt',
         progress: 1,
@@ -218,7 +273,7 @@ describe('game save contract', () => {
     expect(parseGameSave(accepted).ok).toBe(true);
 
     const duplicate = createEmptyDocument();
-    duplicate.character.achievements = [
+    duplicate.achievements = [
       {
         achievementId: 'achievement:huntbound:first-hunt',
         progress: 1,
@@ -230,15 +285,10 @@ describe('game save contract', () => {
         rewardClaimed: true,
       },
     ];
-    expectRejectedAt(duplicate, [
-      'character',
-      'achievements',
-      1,
-      'achievementId',
-    ]);
+    expectRejectedAt(duplicate, ['achievements', 1, 'achievementId']);
 
     const unsorted = createEmptyDocument();
-    unsorted.character.achievements = [
+    unsorted.achievements = [
       {
         achievementId: 'achievement:huntbound:honest-work',
         progress: 0,
@@ -250,12 +300,7 @@ describe('game save contract', () => {
         rewardClaimed: true,
       },
     ];
-    expectRejectedAt(unsorted, [
-      'character',
-      'achievements',
-      1,
-      'achievementId',
-    ]);
+    expectRejectedAt(unsorted, ['achievements', 1, 'achievementId']);
   });
 
   it('rejects count 0, negative, or fractional', () => {
@@ -351,19 +396,33 @@ describe('game save contract', () => {
 
   it('rejects a fractional or negative character experience', () => {
     const fractional = createEmptyDocument();
-    fractional.character = { ...fractional.character, experience: 1.5 };
-    expectRejectedAt(fractional, ['character', 'experience']);
+    const fractionalCharacter = fractional.characters[0];
+    if (!fractionalCharacter) {
+      throw new Error('Expected the empty save to contain a character');
+    }
+    fractional.characters[0] = {
+      ...fractionalCharacter,
+      experience: 1.5,
+    };
+    expectRejectedAt(fractional, ['characters', 0, 'experience']);
 
     const negative = createEmptyDocument();
-    negative.character = { ...negative.character, experience: -1 };
-    expectRejectedAt(negative, ['character', 'experience']);
+    const negativeCharacter = negative.characters[0];
+    if (!negativeCharacter) {
+      throw new Error('Expected the empty save to contain a character');
+    }
+    negative.characters[0] = {
+      ...negativeCharacter,
+      experience: -1,
+    };
+    expectRejectedAt(negative, ['characters', 0, 'experience']);
   });
 
-  it('rejects a document without a character', () => {
-    const { character: _character, ...withoutCharacter } =
+  it('rejects a document without characters', () => {
+    const { characters: _characters, ...withoutCharacters } =
       createEmptyDocument();
-    void _character;
-    expectRejectedAt(withoutCharacter, ['character']);
+    void _characters;
+    expectRejectedAt(withoutCharacters, ['characters']);
   });
 
   it('rejects an unknown field on the document', () => {

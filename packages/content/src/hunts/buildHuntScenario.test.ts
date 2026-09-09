@@ -28,6 +28,11 @@ import {
   type ContentRegistry,
   createContentRegistry,
 } from '../runtime/contentRegistry.ts';
+import sorcererSelectionJson from '../selections/pb-14-03-sorcerer.json?raw';
+import {
+  mergeSorcererRuntimeBundle,
+  parseSorcererSelection,
+} from '../selections/sorcererSelection.ts';
 import {
   buildHuntScenario,
   type HuntScenarioBuild,
@@ -1359,6 +1364,91 @@ describe('buildHuntScenario combat blueprints', () => {
 });
 
 describe('buildHuntScenario abilities', () => {
+  it('composes the Sorcerer wand, elemental kit, toggles and charged runes', () => {
+    const selection = parseSorcererSelection(JSON.parse(sorcererSelectionJson));
+    const content = mergeSorcererRuntimeBundle(runtimeBundle(), selection);
+    const { scenario, abilityKeys } = unwrapSuccess(
+      buildHuntScenario(
+        syntheticHunt(),
+        selection.character,
+        createContentRegistry(content),
+        seed,
+      ),
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    const byId = new Map(
+      scenario.abilities.map((ability) => [ability.abilityId, ability]),
+    );
+
+    expect(abilityKeys).toEqual([
+      'spell:tibia:energy-strike',
+      'spell:tibia:fire-wave',
+      'spell:tibia:great-fireball',
+      'spell:tibia:sudden-death',
+      'spell:tibia:ultimate-healing',
+      'spell:tibia:magic-shield',
+      'spell:tibia:arcane-stance',
+      'spell:tibia:haste',
+    ]);
+    expect(player).toMatchObject({
+      maxHealth: 150,
+      maxResource: 200,
+      attackMinDamage: 8,
+      attackMaxDamage: 18,
+      attackRangeTiles: 3,
+      attackElement: 'energy',
+    });
+    expect(player?.attackSkillIndex).toBeUndefined();
+    expect(byId.get('energy-strike')).toMatchObject({
+      shape: 'target',
+      rangeTiles: 3,
+      element: 'energy',
+    });
+    expect(byId.get('fire-wave')).toMatchObject({
+      shape: 'cone',
+      radius: 3,
+      element: 'fire',
+    });
+    expect(byId.get('great-fireball')).toMatchObject({
+      shape: 'target-area',
+      radius: 1,
+      rangeTiles: 5,
+      maxCharges: 3,
+      rechargeKind: 'out-of-combat',
+      element: 'fire',
+    });
+    expect(byId.get('sudden-death')).toMatchObject({
+      shape: 'target',
+      rangeTiles: 6,
+      maxCharges: 2,
+      rechargeKind: 'out-of-combat',
+      element: 'death',
+    });
+    expect(byId.get('magic-shield')).toMatchObject({
+      toggle: true,
+      appliedConditionIndex: 0,
+    });
+    expect(byId.get('arcane-stance')).toMatchObject({
+      toggle: true,
+      appliedConditionIndex: 1,
+    });
+    expect(scenario.conditions).toEqual([
+      expect.objectContaining({
+        conditionId: 'magic-shield',
+        manaShield: true,
+        exclusivityGroup: 1,
+      }),
+      expect.objectContaining({
+        conditionId: 'arcane-stance',
+        damageDealtPermille: 150,
+        exclusivityGroup: 1,
+      }),
+      expect.objectContaining({ conditionId: 'haste' }),
+    ]);
+  });
+
   it('keeps the legacy scenario shape when postures are omitted, except for attackSkillIndex', () => {
     const { scenario, abilityKeys } = build();
     const player = scenario.blueprints.find(

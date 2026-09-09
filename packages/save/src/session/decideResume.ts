@@ -1,4 +1,5 @@
 import {
+  DEFAULT_KNIGHT_VOCATION_KEY,
   type GameSave,
   SIMULATION_RULES_VERSION,
   SIMULATION_SCHEMA_VERSION,
@@ -15,6 +16,12 @@ export function decideResume(
   const session = save.session;
   if (session === null) {
     return { kind: 'fresh' };
+  }
+  if (
+    session.vocationKey !==
+    (identity.vocationKey ?? DEFAULT_KNIGHT_VOCATION_KEY)
+  ) {
+    return { kind: 'discard', reason: 'vocationKey' };
   }
   if (session.scenarioId !== identity.scenarioId) {
     return { kind: 'discard', reason: 'scenarioId' };

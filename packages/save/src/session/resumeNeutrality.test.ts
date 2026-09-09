@@ -27,6 +27,7 @@ describe('save resume neutrality', () => {
     await repository.transact((draft) => {
       draft.session = {
         huntId: TEST_IDENTITY.huntId,
+        vocationKey: TEST_IDENTITY.vocationKey,
         scenarioId: scenario.scenarioId,
         scenarioRevision: scenario.scenarioRevision,
         seed: TEST_SEED,

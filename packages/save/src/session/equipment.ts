@@ -1,7 +1,9 @@
-import type {
-  EquipmentSlot,
-  RunBagEntry,
-  SaveDraft,
+import {
+  activeCharacter,
+  type EquipmentSlot,
+  type RunBagEntry,
+  replaceCharacter,
+  type SaveDraft,
 } from '@huntbound/contracts';
 
 function compareItemKeys(left: string, right: string): number {
@@ -61,27 +63,29 @@ export function equipFromStash(
     return false;
   }
 
-  const previous = draft.character.equipment[slot];
+  const character = activeCharacter(draft);
+  const previous = character.equipment[slot];
   draft.stash =
     previous === null ? withoutItem : addToStash(withoutItem, previous);
-  draft.character = {
-    ...draft.character,
-    equipment: { ...draft.character.equipment, [slot]: itemKey },
-  };
+  replaceCharacter(draft, {
+    ...character,
+    equipment: { ...character.equipment, [slot]: itemKey },
+  });
   return true;
 }
 
 /** Returns the worn piece to the stash. `false` when the slot was empty. */
 export function unequipToStash(draft: SaveDraft, slot: EquipmentSlot): boolean {
-  const itemKey = draft.character.equipment[slot];
+  const character = activeCharacter(draft);
+  const itemKey = character.equipment[slot];
   if (itemKey === null) {
     return false;
   }
 
   draft.stash = addToStash(draft.stash, itemKey);
-  draft.character = {
-    ...draft.character,
-    equipment: { ...draft.character.equipment, [slot]: null },
-  };
+  replaceCharacter(draft, {
+    ...character,
+    equipment: { ...character.equipment, [slot]: null },
+  });
   return true;
 }

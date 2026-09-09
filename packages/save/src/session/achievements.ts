@@ -4,6 +4,7 @@ import type {
   AchievementProgress,
   SaveDraft,
 } from '@huntbound/contracts';
+import { activeCharacter } from '@huntbound/contracts';
 
 /** A successful state transition that can move an achievement forward. */
 export type AchievementEvent = 'hunt-completed' | 'item-equipped' | 'item-sold';
@@ -65,13 +66,13 @@ function validateMetric(metric: AchievementMetric): void {
 }
 
 function countEquippedSlots(draft: SaveDraft): number {
-  return Object.values(draft.character.equipment).filter(
+  return Object.values(activeCharacter(draft).equipment).filter(
     (itemKey) => itemKey !== null,
   ).length;
 }
 
 function countCompletedBestiarySpecies(draft: SaveDraft): number {
-  return draft.character.bestiary.filter((entry) => entry.rewardClaimed).length;
+  return draft.bestiary.filter((entry) => entry.rewardClaimed).length;
 }
 
 function stateProgressFor(
@@ -88,7 +89,7 @@ function stateProgressFor(
     case 'sold-items':
       return (current?.progress ?? 0) + (event === 'item-sold' ? 1 : 0);
     case 'experience':
-      return draft.character.experience;
+      return activeCharacter(draft).experience;
     case 'bestiary-species':
       return countCompletedBestiarySpecies(draft);
   }
@@ -136,7 +137,7 @@ export function refreshAchievements(
   }
 
   const currentById = new Map(
-    draft.character.achievements.map((entry) => [entry.achievementId, entry]),
+    draft.achievements.map((entry) => [entry.achievementId, entry]),
   );
   const nextById = new Map(currentById);
   const updates: AchievementUpdate[] = [];
@@ -186,16 +187,12 @@ export function refreshAchievements(
     compareAchievementIds(left.achievementId, right.achievementId),
   );
   const changed =
-    nextAchievements.length !== draft.character.achievements.length ||
+    nextAchievements.length !== draft.achievements.length ||
     nextAchievements.some(
-      (entry, index) =>
-        !sameProgress(draft.character.achievements[index], entry),
+      (entry, index) => !sameProgress(draft.achievements[index], entry),
     );
   if (changed) {
-    draft.character = {
-      ...draft.character,
-      achievements: nextAchievements,
-    };
+    draft.achievements = nextAchievements;
   }
 
   return updates;

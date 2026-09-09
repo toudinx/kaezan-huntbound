@@ -1,4 +1,5 @@
 import {
+  activeCharacter,
   createEmptyCharacterProgress,
   parseGameSave,
 } from '@huntbound/contracts';
@@ -15,10 +16,8 @@ describe('save schema v1 to v2', () => {
       throw new Error('expected a session to migrate');
     }
 
-    const { character: _character, ...withoutCharacter } = current;
-    void _character;
     const v1 = {
-      ...withoutCharacter,
+      ...current,
       schemaVersion: 1,
       session: {
         ...session,
@@ -43,7 +42,7 @@ describe('save schema v1 to v2', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
+    expect(parsed.value.schemaVersion).toBe(9);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.snapshot.spawnSlots).toEqual([]);
   });
@@ -54,9 +53,7 @@ describe('save schema v2 to v3', () => {
     const current = saveWithSession(makeSession(), [
       { itemKey: 'item:tibia:gold-coin', count: 12 },
     ]);
-    const { character: _character, ...withoutCharacter } = current;
-    void _character;
-    const v2 = { ...withoutCharacter, schemaVersion: 2 };
+    const v2 = { ...current, schemaVersion: 2 };
 
     const parsed = parseGameSave(migrateSaveDocument(v2));
 
@@ -69,8 +66,10 @@ describe('save schema v2 to v3', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
-    expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
+    expect(parsed.value.schemaVersion).toBe(9);
+    expect(activeCharacter(parsed.value)).toEqual(
+      createEmptyCharacterProgress(),
+    );
     // Nothing the player had already earned is touched by the bump.
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:gold-coin', count: 12 },
@@ -101,7 +100,7 @@ describe('save schema v3 to v4', () => {
       );
     }
 
-    expect(parsed.value.character).toEqual({
+    expect(activeCharacter(parsed.value)).toEqual({
       ...createEmptyCharacterProgress(),
       experience: 2_450,
     });
@@ -133,7 +132,7 @@ describe('save schema v4 to v5', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
+    expect(parsed.value.schemaVersion).toBe(9);
     expect(parsed.value.gold).toBe(0);
     expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
@@ -162,7 +161,7 @@ describe('save schema v5 to v6', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
+    expect(parsed.value.schemaVersion).toBe(9);
     expect(parsed.value.gold).toBe(18);
     expect(parsed.value.nextHuntBuff).toBe('none');
     expect(parsed.value.stash).toEqual([
@@ -176,13 +175,6 @@ describe('save schema v6 to v7', () => {
     const current = saveWithSession(makeSession(), [
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);
-    const {
-      achievements: _achievements,
-      bestiary: _bestiary,
-      ...withoutBestiary
-    } = current.character;
-    void _achievements;
-    void _bestiary;
     const session = current.session;
     if (session === null) {
       throw new Error('expected a session to migrate');
@@ -192,7 +184,7 @@ describe('save schema v6 to v7', () => {
     const v6 = {
       ...current,
       schemaVersion: 6,
-      character: withoutBestiary,
+      character: { experience: 0 },
       session: withoutCursor,
     };
 
@@ -207,9 +199,9 @@ describe('save schema v6 to v7', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
-    expect(parsed.value.character.bestiary).toEqual([]);
-    expect(parsed.value.character.achievements).toEqual([]);
+    expect(parsed.value.schemaVersion).toBe(9);
+    expect(parsed.value.bestiary).toEqual([]);
+    expect(parsed.value.achievements).toEqual([]);
     expect(parsed.value.session?.lastBestiaryEventSequence).toBe(0);
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:meat', count: 4 },
@@ -222,13 +214,10 @@ describe('save schema v7 to v8', () => {
     const current = saveWithSession(makeSession(), [
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);
-    const { achievements: _achievements, ...characterWithoutAchievements } =
-      current.character;
-    void _achievements;
     const v7 = {
       ...current,
       schemaVersion: 7,
-      character: characterWithoutAchievements,
+      character: { experience: 0, bestiary: [] },
     };
 
     const parsed = parseGameSave(migrateSaveDocument(v7));
@@ -242,9 +231,9 @@ describe('save schema v7 to v8', () => {
       );
     }
 
-    expect(parsed.value.schemaVersion).toBe(8);
-    expect(parsed.value.character.achievements).toEqual([]);
-    expect(parsed.value.character.bestiary).toEqual([]);
+    expect(parsed.value.schemaVersion).toBe(9);
+    expect(parsed.value.achievements).toEqual([]);
+    expect(parsed.value.bestiary).toEqual([]);
     expect(parsed.value.stash).toEqual([
       { itemKey: 'item:tibia:meat', count: 4 },
     ]);

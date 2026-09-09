@@ -1,0 +1,245 @@
+{
+  "key": "selection:pb-14-03-sorcerer",
+  "vocationFamily": {
+    "key": "vocation-family:huntbound:sorcerer",
+    "displayName": "Sorcerer",
+    "vocationKeys": ["vocation:tibia:sorcerer"]
+  },
+  "vocation": {
+    "stableKey": "vocation:tibia:sorcerer",
+    "guid": "00000000-0000-5000-8000-000000000014",
+    "displayName": "Sorcerer",
+    "familyKey": "vocation-family:huntbound:sorcerer",
+    "attackSpeedMs": 2000,
+    "baseSpeed": 105,
+    "gainHp": 5,
+    "gainMana": 30,
+    "gainCapacity": 10,
+    "manaMultiplier": 1.1,
+    "skillMultipliers": {
+      "skill:0": 1.1,
+      "skill:1": 1.1,
+      "skill:2": 1.1,
+      "skill:3": 1.1,
+      "skill:4": 1.1,
+      "skill:5": 1.1,
+      "skill:6": 1.1
+    },
+    "includedFacets": ["identity", "progression"]
+  },
+  "weapon": {
+    "stableKey": "item:tibia:wand-of-decay",
+    "guid": "bbf16d6e-5b90-5e2d-a2f8-5fd7e4cdc889",
+    "displayName": "wand of decay",
+    "includedFacets": ["identity", "item"],
+    "attack": 8,
+    "weaponType": "wand",
+    "rangeTiles": 3,
+    "minDamage": 8,
+    "maxDamage": 18
+  },
+  "character": {
+    "stableKey": "character:huntbound:sorcerer",
+    "vocationKey": "vocation:tibia:sorcerer",
+    "level": 1,
+    "skills": { "sword": 0, "magic": 0 },
+    "weaponItemKey": "item:tibia:wand-of-decay",
+    "weaponAttack": 8,
+    "maxHealth": 150,
+    "maxMana": 200,
+    "kit": [
+      {
+        "minLevel": 1,
+        "maxLevel": null,
+        "spellKeys": [
+          "spell:tibia:energy-strike",
+          "spell:tibia:fire-wave",
+          "spell:tibia:great-fireball",
+          "spell:tibia:sudden-death",
+          "spell:tibia:ultimate-healing",
+          "spell:tibia:magic-shield",
+          "spell:tibia:arcane-stance",
+          "spell:tibia:haste"
+        ]
+      }
+    ]
+  },
+  "spells": [
+    {
+      "stableKey": "spell:tibia:energy-strike",
+      "guid": "00000000-0000-5000-8000-000000000021",
+      "displayName": "Energy Strike",
+      "words": "exori vis",
+      "level": 1,
+      "mana": 20,
+      "cooldownMs": 1000,
+      "groupCooldownMs": 1000,
+      "damageType": "energy",
+      "rangeTiles": 3,
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.2,
+        "minMagicFactor": 0.8,
+        "maxMagicFactor": 1.2,
+        "minAddend": 10,
+        "maxAddend": 20
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:fire-wave",
+      "guid": "00000000-0000-5000-8000-000000000022",
+      "displayName": "Fire Wave",
+      "words": "exevo flam hur",
+      "level": 1,
+      "mana": 50,
+      "cooldownMs": 4000,
+      "groupCooldownMs": 2000,
+      "damageType": "fire",
+      "area": { "shape": "cone", "radiusTiles": 3 },
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.4,
+        "minMagicFactor": 1,
+        "maxMagicFactor": 1.5,
+        "minAddend": 20,
+        "maxAddend": 30
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:great-fireball",
+      "guid": "00000000-0000-5000-8000-000000000023",
+      "displayName": "Great Fireball",
+      "words": "adori mas flam",
+      "level": 1,
+      "mana": 80,
+      "cooldownMs": 6000,
+      "groupCooldownMs": 2000,
+      "damageType": "fire",
+      "rangeTiles": 5,
+      "area": { "shape": "target-square", "radiusTiles": 1 },
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.5,
+        "minMagicFactor": 0.8,
+        "maxMagicFactor": 1.2,
+        "minAddend": 30,
+        "maxAddend": 45
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:sudden-death",
+      "guid": "00000000-0000-5000-8000-000000000024",
+      "displayName": "Sudden Death",
+      "words": "adori gran mort",
+      "level": 1,
+      "mana": 120,
+      "cooldownMs": 8000,
+      "groupCooldownMs": 2000,
+      "damageType": "death",
+      "rangeTiles": 6,
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.8,
+        "minMagicFactor": 1.5,
+        "maxMagicFactor": 2.5,
+        "minAddend": 40,
+        "maxAddend": 60
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:ultimate-healing",
+      "guid": "00000000-0000-5000-8000-000000000025",
+      "displayName": "Ultimate Healing",
+      "words": "exura vita",
+      "level": 1,
+      "mana": 40,
+      "cooldownMs": 1000,
+      "groupCooldownMs": 1000,
+      "damageType": "healing",
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0.5,
+        "minMagicFactor": 1,
+        "maxMagicFactor": 1.2,
+        "minAddend": 25,
+        "maxAddend": 35
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:magic-shield",
+      "guid": "00000000-0000-5000-8000-000000000026",
+      "displayName": "Magic Shield",
+      "words": "utamo vita",
+      "level": 1,
+      "mana": 50,
+      "cooldownMs": 0,
+      "groupCooldownMs": 2000,
+      "damageType": "healing",
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0,
+        "minMagicFactor": 0,
+        "maxMagicFactor": 0,
+        "minAddend": 0,
+        "maxAddend": 0
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:arcane-stance",
+      "guid": "00000000-0000-5000-8000-000000000027",
+      "displayName": "Arcane Stance",
+      "words": "arcane stance",
+      "level": 1,
+      "mana": 0,
+      "cooldownMs": 0,
+      "groupCooldownMs": 2000,
+      "damageType": "healing",
+      "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0,
+        "minMagicFactor": 0,
+        "maxMagicFactor": 0,
+        "minAddend": 0,
+        "maxAddend": 0
+      },
+      "includedFacets": ["identity", "spell"]
+    },
+    {
+      "stableKey": "spell:tibia:haste",
+      "guid": "00000000-0000-5000-8000-000000000028",
+      "displayName": "Haste",
+      "words": "utani hur",
+      "level": 1,
+      "mana": 60,
+      "cooldownMs": 2000,
+      "groupCooldownMs": 2000,
+      "damageType": "healing",
+      "allowedVocationFamilies": [
+        "vocation-family:huntbound:knight",
+        "vocation-family:huntbound:sorcerer"
+      ],
+      "formula": {
+        "kind": "levelMagic",
+        "levelFactor": 0,
+        "minMagicFactor": 0,
+        "maxMagicFactor": 0,
+        "minAddend": 0,
+        "maxAddend": 0
+      },
+      "includedFacets": ["identity", "spell"]
+    }
+  ]
+}

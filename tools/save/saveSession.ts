@@ -8,6 +8,7 @@ import {
   projectRunBag,
 } from '../../packages/content/src/index.ts';
 import {
+  DEFAULT_KNIGHT_VOCATION_KEY,
   type GameSave,
   type KernelScenario,
   parseGameSave,
@@ -283,6 +284,7 @@ async function persistCheckpoint(
   const repository = createSaveRepository(createMemorySaveDriver());
   await repository.transact((draft) => {
     draft.session = {
+      vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
       huntId: huntIdFromScenarioId(scenario.scenarioId),
       scenarioId: scenario.scenarioId,
       scenarioRevision: scenario.scenarioRevision,

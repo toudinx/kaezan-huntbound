@@ -169,6 +169,8 @@ export interface HuntSceneOptions {
   readonly targetDetailsByBlueprint?: ReadonlyMap<string, CombatTargetDetails>;
   /** The scenario's item table, so the helper can name what it looted. */
   readonly itemKeys?: readonly string[];
+  /** Optional vocation tint for the player when the pack has no outfit art. */
+  readonly playerTint?: number;
   readonly tileSize?: number;
 }
 
@@ -1654,6 +1656,7 @@ export class HuntScene extends Phaser.Scene {
       tick: this.options.driver.tick,
       playerEntityId,
       playerPosition: { ...playerActor.position },
+      playerFacing: playerActor.facing,
       health: playerActor.health,
       maxHealth: this.maxHealthByBlueprint.get(playerBlueprintId) ?? 0,
       resource: playerActor.resource,
@@ -1673,6 +1676,19 @@ export class HuntScene extends Phaser.Scene {
         })),
       abilities: this.options.abilities ?? DEFAULT_COMBAT_ABILITIES,
       abilityIndices: playerBlueprint?.abilityIndices ?? [],
+      activeAbilityIndices: new Set(
+        (playerBlueprint?.abilityIndices ?? []).filter((abilityIndex) => {
+          const ability = this.options.abilities?.[abilityIndex];
+          return (
+            ability?.toggle === true &&
+            ability.appliedConditionIndex !== null &&
+            playerActor.activeConditions.some(
+              (condition) =>
+                condition.conditionIndex === ability.appliedConditionIndex,
+            )
+          );
+        }),
+      ),
       abilityReadyAtTick: new Map<number, number>(
         playerActor.abilityCooldowns.map(
           (entry) => [entry.abilityIndex, entry.readyAtTick] as const,
@@ -1765,7 +1781,17 @@ export class HuntScene extends Phaser.Scene {
       if (this.combatImpulses.isActive('flash', entityId, renderTimeMs)) {
         sprite.setTint(0xffffff);
       } else {
-        sprite.clearTint();
+        const actor = this.presentation
+          ?.actors()
+          .find((candidate) => candidate.entityId === entityId);
+        if (
+          actor?.blueprintId === this.options.hunt.playerBlueprintId &&
+          this.options.playerTint !== undefined
+        ) {
+          sprite.setTint(this.options.playerTint);
+        } else {
+          sprite.clearTint();
+        }
       }
       sprite.setData('hunt-targeted', entityId === targetEntityId);
     }

@@ -1,4 +1,9 @@
-import type { RunBagEntry, SaveDraft } from '@huntbound/contracts';
+import {
+  activeCharacter,
+  type RunBagEntry,
+  replaceCharacter,
+  type SaveDraft,
+} from '@huntbound/contracts';
 
 import type { RunOutcome } from './types.ts';
 
@@ -64,10 +69,11 @@ export function consolidateRun(draft: SaveDraft, outcome: RunOutcome): void {
   }
 
   draft.stash = mergeBagIntoStash(draft.stash, session.bag);
-  draft.character = {
-    ...draft.character,
-    collection: mergeIntoCollection(draft.character.collection, session.bag),
-  };
+  const character = activeCharacter(draft);
+  replaceCharacter(draft, {
+    ...character,
+    collection: mergeIntoCollection(character.collection, session.bag),
+  });
   if (outcome === 'completed') {
     draft.completedRuns += 1;
   }

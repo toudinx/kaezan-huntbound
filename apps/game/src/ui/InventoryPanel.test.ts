@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type AchievementProgress,
+  type BestiaryProgress,
   type CharacterProgress,
   createEmptyCharacterProgress,
 } from '../../../../packages/contracts/src/index.ts';
@@ -17,6 +19,10 @@ interface TestInventoryState {
   readonly gold: number;
   readonly nextHuntBuff: 'none';
   readonly completedRuns: number;
+  readonly activeVocationKey: string;
+  readonly characters: readonly CharacterProgress[];
+  readonly bestiary: readonly BestiaryProgress[];
+  readonly achievements: readonly AchievementProgress[];
   readonly character: CharacterProgress;
 }
 
@@ -118,6 +124,10 @@ function state(
     gold: 9,
     nextHuntBuff: 'none',
     completedRuns: 2,
+    activeVocationKey: 'vocation:tibia:knight',
+    characters: [createEmptyCharacterProgress()],
+    bestiary: [],
+    achievements: [],
     character: createEmptyCharacterProgress(),
     ...overrides,
   };

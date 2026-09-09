@@ -1,4 +1,6 @@
 import type {
+  AchievementProgress,
+  BestiaryProgress,
   CharacterProgress,
   NextHuntBuffState,
   RunBagEntry,
@@ -14,7 +16,11 @@ export interface SaveInventoryState {
   readonly gold: number;
   readonly nextHuntBuff: NextHuntBuffState;
   readonly completedRuns: number;
-  /** The character the save keeps between runs. Never reset by a death. */
+  readonly activeVocationKey: string;
+  readonly characters: readonly CharacterProgress[];
+  readonly bestiary: readonly BestiaryProgress[];
+  readonly achievements: readonly AchievementProgress[];
+  /** The active character the save keeps between runs. Never reset by a death. */
   readonly character: CharacterProgress;
 }
 

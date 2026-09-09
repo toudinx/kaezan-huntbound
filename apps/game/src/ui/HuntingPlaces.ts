@@ -4,6 +4,8 @@ import {
   isTrainedWeapon,
   knightProgressAtExperience,
   resolveEquippedStats,
+  sorcererProgressAtExperience,
+  weaponTypesForVocation,
 } from '../../../../packages/content/src/index.ts';
 import {
   type AchievementDefinition,
@@ -11,6 +13,8 @@ import {
   type BestiaryProgress,
   type BestiarySpecies,
   type CharacterProgress,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_SORCERER_VOCATION_KEY,
   EQUIPMENT_SLOTS,
   type EquipmentSlot,
   type HuntIndex,
@@ -40,8 +44,15 @@ export type HuntPlaceSelectionHandler = (hunt: HuntIndexEntry) => void;
 export interface HuntingPlacesGear {
   readonly stash: readonly RunBagEntry[];
   readonly item: (itemKey: string) => ItemDefinition | undefined;
+  readonly weaponTypes?: readonly string[];
   readonly onEquip: (slot: EquipmentSlot, itemKey: string) => void;
   readonly onUnequip: (slot: EquipmentSlot) => void;
+}
+
+export interface HuntingPlacesVocationSelection {
+  readonly activeVocationKey: string;
+  readonly characters: readonly CharacterProgress[];
+  readonly onSelect: (vocationKey: string) => void;
 }
 
 /**
@@ -344,7 +355,10 @@ function createCharacterPanel(
   document: Document,
   character: CharacterProgress,
 ): HTMLElement {
-  const progress = knightProgressAtExperience(character.experience);
+  const progress = character.vocationKey.endsWith(':sorcerer')
+    ? sorcererProgressAtExperience(character.experience)
+    : knightProgressAtExperience(character.experience);
+  const vocationName = formatVocation(character.vocationKey);
   const panel = document.createElement('section');
   panel.className = 'hunting-places__character';
   panel.setAttribute('data-testid', 'hunt-character');
@@ -353,7 +367,7 @@ function createCharacterPanel(
   const level = createTextElement(
     document,
     'p',
-    `Knight · Level ${formatInteger(progress.level)}`,
+    `${vocationName} · Level ${formatInteger(progress.level)}`,
     'hunting-places__character-level',
   );
   level.setAttribute('data-testid', 'hunt-character-level');
@@ -373,6 +387,47 @@ function createCharacterPanel(
   meter.value = progress.intoLevel;
   meter.setAttribute('aria-label', `Progress to level ${progress.level + 1}`);
   panel.append(level, experience, meter);
+  return panel;
+}
+
+function createVocationPanel(
+  document: Document,
+  selection: HuntingPlacesVocationSelection,
+): HTMLElement {
+  const panel = document.createElement('section');
+  panel.className = 'hunting-places__vocations';
+  panel.setAttribute('data-testid', 'hunt-vocations');
+
+  const title = createTextElement(
+    document,
+    'h2',
+    'Characters',
+    'hunting-places__section-title',
+  );
+  const buttons = document.createElement('div');
+  buttons.className = 'hunting-places__vocation-buttons';
+  for (const character of selection.characters) {
+    const playable =
+      character.vocationKey === DEFAULT_KNIGHT_VOCATION_KEY ||
+      character.vocationKey === DEFAULT_SORCERER_VOCATION_KEY;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'hunting-places__vocation';
+    button.setAttribute('data-testid', 'hunt-vocation-select');
+    button.setAttribute('data-vocation-key', character.vocationKey);
+    button.textContent = formatVocation(character.vocationKey);
+    button.disabled =
+      !playable || character.vocationKey === selection.activeVocationKey;
+    button.setAttribute(
+      'aria-pressed',
+      String(character.vocationKey === selection.activeVocationKey),
+    );
+    button.addEventListener('click', () => {
+      if (!button.disabled) selection.onSelect(character.vocationKey);
+    });
+    buttons.append(button);
+  }
+  panel.append(title, buttons);
   return panel;
 }
 
@@ -554,7 +609,10 @@ const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
   boots: 'Boots',
 };
 
-function describeItem(item: ItemDefinition): string {
+function describeItem(
+  item: ItemDefinition,
+  weaponTypes = weaponTypesForVocation('vocation:tibia:knight'),
+): string {
   const parts: string[] = [];
   if (item.attack !== undefined) {
     parts.push(`Atk ${formatInteger(item.attack)}`);
@@ -565,7 +623,7 @@ function describeItem(item: ItemDefinition): string {
   if (item.armor !== undefined) {
     parts.push(`Arm ${formatInteger(item.armor)}`);
   }
-  if (item.weaponType !== undefined && !isTrainedWeapon(item)) {
+  if (item.weaponType !== undefined && !isTrainedWeapon(item, weaponTypes)) {
     parts.push('untrained');
   }
   return parts.length === 0 ? 'no stats' : parts.join(' · ');
@@ -597,7 +655,7 @@ function createSlotRow(
       ? 'empty'
       : worn === undefined
         ? `${formatContentName(wornKey)} — unknown to this slice`
-        : `${worn.displayName} — ${describeItem(worn)}`;
+        : `${worn.displayName} — ${describeItem(worn, gear.weaponTypes)}`;
   const value = createTextElement(
     document,
     'span',
@@ -623,13 +681,21 @@ function createSlotRow(
   for (const entry of gear.stash) {
     const item = gear.item(entry.itemKey);
     if (item === undefined || equipmentSlotFor(item) !== slot) continue;
+    if (
+      slot === 'weapon' &&
+      (item.weaponType === undefined ||
+        (gear.weaponTypes !== undefined &&
+          !gear.weaponTypes.includes(item.weaponType)))
+    ) {
+      continue;
+    }
     const equip = document.createElement('button');
     equip.type = 'button';
     equip.className = 'hunting-places__slot-action';
     equip.setAttribute('data-testid', 'hunt-equipment-equip');
     equip.setAttribute('data-slot', slot);
     equip.setAttribute('data-item-key', entry.itemKey);
-    equip.textContent = `Equip ${item.displayName} (${describeItem(item)})`;
+    equip.textContent = `Equip ${item.displayName} (${describeItem(item, gear.weaponTypes)})`;
     equip.addEventListener('click', () => {
       gear.onEquip(slot, entry.itemKey);
     });
@@ -651,7 +717,11 @@ function createEquipmentPanel(
   character: CharacterProgress,
   gear: HuntingPlacesGear,
 ): HTMLElement {
-  const stats = resolveEquippedStats(character.equipment, gear.item);
+  const stats = resolveEquippedStats(
+    character.equipment,
+    gear.item,
+    gear.weaponTypes === undefined ? {} : { weaponTypes: gear.weaponTypes },
+  );
   const panel = document.createElement('section');
   panel.className = 'hunting-places__equipment';
   panel.setAttribute('data-testid', 'hunt-equipment');
@@ -758,7 +828,12 @@ function createSetProgress(
   const lootKeys = hunt.creatures.flatMap((creature) =>
     creature.loot.map((entry) => entry.itemKey),
   );
-  const set = bandSetFor(lootKeys, character.collection, gear.item);
+  const set = bandSetFor(
+    lootKeys,
+    character.collection,
+    gear.item,
+    gear.weaponTypes === undefined ? {} : { weaponTypes: gear.weaponTypes },
+  );
   const section = document.createElement('div');
   section.className = 'hunting-places__set';
   section.setAttribute('data-testid', 'hunt-place-set');
@@ -909,6 +984,9 @@ export function mountHuntingPlaces(
   preparation?: HuntingPlacesPreparation,
   bestiary?: readonly BestiarySpecies[],
   achievements?: readonly AchievementDefinition[],
+  bestiaryProgress: readonly BestiaryProgress[] = [],
+  achievementProgress: readonly AchievementProgress[] = [],
+  vocationSelection?: HuntingPlacesVocationSelection,
 ): HuntingPlacesScreen {
   const document = root.ownerDocument;
   const screen = document.createElement('main');
@@ -929,7 +1007,7 @@ export function mountHuntingPlaces(
     createTextElement(
       document,
       'span',
-      'Character selection · Knight',
+      `Character selection · ${formatVocation(character?.vocationKey ?? 'vocation:tibia:knight')}`,
       'hunting-places__tagline',
     ),
   );
@@ -953,6 +1031,9 @@ export function mountHuntingPlaces(
   identity.className = 'hunting-places__identity';
   if (character !== undefined)
     identity.append(createCharacterPanel(document, character));
+  if (vocationSelection !== undefined) {
+    identity.append(createVocationPanel(document, vocationSelection));
+  }
   if (preparation !== undefined) {
     identity.append(
       createTextElement(
@@ -1037,12 +1118,12 @@ export function mountHuntingPlaces(
   }
   if (bestiary !== undefined && character !== undefined) {
     addPage('bestiary', 'Bestiary').append(
-      createBestiaryPanel(document, bestiary, character.bestiary),
+      createBestiaryPanel(document, bestiary, bestiaryProgress),
     );
   }
   if (achievements !== undefined && character !== undefined) {
     addPage('achievements', 'Achievements').append(
-      createAchievementPanel(document, achievements, character.achievements),
+      createAchievementPanel(document, achievements, achievementProgress),
     );
   }
 

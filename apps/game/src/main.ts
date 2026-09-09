@@ -14,25 +14,36 @@ import {
   buildHuntScenario,
   createContentRegistry,
   createItemSaleOffer,
-  type EquippedStats,
   type ItemSaleOffer,
   knightSheetAtLevel,
   levelForExperience,
   loadHuntDefinition,
+  mergeSorcererRuntimeBundle,
   nextHuntBuffDamagePercent,
   nextHuntBuffOffer,
   parseKnightPostures,
+  parseSorcererSelection,
   projectRuntimeBundle,
   resolveEquippedStats,
+  sorcererLevelForExperience,
+  sorcererSheetAtLevel,
+  weaponTypesForVocation,
 } from '../../../packages/content/src/index.ts';
 import knightCombatSelectionJson from '../../../packages/content/src/selections/pb-05-knight-combat.json?raw';
+import sorcererSelectionJson from '../../../packages/content/src/selections/pb-14-03-sorcerer.json?raw';
 import {
+  type AchievementProgress,
+  activeCharacter,
+  type BestiaryProgress,
   type CatalogContentBundle,
   type CharacterDefinition,
   CharacterDefinitionSchema,
   type CharacterProgress,
   createEmptyCharacterProgress,
+  createEmptyGameSave,
   createSeed,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_SORCERER_VOCATION_KEY,
   type EntityId,
   type EquipmentSlot,
   type HuntDefinition,
@@ -81,6 +92,7 @@ import { mountAppShell } from './ui/AppShell';
 import {
   type HuntingPlacesPreparation,
   type HuntingPlacesScreen,
+  type HuntingPlacesVocationSelection,
   type HuntRunSummary,
   mountHuntingPlaces,
 } from './ui/HuntingPlaces';
@@ -212,7 +224,7 @@ function readKnightPostures() {
  */
 function readKnightCharacter(
   level: number,
-  equipped: EquippedStats,
+  equipped: Parameters<typeof knightSheetAtLevel>[1],
 ): CharacterDefinition {
   const kit = readKnightCombatSelection().character?.kit;
   if (kit === undefined) {
@@ -223,6 +235,19 @@ function readKnightCharacter(
     stableKey: 'character:huntbound:knight',
     vocationKey: 'vocation:tibia:knight',
     kit,
+  });
+}
+
+function readSorcererCharacter(
+  level: number,
+  equipped: Parameters<typeof sorcererSheetAtLevel>[1],
+  selection: ReturnType<typeof parseSorcererSelection>,
+): CharacterDefinition {
+  return CharacterDefinitionSchema.parse({
+    ...sorcererSheetAtLevel(level, equipped),
+    stableKey: selection.character.stableKey,
+    vocationKey: selection.vocation.stableKey,
+    kit: selection.character.kit,
   });
 }
 
@@ -313,16 +338,27 @@ export async function bootstrapApp(
   const saveRepository: SaveRepository = createSaveRepository(
     createIndexedDbSaveDriver(),
   );
+  let activeVocationKey = DEFAULT_KNIGHT_VOCATION_KEY;
+  let characters: readonly CharacterProgress[] =
+    createEmptyGameSave().characters;
   let character: CharacterProgress = createEmptyCharacterProgress();
   let stash: readonly RunBagEntry[] = [];
   let gold = 0;
   let nextHuntBuff: NextHuntBuffState = 'none';
+  let bestiaryProgress: readonly BestiaryProgress[] = [];
+  let achievementProgress: readonly AchievementProgress[] = [];
+  let canSwitchVocation = true;
   try {
     const loaded = await saveRepository.load();
-    character = loaded.character;
+    activeVocationKey = loaded.activeVocationKey;
+    characters = loaded.characters;
+    character = activeCharacter(loaded);
     stash = loaded.stash;
     gold = loaded.gold;
     nextHuntBuff = loaded.nextHuntBuff;
+    bestiaryProgress = loaded.bestiary;
+    achievementProgress = loaded.achievements;
+    canSwitchVocation = loaded.session === null;
   } catch {
     // A save that cannot be read is a fresh character, not a dead boot: the
     // session reports the failure properly once a run starts.
@@ -330,11 +366,18 @@ export async function bootstrapApp(
   // The catalog is a compile-time import, so the atlas can read an item's
   // stats before any run has been started -- which is the only moment gear can
   // be changed.
-  const contentRuntime = projectRuntimeBundle(
+  const baseContentRuntime = projectRuntimeBundle(
     JSON.parse(catalogBundleJson) as CatalogContentBundle,
   );
+  const sorcererSelection = parseSorcererSelection(
+    JSON.parse(sorcererSelectionJson) as unknown,
+  );
+  const runtime = mergeSorcererRuntimeBundle(
+    baseContentRuntime,
+    sorcererSelection,
+  );
   const itemsByKey = new Map<string, ItemDefinition>(
-    contentRuntime.items.map((item) => [item.stableKey, item]),
+    runtime.items.map((item) => [item.stableKey, item]),
   );
   const lookupItem = (itemKey: string): ItemDefinition | undefined =>
     itemsByKey.get(itemKey);
@@ -352,8 +395,6 @@ export async function bootstrapApp(
           protected: offer.protected,
         };
   };
-  const equippedStats = (): EquippedStats =>
-    resolveEquippedStats(character.equipment, lookupItem);
   const appShellMount = overrides.mountAppShell ?? mountAppShell;
   let huntIndex: HuntIndex;
   try {
@@ -375,16 +416,24 @@ export async function bootstrapApp(
     const refreshed = await saveRepository.transact((draft) => {
       refreshAchievements(draft, achievements);
       return {
-        character: draft.character,
+        character: activeCharacter(draft),
+        characters: draft.characters,
+        activeVocationKey: draft.activeVocationKey,
+        bestiary: draft.bestiary,
+        achievements: draft.achievements,
         gold: draft.gold,
         stash: draft.stash,
         nextHuntBuff: draft.nextHuntBuff,
       };
     });
     character = refreshed.character;
+    characters = refreshed.characters;
+    activeVocationKey = refreshed.activeVocationKey;
     stash = refreshed.stash;
     gold = refreshed.gold;
     nextHuntBuff = refreshed.nextHuntBuff;
+    bestiaryProgress = refreshed.bestiary;
+    achievementProgress = refreshed.achievements;
   } catch {
     // SaveSession will surface a write failure once the player starts a run.
   }
@@ -401,6 +450,8 @@ export async function bootstrapApp(
   ): Promise<void> => {
     if (selectionStarted) return;
     selectionStarted = true;
+    const runVocationKey = activeVocationKey;
+    const runCharacterProgress = character;
     bridge.publish({
       ...bridge.getSnapshot(),
       phase: 'booting',
@@ -418,6 +469,7 @@ export async function bootstrapApp(
           readonly scenarioId: string;
           readonly scenarioRevision: number;
           readonly seed: ReturnType<typeof createSeed>;
+          readonly vocationKey: string;
         }
       | undefined;
     let unsubscribeSaveEvents: (() => void) | undefined;
@@ -481,6 +533,11 @@ export async function bootstrapApp(
       // The atlas is remounted from here, so the character it shows is the one
       // the run just finished writing.
       character = settled?.character ?? character;
+      characters = settled?.characters ?? characters;
+      activeVocationKey = settled?.activeVocationKey ?? activeVocationKey;
+      bestiaryProgress = settled?.bestiary ?? bestiaryProgress;
+      achievementProgress = settled?.achievements ?? achievementProgress;
+      canSwitchVocation = true;
       stash = settled?.stash ?? stash;
       gold = settled?.gold ?? gold;
       nextHuntBuff = settled?.nextHuntBuff ?? nextHuntBuff;
@@ -523,21 +580,35 @@ export async function bootstrapApp(
         huntEntry,
         assetRuntimeFactory,
       );
-      const runtime = contentRuntime;
       const hunt = await readHuntDefinition(huntEntry);
       const huntSeed = createSeed('1a2b3c4d5e6f7a8b');
       const registry = createContentRegistry(runtime);
       // The sheet is fixed for the length of the run: the kernel is built from
       // it. Levelling mid-hunt therefore banks the experience now and hands the
       // bigger sheet to the next run, which is the same boundary the bag uses.
-      const knight = readKnightCharacter(
-        levelForExperience(character.experience),
-        equippedStats(),
+      const runEquippedStats = resolveEquippedStats(
+        runCharacterProgress.equipment,
+        lookupItem,
+        { weaponTypes: weaponTypesForVocation(runVocationKey) },
       );
-      const postures = readKnightPostures();
+      const playerCharacter =
+        runVocationKey === DEFAULT_SORCERER_VOCATION_KEY
+          ? readSorcererCharacter(
+              sorcererLevelForExperience(runCharacterProgress.experience),
+              runEquippedStats,
+              sorcererSelection,
+            )
+          : readKnightCharacter(
+              levelForExperience(runCharacterProgress.experience),
+              runEquippedStats,
+            );
+      const postures =
+        runVocationKey === DEFAULT_KNIGHT_VOCATION_KEY
+          ? readKnightPostures()
+          : [];
       const scenarioResult = buildHuntScenario(
         hunt,
-        knight,
+        playerCharacter,
         registry,
         huntSeed,
         {
@@ -569,7 +640,7 @@ export async function bootstrapApp(
         scenario.abilities,
         scenario.conditions,
         scenario.blueprints,
-        knight,
+        playerCharacter,
         scenarioResult.value.itemKeys,
       );
       combatViewModel = activeCombatViewModel;
@@ -578,6 +649,7 @@ export async function bootstrapApp(
         scenarioId: scenario.scenarioId,
         scenarioRevision: scenario.scenarioRevision,
         seed: huntSeed,
+        vocationKey: runVocationKey,
       } as const;
 
       saveSession = overrides.createSaveSession
@@ -607,7 +679,14 @@ export async function bootstrapApp(
       activeCombatViewModel.restoreBag(saveBoot.bag);
       activeCombatViewModel.restoreExperience(saveBoot.character.experience);
       character = saveBoot.character;
-      stash = saveSession?.getState().stash ?? stash;
+      const bootState = saveSession.getState();
+      activeVocationKey = bootState.activeVocationKey;
+      characters = bootState.characters;
+      stash = bootState.stash;
+      gold = bootState.gold;
+      nextHuntBuff = bootState.nextHuntBuff;
+      bestiaryProgress = bootState.bestiary;
+      achievementProgress = bootState.achievements;
 
       inputMap = createInputMap();
       const inputTarget =
@@ -795,6 +874,9 @@ export async function bootstrapApp(
         targetDetailsByBlueprint:
           activeCombatViewModel.targetDetailsByBlueprint,
         itemKeys: scenarioResult.value.itemKeys,
+        ...(runVocationKey === DEFAULT_SORCERER_VOCATION_KEY
+          ? { playerTint: 0xbca4ff }
+          : {}),
       });
       const viewportFactory =
         overrides.createViewportController ?? createViewportController;
@@ -890,13 +972,21 @@ export async function bootstrapApp(
             refreshAchievements(draft, achievements, 'item-equipped');
           }
           return {
-            character: draft.character,
+            character: activeCharacter(draft),
+            characters: draft.characters,
+            activeVocationKey: draft.activeVocationKey,
+            bestiary: draft.bestiary,
+            achievements: draft.achievements,
             stash: draft.stash,
             gold: draft.gold,
           };
         })
         .then((next) => {
           character = next.character;
+          characters = next.characters;
+          activeVocationKey = next.activeVocationKey;
+          bestiaryProgress = next.bestiary;
+          achievementProgress = next.achievements;
           stash = next.stash;
           gold = next.gold;
           showHuntingPlaces(summary);
@@ -906,6 +996,51 @@ export async function bootstrapApp(
           // saved, which is the honest picture of what the next run gets.
         });
     };
+    const vocationSelection: HuntingPlacesVocationSelection | undefined =
+      canSwitchVocation
+        ? {
+            activeVocationKey,
+            characters,
+            onSelect: (vocationKey) => {
+              if (vocationKey === activeVocationKey) return;
+              void saveRepository
+                .transact((draft) => {
+                  if (
+                    !draft.characters.some(
+                      (candidate) => candidate.vocationKey === vocationKey,
+                    )
+                  ) {
+                    throw new Error(`Unknown vocation: ${vocationKey}`);
+                  }
+                  draft.activeVocationKey = vocationKey;
+                  return {
+                    character: activeCharacter(draft),
+                    characters: draft.characters,
+                    activeVocationKey: draft.activeVocationKey,
+                    bestiary: draft.bestiary,
+                    achievements: draft.achievements,
+                    stash: draft.stash,
+                    gold: draft.gold,
+                    nextHuntBuff: draft.nextHuntBuff,
+                  };
+                })
+                .then((next) => {
+                  character = next.character;
+                  characters = next.characters;
+                  activeVocationKey = next.activeVocationKey;
+                  bestiaryProgress = next.bestiary;
+                  achievementProgress = next.achievements;
+                  stash = next.stash;
+                  gold = next.gold;
+                  nextHuntBuff = next.nextHuntBuff;
+                  showHuntingPlaces(summary);
+                })
+                .catch(() => {
+                  // Keep the current atlas when a vocation switch cannot be saved.
+                });
+            },
+          }
+        : undefined;
     selectionScreen = mountSelection(
       appUiRoot,
       huntIndex,
@@ -917,6 +1052,7 @@ export async function bootstrapApp(
       {
         stash,
         item: lookupItem,
+        weaponTypes: weaponTypesForVocation(activeVocationKey),
         onEquip: (slot: EquipmentSlot, itemKey: string) => {
           applyGearChange((draft) => equipFromStash(draft, slot, itemKey));
         },
@@ -952,6 +1088,9 @@ export async function bootstrapApp(
       } satisfies HuntingPlacesPreparation,
       bestiary,
       achievements,
+      bestiaryProgress,
+      achievementProgress,
+      vocationSelection,
     );
   }
 

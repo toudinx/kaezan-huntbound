@@ -22,9 +22,10 @@ export function combatCommandForAction(
       const ability = context.abilities[action.abilityIndex];
       if (ability === undefined) return undefined;
 
-      const targetEntityId =
-        ability.shape === 'target' ? context.targetEntityId : null;
-      if (ability.shape === 'target' && targetEntityId === null) {
+      const needsTarget =
+        ability.shape === 'target' || ability.shape === 'target-area';
+      const targetEntityId = needsTarget ? context.targetEntityId : null;
+      if (needsTarget && targetEntityId === null) {
         return undefined;
       }
 

@@ -1,4 +1,4 @@
-import { createEmptyGameSave } from '@huntbound/contracts';
+import { activeCharacter, createEmptyGameSave } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { consolidateRun } from './consolidateRun.ts';
@@ -38,14 +38,14 @@ describe('consolidateRun', () => {
 
     const banked = draftFrom(saveWithSession(makeSession({ bag })));
     consolidateRun(banked, 'completed');
-    expect(banked.character.collection).toEqual([
+    expect(activeCharacter(banked).collection).toEqual([
       'item:tibia:legion-helmet',
       'item:tibia:sword',
     ]);
 
     const died = draftFrom(saveWithSession(makeSession({ bag })));
     consolidateRun(died, 'died');
-    expect(died.character.collection).toEqual([]);
+    expect(activeCharacter(died).collection).toEqual([]);
   });
 
   it('adds counts for itemKeys that already exist in the stash instead of duplicating entries', () => {

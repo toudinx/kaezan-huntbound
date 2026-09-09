@@ -165,16 +165,42 @@ const AchievementProgressEntriesSchema = z
 
 export const CharacterProgressSchema = z
   .object({
+    vocationKey: nonEmptyString,
     experience: nonNegativeInteger,
     equipment: CharacterEquipmentSchema,
     collection: CollectionSchema,
-    bestiary: BestiaryProgressEntriesSchema,
-    achievements: AchievementProgressEntriesSchema,
   })
   .strict();
 
+const CharacterProgressEntriesSchema = z
+  .array(CharacterProgressSchema)
+  .min(1)
+  .readonly()
+  .superRefine((entries, context) => {
+    for (let index = 1; index < entries.length; index += 1) {
+      const previous = entries[index - 1];
+      const current = entries[index];
+      if (previous === undefined || current === undefined) continue;
+      if (previous.vocationKey === current.vocationKey) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'vocationKey'],
+          message: 'vocationKey must be unique',
+        });
+      } else if (previous.vocationKey > current.vocationKey) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'vocationKey'],
+          message:
+            'characters must be ordered by vocationKey in UTF-16 code unit order',
+        });
+      }
+    }
+  });
+
 export const ActiveRunStateSchema = z
   .object({
+    vocationKey: nonEmptyString,
     huntId: nonEmptyString,
     scenarioId: nonEmptyString,
     scenarioRevision: nonNegativeInteger,
@@ -188,11 +214,27 @@ export const ActiveRunStateSchema = z
 export const GameSaveSchema = z
   .object({
     schemaVersion: z.literal(SAVE_SCHEMA_VERSION),
-    character: CharacterProgressSchema,
+    characters: CharacterProgressEntriesSchema,
+    activeVocationKey: nonEmptyString,
+    bestiary: BestiaryProgressEntriesSchema,
+    achievements: AchievementProgressEntriesSchema,
     stash: RunBagEntriesSchema,
     gold: nonNegativeInteger,
     nextHuntBuff: z.enum(NEXT_HUNT_BUFF_STATES),
     completedRuns: nonNegativeInteger,
     session: ActiveRunStateSchema.nullable(),
   })
-  .strict();
+  .strict()
+  .superRefine((save, context) => {
+    if (
+      !save.characters.some(
+        (character) => character.vocationKey === save.activeVocationKey,
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['activeVocationKey'],
+        message: 'activeVocationKey must name one of the characters',
+      });
+    }
+  });

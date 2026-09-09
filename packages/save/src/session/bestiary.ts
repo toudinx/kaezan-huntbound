@@ -76,7 +76,7 @@ export function creditBestiaryKill(
   }
 
   const session = draft.session;
-  const current = progressFor(draft.character.bestiary, species.creatureKey);
+  const current = progressFor(draft.bestiary, species.creatureKey);
   if (session === null) {
     return resultFor(species, current, false, 0, 'no-session');
   }
@@ -94,17 +94,14 @@ export function creditBestiaryKill(
     rewardClaimed: (current?.rewardClaimed ?? false) || completed,
   };
 
-  draft.character = {
-    ...draft.character,
-    bestiary: [
-      ...draft.character.bestiary.filter(
-        (entry) => entry.creatureKey !== species.creatureKey,
-      ),
-      nextProgress,
-    ].sort((left, right) =>
-      compareCreatureKeys(left.creatureKey, right.creatureKey),
+  draft.bestiary = [
+    ...draft.bestiary.filter(
+      (entry) => entry.creatureKey !== species.creatureKey,
     ),
-  };
+    nextProgress,
+  ].sort((left, right) =>
+    compareCreatureKeys(left.creatureKey, right.creatureKey),
+  );
   draft.gold += rewardGold;
   draft.session = {
     ...session,

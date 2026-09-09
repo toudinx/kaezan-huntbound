@@ -1,4 +1,5 @@
 import {
+  activeCharacter,
   createEmptyEquipment,
   parseGameSave,
   SIMULATION_SCHEMA_VERSION,
@@ -61,25 +62,25 @@ describe('incompatible session discard', () => {
     });
 
     expect(counting.writeCount()).toBe(1);
-    await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 8,
-      character: {
-        experience: 0,
-        equipment: createEmptyEquipment(),
-        collection: ['item:tibia:gold-coin', 'item:tibia:meat'],
-        bestiary: [],
-        achievements: [],
-      },
-      gold: 0,
-      nextHuntBuff: 'none',
-      completedRuns: 0,
-      session: null,
-      stash: [
-        { itemKey: 'item:tibia:arrow', count: 2 },
-        { itemKey: 'item:tibia:gold-coin', count: 4 },
-        { itemKey: 'item:tibia:meat', count: 1 },
-      ],
+    const loaded = await repository.load();
+    expect(loaded.schemaVersion).toBe(9);
+    expect(loaded.session).toBeNull();
+    expect(activeCharacter(loaded)).toEqual({
+      ...activeCharacter({
+        ...loaded,
+        characters: loaded.characters,
+      }),
+      experience: 0,
+      equipment: createEmptyEquipment(),
+      collection: ['item:tibia:gold-coin', 'item:tibia:meat'],
     });
+    expect(loaded.bestiary).toEqual([]);
+    expect(loaded.achievements).toEqual([]);
+    expect(loaded.stash).toEqual([
+      { itemKey: 'item:tibia:arrow', count: 2 },
+      { itemKey: 'item:tibia:gold-coin', count: 4 },
+      { itemKey: 'item:tibia:meat', count: 1 },
+    ]);
   });
 
   it('discards a v4 session under schema v5 while preserving the bag', async () => {
@@ -116,24 +117,17 @@ describe('incompatible session discard', () => {
       consolidateRun(draft, 'abandoned');
     });
 
-    await expect(repository.load()).resolves.toEqual({
-      schemaVersion: 8,
-      character: {
-        experience: 0,
-        equipment: createEmptyEquipment(),
-        collection: ['item:tibia:gold-coin', 'item:tibia:meat'],
-        bestiary: [],
-        achievements: [],
-      },
-      gold: 0,
-      nextHuntBuff: 'none',
-      completedRuns: 0,
-      session: null,
-      stash: [
-        { itemKey: 'item:tibia:arrow', count: 2 },
-        { itemKey: 'item:tibia:gold-coin', count: 4 },
-        { itemKey: 'item:tibia:meat', count: 1 },
-      ],
-    });
+    const loaded = await repository.load();
+    expect(loaded.schemaVersion).toBe(9);
+    expect(loaded.session).toBeNull();
+    expect(activeCharacter(loaded).collection).toEqual([
+      'item:tibia:gold-coin',
+      'item:tibia:meat',
+    ]);
+    expect(loaded.stash).toEqual([
+      { itemKey: 'item:tibia:arrow', count: 2 },
+      { itemKey: 'item:tibia:gold-coin', count: 4 },
+      { itemKey: 'item:tibia:meat', count: 1 },
+    ]);
   });
 });

@@ -64,6 +64,30 @@ const BRUTAL = ability({
 
 const KIT = [BERSERK, BRUTAL, HEAL] as const;
 
+const MAGIC_SHIELD = ability({
+  abilityId: 'magic-shield',
+  effect: 'heal',
+  shape: 'self',
+  rangeTiles: 0,
+  resourceCost: 50,
+  toggle: true,
+  appliedConditionIndex: 0,
+});
+const FIRE_WAVE = ability({
+  abilityId: 'fire-wave',
+  shape: 'cone',
+  radius: 3,
+  rangeTiles: 0,
+  resourceCost: 50,
+});
+const GREAT_FIREBALL = ability({
+  abilityId: 'great-fireball',
+  shape: 'target-area',
+  radius: 1,
+  rangeTiles: 5,
+  resourceCost: 80,
+});
+
 function situation(overrides: Partial<HelperSituation> = {}): HelperSituation {
   return {
     tick: 100,
@@ -306,6 +330,62 @@ describe('decideHelperAction', () => {
     });
 
     expect(decision).toMatchObject({ kind: 'act', module: 'target' });
+  });
+
+  it('casts a front-facing cone when two hostiles are in the wedge', () => {
+    const decision = decideHelperAction({
+      situation: situation({
+        playerFacing: 'e',
+        abilities: [FIRE_WAVE],
+        abilityIndices: [0],
+        hostiles: [hostile(2, 6, 5), hostile(3, 7, 6)],
+      }),
+      modules: modules({ actions: true }),
+      holdUntilTick: NO_HOLDS,
+    });
+
+    expect(decision).toMatchObject({
+      kind: 'act',
+      module: 'actions',
+      command: { abilityIndex: 0, targetEntityId: null },
+    });
+  });
+
+  it('centres target-area spells on the selected hostile', () => {
+    const decision = decideHelperAction({
+      situation: situation({
+        abilities: [GREAT_FIREBALL],
+        abilityIndices: [0],
+        targetEntityId: 2 as EntityId,
+        hostiles: [hostile(2, 8, 5), hostile(3, 8, 6)],
+      }),
+      modules: modules({ actions: true }),
+      holdUntilTick: NO_HOLDS,
+    });
+
+    expect(decision).toMatchObject({
+      kind: 'act',
+      module: 'actions',
+      command: { abilityIndex: 0, targetEntityId: 2 },
+    });
+  });
+
+  it('activates the first inactive Sorcerer toggle once', () => {
+    const decision = decideHelperAction({
+      situation: situation({
+        abilities: [MAGIC_SHIELD],
+        abilityIndices: [0],
+        activeAbilityIndices: new Set(),
+      }),
+      modules: modules({ actions: true }),
+      holdUntilTick: NO_HOLDS,
+    });
+
+    expect(decision).toMatchObject({
+      kind: 'act',
+      module: 'actions',
+      command: { abilityIndex: 0, targetEntityId: null },
+    });
   });
 });
 

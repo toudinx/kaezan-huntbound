@@ -235,11 +235,21 @@ export function createCombatDecorations(
 
             if (
               recipe.placement === 'radius-1' ||
-              recipe.placement === 'radius-3'
+              recipe.placement === 'radius-3' ||
+              recipe.placement === 'target-radius-1'
             ) {
               if (recipe.impactKey === undefined) break;
-              if (casterPosition === undefined) break;
-              const radius = recipe.placement === 'radius-1' ? 1 : 3;
+              const center =
+                recipe.placement === 'target-radius-1' &&
+                event.payload.targetEntityId !== null
+                  ? actorPositions.get(event.payload.targetEntityId)
+                  : casterPosition;
+              if (center === undefined) break;
+              const radius =
+                recipe.placement === 'radius-1' ||
+                recipe.placement === 'target-radius-1'
+                  ? 1
+                  : 3;
               for (let offsetY = -radius; offsetY <= radius; offsetY += 1) {
                 for (let offsetX = -radius; offsetX <= radius; offsetX += 1) {
                   const distance = Math.max(
@@ -253,9 +263,9 @@ export function createCombatDecorations(
                         : 0),
                     recipe,
                     {
-                      x: casterPosition.x + offsetX,
-                      y: casterPosition.y + offsetY,
-                      z: casterPosition.z,
+                      x: center.x + offsetX,
+                      y: center.y + offsetY,
+                      z: center.z,
                     },
                   );
                 }

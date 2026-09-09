@@ -1,7 +1,16 @@
 import type { Seed } from '../simulation/identity.ts';
 import type { SimulationSnapshot } from '../simulation/types.ts';
 
-export const SAVE_SCHEMA_VERSION = 8;
+export const SAVE_SCHEMA_VERSION = 9;
+
+export const DEFAULT_KNIGHT_VOCATION_KEY = 'vocation:tibia:knight';
+export const DEFAULT_SORCERER_VOCATION_KEY = 'vocation:tibia:sorcerer';
+export const DEFAULT_PALADIN_VOCATION_KEY = 'vocation:tibia:paladin';
+export const DEFAULT_VOCATION_KEYS = [
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_PALADIN_VOCATION_KEY,
+  DEFAULT_SORCERER_VOCATION_KEY,
+] as const;
 
 /**
  * Whether a next-hunt blessing is sitting on the character.
@@ -105,17 +114,15 @@ export interface AchievementProgress {
  * the stash: it left it when it was equipped and returns when it comes off.
  */
 export interface CharacterProgress {
+  readonly vocationKey: string;
   readonly experience: number;
   readonly equipment: CharacterEquipment;
   /** Unique item keys ever banked, in UTF-16 code unit order. */
   readonly collection: readonly string[];
-  /** Bestiary entries are sparse and ordered by creature key. */
-  readonly bestiary: readonly BestiaryProgress[];
-  /** Achievement entries are sparse and ordered by achievement ID. */
-  readonly achievements: readonly AchievementProgress[];
 }
 
 export interface ActiveRunState {
+  readonly vocationKey: string;
   readonly huntId: string;
   readonly scenarioId: string;
   readonly scenarioRevision: number;
@@ -128,7 +135,12 @@ export interface ActiveRunState {
 
 export interface GameSave {
   readonly schemaVersion: number;
-  readonly character: CharacterProgress;
+  readonly characters: readonly CharacterProgress[];
+  readonly activeVocationKey: string;
+  /** Bestiary is account knowledge, shared by all three characters. */
+  readonly bestiary: readonly BestiaryProgress[];
+  /** Achievement rewards are account progress, claimed once. */
+  readonly achievements: readonly AchievementProgress[];
   readonly stash: readonly RunBagEntry[];
   /** Gold already banked by the character; it survives runs and reloads. */
   readonly gold: number;
@@ -153,13 +165,14 @@ export function createEmptyEquipment(): CharacterEquipment {
   };
 }
 
-export function createEmptyCharacterProgress(): CharacterProgress {
+export function createEmptyCharacterProgress(
+  vocationKey = DEFAULT_KNIGHT_VOCATION_KEY,
+): CharacterProgress {
   return {
+    vocationKey,
     experience: 0,
     equipment: createEmptyEquipment(),
     collection: [],
-    bestiary: [],
-    achievements: [],
   };
 }
 
@@ -181,11 +194,49 @@ export type ParseResult<T> =
 export function createEmptyGameSave(): GameSave {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
-    character: createEmptyCharacterProgress(),
+    characters: DEFAULT_VOCATION_KEYS.map((vocationKey) =>
+      createEmptyCharacterProgress(vocationKey),
+    ),
+    activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+    bestiary: [],
+    achievements: [],
     stash: [],
     gold: 0,
     nextHuntBuff: 'none',
     completedRuns: 0,
     session: null,
   };
+}
+
+export function characterForVocation(
+  save: Pick<GameSave, 'characters'>,
+  vocationKey: string,
+): CharacterProgress {
+  return (
+    save.characters.find(
+      (character) => character.vocationKey === vocationKey,
+    ) ?? createEmptyCharacterProgress(vocationKey)
+  );
+}
+
+export function activeCharacter(save: GameSave): CharacterProgress {
+  return characterForVocation(save, save.activeVocationKey);
+}
+
+export function replaceCharacter(
+  draft: SaveDraft,
+  character: CharacterProgress,
+): void {
+  draft.characters = [
+    ...draft.characters.filter(
+      (candidate) => candidate.vocationKey !== character.vocationKey,
+    ),
+    character,
+  ].sort((left, right) =>
+    left.vocationKey === right.vocationKey
+      ? 0
+      : left.vocationKey < right.vocationKey
+        ? -1
+        : 1,
+  );
 }

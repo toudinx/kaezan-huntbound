@@ -1,4 +1,4 @@
-import type { ActiveRunState } from '@huntbound/contracts';
+import { type ActiveRunState, activeCharacter } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { SaveError } from '../errors/SaveError.ts';
@@ -84,10 +84,9 @@ describe('createCheckpointScheduler', () => {
     scheduler.onTick(4, () => checkpoint({ huntId: 'hunt:tick-4' }, 2_450));
     await scheduler.flush();
 
-    await expect(repository.load()).resolves.toMatchObject({
-      session: { huntId: 'hunt:tick-4' },
-      character: { experience: 2_450 },
-    });
+    const loaded = await repository.load();
+    expect(loaded.session).toMatchObject({ huntId: 'hunt:tick-4' });
+    expect(activeCharacter(loaded).experience).toBe(2_450);
     scheduler.dispose();
   });
 

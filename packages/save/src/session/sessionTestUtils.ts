@@ -2,6 +2,7 @@ import {
   type ActiveRunState,
   createEmptyGameSave,
   createSeed,
+  DEFAULT_KNIGHT_VOCATION_KEY,
   type GameSave,
   type KernelScenario,
   type RunBagEntry,
@@ -23,6 +24,7 @@ export const TEST_IDENTITY = {
   scenarioId: 'pb06-06-session',
   scenarioRevision: 1,
   seed: TEST_SEED,
+  vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
 } as const;
 
 export function testScenario(
@@ -88,6 +90,7 @@ export function makeSession(
   kernel.advance(3);
   return {
     huntId: TEST_IDENTITY.huntId,
+    vocationKey: TEST_IDENTITY.vocationKey,
     scenarioId: scenario.scenarioId,
     scenarioRevision: scenario.scenarioRevision,
     seed: TEST_SEED,

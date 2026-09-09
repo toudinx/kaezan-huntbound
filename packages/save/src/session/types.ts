@@ -35,9 +35,12 @@ export interface RunIdentity {
   readonly scenarioId: string;
   readonly scenarioRevision: number;
   readonly seed: Seed;
+  /** Optional keeps old callers source-compatible; new runs always provide it. */
+  readonly vocationKey?: string;
 }
 
 export type ResumeRejection =
+  | 'vocationKey'
   | 'scenarioId'
   | 'scenarioRevision'
   | 'seed'

@@ -93,13 +93,8 @@ function formatItemKey(itemKey: string): string {
   return itemKey.split(':').at(-1) ?? itemKey;
 }
 
-function postureDataValue(
-  posture: CombatViewState['playerPosture'],
-): 'blood-rage' | 'protector' | 'none' {
-  return posture?.abilityId === 'blood-rage' ||
-    posture?.abilityId === 'protector'
-    ? posture.abilityId
-    : 'none';
+function postureDataValue(posture: CombatViewState['playerPosture']): string {
+  return posture?.abilityId ?? 'none';
 }
 
 export function mountCombatHud(

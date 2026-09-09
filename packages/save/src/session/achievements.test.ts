@@ -1,6 +1,8 @@
 import {
   type AchievementDefinition,
+  activeCharacter,
   createEmptyGameSave,
+  replaceCharacter,
   type SaveDraft,
 } from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
@@ -58,24 +60,27 @@ describe('refreshAchievements', () => {
   it('projects existing loop state and pays each newly completed goal once', () => {
     const save = draft();
     save.completedRuns = 1;
-    save.character = {
-      ...save.character,
+    replaceCharacter(save, {
+      ...activeCharacter(save),
       experience: 50,
-      equipment: { ...save.character.equipment, helmet: 'item:test:helmet' },
-      bestiary: [
-        {
-          creatureKey: 'creature:test:rat',
-          kills: 10,
-          rewardClaimed: true,
-        },
-      ],
-    };
+      equipment: {
+        ...activeCharacter(save).equipment,
+        helmet: 'item:test:helmet',
+      },
+    });
+    save.bestiary = [
+      {
+        creatureKey: 'creature:test:rat',
+        kills: 10,
+        rewardClaimed: true,
+      },
+    ];
 
     const first = refreshAchievements(save, definitions);
 
     expect(first.filter((entry) => entry.newlyCompleted)).toHaveLength(4);
     expect(save.gold).toBe(42);
-    expect(save.character.achievements).toEqual([
+    expect(save.achievements).toEqual([
       {
         achievementId: 'achievement:test:bestiary',
         progress: 1,
@@ -133,20 +138,23 @@ describe('refreshAchievements', () => {
 
   it('keeps an unlocked objective complete when its source state later changes', () => {
     const save = draft();
-    save.character = {
-      ...save.character,
-      equipment: { ...save.character.equipment, weapon: 'item:test:sword' },
-    };
+    replaceCharacter(save, {
+      ...activeCharacter(save),
+      equipment: {
+        ...activeCharacter(save).equipment,
+        weapon: 'item:test:sword',
+      },
+    });
     refreshAchievements(save, definitions);
 
-    save.character = {
-      ...save.character,
-      equipment: { ...save.character.equipment, weapon: null },
-    };
+    replaceCharacter(save, {
+      ...activeCharacter(save),
+      equipment: { ...activeCharacter(save).equipment, weapon: null },
+    });
     refreshAchievements(save, definitions);
 
     expect(
-      save.character.achievements.find(
+      save.achievements.find(
         (entry) => entry.achievementId === 'achievement:test:equip',
       ),
     ).toEqual({

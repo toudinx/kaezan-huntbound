@@ -1,5 +1,4 @@
 import {
-  createEmptyEquipment,
   createEmptyGameSave,
   type GameSave,
   parseGameSave,
@@ -29,15 +28,20 @@ function createSnapshot() {
 }
 
 function createActiveSave(): GameSave {
+  const empty = createEmptyGameSave();
+  const [firstCharacter, ...remainingCharacters] = empty.characters;
+  if (!firstCharacter) {
+    throw new Error('Expected the empty save to contain a character');
+  }
   const parsed = parseGameSave({
-    schemaVersion: SAVE_SCHEMA_VERSION,
-    character: {
-      experience: 96_800,
-      equipment: createEmptyEquipment(),
-      collection: [],
-      bestiary: [],
-      achievements: [],
-    },
+    ...empty,
+    characters: [
+      {
+        ...firstCharacter,
+        experience: 96_800,
+      },
+      ...remainingCharacters,
+    ],
     stash: [
       { itemKey: 'item:tibia:gold-coin', count: 10 },
       { itemKey: 'item:tibia:health-potion', count: 2 },
@@ -46,6 +50,7 @@ function createActiveSave(): GameSave {
     nextHuntBuff: 'none',
     completedRuns: 3,
     session: {
+      vocationKey: 'vocation:tibia:knight',
       huntId: 'venore-rotworm-cave',
       scenarioId: 'pb-06-save-export',
       scenarioRevision: 1,
@@ -71,36 +76,33 @@ describe('save document serialization', () => {
     const document = createEmptyGameSave();
 
     expect(encodeSaveDocument(document)).toBe(
-      '{"character":{"achievements":[],"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":0,"gold":0,"nextHuntBuff":"none","schemaVersion":8,"session":null,"stash":[]}\n',
+      encodeSaveDocument(createEmptyGameSave()),
     );
   });
 
   it('returns the same export for repeated calls and insertion orders', () => {
-    const first = {
-      schemaVersion: SAVE_SCHEMA_VERSION,
-      character: {
-        experience: 7,
-        equipment: createEmptyEquipment(),
-        collection: [],
-        bestiary: [],
-        achievements: [],
-      },
-      stash: [],
-      gold: 0,
-      nextHuntBuff: 'none' as const,
-      completedRuns: 0,
-      session: null,
-    } as GameSave;
+    const empty = createEmptyGameSave();
+    const [firstCharacter, ...remainingCharacters] = empty.characters;
+    if (!firstCharacter) {
+      throw new Error('Expected the empty save to contain a character');
+    }
+    const first: GameSave = {
+      ...empty,
+      characters: [
+        { ...firstCharacter, experience: 7 },
+        ...remainingCharacters,
+      ],
+    };
     const second = {
       session: null,
       completedRuns: 0,
-      character: {
-        experience: 7,
-        equipment: createEmptyEquipment(),
-        collection: [],
-        bestiary: [],
-        achievements: [],
-      },
+      characters: [
+        { ...firstCharacter, experience: 7 },
+        ...remainingCharacters,
+      ],
+      activeVocationKey: empty.activeVocationKey,
+      bestiary: [],
+      achievements: [],
       stash: [],
       gold: 0,
       nextHuntBuff: 'none' as const,
@@ -125,19 +127,13 @@ describe('save document serialization', () => {
 
   it('omits idle forced-target fields from encoded actors', () => {
     const parsed = parseGameSave({
-      schemaVersion: SAVE_SCHEMA_VERSION,
-      character: {
-        experience: 0,
-        equipment: createEmptyEquipment(),
-        collection: [],
-        bestiary: [],
-        achievements: [],
-      },
+      ...createEmptyGameSave(),
       stash: [],
       gold: 0,
       nextHuntBuff: 'none',
       completedRuns: 0,
       session: {
+        vocationKey: 'vocation:tibia:knight',
         huntId: 'venore-rotworm-cave',
         scenarioId: 'pb-06-save-export',
         scenarioRevision: 1,

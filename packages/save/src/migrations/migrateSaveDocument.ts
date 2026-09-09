@@ -2,6 +2,9 @@ import {
   createEmptyCharacterProgress,
   createEmptyEquipment,
   createEmptyGameSave,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_PALADIN_VOCATION_KEY,
+  DEFAULT_SORCERER_VOCATION_KEY,
   SAVE_SCHEMA_VERSION,
 } from '@huntbound/contracts';
 
@@ -312,6 +315,68 @@ const v7ToV8: SaveMigration = {
   },
 };
 
+/**
+ * PB-14 gives the account one independent character per vocation. The old
+ * character becomes the Knight, while its account ledgers move to the root.
+ * A session keeps the same run, but now names the vocation whose sheet must be
+ * used when that run is resumed.
+ */
+const v8ToV9: SaveMigration = {
+  from: 8,
+  to: 9,
+  migrate(document) {
+    const current = document as SaveDocument;
+    const legacy = isSaveDocument(current.character) ? current.character : {};
+    const { character: _legacyCharacter, ...withoutLegacyCharacter } = current;
+    const knight = {
+      ...createEmptyCharacterProgress(DEFAULT_KNIGHT_VOCATION_KEY),
+      ...legacy,
+      vocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+    };
+    const {
+      bestiary: _bestiary,
+      achievements: _achievements,
+      ...knightWithoutLedgers
+    } = knight as Record<string, unknown>;
+
+    const session = isSaveDocument(current.session)
+      ? {
+          ...current.session,
+          vocationKey:
+            typeof current.activeVocationKey === 'string'
+              ? current.activeVocationKey
+              : DEFAULT_KNIGHT_VOCATION_KEY,
+        }
+      : current.session;
+    const characters = [
+      knightWithoutLedgers,
+      createEmptyCharacterProgress(DEFAULT_PALADIN_VOCATION_KEY),
+      createEmptyCharacterProgress(DEFAULT_SORCERER_VOCATION_KEY),
+    ].sort((left, right) =>
+      String(left.vocationKey) < String(right.vocationKey)
+        ? -1
+        : String(left.vocationKey) > String(right.vocationKey)
+          ? 1
+          : 0,
+    );
+
+    return {
+      ...withoutLegacyCharacter,
+      schemaVersion: 9,
+      characters,
+      activeVocationKey:
+        typeof current.activeVocationKey === 'string'
+          ? current.activeVocationKey
+          : DEFAULT_KNIGHT_VOCATION_KEY,
+      bestiary: Array.isArray(legacy.bestiary) ? legacy.bestiary : [],
+      achievements: Array.isArray(legacy.achievements)
+        ? legacy.achievements
+        : [],
+      session,
+    };
+  },
+};
+
 const saveMigrations: readonly SaveMigration[] = [
   unversionedToV1,
   v1ToV2,
@@ -321,6 +386,7 @@ const saveMigrations: readonly SaveMigration[] = [
   v5ToV6,
   v6ToV7,
   v7ToV8,
+  v8ToV9,
 ];
 
 export function migrateSaveDocument(document: unknown): unknown {

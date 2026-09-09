@@ -1,4 +1,8 @@
-import { createEmptyGameSave, type SaveDraft } from '@huntbound/contracts';
+import {
+  activeCharacter,
+  createEmptyGameSave,
+  type SaveDraft,
+} from '@huntbound/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { equipFromStash, unequipToStash } from './equipment.ts';
@@ -18,7 +22,9 @@ describe('equipping from the stash', () => {
     expect(equipFromStash(draft, 'helmet', 'item:tibia:legion-helmet')).toBe(
       true,
     );
-    expect(draft.character.equipment.helmet).toBe('item:tibia:legion-helmet');
+    expect(activeCharacter(draft).equipment.helmet).toBe(
+      'item:tibia:legion-helmet',
+    );
     expect(draft.stash).toEqual([
       { itemKey: 'item:tibia:legion-helmet', count: 1 },
     ]);
@@ -41,7 +47,7 @@ describe('equipping from the stash', () => {
     equipFromStash(draft, 'weapon', 'item:tibia:sword');
     equipFromStash(draft, 'weapon', 'item:tibia:mace');
 
-    expect(draft.character.equipment.weapon).toBe('item:tibia:mace');
+    expect(activeCharacter(draft).equipment.weapon).toBe('item:tibia:mace');
     expect(draft.stash).toEqual([{ itemKey: 'item:tibia:sword', count: 1 }]);
   });
 
@@ -49,7 +55,7 @@ describe('equipping from the stash', () => {
     const draft = draftWithStash([]);
 
     expect(equipFromStash(draft, 'weapon', 'item:tibia:sword')).toBe(false);
-    expect(draft.character.equipment.weapon).toBeNull();
+    expect(activeCharacter(draft).equipment.weapon).toBeNull();
     expect(draft.stash).toEqual([]);
   });
 });
@@ -63,7 +69,7 @@ describe('unequipping', () => {
     draft.stash = [{ itemKey: 'item:tibia:legion-helmet', count: 3 }];
 
     expect(unequipToStash(draft, 'helmet')).toBe(true);
-    expect(draft.character.equipment.helmet).toBeNull();
+    expect(activeCharacter(draft).equipment.helmet).toBeNull();
     expect(draft.stash).toEqual([
       { itemKey: 'item:tibia:legion-helmet', count: 4 },
     ]);

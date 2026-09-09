@@ -1,3 +1,4 @@
+import { activeCharacter, replaceCharacter } from '@huntbound/contracts';
 import { SaveError } from '../errors/SaveError.ts';
 import type { SaveRepository } from '../repository/types.ts';
 import type { RunCheckpoint } from './types.ts';
@@ -45,10 +46,10 @@ export function createCheckpointScheduler(
             persistedCursor,
           ),
         };
-        draft.character = {
-          ...draft.character,
+        replaceCharacter(draft, {
+          ...activeCharacter(draft),
           experience: checkpoint.character.experience,
-        };
+        });
       })
       .then(
         () => {

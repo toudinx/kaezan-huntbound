@@ -12,6 +12,7 @@ class TestElement {
   readonly children: TestElement[] = [];
   readonly attributes = new Map<string, string>();
   readonly listeners = new Map<string, Set<() => void>>();
+  readonly dataset: Record<string, string | undefined> = {};
   private ownTextContent = '';
   className = '';
   disabled = false;
@@ -34,6 +35,13 @@ class TestElement {
     for (const child of children) {
       child.parent = this;
       this.children.push(child);
+    }
+  }
+
+  prepend(...children: TestElement[]) {
+    for (const child of [...children].reverse()) {
+      child.parent = this;
+      this.children.unshift(child);
     }
   }
 
@@ -68,6 +76,10 @@ class TestElement {
 
 class TestDocument {
   createElement(tagName: string) {
+    return new TestElement(tagName, this);
+  }
+
+  createElementNS(_namespace: string, tagName: string) {
     return new TestElement(tagName, this);
   }
 }
@@ -285,24 +297,23 @@ describe('HuntingPlaces', () => {
       { schemaVersion: 1, hunts: [hunt] },
       () => undefined,
       undefined,
-      {
-        ...createEmptyCharacterProgress(),
-        bestiary: [
-          {
-            creatureKey: 'creature:tibia:orc',
-            kills: 3,
-            rewardClaimed: false,
-          },
-          {
-            creatureKey: 'creature:tibia:rotworm',
-            kills: 10,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      createEmptyCharacterProgress(),
       undefined,
       undefined,
       bestiary,
+      undefined,
+      [
+        {
+          creatureKey: 'creature:tibia:orc',
+          kills: 3,
+          rewardClaimed: false,
+        },
+        {
+          creatureKey: 'creature:tibia:rotworm',
+          kills: 10,
+          rewardClaimed: true,
+        },
+      ],
     );
 
     const panel = findByTestId(root, 'hunt-bestiary');
@@ -346,20 +357,19 @@ describe('HuntingPlaces', () => {
       { schemaVersion: 1, hunts: [hunt] },
       () => undefined,
       undefined,
-      {
-        ...createEmptyCharacterProgress(),
-        achievements: [
-          {
-            achievementId: 'achievement:test:first-hunt',
-            progress: 1,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      createEmptyCharacterProgress(),
       undefined,
       undefined,
       undefined,
       achievements,
+      [],
+      [
+        {
+          achievementId: 'achievement:test:first-hunt',
+          progress: 1,
+          rewardClaimed: true,
+        },
+      ],
     );
 
     const panel = findByTestId(root, 'hunt-achievements');

@@ -12,6 +12,7 @@ export type CombatFxPlacement =
   | 'self'
   | 'radius-1'
   | 'radius-3'
+  | 'target-radius-1'
   | 'projectile';
 
 export interface CombatFxRecipe {
@@ -51,6 +52,69 @@ const BY_CAUSE: Readonly<Record<CombatCause, CombatFxRecipe>> = {
 };
 
 const BY_ABILITY_ID: Readonly<Record<string, CombatFxRecipe>> = {
+  'energy-strike': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'target',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#7ecbff',
+  },
+  'fire-wave': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'radius-3',
+    staggerByDistance: true,
+    stronger: true,
+    healNumber: false,
+    numberColor: '#ff9d5c',
+  },
+  'great-fireball': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'target-radius-1',
+    staggerByDistance: true,
+    stronger: true,
+    healNumber: false,
+    numberColor: '#ff9d5c',
+  },
+  'sudden-death': {
+    impactKey: hitAreaKey,
+    bloodKey: undefined,
+    placement: 'target',
+    staggerByDistance: false,
+    stronger: true,
+    healNumber: false,
+    numberColor: '#d4a7ff',
+  },
+  'ultimate-healing': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'self',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: true,
+    numberColor: '#73e6a5',
+  },
+  'magic-shield': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'self',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#7ecbff',
+  },
+  'arcane-stance': {
+    impactKey: magicBlueKey,
+    bloodKey: undefined,
+    placement: 'self',
+    staggerByDistance: false,
+    stronger: false,
+    healNumber: false,
+    numberColor: '#c9a7ff',
+  },
   'brutal-strike': {
     impactKey: hitAreaKey,
     bloodKey: undefined,

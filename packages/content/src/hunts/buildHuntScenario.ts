@@ -43,6 +43,15 @@ import {
 } from './combatConversion.ts';
 import type { KnightPostureDefinition } from './knightPostures.ts';
 
+const SORCERER_VOCATION_KEY = 'vocation:tibia:sorcerer' as ContentKey;
+const SORCERER_MAGIC_SHIELD_SPELL_KEY =
+  'spell:tibia:magic-shield' as ContentKey;
+const SORCERER_STANCE_SPELL_KEY = 'spell:tibia:arcane-stance' as ContentKey;
+const SORCERER_GREAT_FIREBALL_SPELL_KEY =
+  'spell:tibia:great-fireball' as ContentKey;
+const SORCERER_SUDDEN_DEATH_SPELL_KEY =
+  'spell:tibia:sudden-death' as ContentKey;
+
 const CHALLENGE_SPELL_KEY = 'spell:tibia:challenge' as ContentKey;
 const HASTE_SPELL_KEY = 'spell:tibia:haste' as ContentKey;
 const SUPPORT_COOLDOWN_GROUP = 1;
@@ -291,6 +300,7 @@ function composePlayer(
   const weapon = registry.has(character.weaponItemKey)
     ? registry.getItem(character.weaponItemKey)
     : undefined;
+  const wand = weapon?.weaponType === 'wand' || weapon?.weaponType === 'rod';
   const autoAttack = playerAutoAttack(character, weapon);
   const attackMinDamage = preparedHunt
     ? scaleByDamageDealtPermille(
@@ -318,7 +328,7 @@ function composePlayer(
     attackCooldownTicks,
     attackMinDamage,
     attackMaxDamage,
-    attackSkillIndex: 2,
+    ...(wand ? {} : { attackSkillIndex: 2 }),
     attackRangeTiles: autoAttack.rangeTiles,
     aggroRadius: 0,
     lootTableIndex: null,
@@ -332,7 +342,7 @@ function composePlayer(
     combatWindowTicks: ticksFromIntervalMs(combat.combatWindowMs) ?? 0,
     lifeLeechPermille: combat.lifeLeechPermille,
     manaLeechPermille: combat.manaLeechPermille,
-    attackElement: 'physical',
+    attackElement: wand ? 'energy' : 'physical',
     armor: character.armor ?? 0,
     resistances: [],
     immunities: [],
@@ -557,6 +567,7 @@ function composeAbilities(
   character: CharacterDefinition,
   registry: ContentRegistry,
   diagnostics: HuntDiagnostic[],
+  conditionIndexBySpellKey: ReadonlyMap<string, number>,
 ): { readonly abilities: AbilityDefinition[]; readonly abilityKeys: string[] } {
   const abilities: AbilityDefinition[] = [];
   const abilityKeys: string[] = [];
@@ -611,6 +622,10 @@ function composeAbilities(
     }
     const power = resolveSpellPower(spell.formula, character);
     const shape = abilityShapeFromSpell(spell);
+    const magicShield = spellKey === SORCERER_MAGIC_SHIELD_SPELL_KEY;
+    const sorcererStance = spellKey === SORCERER_STANCE_SPELL_KEY;
+    const toggle = magicShield || sorcererStance;
+    const conditionIndex = conditionIndexBySpellKey.get(spellKey) ?? null;
     abilities.push({
       abilityId: abilityIdFromSpellKey(spellKey),
       effect: spell.damageType === 'healing' ? 'heal' : 'damage',
@@ -622,14 +637,25 @@ function composeAbilities(
       groupCooldownTicks,
       minPower: power.minPower,
       maxPower: power.maxPower,
-      element: 'physical',
-      primaryCooldownGroup: 0,
-      secondaryCooldownGroup: null,
-      secondaryGroupCooldownTicks: 0,
-      appliedConditionIndex: null,
-      maxCharges: null,
-      rechargeKind: 'none',
-      toggle: false,
+      element: combatElementFromDamageType(spell.damageType),
+      primaryCooldownGroup: toggle ? SUPPORT_COOLDOWN_GROUP : 0,
+      secondaryCooldownGroup: toggle ? 2 : null,
+      secondaryGroupCooldownTicks: toggle
+        ? (ticksFromIntervalMs(2000) ?? 0)
+        : 0,
+      appliedConditionIndex: conditionIndex,
+      maxCharges:
+        spellKey === SORCERER_GREAT_FIREBALL_SPELL_KEY
+          ? 3
+          : spellKey === SORCERER_SUDDEN_DEATH_SPELL_KEY
+            ? 2
+            : null,
+      rechargeKind:
+        spellKey === SORCERER_GREAT_FIREBALL_SPELL_KEY ||
+        spellKey === SORCERER_SUDDEN_DEATH_SPELL_KEY
+          ? 'out-of-combat'
+          : 'none',
+      toggle,
       forcedTargetDurationTicks: 0,
     });
     abilityKeys.push(spellKey);
@@ -707,6 +733,7 @@ function composeHasteCondition(): ScenarioConditionDefinition {
 
 function composePostureAbilities(
   postures: readonly KnightPostureDefinition[],
+  conditionOffset: number,
 ): readonly AbilityDefinition[] {
   const groupCooldownTicks = ticksFromIntervalMs(2000) ?? 0;
   return postures.map((posture, index) => ({
@@ -724,7 +751,7 @@ function composePostureAbilities(
     primaryCooldownGroup: 1,
     secondaryCooldownGroup: 2,
     secondaryGroupCooldownTicks: groupCooldownTicks,
-    appliedConditionIndex: index,
+    appliedConditionIndex: conditionOffset + index,
     maxCharges: null,
     rechargeKind: 'none',
     toggle: true,
@@ -751,6 +778,43 @@ function composePostureConditions(
     convertNextAbilityElement: false,
     bonusElement: null,
   }));
+}
+
+function composeSorcererConditions(): readonly ScenarioConditionDefinition[] {
+  return [
+    {
+      conditionId: 'magic-shield',
+      exclusivityGroup: 1,
+      durationTicks: 0,
+      skillIndex: null,
+      skillModifierPermille: 0,
+      damageDealtPermille: 0,
+      damageReceivedPermille: 0,
+      speedPermille: 0,
+      manaShield: true,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    },
+    {
+      conditionId: 'arcane-stance',
+      exclusivityGroup: 1,
+      durationTicks: 0,
+      skillIndex: null,
+      skillModifierPermille: 0,
+      damageDealtPermille: 150,
+      damageReceivedPermille: 100,
+      speedPermille: 0,
+      manaShield: false,
+      tickDamageAmount: 0,
+      tickDamageIntervalTicks: 0,
+      elementBonusPermille: 0,
+      convertNextAbilityElement: false,
+      bonusElement: null,
+    },
+  ];
 }
 
 function applyPreparedHuntDamage<T extends AbilityDefinition>(
@@ -807,12 +871,28 @@ export function buildHuntScenario(
   }
 
   const diagnostics: HuntDiagnostic[] = [];
+  const sorcererConditions =
+    character.vocationKey === SORCERER_VOCATION_KEY
+      ? composeSorcererConditions()
+      : [];
+  const sorcererConditionIndices =
+    character.vocationKey === SORCERER_VOCATION_KEY
+      ? new Map<string, number>([
+          [SORCERER_MAGIC_SHIELD_SPELL_KEY, 0],
+          [SORCERER_STANCE_SPELL_KEY, 1],
+        ])
+      : new Map<string, number>();
   const { abilities: spellAbilities, abilityKeys } = composeAbilities(
     character,
     registry,
     diagnostics,
+    sorcererConditionIndices,
   );
-  const postureAbilities = composePostureAbilities(options?.postures ?? []);
+  const postureConditionOffset = sorcererConditions.length;
+  const postureAbilities = composePostureAbilities(
+    options?.postures ?? [],
+    postureConditionOffset,
+  );
   const kitHasChallenge =
     characterSpellKeysAtLevel(character).includes(CHALLENGE_SPELL_KEY);
   const kitHasHaste =
@@ -820,7 +900,11 @@ export function buildHuntScenario(
   const challengeAbilities = kitHasChallenge ? [composeChallengeAbility()] : [];
   const postureConditions = composePostureConditions(options?.postures ?? []);
   const hasteAbilities = kitHasHaste
-    ? [composeHasteAbility(postureConditions.length)]
+    ? [
+        composeHasteAbility(
+          sorcererConditions.length + postureConditions.length,
+        ),
+      ]
     : [];
   const preparedHunt = options?.preparedHunt === true;
   const abilities = applyPreparedHuntDamage(
@@ -838,6 +922,7 @@ export function buildHuntScenario(
     ...(kitHasHaste ? [HASTE_SPELL_KEY] : []),
   ];
   const conditions = [
+    ...sorcererConditions,
     ...postureConditions,
     ...(kitHasHaste ? [composeHasteCondition()] : []),
   ];

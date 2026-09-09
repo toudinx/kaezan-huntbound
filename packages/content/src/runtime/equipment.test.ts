@@ -94,6 +94,20 @@ describe('worn stats', () => {
 
     expect(stats).toEqual({ weapon: null, armor: 0, defense: 0 });
   });
+
+  it('marks wands trained for a Sorcerer weapon profile', () => {
+    const wand = item('wand-of-decay', { attack: 8, weaponType: 'wand' });
+    const sorcererLookup = (itemKey: string) =>
+      itemKey === wand.stableKey ? wand : lookup(itemKey);
+
+    expect(
+      resolveEquippedStats(
+        { ...EMPTY, weapon: wand.stableKey },
+        sorcererLookup,
+        { weaponTypes: ['wand', 'rod'] },
+      ).weapon,
+    ).toMatchObject({ itemKey: wand.stableKey, trained: true });
+  });
 });
 
 describe('band set', () => {
@@ -124,5 +138,18 @@ describe('band set', () => {
     expect(
       set.pieces.find((piece) => piece.itemKey === HELMET.stableKey)?.collected,
     ).toBe(true);
+  });
+
+  it('keeps the Sorcerer set to wand and rod drops', () => {
+    const wand = item('wand-of-decay', { weaponType: 'wand' });
+    const mace = MACE;
+    const sorcererLookup = (itemKey: string) =>
+      itemKey === wand.stableKey ? wand : lookup(itemKey);
+
+    expect(
+      bandSetFor([wand.stableKey, mace.stableKey], [], sorcererLookup, {
+        weaponTypes: ['wand', 'rod'],
+      }).pieces.map((piece) => piece.itemKey),
+    ).toEqual([wand.stableKey]);
   });
 });

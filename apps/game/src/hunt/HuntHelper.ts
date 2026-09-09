@@ -1,10 +1,12 @@
 import type {
   AbilityDefinition,
+  Direction,
   EntityId,
   GridPosition,
   SimulationCommand,
   SimulationEvent,
 } from '../../../../packages/contracts/src/index.ts';
+import { inFacingCone } from '../../../../packages/simulation/src/grid/directions.ts';
 import type { InputAction } from '../input/InputMap';
 
 /**
@@ -87,6 +89,7 @@ export interface HelperSituation {
   readonly tick: number;
   readonly playerEntityId: EntityId;
   readonly playerPosition: GridPosition;
+  readonly playerFacing?: Direction;
   readonly health: number;
   readonly maxHealth: number;
   readonly resource: number;
@@ -95,6 +98,8 @@ export interface HelperSituation {
   readonly abilities: readonly AbilityDefinition[];
   /** The kit the player's blueprint declares -- the kernel rejects the rest. */
   readonly abilityIndices: readonly number[];
+  /** Active toggle slots, when the scene can project them from the actor. */
+  readonly activeAbilityIndices?: ReadonlySet<number>;
   readonly abilityReadyAtTick: ReadonlyMap<number, number>;
   readonly groupReadyAtTick: ReadonlyMap<number, number>;
 }
@@ -353,20 +358,68 @@ function decideActions(situation: HelperSituation): HelperDecision {
   const target = situation.hostiles.find(
     (hostile) => hostile.entityId === situation.targetEntityId,
   );
-  if (target === undefined) return { kind: 'idle' };
-  if (!onSameFloor(target.position, situation.playerPosition)) {
-    return { kind: 'idle' };
-  }
-
   const crowd = situation.hostiles.filter((hostile) =>
     onSameFloor(hostile.position, situation.playerPosition),
   );
   let refusal: HelperDecision | undefined;
 
-  for (const { index, ability } of playerKit(situation)) {
+  const kit = playerKit(situation);
+  const activeToggles = kit.filter(
+    ({ index, ability }) =>
+      ability.toggle && situation.activeAbilityIndices?.has(index) === true,
+  );
+  if (
+    activeToggles.length === 0 &&
+    situation.activeAbilityIndices !== undefined
+  ) {
+    const toggle = kit.find(
+      ({ index, ability }) =>
+        ability.toggle &&
+        ability.shape === 'self' &&
+        !situation.activeAbilityIndices?.has(index),
+    );
+    if (toggle !== undefined) {
+      if (
+        readyAtTickFor(situation, toggle.index, toggle.ability) > situation.tick
+      ) {
+        return { kind: 'idle' };
+      }
+      if (situation.resource < toggle.ability.resourceCost) {
+        return {
+          kind: 'refuse',
+          module: 'actions',
+          message: `${abilityLabel(toggle.ability.abilityId)} held: ${String(situation.resource)} of ${String(toggle.ability.resourceCost)} mana`,
+        };
+      }
+      return {
+        kind: 'act',
+        module: 'actions',
+        command: castCommand(situation, toggle.index, null),
+        message: `${abilityLabel(toggle.ability.abilityId)} activated`,
+      };
+    }
+  }
+
+  const orderedKit = [...kit].sort((left, right) => {
+    const areaRank = (shape: AbilityDefinition['shape']): number =>
+      shape === 'cone' || shape === 'area' || shape === 'target-area' ? 0 : 1;
+    return areaRank(left.ability.shape) - areaRank(right.ability.shape);
+  });
+
+  for (const { index, ability } of orderedKit) {
     if (ability.effect !== 'damage' || ability.toggle) continue;
 
+    if (ability.shape === 'target' && target === undefined) continue;
+    if (
+      (ability.shape === 'target' || ability.shape === 'target-area') &&
+      target !== undefined &&
+      !onSameFloor(target.position, situation.playerPosition)
+    ) {
+      continue;
+    }
+
     if (ability.shape === 'target') {
+      if (target === undefined) continue;
       if (
         chebyshevDistance(situation.playerPosition, target.position) >
         ability.rangeTiles
@@ -378,6 +431,30 @@ function decideActions(situation: HelperSituation): HelperDecision {
         (hostile) =>
           chebyshevDistance(situation.playerPosition, hostile.position) <=
           ability.radius,
+      ).length;
+      if (covered < HELPER_AREA_MINIMUM_TARGETS) continue;
+    } else if (ability.shape === 'target-area') {
+      if (target === undefined) continue;
+      if (
+        chebyshevDistance(situation.playerPosition, target.position) >
+        ability.rangeTiles
+      ) {
+        continue;
+      }
+      const covered = crowd.filter(
+        (hostile) =>
+          chebyshevDistance(target.position, hostile.position) <=
+          ability.radius,
+      ).length;
+      if (covered < HELPER_AREA_MINIMUM_TARGETS) continue;
+    } else if (ability.shape === 'cone') {
+      const covered = crowd.filter((hostile) =>
+        inFacingCone(
+          situation.playerPosition,
+          hostile.position,
+          situation.playerFacing ?? 's',
+          ability.radius,
+        ),
       ).length;
       if (covered < HELPER_AREA_MINIMUM_TARGETS) continue;
     } else {
@@ -400,9 +477,14 @@ function decideActions(situation: HelperSituation): HelperDecision {
       command: castCommand(
         situation,
         index,
-        ability.shape === 'target' ? target.entityId : null,
+        ability.shape === 'target' || ability.shape === 'target-area'
+          ? (target?.entityId ?? null)
+          : null,
       ),
-      message: `${abilityLabel(ability.abilityId)} on ${target.displayName}`,
+      message:
+        ability.shape === 'cone'
+          ? `${abilityLabel(ability.abilityId)} through the facing cone`
+          : `${abilityLabel(ability.abilityId)} on ${target?.displayName ?? 'the crowd'}`,
     };
   }
 

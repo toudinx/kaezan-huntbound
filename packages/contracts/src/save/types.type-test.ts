@@ -15,22 +15,20 @@ function assertGameSaveReadonly(save: GameSave) {
   save.stash = [];
   // @ts-expect-error session cannot be replaced on a GameSave.
   save.session = null;
-  // @ts-expect-error the character cannot be replaced on a GameSave.
-  save.character = { experience: 0 };
-  // @ts-expect-error experience is readonly on a GameSave.
-  save.character.experience = 1;
-  // @ts-expect-error the worn set is readonly on a GameSave.
-  save.character.equipment.weapon = 'item:tibia:sword';
-  // @ts-expect-error the collection is readonly on a GameSave.
-  save.character.collection = [];
-
-  // @ts-expect-error the achievement ledger is readonly on a GameSave.
-  save.character.achievements = [];
-  const achievement = save.character.achievements[0];
-  if (achievement !== undefined) {
-    // @ts-expect-error achievement progress is readonly on a GameSave.
-    achievement.progress = 1;
+  // @ts-expect-error the characters cannot be replaced on a GameSave.
+  save.characters = [];
+  const character = save.characters[0];
+  if (character !== undefined) {
+    // @ts-expect-error experience is readonly on a GameSave.
+    character.experience = 1;
+    // @ts-expect-error the worn set is readonly on a GameSave.
+    character.equipment.weapon = 'item:tibia:sword';
+    // @ts-expect-error the collection is readonly on a GameSave.
+    character.collection = [];
   }
+
+  // @ts-expect-error the active vocation cannot be replaced on a GameSave.
+  save.activeVocationKey = 'vocation:tibia:sorcerer';
 
   const stashEntry = save.stash[0];
   if (stashEntry !== undefined) {
@@ -58,7 +56,7 @@ function assertSaveDraftMutable(draft: SaveDraft) {
   draft.completedRuns = 2;
   draft.gold = 3;
   draft.nextHuntBuff = 'none';
-  draft.character = { ...createEmptyCharacterProgress(), experience: 3 };
+  draft.characters = [{ ...createEmptyCharacterProgress(), experience: 3 }];
   draft.session = null;
 }
 

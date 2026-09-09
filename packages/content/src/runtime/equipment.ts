@@ -40,8 +40,24 @@ const MELEE_WEAPON_TYPES: ReadonlySet<string> = new Set([
   'axe',
 ]);
 
+const SUPPORTED_WEAPON_TYPES: ReadonlySet<string> = new Set([
+  ...MELEE_WEAPON_TYPES,
+  'distance',
+  'wand',
+  'rod',
+]);
+
 /** The one the Knight's `sword` skill is trained for. */
 const TRAINED_WEAPON_TYPE = 'sword';
+const DEFAULT_VOCATION_WEAPON_TYPES = ['sword', 'club', 'axe'] as const;
+
+export const VOCATION_WEAPON_TYPES: Readonly<
+  Record<string, readonly string[]>
+> = Object.freeze({
+  'vocation:tibia:knight': DEFAULT_VOCATION_WEAPON_TYPES,
+  'vocation:tibia:paladin': ['distance'],
+  'vocation:tibia:sorcerer': ['wand', 'rod'],
+});
 
 /**
  * The untrained skill a Knight swings anything else at.
@@ -56,7 +72,7 @@ export const UNTRAINED_WEAPON_SKILL = 10;
 export function equipmentSlotFor(item: ItemDefinition): EquipmentSlot | null {
   const weaponType = item.weaponType;
   if (weaponType !== undefined) {
-    if (MELEE_WEAPON_TYPES.has(weaponType)) return 'weapon';
+    if (SUPPORTED_WEAPON_TYPES.has(weaponType)) return 'weapon';
     if (weaponType === 'shield') return 'shield';
     return null;
   }
@@ -64,8 +80,15 @@ export function equipmentSlotFor(item: ItemDefinition): EquipmentSlot | null {
 }
 
 /** Whether the Knight's `sword` skill applies to this weapon. */
-export function isTrainedWeapon(item: ItemDefinition): boolean {
-  return item.weaponType === TRAINED_WEAPON_TYPE;
+export function isTrainedWeapon(
+  item: ItemDefinition,
+  weaponTypes: readonly string[] = [TRAINED_WEAPON_TYPE],
+): boolean {
+  return item.weaponType !== undefined && weaponTypes.includes(item.weaponType);
+}
+
+export function weaponTypesForVocation(vocationKey: string): readonly string[] {
+  return VOCATION_WEAPON_TYPES[vocationKey] ?? DEFAULT_VOCATION_WEAPON_TYPES;
 }
 
 export interface EquippedWeapon {
@@ -95,6 +118,7 @@ export type ItemLookup = (itemKey: string) => ItemDefinition | undefined;
 export function resolveEquippedStats(
   equipment: CharacterEquipment,
   lookup: ItemLookup,
+  options: { readonly weaponTypes?: readonly string[] } = {},
 ): EquippedStats {
   let weapon: EquippedWeapon | null = null;
   let armor = 0;
@@ -110,7 +134,7 @@ export function resolveEquippedStats(
       weapon = {
         itemKey,
         attack: item.attack ?? 0,
-        trained: isTrainedWeapon(item),
+        trained: isTrainedWeapon(item, options.weaponTypes),
       };
     }
   }
@@ -143,6 +167,7 @@ export function bandSetFor(
   lootItemKeys: readonly string[],
   collection: readonly string[],
   lookup: ItemLookup,
+  options: { readonly weaponTypes?: readonly string[] } = {},
 ): BandSet {
   const owned = new Set(collection);
   const pieces: SetPiece[] = [];
@@ -154,6 +179,14 @@ export function bandSetFor(
     if (item === undefined) continue;
     const slot = equipmentSlotFor(item);
     if (slot === null) continue;
+    if (
+      slot === 'weapon' &&
+      options.weaponTypes !== undefined &&
+      (item.weaponType === undefined ||
+        !options.weaponTypes.includes(item.weaponType))
+    ) {
+      continue;
+    }
     pieces.push({
       itemKey,
       displayName: item.displayName,
