@@ -10,6 +10,7 @@ import {
   ConditionDefinitionSchema,
   characterSpellKeysAtLevel,
   RuntimeContentBundleSchema,
+  SpellDefinitionSchema,
   SpellFormulaDefinitionSchema,
 } from './schemas';
 
@@ -794,6 +795,50 @@ describe('content schemas', () => {
     expect(CharacterDefinitionSchema.safeParse(unknownStableKey).success).toBe(
       false,
     );
+  });
+
+  it('accepts an optional distance skill and a skillAttack that names it', () => {
+    const withDistance = {
+      ...createCharacter(),
+      skills: { sword: 10, magic: 0, distance: 60 },
+    };
+    const distanceFormula = {
+      kind: 'skillAttack' as const,
+      levelFactor: 0.2,
+      minSkillAttackFactor: 0.5,
+      maxSkillAttackFactor: 1.5,
+      finalMultiplier: 1.1,
+      skill: 'distance' as const,
+    };
+    expect(CharacterDefinitionSchema.safeParse(withDistance).success).toBe(
+      true,
+    );
+    expect(CharacterDefinitionSchema.parse(createCharacter()).skills).toEqual({
+      sword: 10,
+      magic: 0,
+    });
+    expect(
+      SpellFormulaDefinitionSchema.safeParse(distanceFormula).success,
+    ).toBe(true);
+  });
+
+  it('accepts cone and target-square spell areas', () => {
+    const {
+      source: _source,
+      aliases: _aliases,
+      ...runtimeSpell
+    } = createSpell();
+    const cone = {
+      ...runtimeSpell,
+      area: { shape: 'cone' as const, radiusTiles: 4 },
+    };
+    const targetSquare = {
+      ...runtimeSpell,
+      rangeTiles: 4,
+      area: { shape: 'target-square' as const, radiusTiles: 1 },
+    };
+    expect(SpellDefinitionSchema.safeParse(cone).success).toBe(true);
+    expect(SpellDefinitionSchema.safeParse(targetSquare).success).toBe(true);
   });
 
   it('rejects a character that references a spell whose allowed families omit Knight', () => {

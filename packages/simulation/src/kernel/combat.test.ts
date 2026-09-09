@@ -10,12 +10,15 @@ import {
   castAbility,
   combatNeutralBlueprint,
   damageAreaAbility,
+  damageConeAbility,
   damageTargetAbility,
+  damageTargetAreaAbility,
   healSelfAbility,
   kernelScenario,
   moveStep,
   payloads,
   payloadsOfType,
+  setTarget,
   TEST_SEED,
   TEST_Z_BELOW,
 } from './testScenarios.ts';
@@ -374,6 +377,64 @@ describe('S4 attack', () => {
     ).toBe('SIM_ATTACK_OUT_OF_RANGE');
   });
 
+  it('auto-attacks a locked target at attackRangeTiles when sight is clear', () => {
+    const scenario = kernelScenario({
+      scenarioId: 'ranged-auto-attack',
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 10,
+          attackCooldownTicks: 2,
+          attackMinDamage: 3,
+          attackMaxDamage: 3,
+          attackRangeTiles: 3,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 10,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(1, 1), facing: 'e' },
+        { blueprintId: 'foe', position: at(4, 1), facing: 'w' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.enqueue(setTarget(1, 2, 0));
+    expect(payloadsOfType(kernel.advanceOne(), 'combat/attacked')).toEqual([]);
+    expect(payloadsOfType(kernel.advanceOne(), 'combat/attacked')).toEqual([
+      { type: 'combat/attacked', entityId: 1, targetEntityId: 2 },
+    ]);
+  });
+
+  it('does not auto-attack a locked target beyond melee when attackRangeTiles is 1', () => {
+    const scenario = kernelScenario({
+      scenarioId: 'melee-auto-attack',
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 10,
+          attackCooldownTicks: 2,
+          attackMinDamage: 3,
+          attackMaxDamage: 3,
+          attackRangeTiles: 1,
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 10,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(1, 1), facing: 'e' },
+        { blueprintId: 'foe', position: at(4, 1), facing: 'w' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.enqueue(setTarget(1, 2, 0));
+    kernel.advanceOne();
+    expect(payloadsOfType(kernel.advanceOne(), 'combat/attacked')).toEqual([]);
+  });
+
   it('rejects a target on another floor', () => {
     const scenario = kernelScenario({
       floors: [
@@ -558,6 +619,70 @@ describe('S4 cast', () => {
 
     expect(damaged.map((payload) => payload.entityId)).toEqual([2, 3]);
     expect(damaged.every((payload) => payload.amount === 3)).toBe(true);
+    expect(
+      kernel.state().actors.find((actor) => actor.entityId === 4)?.health,
+    ).toBe(10);
+  });
+
+  it('hits only the facing cone, not a square behind the caster', () => {
+    const scenario = kernelScenario({
+      abilities: [damageConeAbility()],
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 20,
+          maxResource: 20,
+          abilityIndices: [0],
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 10,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(3, 3), facing: 'e' },
+        { blueprintId: 'foe', position: at(5, 3), facing: 'w' },
+        { blueprintId: 'foe', position: at(5, 4), facing: 'w' },
+        { blueprintId: 'foe', position: at(1, 3), facing: 'e' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.enqueue(castAbility(1, 0, null, 0));
+    const damaged = payloadsOfType(kernel.advanceOne(), 'combat/damaged');
+
+    expect(damaged.map((payload) => payload.entityId)).toEqual([2, 3]);
+    expect(
+      kernel.state().actors.find((actor) => actor.entityId === 4)?.health,
+    ).toBe(10);
+  });
+
+  it('centres target-area on the chosen foe, not the caster', () => {
+    const scenario = kernelScenario({
+      abilities: [damageTargetAreaAbility()],
+      blueprints: [
+        combatNeutralBlueprint('hero', 0, 'inert', {
+          factionId: 1,
+          maxHealth: 20,
+          maxResource: 20,
+          abilityIndices: [0],
+        }),
+        combatNeutralBlueprint('foe', 0, 'inert', {
+          factionId: 2,
+          maxHealth: 10,
+        }),
+      ],
+      initialActors: [
+        { blueprintId: 'hero', position: at(1, 1), facing: 'e' },
+        { blueprintId: 'foe', position: at(4, 1), facing: 'w' },
+        { blueprintId: 'foe', position: at(5, 1), facing: 'w' },
+        { blueprintId: 'foe', position: at(2, 1), facing: 'w' },
+      ],
+    });
+    const kernel = createSimulationKernel(scenario, TEST_SEED);
+    kernel.enqueue(castAbility(1, 0, 2, 0));
+    const damaged = payloadsOfType(kernel.advanceOne(), 'combat/damaged');
+
+    expect(damaged.map((payload) => payload.entityId)).toEqual([2, 3]);
     expect(
       kernel.state().actors.find((actor) => actor.entityId === 4)?.health,
     ).toBe(10);

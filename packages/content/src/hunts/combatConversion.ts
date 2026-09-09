@@ -1,8 +1,10 @@
 import type {
   CharacterDefinition,
   CombatElement,
+  ItemDefinition,
   SpellDefinition,
   SpellFormulaDefinition,
+  VocationDefinition,
 } from '@huntbound/contracts';
 
 /** Frozen in `docs/content/PB-05-SELECTION.md`. */
@@ -28,9 +30,8 @@ const MELEE_MAX_COEFFICIENT = 0.085;
  * `data/XML/vocations.xml`, vocation `4` (Knight): `gainhpticks="6000"`,
  * `gainhpamount="1"`, `gainmanaticks="6000"`, `gainmanaamount="2"`.
  *
- * They live here as constants and not on `VocationDefinition` because V0 ships
- * one vocation. The day a second one arrives these four numbers move into the
- * vocation slice of the catalog and this block goes away.
+ * Defaults for a vocation slice that omits the regen fields, so the Knight
+ * sheet stays identical until another vocation fills its own numbers.
  */
 export const KNIGHT_HEALTH_REGEN_MS = 6000;
 export const KNIGHT_HEALTH_REGEN_AMOUNT = 1;
@@ -81,6 +82,26 @@ export function stepCooldownTicksFromSpeed(speed: number): number | null {
 }
 
 export function knightMeleeDamage(
+  level: number,
+  skill: number,
+  attack: number,
+): { readonly minPower: number; readonly maxPower: number } {
+  return skillWeaponDamage(level, skill, attack);
+}
+
+/**
+ * Distance auto-attack. Same frozen melee coefficient until a Paladin import
+ * proves `distDamage` differs from the Knight's `meleeDamage` of 1.0.
+ */
+export function distanceWeaponDamage(
+  level: number,
+  skill: number,
+  attack: number,
+): { readonly minPower: number; readonly maxPower: number } {
+  return skillWeaponDamage(level, skill, attack);
+}
+
+function skillWeaponDamage(
   level: number,
   skill: number,
   attack: number,
@@ -166,6 +187,25 @@ function levelMagicPower(
   };
 }
 
+function formulaWeaponSkill(
+  formula: Extract<
+    SpellFormulaDefinition,
+    { kind: 'skillAttack' | 'skillAttackProduct' }
+  >,
+): 'sword' | 'distance' {
+  return formula.skill ?? 'sword';
+}
+
+function characterWeaponSkill(
+  character: CharacterDefinition,
+  skill: 'sword' | 'distance',
+): number {
+  if (skill === 'distance') {
+    return character.skills.distance ?? 0;
+  }
+  return character.skills.sword;
+}
+
 export function resolveSpellPower(
   formula: SpellFormulaDefinition,
   character: CharacterDefinition,
@@ -175,14 +215,14 @@ export function resolveSpellPower(
       return skillAttackPower(
         formula,
         character.level,
-        character.skills.sword,
+        characterWeaponSkill(character, formulaWeaponSkill(formula)),
         character.weaponAttack,
       );
     case 'skillAttackProduct':
       return skillAttackProductPower(
         formula,
         character.level,
-        character.skills.sword,
+        characterWeaponSkill(character, formulaWeaponSkill(formula)),
         character.weaponAttack,
       );
     case 'levelMagic':
@@ -205,11 +245,25 @@ export function abilityIdFromSpellKey(spellKey: string): string {
 }
 
 export function abilityShapeFromSpell(spell: SpellDefinition): {
-  readonly shape: 'self' | 'target' | 'area';
+  readonly shape: 'self' | 'target' | 'area' | 'cone' | 'target-area';
   readonly radius: number;
   readonly rangeTiles: number;
 } {
   if (spell.area !== undefined) {
+    if (spell.area.shape === 'cone') {
+      return {
+        shape: 'cone',
+        radius: spell.area.radiusTiles,
+        rangeTiles: 0,
+      };
+    }
+    if (spell.area.shape === 'target-square') {
+      return {
+        shape: 'target-area',
+        radius: spell.area.radiusTiles,
+        rangeTiles: spell.rangeTiles ?? MELEE_RANGE_TILES,
+      };
+    }
     return {
       shape: 'area',
       radius: spell.area.radiusTiles,
@@ -223,6 +277,83 @@ export function abilityShapeFromSpell(spell: SpellDefinition): {
     shape: 'target',
     radius: 0,
     rangeTiles: spell.rangeTiles ?? MELEE_RANGE_TILES,
+  };
+}
+
+const DISTANCE_WEAPON_TYPE = 'distance';
+const WAND_WEAPON_TYPES: ReadonlySet<string> = new Set(['wand', 'rod']);
+
+export interface PlayerAutoAttack {
+  readonly minPower: number;
+  readonly maxPower: number;
+  readonly rangeTiles: number;
+}
+
+export function playerAutoAttack(
+  character: CharacterDefinition,
+  weapon: ItemDefinition | undefined,
+): PlayerAutoAttack {
+  if (weapon !== undefined && WAND_WEAPON_TYPES.has(weapon.weaponType ?? '')) {
+    const minPower = weapon.minDamage ?? weapon.attack ?? 0;
+    const maxPower = weapon.maxDamage ?? weapon.attack ?? minPower;
+    return {
+      minPower,
+      maxPower: maxPower < minPower ? minPower : maxPower,
+      rangeTiles: weapon.rangeTiles ?? MELEE_RANGE_TILES,
+    };
+  }
+  if (weapon !== undefined && weapon.weaponType === DISTANCE_WEAPON_TYPE) {
+    return {
+      ...distanceWeaponDamage(
+        character.level,
+        character.skills.distance ?? 0,
+        character.weaponAttack,
+      ),
+      rangeTiles: weapon.rangeTiles ?? MELEE_RANGE_TILES,
+    };
+  }
+  return {
+    ...knightMeleeDamage(
+      character.level,
+      character.skills.sword,
+      character.weaponAttack,
+    ),
+    rangeTiles: MELEE_RANGE_TILES,
+  };
+}
+
+export function vocationCombatNumbers(vocation: VocationDefinition): {
+  readonly healthRegenMs: number;
+  readonly healthRegenAmount: number;
+  readonly resourceRegenMs: number;
+  readonly resourceRegenAmount: number;
+  readonly outOfCombatHealthRegenMs: number;
+  readonly outOfCombatHealthRegenAmount: number;
+  readonly outOfCombatResourceRegenMs: number;
+  readonly outOfCombatResourceRegenAmount: number;
+  readonly combatWindowMs: number;
+  readonly lifeLeechPermille: number;
+  readonly manaLeechPermille: number;
+} {
+  return {
+    healthRegenMs: vocation.healthRegenMs ?? KNIGHT_HEALTH_REGEN_MS,
+    healthRegenAmount: vocation.healthRegenAmount ?? KNIGHT_HEALTH_REGEN_AMOUNT,
+    resourceRegenMs: vocation.manaRegenMs ?? KNIGHT_RESOURCE_REGEN_MS,
+    resourceRegenAmount:
+      vocation.manaRegenAmount ?? KNIGHT_RESOURCE_REGEN_AMOUNT,
+    outOfCombatHealthRegenMs:
+      vocation.outOfCombatHealthRegenMs ?? KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_MS,
+    outOfCombatHealthRegenAmount:
+      vocation.outOfCombatHealthRegenAmount ??
+      KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_AMOUNT,
+    outOfCombatResourceRegenMs:
+      vocation.outOfCombatManaRegenMs ?? KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_MS,
+    outOfCombatResourceRegenAmount:
+      vocation.outOfCombatManaRegenAmount ??
+      KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_AMOUNT,
+    combatWindowMs: vocation.combatWindowMs ?? KNIGHT_COMBAT_WINDOW_MS,
+    lifeLeechPermille: vocation.lifeLeechPermille ?? KNIGHT_LIFE_LEECH_PERMILLE,
+    manaLeechPermille: vocation.manaLeechPermille ?? KNIGHT_MANA_LEECH_PERMILLE,
   };
 }
 

@@ -72,6 +72,32 @@ describe('parseCanaryItemsXml', () => {
     });
   });
 
+  it('reads a distance weapon range', () => {
+    const xml = `<items>
+  <item id="3277" name="spear" article="a">
+    <attribute key="weaponType" value="distance" />
+    <attribute key="attack" value="25" />
+    <attribute key="range" value="6" />
+  </item>
+</items>`;
+
+    expect(parseCanaryItemsXml(xml, { ids: ['3277'], names: [] })).toEqual({
+      ok: true,
+      value: [
+        {
+          sourceId: '3277',
+          displayName: 'spear',
+          attributes: {
+            article: 'a',
+            attack: 25,
+            range: 6,
+            weaponType: 'distance',
+          },
+        },
+      ],
+    });
+  });
+
   it('maps Canary worth to a non-negative sale price', () => {
     const xml = `<items>
       <item id="9301" name="fixture shard" article="a" worth="12" />

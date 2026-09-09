@@ -12,6 +12,7 @@ import {
   createStaticGrid,
   DIRECTIONS,
   directionDelta,
+  inFacingCone,
   isDiagonal,
   resolveStep,
   stepCostTicks,
@@ -146,6 +147,14 @@ describe('grid directions and movement costs', () => {
     ]);
     expect(translate(position, 'nw')).toEqual({ x: 3, y: 4, z: 11 });
     expect(position).toEqual({ x: 4, y: 5, z: 11 });
+  });
+
+  it('keeps a 90-degree Chebyshev cone in front of the facing', () => {
+    const from = { x: 3, y: 3, z: 7 };
+    expect(inFacingCone(from, { x: 5, y: 3, z: 7 }, 'e', 3)).toBe(true);
+    expect(inFacingCone(from, { x: 5, y: 4, z: 7 }, 'e', 3)).toBe(true);
+    expect(inFacingCone(from, { x: 1, y: 3, z: 7 }, 'e', 3)).toBe(false);
+    expect(inFacingCone(from, from, 'e', 3)).toBe(false);
   });
 
   it('calculates integer orthogonal and diagonal costs', () => {

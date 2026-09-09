@@ -182,6 +182,24 @@ export function attack(
   };
 }
 
+export function setTarget(
+  entityId: number,
+  targetEntityId: number | null,
+  tick = 0,
+  issuer: CommandIssuer = 'player',
+): SimulationCommandInput {
+  return {
+    tick: tickOf(tick),
+    issuer,
+    command: {
+      type: 'actor/set-target',
+      entityId: createEntityId(entityId),
+      targetEntityId:
+        targetEntityId === null ? null : createEntityId(targetEntityId),
+    },
+  };
+}
+
 export function castAbility(
   entityId: number,
   abilityIndex: number,
@@ -390,6 +408,39 @@ export function damageAreaAbility(
     groupCooldownTicks: 4,
     minPower: 2,
     maxPower: 5,
+    ...abilityV5Defaults(),
+    ...overrides,
+  };
+}
+
+export function damageConeAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return damageAreaAbility({
+    abilityId: 'fire-wave',
+    shape: 'cone',
+    radius: 3,
+    rangeTiles: 0,
+    minPower: 3,
+    maxPower: 3,
+    ...overrides,
+  });
+}
+
+export function damageTargetAreaAbility(
+  overrides: Partial<AbilityDefinition> = {},
+): AbilityDefinition {
+  return {
+    abilityId: 'great-fireball',
+    effect: 'damage',
+    shape: 'target-area',
+    radius: 1,
+    rangeTiles: 4,
+    resourceCost: 6,
+    cooldownTicks: 8,
+    groupCooldownTicks: 4,
+    minPower: 3,
+    maxPower: 3,
     ...abilityV5Defaults(),
     ...overrides,
   };

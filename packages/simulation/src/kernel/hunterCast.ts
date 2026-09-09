@@ -5,7 +5,7 @@ import type {
   EntityId,
 } from '@huntbound/contracts';
 
-import { chebyshevDistance } from '../grid/directions.ts';
+import { chebyshevDistance, inFacingCone } from '../grid/directions.ts';
 import { abilityOnCooldown } from './combat.ts';
 
 export const ABILITY_CHANCE_BASIS_POINTS = 10_000;
@@ -74,7 +74,7 @@ function eligibleCastTarget(
     }
     return null;
   }
-  if (ability.shape === 'target') {
+  if (ability.shape === 'target' || ability.shape === 'target-area') {
     if (targetId === null) {
       return undefined;
     }
@@ -107,7 +107,18 @@ function eligibleCastTarget(
     if (candidate.position.z !== actor.position.z) {
       continue;
     }
-    if (
+    if (ability.shape === 'cone') {
+      if (
+        !inFacingCone(
+          actor.position,
+          candidate.position,
+          actor.facing,
+          ability.radius,
+        )
+      ) {
+        continue;
+      }
+    } else if (
       chebyshevDistance(actor.position, candidate.position) > ability.radius
     ) {
       continue;

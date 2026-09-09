@@ -32,24 +32,14 @@ import {
   CREATURE_FACTION_ID,
   combatElementFromDamageType,
   compareContentKeys,
-  KNIGHT_COMBAT_WINDOW_MS,
-  KNIGHT_HEALTH_REGEN_AMOUNT,
-  KNIGHT_HEALTH_REGEN_MS,
-  KNIGHT_LIFE_LEECH_PERMILLE,
-  KNIGHT_MANA_LEECH_PERMILLE,
-  KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_AMOUNT,
-  KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_MS,
-  KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_AMOUNT,
-  KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_MS,
-  KNIGHT_RESOURCE_REGEN_AMOUNT,
-  KNIGHT_RESOURCE_REGEN_MS,
-  knightMeleeDamage,
   luaToInt32,
   MELEE_RANGE_TILES,
   PLAYER_FACTION_ID,
+  playerAutoAttack,
   resolveSpellPower,
   stepCooldownTicksFromSpeed,
   ticksFromIntervalMs,
+  vocationCombatNumbers,
 } from './combatConversion.ts';
 import type { KnightPostureDefinition } from './knightPostures.ts';
 
@@ -275,6 +265,7 @@ function composePlayer(
     return null;
   }
   const vocation = registry.getVocation(character.vocationKey);
+  const combat = vocationCombatNumbers(vocation);
   const stepCooldownTicks = stepCooldownTicksFromSpeed(vocation.baseSpeed);
   if (stepCooldownTicks === null) {
     diagnostics.push(
@@ -297,51 +288,50 @@ function composePlayer(
     );
     return null;
   }
-  const melee = knightMeleeDamage(
-    character.level,
-    character.skills.sword,
-    character.weaponAttack,
-  );
+  const weapon = registry.has(character.weaponItemKey)
+    ? registry.getItem(character.weaponItemKey)
+    : undefined;
+  const autoAttack = playerAutoAttack(character, weapon);
   const attackMinDamage = preparedHunt
     ? scaleByDamageDealtPermille(
-        melee.minPower,
+        autoAttack.minPower,
         NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
       )
-    : melee.minPower;
+    : autoAttack.minPower;
   const attackMaxDamage = preparedHunt
     ? scaleByDamageDealtPermille(
-        melee.maxPower,
+        autoAttack.maxPower,
         NEXT_HUNT_BUFF_DAMAGE_DEALT_PERMILLE,
       )
-    : melee.maxPower;
+    : autoAttack.maxPower;
   return {
     ...source,
     behavior: 'inert',
     factionId: PLAYER_FACTION_ID,
     maxHealth: character.maxHealth,
     maxResource: character.maxMana,
-    healthRegenTicks: ticksFromIntervalMs(KNIGHT_HEALTH_REGEN_MS) ?? 0,
-    healthRegenAmount: KNIGHT_HEALTH_REGEN_AMOUNT,
-    resourceRegenTicks: ticksFromIntervalMs(KNIGHT_RESOURCE_REGEN_MS) ?? 0,
-    resourceRegenAmount: KNIGHT_RESOURCE_REGEN_AMOUNT,
+    healthRegenTicks: ticksFromIntervalMs(combat.healthRegenMs) ?? 0,
+    healthRegenAmount: combat.healthRegenAmount,
+    resourceRegenTicks: ticksFromIntervalMs(combat.resourceRegenMs) ?? 0,
+    resourceRegenAmount: combat.resourceRegenAmount,
     stepCooldownTicks,
     attackCooldownTicks,
     attackMinDamage,
     attackMaxDamage,
     attackSkillIndex: 2,
-    attackRangeTiles: MELEE_RANGE_TILES,
+    attackRangeTiles: autoAttack.rangeTiles,
     aggroRadius: 0,
     lootTableIndex: null,
     abilityIndices,
     outOfCombatHealthRegenTicks:
-      ticksFromIntervalMs(KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_MS) ?? 0,
-    outOfCombatHealthRegenAmount: KNIGHT_OUT_OF_COMBAT_HEALTH_REGEN_AMOUNT,
+      ticksFromIntervalMs(combat.outOfCombatHealthRegenMs) ?? 0,
+    outOfCombatHealthRegenAmount: combat.outOfCombatHealthRegenAmount,
     outOfCombatResourceRegenTicks:
-      ticksFromIntervalMs(KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_MS) ?? 0,
-    outOfCombatResourceRegenAmount: KNIGHT_OUT_OF_COMBAT_RESOURCE_REGEN_AMOUNT,
-    combatWindowTicks: ticksFromIntervalMs(KNIGHT_COMBAT_WINDOW_MS) ?? 0,
-    lifeLeechPermille: KNIGHT_LIFE_LEECH_PERMILLE,
-    manaLeechPermille: KNIGHT_MANA_LEECH_PERMILLE,
+      ticksFromIntervalMs(combat.outOfCombatResourceRegenMs) ?? 0,
+    outOfCombatResourceRegenAmount: combat.outOfCombatResourceRegenAmount,
+    combatWindowTicks: ticksFromIntervalMs(combat.combatWindowMs) ?? 0,
+    lifeLeechPermille: combat.lifeLeechPermille,
+    manaLeechPermille: combat.manaLeechPermille,
     attackElement: 'physical',
     armor: character.armor ?? 0,
     resistances: [],

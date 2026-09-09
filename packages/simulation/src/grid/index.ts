@@ -3,6 +3,7 @@ export {
   DIRECTIONS,
   directionDelta,
   greedyStepDirection,
+  inFacingCone,
   isDiagonal,
   stepCostTicks,
   translate,

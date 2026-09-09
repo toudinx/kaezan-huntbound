@@ -62,6 +62,32 @@ export function chebyshevDistance(
   return dx < dy ? dy : dx;
 }
 
+/**
+ * Inclusive 90-degree Chebyshev cone in `facing`. The origin is never inside.
+ */
+export function inFacingCone(
+  from: GridPosition,
+  to: GridPosition,
+  facing: Direction,
+  radius: number,
+): boolean {
+  if (from.z !== to.z) {
+    return false;
+  }
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (dx === 0 && dy === 0) {
+    return false;
+  }
+  if (chebyshevDistance(from, to) > radius) {
+    return false;
+  }
+  const { dx: fx, dy: fy } = directionDelta(facing);
+  const along = dx * fx + dy * fy;
+  const lateral = dx * fy - dy * fx;
+  return along > 0 && Math.abs(lateral) <= along;
+}
+
 export function greedyStepDirection(
   from: GridPosition,
   to: GridPosition,

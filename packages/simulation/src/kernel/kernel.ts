@@ -906,8 +906,14 @@ export function createSimulationKernel(
             continue;
           }
 
-          const adjacent = isNearbyTarget(actor, target);
-          if (!adjacent) {
+          const targetDistance = blueprint.attackRangeTiles;
+          const inAttackRange =
+            actor.position.z === target.position.z &&
+            chebyshevDistance(actor.position, target.position) <=
+              targetDistance &&
+            (targetDistance <= 1 ||
+              isSightClear(grid, actor.position, target.position));
+          if (!inAttackRange) {
             continue;
           }
 

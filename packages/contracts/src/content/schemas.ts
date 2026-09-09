@@ -416,6 +416,19 @@ export const VocationDefinitionSchema = EntityIdentitySchema.extend({
     z.string().min(1),
     z.number().finite().nonnegative(),
   ),
+  /** `gainhpticks` from vocations.xml. Absent keeps the Knight 6000 ms. */
+  healthRegenMs: nonNegativeInteger.optional(),
+  healthRegenAmount: nonNegativeInteger.optional(),
+  /** `gainmanaticks` from vocations.xml. Absent keeps the Knight 6000 ms. */
+  manaRegenMs: nonNegativeInteger.optional(),
+  manaRegenAmount: nonNegativeInteger.optional(),
+  outOfCombatHealthRegenMs: nonNegativeInteger.optional(),
+  outOfCombatHealthRegenAmount: nonNegativeInteger.optional(),
+  outOfCombatManaRegenMs: nonNegativeInteger.optional(),
+  outOfCombatManaRegenAmount: nonNegativeInteger.optional(),
+  combatWindowMs: nonNegativeInteger.optional(),
+  lifeLeechPermille: nonNegativeInteger.optional(),
+  manaLeechPermille: nonNegativeInteger.optional(),
 })
   .strict()
   .superRefine((vocation, context) => {
@@ -450,6 +463,9 @@ export const ItemDefinitionSchema = EntityIdentitySchema.extend({
   armor: nonNegativeInteger.optional(),
   slotType: itemSlotType.optional(),
   weaponType: itemSlotType.optional(),
+  rangeTiles: nonNegativeInteger.optional(),
+  minDamage: nonNegativeInteger.optional(),
+  maxDamage: nonNegativeInteger.optional(),
 })
   .strict()
   .superRefine((item, context) => {
@@ -462,7 +478,10 @@ export const ItemDefinitionSchema = EntityIdentitySchema.extend({
         item.defense !== undefined ||
         item.armor !== undefined ||
         item.slotType !== undefined ||
-        item.weaponType !== undefined) &&
+        item.weaponType !== undefined ||
+        item.rangeTiles !== undefined ||
+        item.minDamage !== undefined ||
+        item.maxDamage !== undefined) &&
       !item.includedFacets.includes('item')
     ) {
       context.addIssue({
@@ -476,6 +495,8 @@ export type ItemDefinition = z.infer<typeof ItemDefinitionSchema>;
 
 const finiteNumber = z.number().finite();
 
+const weaponSkillName = z.enum(['sword', 'distance']);
+
 const SkillAttackFormulaSchema = z
   .object({
     kind: z.literal('skillAttack'),
@@ -483,6 +504,7 @@ const SkillAttackFormulaSchema = z
     minSkillAttackFactor: finiteNumber,
     maxSkillAttackFactor: finiteNumber,
     finalMultiplier: finiteNumber,
+    skill: weaponSkillName.optional(),
   })
   .strict()
   .refine(
@@ -503,6 +525,7 @@ const SkillAttackProductFormulaSchema = z
     minAddend: finiteNumber,
     maxAddend: finiteNumber,
     finalMultiplier: finiteNumber,
+    skill: weaponSkillName.optional(),
   })
   .strict()
   .refine(
@@ -610,6 +633,7 @@ export const CharacterDefinitionSchema = z
       .object({
         sword: nonNegativeNumber,
         magic: nonNegativeNumber,
+        distance: nonNegativeNumber.optional(),
       })
       .strict(),
     weaponItemKey: itemContentKey,
@@ -763,7 +787,7 @@ export const SpellDefinitionSchema = EntityIdentitySchema.extend({
   rangeTiles: nonNegativeInteger.optional(),
   area: z
     .object({
-      shape: z.literal('square'),
+      shape: z.enum(['square', 'cone', 'target-square']),
       radiusTiles: nonNegativeInteger,
     })
     .strict()

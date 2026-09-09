@@ -58,11 +58,12 @@ const itemChildElements = new Set(['attribute']);
  * progression: `attack` and `defense` are what a weapon is worth, `armor` is
  * the stat the kernel now mitigates with, and `slotType` / `weaponType` are the
  * two words that decide where a piece goes and whether the Knight is trained
- * for it. `slot` stays ignored -- it is the same fact as `slotType` in the
+ * for it. `range` is the Chebyshev reach of a distance weapon or wand.
+ * `slot` stays ignored -- it is the same fact as `slotType` in the
  * older half of `items.xml`, and reading both would leave two spellings of one
  * answer.
  */
-const numericEquipmentKeys = new Set(['attack', 'defense', 'armor']);
+const numericEquipmentKeys = new Set(['attack', 'defense', 'armor', 'range']);
 const textEquipmentKeys = new Set(['slotType', 'weaponType']);
 const numericSaleKeys = new Set(['worth', 'sellPrice']);
 
@@ -71,7 +72,6 @@ const ignoredAttributeKeys = new Set([
   'primarytype',
   'shootType',
   'maxhitchance',
-  'range',
   'extradef',
   'description',
   'showCount',

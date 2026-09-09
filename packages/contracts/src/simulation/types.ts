@@ -48,7 +48,7 @@ export interface ActorBlueprint {
 }
 
 export type AbilityEffect = 'damage' | 'heal';
-export type AbilityShape = 'self' | 'target' | 'area';
+export type AbilityShape = 'self' | 'target' | 'area' | 'cone' | 'target-area';
 export type AbilityRechargeKind = 'none' | 'out-of-combat' | 'between-runs';
 
 export const COMBAT_ELEMENTS = [

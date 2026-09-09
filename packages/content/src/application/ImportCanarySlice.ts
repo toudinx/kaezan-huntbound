@@ -235,6 +235,9 @@ function itemDefinition(
     ...(typeof attributes.weaponType === 'string'
       ? { weaponType: attributes.weaponType }
       : {}),
+    ...(typeof attributes.range === 'number'
+      ? { rangeTiles: attributes.range }
+      : {}),
   };
 }
 

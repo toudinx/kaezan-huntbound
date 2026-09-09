@@ -12,7 +12,7 @@ import type {
   TickIndex,
 } from '@huntbound/contracts';
 import type { EventJournal } from '../events/journal.ts';
-import { chebyshevDistance } from '../grid/directions.ts';
+import { chebyshevDistance, inFacingCone } from '../grid/directions.ts';
 import { isSightClear } from '../grid/sight.ts';
 import type { StaticGrid } from '../grid/staticGrid.ts';
 import type { RandomSource } from '../random/source.ts';
@@ -649,6 +649,43 @@ function validEffectTarget(
   );
 }
 
+function collectAreaTargets(
+  world: MutableWorld,
+  blueprints: ReadonlyMap<string, ActorBlueprint>,
+  origin: GridPosition,
+  radius: number,
+  caster: ActorState,
+  casterFaction: number,
+  effect: AbilityDefinition['effect'],
+  facingCone: ActorState['facing'] | null,
+): ActorState[] {
+  return world
+    .actors()
+    .filter((candidate) => {
+      const candidateBlueprint = blueprints.get(candidate.blueprintId);
+      if (candidateBlueprint === undefined) {
+        return false;
+      }
+      if (!inRange(origin, candidate.position, radius)) {
+        return false;
+      }
+      if (
+        facingCone !== null &&
+        !inFacingCone(origin, candidate.position, facingCone, radius)
+      ) {
+        return false;
+      }
+      return validEffectTarget(
+        caster,
+        casterFaction,
+        candidate,
+        candidateBlueprint.factionId,
+        effect,
+      );
+    })
+    .sort((left, right) => left.entityId - right.entityId);
+}
+
 function applyForcedTarget(
   world: MutableWorld,
   journal: EventJournal,
@@ -776,7 +813,7 @@ function resolveCast(
     ) {
       targets = [caster];
     }
-  } else if (ability.shape === 'target') {
+  } else if (ability.shape === 'target' || ability.shape === 'target-area') {
     if (intent.targetEntityId === null) {
       reject(
         journal,
@@ -839,27 +876,41 @@ function resolveCast(
       );
       return;
     }
-    targets = [target];
+    targets =
+      ability.shape === 'target'
+        ? [target]
+        : collectAreaTargets(
+            world,
+            blueprints,
+            target.position,
+            ability.radius,
+            caster,
+            blueprint.factionId,
+            ability.effect,
+            null,
+          );
+  } else if (ability.shape === 'cone') {
+    targets = collectAreaTargets(
+      world,
+      blueprints,
+      caster.position,
+      ability.radius,
+      caster,
+      blueprint.factionId,
+      ability.effect,
+      caster.facing,
+    );
   } else {
-    targets = world
-      .actors()
-      .filter((candidate) => {
-        const candidateBlueprint = blueprints.get(candidate.blueprintId);
-        if (candidateBlueprint === undefined) {
-          return false;
-        }
-        if (!inRange(caster.position, candidate.position, ability.radius)) {
-          return false;
-        }
-        return validEffectTarget(
-          caster,
-          blueprint.factionId,
-          candidate,
-          candidateBlueprint.factionId,
-          ability.effect,
-        );
-      })
-      .sort((left, right) => left.entityId - right.entityId);
+    targets = collectAreaTargets(
+      world,
+      blueprints,
+      caster.position,
+      ability.radius,
+      caster,
+      blueprint.factionId,
+      ability.effect,
+      null,
+    );
   }
 
   const spent = world.actor(caster.entityId);

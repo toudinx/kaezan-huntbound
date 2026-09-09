@@ -82,7 +82,13 @@ const diagnosticCodeValues = [
 export const DirectionSchema = z.enum(directionValues);
 export const ActorBehaviorSchema = z.enum(['inert', 'wander', 'hunter']);
 export const AbilityEffectSchema = z.enum(['damage', 'heal']);
-export const AbilityShapeSchema = z.enum(['self', 'target', 'area']);
+export const AbilityShapeSchema = z.enum([
+  'self',
+  'target',
+  'area',
+  'cone',
+  'target-area',
+]);
 export const CombatElementSchema = z.enum([
   'death',
   'earth',
@@ -257,6 +263,14 @@ export const ActorBlueprintSchema = z
     }
   });
 
+function shapeHasRadius(shape: string): boolean {
+  return shape === 'area' || shape === 'cone' || shape === 'target-area';
+}
+
+function shapeHasRange(shape: string): boolean {
+  return shape === 'target' || shape === 'target-area';
+}
+
 export const AbilityDefinitionSchema = z
   .object({
     abilityId,
@@ -282,20 +296,20 @@ export const AbilityDefinitionSchema = z
   })
   .strict()
   .superRefine((ability, context) => {
-    if (ability.shape !== 'area' && ability.radius !== 0) {
+    if (!shapeHasRadius(ability.shape) && ability.radius !== 0) {
       addSimulationIssue(
         context,
         'SIM_SCHEMA_INVALID',
         ['radius'],
-        'radius must be 0 unless shape is area',
+        'radius must be 0 unless shape is area, cone, or target-area',
       );
     }
-    if (ability.shape !== 'target' && ability.rangeTiles !== 0) {
+    if (!shapeHasRange(ability.shape) && ability.rangeTiles !== 0) {
       addSimulationIssue(
         context,
         'SIM_SCHEMA_INVALID',
         ['rangeTiles'],
-        'rangeTiles must be 0 unless shape is target',
+        'rangeTiles must be 0 unless shape is target or target-area',
       );
     }
     if (ability.minPower > ability.maxPower) {

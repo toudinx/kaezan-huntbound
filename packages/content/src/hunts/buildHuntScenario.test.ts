@@ -1187,6 +1187,7 @@ describe('buildHuntScenario combat blueprints', () => {
       attackCooldownTicks: 40,
       attackMinDamage: 1,
       attackMaxDamage: 13,
+      attackRangeTiles: 1,
       lootTableIndex: null,
       aggroRadius: 0,
     });
@@ -1204,6 +1205,109 @@ describe('buildHuntScenario combat blueprints', () => {
         (blueprint) => blueprint.blueprintId === 'rotworm',
       )?.factionId,
     );
+  });
+
+  it('gives a distance weapon its catalog range and distance-skill damage', () => {
+    const spear: ItemDefinition = {
+      ...item('spear'),
+      includedFacets: ['identity', 'item'],
+      weaponType: 'distance',
+      attack: 25,
+      rangeTiles: 6,
+    };
+    const paladin: CharacterDefinition = {
+      ...character,
+      vocationKey: 'vocation:tibia:knight' as ContentKey,
+      skills: { sword: 10, magic: 0, distance: 60 },
+      weaponItemKey: 'item:tibia:spear' as ContentKey,
+      weaponAttack: 25,
+    };
+    const base = runtimeBundle();
+    const { scenario } = unwrapSuccess(
+      buildHuntScenario(
+        syntheticHunt(),
+        paladin,
+        createContentRegistry({ ...base, items: [...base.items, spear] }),
+        seed,
+      ),
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    expect(player?.attackRangeTiles).toBe(6);
+    expect(player?.attackMinDamage).toBe(1);
+    expect(player?.attackMaxDamage).toBe(
+      Math.round(0.085 * 1.0 * 1.0 * 25 * 60 + 1),
+    );
+  });
+
+  it('uses a wand min/max pair instead of the melee formula', () => {
+    const wand: ItemDefinition = {
+      ...item('wand-of-inferno'),
+      includedFacets: ['identity', 'item'],
+      weaponType: 'wand',
+      rangeTiles: 3,
+      minDamage: 8,
+      maxDamage: 18,
+    };
+    const sorcerer: CharacterDefinition = {
+      ...character,
+      skills: { sword: 10, magic: 40 },
+      weaponItemKey: 'item:tibia:wand-of-inferno' as ContentKey,
+      weaponAttack: 0,
+    };
+    const base = runtimeBundle();
+    const { scenario } = unwrapSuccess(
+      buildHuntScenario(
+        syntheticHunt(),
+        sorcerer,
+        createContentRegistry({ ...base, items: [...base.items, wand] }),
+        seed,
+      ),
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    expect(player?.attackRangeTiles).toBe(3);
+    expect(player?.attackMinDamage).toBe(8);
+    expect(player?.attackMaxDamage).toBe(18);
+  });
+
+  it('reads regen from the vocation slice when the fields are present', () => {
+    const vocation: VocationDefinition = {
+      ...knightVocation(),
+      healthRegenMs: 4000,
+      healthRegenAmount: 3,
+      manaRegenMs: 2000,
+      manaRegenAmount: 5,
+      combatWindowMs: 2000,
+      lifeLeechPermille: 50,
+    };
+    const content = runtimeBundle();
+    const withVocation = {
+      ...content,
+      vocations: [vocation],
+    };
+    const { scenario } = unwrapSuccess(
+      buildHuntScenario(
+        syntheticHunt(),
+        character,
+        createContentRegistry(withVocation),
+        seed,
+      ),
+    );
+    const player = scenario.blueprints.find(
+      (blueprint) => blueprint.blueprintId === 'player',
+    );
+    expect(player).toMatchObject({
+      healthRegenTicks: 80,
+      healthRegenAmount: 3,
+      resourceRegenTicks: 40,
+      resourceRegenAmount: 5,
+      combatWindowTicks: 40,
+      lifeLeechPermille: 50,
+      manaLeechPermille: 100,
+    });
   });
 
   it('scales player melee and damage abilities when the next-hunt blessing is on', () => {
