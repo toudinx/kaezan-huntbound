@@ -68,7 +68,6 @@ import { effectFrame } from '../../hunt/EffectAnimation';
 import {
   groundBounds,
   groundEdgeCells,
-  resolveGroundSample,
   unresolvedGroundCells,
 } from '../../hunt/GroundCompositor';
 import {
@@ -135,25 +134,6 @@ export const WORLD_EDGE_COLOR = 0x241812;
  * beside it, so the boundary becomes a surface instead of an edge.
  */
 export const WORLD_EDGE_RIM_COLOR = 0x3a281c;
-
-/**
- * A readable floor under a missing or transparent tile pack. The real tile is
- * still drawn above this layer when it is available; this is the reserve that
- * keeps a hunt playable while a personal pack is incomplete.
- */
-export const RESERVE_GROUND_DEPTH = WORLD_EDGE_DEPTH + 0.1;
-
-const RESERVE_GROUND_COLORS = [
-  0x51483f, 0x5a4c40, 0x4b4641, 0x635142, 0x554a48,
-] as const;
-
-function reserveGroundColor(serverId: number, cellIndex: number): number {
-  const hash = Math.abs(Math.imul(serverId, 31) + Math.imul(cellIndex, 17));
-  return (
-    RESERVE_GROUND_COLORS[hash % RESERVE_GROUND_COLORS.length] ??
-    RESERVE_GROUND_COLORS[0]
-  );
-}
 
 export interface HuntSimulationDriver {
   readonly tick: TickIndex;
@@ -235,8 +215,6 @@ export class HuntScene extends Phaser.Scene {
   private healthBarRedraws = 0;
   private readonly maxHealthByBlueprint = new Map<string, number>();
   private targetRing: Phaser.GameObjects.Graphics | undefined;
-  private groundReserve: Phaser.GameObjects.Graphics | undefined;
-  private readonly reservedGroundCells = new Set<number>();
   private worldEdge: Phaser.GameObjects.Graphics | undefined;
   private worldEdgeCreations = 0;
   private readonly worldEdgeCells = new Set<number>();
@@ -499,9 +477,6 @@ export class HuntScene extends Phaser.Scene {
       this.targetRing?.destroy();
       this.targetRing = undefined;
       this.destroyCreatureHealthBars();
-      this.groundReserve?.destroy();
-      this.groundReserve = undefined;
-      this.reservedGroundCells.clear();
       this.worldEdge?.destroy();
       this.worldEdge = undefined;
       this.worldEdgeCells.clear();
@@ -960,7 +935,6 @@ export class HuntScene extends Phaser.Scene {
     this.destroySprites();
     this.drawnGroundCells.clear();
     this.syncCameraBounds();
-    this.renderGroundReserve();
     for (const command of presentation.drawCommands()) {
       const asset = this.assetByKey.get(command.key);
       if (!asset) {
@@ -1024,52 +998,6 @@ export class HuntScene extends Phaser.Scene {
             maxY: (cells.maxY + 1) * this.tileSize,
           };
     this.cameraController = this.makeCameraController();
-  }
-
-  private ensureGroundReserve(): Phaser.GameObjects.Graphics {
-    if (this.groundReserve !== undefined) return this.groundReserve;
-
-    const reserve = this.add
-      .graphics()
-      .setDepth(RESERVE_GROUND_DEPTH)
-      .setData('hunt-ground-reserve', true);
-    this.groundReserve = reserve;
-    return reserve;
-  }
-
-  /**
-   * Paints a warm, tile-sized reserve below the real art. Personal packs can
-   * be partial or contain transparent placeholders; the walkable area should
-   * still read as a cave instead of a black canvas in that state.
-   */
-  private renderGroundReserve(): void {
-    const presentation = this.presentation;
-    if (!presentation) return;
-
-    const region = this.options.hunt.region;
-    const reserve = this.ensureGroundReserve();
-    reserve.clear();
-    this.reservedGroundCells.clear();
-
-    for (let index = 0; index < region.width * region.height; index += 1) {
-      const sample = resolveGroundSample(region, presentation.floor(), index);
-      if (sample === undefined) continue;
-
-      const serverId = region.palette[sample.paletteIndex] ?? 0;
-      const x = index % region.width;
-      const y = Math.floor(index / region.width);
-      reserve
-        .fillStyle(reserveGroundColor(serverId, index), 1)
-        .fillRect(
-          x * this.tileSize,
-          y * this.tileSize,
-          this.tileSize,
-          this.tileSize,
-        );
-      this.reservedGroundCells.add(index);
-    }
-
-    reserve.setVisible(this.reservedGroundCells.size > 0);
   }
 
   private ensureWorldEdge(): Phaser.GameObjects.Graphics {
@@ -2077,7 +2005,6 @@ export class HuntScene extends Phaser.Scene {
         const index = this.cellIndex(x, y);
         if (
           !this.drawnGroundCells.has(index) &&
-          !this.reservedGroundCells.has(index) &&
           !this.worldEdgeCells.has(index)
         ) {
           untreated += 1;
