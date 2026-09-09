@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import type {
   AssetSelectionManifest,
@@ -8,7 +8,10 @@ import type {
 import type { MapRegion } from '../../../packages/contracts/src/hunt/types.ts';
 import { createAssetSourceLock } from '../source/sourceLock.ts';
 import { sourceMapForAsset } from '../source/sourceManifest.ts';
-import { cropSpellIconAtlas } from '../spells/cropSpellIcons.ts';
+import {
+  createVisibleFallbackPng,
+  cropSpellIconAtlas,
+} from '../spells/cropSpellIcons.ts';
 import {
   getHuntPipelineEntry,
   type HuntPipelineEntry,
@@ -25,6 +28,21 @@ const transparentPixel = Buffer.from(
   'base64',
 );
 const preparedPersonalSpellRoots = new Set<string>();
+const preparedPersonalFallbackRoots = new Set<string>();
+const allowPersonalDevFallbacks =
+  process.env.HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS === '1';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+async function isFile(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile();
+  } catch {
+    return false;
+  }
+}
 
 function canonicalJson(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
@@ -56,6 +74,48 @@ function sourcePathForEntry(
 ): string {
   const { name, id } = sourceMapForAsset(entry.category, entry.sourceIdentity);
   return `${name}/${id}.png`;
+}
+
+async function ensurePersonalFallbackAssets(
+  sourceRoot: string,
+  selection: AssetSelectionManifest,
+): Promise<void> {
+  const manifestPath = join(sourceRoot, 'manifest.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Record<
+    string,
+    unknown
+  >;
+  let manifestChanged = false;
+
+  for (const entry of selection.entries) {
+    const { name, id } = sourceMapForAsset(
+      entry.category,
+      entry.sourceIdentity,
+    );
+    const map = isRecord(manifest[name]) ? manifest[name] : {};
+    const key = String(id);
+    const existingEntry = isRecord(map[key]) ? map[key] : undefined;
+    const sourcePath =
+      existingEntry !== undefined && typeof existingEntry.file === 'string'
+        ? existingEntry.file
+        : sourcePathForEntry(entry);
+
+    if (existingEntry === undefined) {
+      map[key] = sourceEntry(sourcePath);
+      manifestChanged = true;
+    }
+
+    const mediaPath = join(sourceRoot, sourcePath);
+    if (!(await isFile(mediaPath))) {
+      await mkdir(dirname(mediaPath), { recursive: true });
+      await writeFile(mediaPath, createVisibleFallbackPng(id));
+    }
+    manifest[name] = map;
+  }
+
+  if (manifestChanged) {
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
 }
 
 function syntheticManifest(selection: AssetSelectionManifest) {
@@ -255,8 +315,38 @@ export async function generateHuntArtifacts(
     );
   }
   if (!options.check && !preparedPersonalSpellRoots.has(sourceRoot)) {
-    await cropSpellIconAtlas({ sourceRoot });
+    const result = await cropSpellIconAtlas({
+      sourceRoot,
+      allowMissingAtlas: allowPersonalDevFallbacks,
+    });
+    if (result.usedFallback) {
+      console.warn(
+        'Personal spell atlas not found; generated visible local fallback icons for dev.',
+      );
+    }
     preparedPersonalSpellRoots.add(sourceRoot);
+  }
+  if (!options.check && allowPersonalDevFallbacks) {
+    if (!preparedPersonalFallbackRoots.has(sourceRoot)) {
+      for (const candidate of listHuntPipelineEntries()) {
+        const candidateRegion = await readRegion(candidate);
+        const candidateHunt = deriveHuntPackSelection(candidateRegion, {
+          huntId: candidate.huntId,
+          packKey: candidate.packKey,
+          assetSelection: candidate.assetSelection,
+        });
+        await ensurePersonalFallbackAssets(
+          sourceRoot,
+          createHuntAssetSelection({
+            hunt: candidateHunt,
+            group: candidate.personalGroup,
+            consumer: candidate.consumer,
+            assetSelection: candidate.assetSelection,
+          }),
+        );
+      }
+      preparedPersonalFallbackRoots.add(sourceRoot);
+    }
   }
   await writePersonalArtifacts(entry, hunt, sourceRoot, options.check);
 }

@@ -261,7 +261,8 @@ function candidatePath(sourceRoot: string, path: string): string {
 async function findAtlasPath(
   sourceRoot: string,
   requestedPath: string | undefined,
-): Promise<string> {
+  allowMissingAtlas: boolean,
+): Promise<string | undefined> {
   const candidates = [
     requestedPath,
     process.env.HUNTBOUND_PERSONAL_SPELL_ATLAS,
@@ -275,6 +276,8 @@ async function findAtlasPath(
   for (const path of [...new Set(candidates)]) {
     if (await isFile(path)) return path;
   }
+
+  if (allowMissingAtlas) return undefined;
 
   throw new Error(
     `Spell icon atlas was not found. Pass --atlas or set HUNTBOUND_PERSONAL_SPELL_ATLAS; tried ${candidates.join(', ')}`,
@@ -309,14 +312,35 @@ function cropIcon(atlas: DecodedPng, clientId: number): Buffer {
   });
 }
 
+export function createVisibleFallbackPng(seed: number): Buffer {
+  const pixels = Buffer.alloc(SPELL_ICON_SIZE * SPELL_ICON_SIZE * 4);
+  for (let row = 0; row < SPELL_ICON_SIZE; row += 1) {
+    for (let column = 0; column < SPELL_ICON_SIZE; column += 1) {
+      const offset = (row * SPELL_ICON_SIZE + column) * 4;
+      const stripe = (row + column + seed) % 8 < 4;
+      pixels[offset] = stripe ? 255 : 35;
+      pixels[offset + 1] = stripe ? 60 : 20;
+      pixels[offset + 2] = stripe ? 220 : 35;
+      pixels[offset + 3] = 255;
+    }
+  }
+  return encodePng({ colorType: 6, channels: 4, pixels });
+}
+
+function missingAtlasIcon(clientId: number): Buffer {
+  return createVisibleFallbackPng(clientId);
+}
+
 export interface CropSpellIconAtlasInput {
   readonly sourceRoot: string;
   readonly atlasPath?: string;
+  readonly allowMissingAtlas?: boolean;
 }
 
 export interface CropSpellIconAtlasResult {
   readonly sourceRoot: string;
   readonly atlasPath?: string;
+  readonly usedFallback: boolean;
   readonly paths: readonly string[];
 }
 
@@ -341,19 +365,36 @@ export async function cropSpellIconAtlas(
   );
   const needsCrop = outputsExist.some((exists) => !exists);
   let atlasPath: string | undefined;
+  let usedFallback = false;
 
   if (needsCrop) {
-    atlasPath = await findAtlasPath(sourceRoot, input.atlasPath);
-    const atlas = decodePng(await readFile(atlasPath));
-    if (atlas.height !== SPELL_ICON_SIZE) {
-      throw new Error(
-        `Spell icon atlas must be ${SPELL_ICON_SIZE}px high; got ${atlas.height}px`,
-      );
+    atlasPath = await findAtlasPath(
+      sourceRoot,
+      input.atlasPath,
+      input.allowMissingAtlas === true,
+    );
+    let outputBytes: readonly {
+      readonly clientId: number;
+      readonly bytes: Buffer;
+    }[];
+    if (atlasPath === undefined) {
+      outputBytes = SPELL_ICON_SPECS.map(({ clientId }) => ({
+        clientId,
+        bytes: missingAtlasIcon(clientId),
+      }));
+    } else {
+      const atlas = decodePng(await readFile(atlasPath));
+      if (atlas.height !== SPELL_ICON_SIZE) {
+        throw new Error(
+          `Spell icon atlas must be ${SPELL_ICON_SIZE}px high; got ${atlas.height}px`,
+        );
+      }
+      outputBytes = SPELL_ICON_SPECS.map(({ clientId }) => ({
+        clientId,
+        bytes: cropIcon(atlas, clientId),
+      }));
     }
-    const outputBytes = SPELL_ICON_SPECS.map(({ clientId }) => ({
-      clientId,
-      bytes: cropIcon(atlas, clientId),
-    }));
+    usedFallback = atlasPath === undefined;
     await Promise.all(
       outputBytes.map(async ({ clientId, bytes }) => {
         const outputPath = join(sourceRoot, `spells/${clientId}.png`);
@@ -382,6 +423,7 @@ export async function cropSpellIconAtlas(
   return {
     sourceRoot,
     ...(atlasPath === undefined ? {} : { atlasPath }),
+    usedFallback,
     paths,
   };
 }

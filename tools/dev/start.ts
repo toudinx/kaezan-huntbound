@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import { lstat, readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { cp, lstat, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 
 import { listHuntPipelineEntries } from '../asset-packer/hunt/huntRegistry.ts';
 
@@ -25,6 +25,10 @@ type DevPlan =
     };
 
 const personalSourceVariable = 'HUNTBOUND_PERSONAL_ASSET_SOURCE';
+const personalDevFallbackVariable =
+  'HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS';
+const devPersonalSourceRoot = '.cache/huntbound-personal-source';
+const devPersonalSourceMarker = '.cache/huntbound-personal-source.txt';
 
 export function parseEnvFile(content: string): Record<string, string> {
   const environment: Record<string, string> = {};
@@ -105,7 +109,10 @@ export function createDevPlan(
                 'corepack pnpm --filter @huntbound/game exec vite --mode personal',
             },
           ],
-    environment,
+    environment:
+      profile === 'personal'
+        ? { ...environment, [personalDevFallbackVariable]: '1' }
+        : environment,
   };
 }
 
@@ -165,6 +172,40 @@ async function loadLocalEnvironment(
   }
 }
 
+async function preparePersonalDevEnvironment(
+  root: string,
+  environment: DevEnvironment,
+): Promise<DevEnvironment> {
+  const sourceRoot = environment[personalSourceVariable];
+  if (sourceRoot === undefined || sourceRoot.trim().length === 0) {
+    return environment;
+  }
+
+  const resolvedSourceRoot = resolve(root, sourceRoot);
+  const cacheRoot = resolve(root, devPersonalSourceRoot);
+  const markerPath = resolve(root, devPersonalSourceMarker);
+  let cacheReady = false;
+  try {
+    cacheReady =
+      (await readFile(markerPath, 'utf8')).trim() === resolvedSourceRoot &&
+      (await lstat(join(cacheRoot, 'manifest.json'))).isFile();
+  } catch {
+    cacheReady = false;
+  }
+
+  if (!cacheReady) {
+    await rm(cacheRoot, { recursive: true, force: true });
+    await cp(resolvedSourceRoot, cacheRoot, { recursive: true });
+    await mkdir(dirname(markerPath), { recursive: true });
+    await writeFile(markerPath, `${resolvedSourceRoot}\n`);
+  }
+
+  return {
+    ...environment,
+    [personalSourceVariable]: cacheRoot,
+  };
+}
+
 function runCommand(
   command: string,
   root: string,
@@ -207,7 +248,11 @@ export async function runDevLauncher(
   processEnvironment: NodeJS.ProcessEnv = process.env,
 ): Promise<number> {
   const localEnvironment = await loadLocalEnvironment(root);
-  const environment = { ...localEnvironment, ...processEnvironment };
+  const loadedEnvironment = { ...localEnvironment, ...processEnvironment };
+  const environment =
+    profile === 'personal'
+      ? await preparePersonalDevEnvironment(root, loadedEnvironment)
+      : loadedEnvironment;
   const plan = createDevPlan(profile, environment, {
     devServerRunning: await isDevServerRunning(),
     personalProfileExists:

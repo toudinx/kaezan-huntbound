@@ -182,4 +182,21 @@ describe('spell icon cropper', () => {
       );
     }
   });
+
+  it('creates visible local fallback icons when dev allows a missing atlas', async () => {
+    const { root } = await createSourceRoot();
+    await rm(join(root, 'spell-icons-32x32.png'));
+
+    const result = await cropSpellIconAtlas({
+      sourceRoot: root,
+      allowMissingAtlas: true,
+    });
+
+    expect(result.usedFallback).toBe(true);
+    expect(firstPixel(await readFile(join(root, 'spells/2.png')))).toEqual({
+      width: 32,
+      height: 32,
+      rgb: [255, 60, 220],
+    });
+  });
 });
