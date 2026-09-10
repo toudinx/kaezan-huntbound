@@ -52,15 +52,19 @@ describe('generated Venore Rotworm Cave hunt', () => {
       { z: 8, walkableTiles: 690, componentCount: 19 },
       { z: 9, walkableTiles: 761, componentCount: 13 },
     ]);
+    // Still the same four cut-off stairs -- (42,35), (48,65), (6,81) and
+    // (49,92) -- counted twice: every descent now carries its return, and a
+    // stair nobody can reach is unreachable from either side of it.
     expect(report.diagnostics.map(({ code }) => code)).toEqual([
-      ...Array.from({ length: 4 }, () => 'HUNT_TRANSITION_UNREACHABLE'),
+      ...Array.from({ length: 8 }, () => 'HUNT_TRANSITION_UNREACHABLE'),
       'HUNT_WALKABLE_DISCONNECTED',
       'HUNT_WALKABLE_DISCONNECTED',
     ]);
   });
 
   it('keeps spawn slots reachable from the upper hunt circuit', () => {
-    expect(hunt.transitions.entries).toHaveLength(8);
+    // Eight stairs down and the eight climbs back up they gained.
+    expect(hunt.transitions.entries).toHaveLength(16);
     expect(hunt.spawns.groups).toHaveLength(8);
     expect(hunt.spawns.groups.flatMap((group) => group.slots)).toHaveLength(12);
     expect(hunt.playerStart).toEqual({ x: 13, y: 19, z: 8 });
