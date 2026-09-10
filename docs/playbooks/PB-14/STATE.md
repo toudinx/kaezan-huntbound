@@ -8,7 +8,7 @@
 | PB-14-01 | done | Claude Opus 5 `xhigh` | Claude Opus 5 (effort alto) | `7e2f807` |
 | PB-14-02 | done | Grok 4.6 `xhigh` | Cursor Grok 4.6 (effort alto) | `1b7efc7` |
 | PB-14-03 | done | GPT-5.6 Luna `xhigh` | Codex GPT-5 (effort alto) | `74cfa53` |
-| PB-14-03-FIX-01 | done | — | Claude Opus 5 (effort alto) | `7bdafce` |
+| PB-14-03-FIX-01 | done | — | Claude Opus 5 (effort alto) | `35ffa09` |
 | PB-14-04 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-14-05 | pending | Grok 4.6 `xhigh` | — | — |
 | PB-14-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
