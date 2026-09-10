@@ -162,7 +162,12 @@ function playerStartForScenario(hunt: HuntDefinition): GridPosition {
   );
   if (floor === undefined) return hunt.playerStart;
 
-  const blocked = new Set(floor.collision);
+  // The border ring is blocked terrain as far as the kernel is concerned, so a
+  // start repaired onto it is rejected outright by the scenario validator. The
+  // two repairs were written on different machines and met in the merge of
+  // 2026-09-09; this is where they have to agree.
+  const blocked = new Set<number>(floor.collision);
+  for (const index of huntRegionBorderCells(hunt.region)) blocked.add(index);
   let best: GridPosition | undefined;
   let bestDistance = Number.POSITIVE_INFINITY;
   for (let index = 0; index < floor.ground.length; index += 1) {

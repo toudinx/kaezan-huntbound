@@ -61,51 +61,6 @@
       "purpose": "spell"
     },
     {
-      "relativePath": "data/scripts/spells/attack/energy_strike.lua",
-      "sha256": "c058f20310cfc9eefa7ba86ca2a8dc2a81640e5eb812dde92f4b483b195d31b9",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/attack/fire_wave.lua",
-      "sha256": "5d99c30cbb09eec2642de5522e75fbaeefbf4f11221137dbb1a2dba98901f8bb",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/runes/great_fireball.lua",
-      "sha256": "e75dfa61c505fdf21f90b908a4490f8715870b1638d97ab629fea012a4d9d4cd",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/conjuring/great_fireball_rune.lua",
-      "sha256": "c523a69fff1ad688008ad53dec7aadd4ac0cb1be0050e0ad7a5201f7d1a3a6ab",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/runes/sudden_death.lua",
-      "sha256": "6ef94e4ecf42ac050a549af18e88c05717dd5fb987bb775198ff43004998bf84",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/conjuring/sudden_death_rune.lua",
-      "sha256": "d08cf79b897aeb07a662f26b44d80293c2fd9b417bc63e22bae9d4b796b221b9",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/healing/ultimate_healing.lua",
-      "sha256": "aeb4803a037b4213b393f08355d3200283f004a46525bfa5f6ad0fe5d8558dc9",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/support/magic_shield.lua",
-      "sha256": "e07329dc6bdffebea395ccad3022173d68175b36f8d4cb9ef7024752498fcc43",
-      "purpose": "spell"
-    },
-    {
-      "relativePath": "data/scripts/spells/support/haste.lua",
-      "sha256": "83f584501356155fde482b135496aa1e800e664edb79c12b1a767d5ffab68c4a",
-      "purpose": "spell"
-    },
-    {
       "relativePath": "data-otservbr-global/monster/vermins/rotworm.lua",
       "sha256": "f75ed297cd851013cde4e991113bf2d67ab9930852f20fb0c4e8d0937ddb176b",
       "purpose": "creature"

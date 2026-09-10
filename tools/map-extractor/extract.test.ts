@@ -112,6 +112,14 @@ function holeLayout() {
 }
 
 describe('extractHunt', () => {
+  /**
+   * The two start tests that lived here went out with the merge of 2026-09-09.
+   * They pinned the local rule — nearest free cell, densest-group anchor — and
+   * `7797993` replaced it with directed reachability, correcting the criterion
+   * to "maximises reachable groups". The invariant they protected still holds
+   * one layer up: `playerStartForScenario` in `buildHuntScenario.ts` moves a
+   * start that lands on a spawn, and `buildHuntScenario.test.ts` covers it.
+   */
   it('produces a definition that satisfies the frozen contract', () => {
     const result = validateHuntDefinition(extract().hunt);
 
@@ -174,35 +182,6 @@ describe('extractHunt', () => {
     );
     const index = hunt.playerStart.y * hunt.region.width + hunt.playerStart.x;
     expect(floor?.collision).not.toContain(index);
-  });
-
-  it('does not start the player on a creature spawn cell', () => {
-    const overlappingXml =
-      `<?xml version="1.0"?><monsters><monster centerx="${MIN_X + 2}" ` +
-      `centery="${MIN_Y + 2}" centerz="8" radius="2"><monster ` +
-      `name="Rotworm" x="0" y="0" z="8" spawntime="90" />` +
-      `</monster></monsters>`;
-    const { hunt } = extract(filledAreas(), overlappingXml);
-
-    expect(hunt.playerStart).not.toEqual({ x: 2, y: 2, z: 8 });
-    expect(hunt.playerStart).toEqual({ x: 1, y: 1, z: 8 });
-  });
-
-  it('anchors an un-authored start to the densest spawn group', () => {
-    const denseXml =
-      `<?xml version="1.0"?><monsters>` +
-      `<monster centerx="${MIN_X + 2}" centery="${MIN_Y + 2}" ` +
-      `centerz="8" radius="2"><monster name="Rotworm" x="0" y="0" ` +
-      `z="8" spawntime="90" /></monster>` +
-      `<monster centerx="${MIN_X + 1}" centery="${MIN_Y + 1}" ` +
-      `centerz="7" radius="2"><monster name="Rotworm" x="0" y="0" ` +
-      `z="7" spawntime="90" /><monster name="Rotworm" x="1" y="0" ` +
-      `z="7" spawntime="90" /></monster>` +
-      `</monsters>`;
-
-    const { hunt } = extract(filledAreas(), denseXml);
-
-    expect(hunt.playerStart).toEqual({ x: 0, y: 0, z: 7 });
   });
 
   it('emits the transitions derived from the floor change items', () => {

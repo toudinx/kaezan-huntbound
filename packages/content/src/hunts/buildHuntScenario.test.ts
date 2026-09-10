@@ -752,6 +752,8 @@ describe('buildHuntScenario', () => {
     });
   });
 
+  // `x: 0` is the region border, which the merge of 2026-09-09 turned into
+  // blocked terrain: the repair now has to land one cell in.
   it('moves an overlapping player start to the nearest free walkable cell', () => {
     const hunt = {
       ...syntheticHunt(),
@@ -761,7 +763,7 @@ describe('buildHuntScenario', () => {
     const { scenario } = build(hunt);
 
     expect(scenario.initialActors).toEqual([
-      { blueprintId: 'player', position: { x: 0, y: 1, z: 8 }, facing: 's' },
+      { blueprintId: 'player', position: { x: 1, y: 1, z: 8 }, facing: 's' },
     ]);
   });
 
