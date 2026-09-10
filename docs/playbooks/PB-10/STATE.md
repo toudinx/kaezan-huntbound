@@ -42,7 +42,13 @@ provar o que o PB-04 provava, o conserto é o log, não o golden"* — o que fal
 `commands.jsonl`** para exercer a mesma cobertura no mapa novo, e só então regenerar. Isso é a task,
 não o merge.
 
-Enquanto isso, `corepack pnpm test` tem **um** vermelho, este, e nenhum outro.
+**Fechada em 2026-09-10 (`c02bc57`).** A margem do cap foi reconstruída em vez do número: os doze
+assentos contra `maxLiveActors` doze sobravam exatamente um rotworm — o jogador ocupa um slot vivo —
+e era esse assento que era adiado e reportado a cada tick. Com dez assentos o cap desceu para dez, a
+sobra de um voltou, e os 600 `spawn/deferred` e 600 `spawn/capped` estão de volta: 1569 eventos. A
+recusa `occupied` precisou de nova mira, porque a criatura que barrava o jogador no tick 40 não está
+nesse mapa; o passo para o sul no tick 210 entra no rotworm em `(14,30,9)`, é recusado e por isso não
+custa nada aos outros dezessete movimentos. `hunt:check`, `tools/replay` e a suíte inteira verdes.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
