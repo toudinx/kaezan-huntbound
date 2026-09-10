@@ -1415,14 +1415,16 @@ describe('buildHuntScenario abilities', () => {
       shape: 'target-area',
       radius: 1,
       rangeTiles: 5,
-      maxCharges: 3,
+      // rune:charges(4) in data/scripts/runes/great_fireball.lua
+      maxCharges: 4,
       rechargeKind: 'out-of-combat',
       element: 'fire',
     });
     expect(byId.get('sudden-death')).toMatchObject({
       shape: 'target',
       rangeTiles: 6,
-      maxCharges: 2,
+      // rune:charges(3) in data/scripts/runes/sudden_death.lua
+      maxCharges: 3,
       rechargeKind: 'out-of-combat',
       element: 'death',
     });

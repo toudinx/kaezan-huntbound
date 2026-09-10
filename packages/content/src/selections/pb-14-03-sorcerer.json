@@ -11,21 +11,25 @@
     "displayName": "Sorcerer",
     "familyKey": "vocation-family:huntbound:sorcerer",
     "attackSpeedMs": 2000,
-    "baseSpeed": 105,
+    "baseSpeed": 110,
     "gainHp": 5,
     "gainMana": 30,
     "gainCapacity": 10,
     "manaMultiplier": 1.1,
     "skillMultipliers": {
-      "skill:0": 1.1,
-      "skill:1": 1.1,
-      "skill:2": 1.1,
-      "skill:3": 1.1,
-      "skill:4": 1.1,
-      "skill:5": 1.1,
+      "skill:0": 1.5,
+      "skill:1": 2.0,
+      "skill:2": 2.0,
+      "skill:3": 2.0,
+      "skill:4": 2.0,
+      "skill:5": 1.5,
       "skill:6": 1.1
     },
-    "includedFacets": ["identity", "progression"]
+    "includedFacets": ["identity", "progression"],
+    "healthRegenMs": 12000,
+    "healthRegenAmount": 1,
+    "manaRegenMs": 3000,
+    "manaRegenAmount": 2
   },
   "weapon": {
     "stableKey": "item:tibia:wand-of-decay",
@@ -42,7 +46,10 @@
     "stableKey": "character:huntbound:sorcerer",
     "vocationKey": "vocation:tibia:sorcerer",
     "level": 1,
-    "skills": { "sword": 0, "magic": 0 },
+    "skills": {
+      "sword": 0,
+      "magic": 0
+    },
     "weaponItemKey": "item:tibia:wand-of-decay",
     "weaponAttack": 8,
     "maxHealth": 150,
@@ -70,20 +77,20 @@
       "guid": "00000000-0000-5000-8000-000000000021",
       "displayName": "Energy Strike",
       "words": "exori vis",
-      "level": 1,
+      "level": 12,
       "mana": 20,
-      "cooldownMs": 1000,
-      "groupCooldownMs": 1000,
+      "cooldownMs": 2000,
+      "groupCooldownMs": 2000,
       "damageType": "energy",
       "rangeTiles": 3,
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
       "formula": {
         "kind": "levelMagic",
         "levelFactor": 0.2,
-        "minMagicFactor": 0.8,
-        "maxMagicFactor": 1.2,
-        "minAddend": 10,
-        "maxAddend": 20
+        "minMagicFactor": 1.403,
+        "maxMagicFactor": 2.203,
+        "minAddend": 8,
+        "maxAddend": 13
       },
       "includedFacets": ["identity", "spell"]
     },
@@ -92,20 +99,23 @@
       "guid": "00000000-0000-5000-8000-000000000022",
       "displayName": "Fire Wave",
       "words": "exevo flam hur",
-      "level": 1,
-      "mana": 50,
+      "level": 18,
+      "mana": 25,
       "cooldownMs": 4000,
       "groupCooldownMs": 2000,
       "damageType": "fire",
-      "area": { "shape": "cone", "radiusTiles": 3 },
+      "area": {
+        "shape": "cone",
+        "radiusTiles": 3
+      },
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
       "formula": {
         "kind": "levelMagic",
-        "levelFactor": 0.4,
-        "minMagicFactor": 1,
-        "maxMagicFactor": 1.5,
-        "minAddend": 20,
-        "maxAddend": 30
+        "levelFactor": 0.2,
+        "minMagicFactor": 1.25,
+        "maxMagicFactor": 2.0,
+        "minAddend": 4,
+        "maxAddend": 12
       },
       "includedFacets": ["identity", "spell"]
     },
@@ -114,21 +124,24 @@
       "guid": "00000000-0000-5000-8000-000000000023",
       "displayName": "Great Fireball",
       "words": "adori mas flam",
-      "level": 1,
-      "mana": 80,
-      "cooldownMs": 6000,
+      "level": 30,
+      "mana": 0,
+      "cooldownMs": 2000,
       "groupCooldownMs": 2000,
       "damageType": "fire",
       "rangeTiles": 5,
-      "area": { "shape": "target-square", "radiusTiles": 1 },
+      "area": {
+        "shape": "target-square",
+        "radiusTiles": 1
+      },
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
       "formula": {
         "kind": "levelMagic",
-        "levelFactor": 0.5,
-        "minMagicFactor": 0.8,
-        "maxMagicFactor": 1.2,
-        "minAddend": 30,
-        "maxAddend": 45
+        "levelFactor": 0.2,
+        "minMagicFactor": 1.2,
+        "maxMagicFactor": 2.8,
+        "minAddend": 7,
+        "maxAddend": 17
       },
       "includedFacets": ["identity", "spell"]
     },
@@ -137,20 +150,20 @@
       "guid": "00000000-0000-5000-8000-000000000024",
       "displayName": "Sudden Death",
       "words": "adori gran mort",
-      "level": 1,
-      "mana": 120,
-      "cooldownMs": 8000,
+      "level": 45,
+      "mana": 0,
+      "cooldownMs": 2000,
       "groupCooldownMs": 2000,
       "damageType": "death",
       "rangeTiles": 6,
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
       "formula": {
         "kind": "levelMagic",
-        "levelFactor": 0.8,
-        "minMagicFactor": 1.5,
-        "maxMagicFactor": 2.5,
-        "minAddend": 40,
-        "maxAddend": 60
+        "levelFactor": 0.2,
+        "minMagicFactor": 4.605,
+        "maxMagicFactor": 7.395,
+        "minAddend": 28,
+        "maxAddend": 46
       },
       "includedFacets": ["identity", "spell"]
     },
@@ -159,19 +172,19 @@
       "guid": "00000000-0000-5000-8000-000000000025",
       "displayName": "Ultimate Healing",
       "words": "exura vita",
-      "level": 1,
-      "mana": 40,
+      "level": 30,
+      "mana": 160,
       "cooldownMs": 1000,
       "groupCooldownMs": 1000,
       "damageType": "healing",
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
       "formula": {
         "kind": "levelMagic",
-        "levelFactor": 0.5,
-        "minMagicFactor": 1,
-        "maxMagicFactor": 1.2,
-        "minAddend": 25,
-        "maxAddend": 35
+        "levelFactor": 0.2,
+        "minMagicFactor": 6.8,
+        "maxMagicFactor": 12.9,
+        "minAddend": 42,
+        "maxAddend": 90
       },
       "includedFacets": ["identity", "spell"]
     },
@@ -180,9 +193,9 @@
       "guid": "00000000-0000-5000-8000-000000000026",
       "displayName": "Magic Shield",
       "words": "utamo vita",
-      "level": 1,
+      "level": 14,
       "mana": 50,
-      "cooldownMs": 0,
+      "cooldownMs": 14000,
       "groupCooldownMs": 2000,
       "damageType": "healing",
       "allowedVocationFamilies": ["vocation-family:huntbound:sorcerer"],
@@ -222,7 +235,7 @@
       "guid": "00000000-0000-5000-8000-000000000028",
       "displayName": "Haste",
       "words": "utani hur",
-      "level": 1,
+      "level": 14,
       "mana": 60,
       "cooldownMs": 2000,
       "groupCooldownMs": 2000,
@@ -240,6 +253,56 @@
         "maxAddend": 0
       },
       "includedFacets": ["identity", "spell"]
+    }
+  ],
+  "sourceSnapshot": "canary@157e6f9e21318bd3033eea553fe9275b429faf72",
+  "sourceFiles": [
+    {
+      "relativePath": "data/XML/vocations.xml",
+      "provides": ["vocation:tibia:sorcerer"]
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/energy_strike.lua",
+      "provides": ["spell:tibia:energy-strike"]
+    },
+    {
+      "relativePath": "data/scripts/spells/attack/fire_wave.lua",
+      "provides": ["spell:tibia:fire-wave"]
+    },
+    {
+      "relativePath": "data/scripts/runes/great_fireball.lua",
+      "provides": ["spell:tibia:great-fireball"]
+    },
+    {
+      "relativePath": "data/scripts/spells/conjuring/great_fireball_rune.lua",
+      "provides": ["spell:tibia:great-fireball"]
+    },
+    {
+      "relativePath": "data/scripts/runes/sudden_death.lua",
+      "provides": ["spell:tibia:sudden-death"]
+    },
+    {
+      "relativePath": "data/scripts/spells/conjuring/sudden_death_rune.lua",
+      "provides": ["spell:tibia:sudden-death"]
+    },
+    {
+      "relativePath": "data/scripts/spells/healing/ultimate_healing.lua",
+      "provides": ["spell:tibia:ultimate-healing"]
+    },
+    {
+      "relativePath": "data/scripts/spells/support/magic_shield.lua",
+      "provides": ["spell:tibia:magic-shield"]
+    },
+    {
+      "relativePath": "data/scripts/spells/support/haste.lua",
+      "provides": ["spell:tibia:haste"]
+    }
+  ],
+  "provenanceDeviations": [
+    {
+      "stableKey": "spell:tibia:arcane-stance",
+      "source": "TibiaWiki 15.25.3a4a52",
+      "reason": "Postura ofensiva autorizada pela ADR-05 (extensao stances do Vocation Adjustments 2026). Nao existe no snapshot; a curadoria PB-14-01 §3.1 slot 7 congelou o desvio."
     }
   ]
 }

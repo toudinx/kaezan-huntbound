@@ -644,11 +644,19 @@ function composeAbilities(
         ? (ticksFromIntervalMs(2000) ?? 0)
         : 0,
       appliedConditionIndex: conditionIndex,
+      /**
+       * `rune:charges()` from the snapshot: 4 in
+       * `data/scripts/runes/great_fireball.lua`, 3 in
+       * `data/scripts/runes/sudden_death.lua`. The ADR-05 recharge replaces
+       * conjuring, so the charge is the whole cost and the rune carries no
+       * mana; the 530 and 985 in the conjuring scripts buy the item, and V0
+       * has no inventory to buy it into.
+       */
       maxCharges:
         spellKey === SORCERER_GREAT_FIREBALL_SPELL_KEY
-          ? 3
+          ? 4
           : spellKey === SORCERER_SUDDEN_DEATH_SPELL_KEY
-            ? 2
+            ? 3
             : null,
       rechargeKind:
         spellKey === SORCERER_GREAT_FIREBALL_SPELL_KEY ||

@@ -1,6 +1,6 @@
 # PB-14 — Estado
 
-**Estado:** PB-14-02 implementada; 03 a 07 pendentes.
+**Estado:** PB-14-03 implementada e reimportada do snapshot pela FIX-01; 04 a 07 pendentes.
 **Próxima:** PB-14-03.
 
 | ID | Status | Modelo previsto | Modelo / effort usado | Commit |
@@ -8,6 +8,7 @@
 | PB-14-01 | done | Claude Opus 5 `xhigh` | Claude Opus 5 (effort alto) | `7e2f807` |
 | PB-14-02 | done | Grok 4.6 `xhigh` | Cursor Grok 4.6 (effort alto) | `1b7efc7` |
 | PB-14-03 | done | GPT-5.6 Luna `xhigh` | Codex GPT-5 (effort alto) | `74cfa53` |
+| PB-14-03-FIX-01 | done | — | Claude Opus 5 (effort alto) | `7bdafce` |
 | PB-14-04 | pending | GPT-5.6 Luna `xhigh` | — | — |
 | PB-14-05 | pending | Grok 4.6 `xhigh` | — | — |
 | PB-14-06 | pending | GPT-5.6 Sol `xhigh` | — | — |
@@ -49,3 +50,28 @@ precisam do import antes de autorar as fichas.
 
 Contrato, schema e golden estão autorizados por card; nenhuma migração foi feita por este
 planejamento. Modelos/effort efetivos são registrados por task.
+
+## PB-14-03-FIX-01 — os números do Sorcerer vinham de lugar nenhum
+
+A primeira integração da 03 rodou num host **sem** `references/canary`: o source lock aponta 20
+arquivos do snapshot e nenhum existia. A curadoria da 01 tinha deixado escrito que nada de número
+seria congelado ali e que tudo entraria pelo import da 03 (§ "Nada de mana, cooldown, coeficiente de
+fórmula…"), então a 03 inventou `baseSpeed` 105, os sete `skillMultipliers` em 1.1, `level` 1 nas
+oito magias, e mana, cooldown e coeficiente de fórmula de todas elas. As cargas das duas runas
+saíram 3 e 2 contra os 4 e 3 do `rune:charges()`.
+
+O desenho não mudou — as oito ações, formas, papéis, os dois toggles no mesmo grupo de exclusividade
+e a stance como `damageDealtPermille` estavam fiéis à curadoria. Só os números foram reimportados,
+com proveniência em `docs/content/PB-14-SELECTION.md` e nove arquivos novos no lock.
+
+**Uma ambiguidade resolvida sem parar:** as duas runas ficaram com `mana` 0. A mana de 530 e 985 nos
+scripts de `conjuring` compra o item, e a ADR-05 trocou fabricação por recarga fora de combate — o
+custo é a carga. Reverter é trocar dois zeros.
+
+## Pendências que a FIX-01 não abriu nem fechou
+
+- O lock guarda hashes de um checkout **CRLF**. Em host Unix o clone vem LF e os quinze arquivos de
+  texto batem errado; a correção é `git config core.autocrlf true` no clone de referência, nunca
+  reescrever o lock. Merece uma linha no `AGENTS.md § Fontes externas`.
+- `AREA_WAVE4` e `AREA_CIRCLE3X3` do Canary não têm tradução direta no grid do V0. A forma e o raio
+  das três magias de área continuam sendo a escolha da curadoria, não import.
