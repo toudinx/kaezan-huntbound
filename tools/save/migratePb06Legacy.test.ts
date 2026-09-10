@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
+  activeCharacter,
   createEmptyCharacterProgress,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_VOCATION_KEYS,
   parseGameSave,
   SAVE_SCHEMA_VERSION,
 } from '@huntbound/contracts';
@@ -39,7 +42,13 @@ describe('pb06 legacy save migration', () => {
     }
 
     expect(parsed.value.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(parsed.value.character).toEqual(createEmptyCharacterProgress());
+    expect(parsed.value.activeVocationKey).toBe(DEFAULT_KNIGHT_VOCATION_KEY);
+    expect(parsed.value.characters.map((entry) => entry.vocationKey)).toEqual([
+      ...DEFAULT_VOCATION_KEYS,
+    ]);
+    expect(activeCharacter(parsed.value)).toEqual(
+      createEmptyCharacterProgress(),
+    );
     expect(parsed.value.gold).toBe(0);
     expect(parsed.value.session).not.toBeNull();
     expect(parsed.value.session?.huntId).toBe('hunt:tibia:venore-rotworm-cave');

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   type AchievementDefinition,
+  activeCharacter,
   type BestiarySpecies,
   createEmptyCharacterProgress,
   createEmptyGameSave,
+  DEFAULT_KNIGHT_VOCATION_KEY,
   parseGameSave,
 } from '../../../../packages/contracts/src/index.ts';
 
@@ -323,19 +325,20 @@ describe('createSaveSession', () => {
     experience = 400;
     saveSession.onTick(1);
     await saveSession.pagehide();
-    await expect(repository.load()).resolves.toMatchObject({
-      character: { experience: 400 },
+    expect(activeCharacter(await repository.load())).toMatchObject({
+      experience: 400,
     });
 
     experience = 650;
     await saveSession.finish('died');
 
-    await expect(repository.load()).resolves.toMatchObject({
-      character: { experience: 650 },
+    const afterDeath = await repository.load();
+    expect(afterDeath).toMatchObject({
       stash: [],
       completedRuns: 0,
       session: null,
     });
+    expect(activeCharacter(afterDeath)).toMatchObject({ experience: 650 });
     expect(saveSession.getState().character).toEqual({
       ...createEmptyCharacterProgress(),
       experience: 650,
@@ -362,15 +365,13 @@ describe('createSaveSession', () => {
       saveSession.recordBestiaryKill(ORC_BESTIARY.creatureKey, 11),
     ).resolves.toMatchObject({ credited: true, kills: 1 });
     await expect(repository.load()).resolves.toMatchObject({
-      character: {
-        bestiary: [
-          {
-            creatureKey: ORC_BESTIARY.creatureKey,
-            kills: 1,
-            rewardClaimed: false,
-          },
-        ],
-      },
+      bestiary: [
+        {
+          creatureKey: ORC_BESTIARY.creatureKey,
+          kills: 1,
+          rewardClaimed: false,
+        },
+      ],
       session: { lastBestiaryEventSequence: 11 },
       gold: 0,
     });
@@ -405,15 +406,13 @@ describe('createSaveSession', () => {
       rewardGold: 25,
     });
     await expect(repository.load()).resolves.toMatchObject({
-      character: {
-        bestiary: [
-          {
-            creatureKey: ORC_BESTIARY.creatureKey,
-            kills: 2,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      bestiary: [
+        {
+          creatureKey: ORC_BESTIARY.creatureKey,
+          kills: 2,
+          rewardClaimed: true,
+        },
+      ],
       session: { lastBestiaryEventSequence: 12 },
       gold: 25,
     });
@@ -441,15 +440,13 @@ describe('createSaveSession', () => {
     await saveSession.finish('died');
 
     await expect(repository.load()).resolves.toMatchObject({
-      character: {
-        bestiary: [
-          {
-            creatureKey: ORC_BESTIARY.creatureKey,
-            kills: 2,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      bestiary: [
+        {
+          creatureKey: ORC_BESTIARY.creatureKey,
+          kills: 2,
+          rewardClaimed: true,
+        },
+      ],
       gold: 25,
       stash: [],
       session: null,
@@ -458,10 +455,15 @@ describe('createSaveSession', () => {
   });
 
   it('reopens a run at the experience the save already holds', async () => {
+    const seeded = saveWithSession(makeSession());
     const repository = createSaveRepository(
       createMemorySaveDriver({
-        ...saveWithSession(makeSession()),
-        character: { ...createEmptyCharacterProgress(), experience: 28_800 },
+        ...seeded,
+        characters: seeded.characters.map((entry) =>
+          entry.vocationKey === DEFAULT_KNIGHT_VOCATION_KEY
+            ? { ...entry, experience: 28_800 }
+            : entry,
+        ),
       }),
     );
     const saveSession = createSaveSession(repository);
@@ -643,15 +645,13 @@ describe('createSaveSession', () => {
     );
     await expect(repository.load()).resolves.toMatchObject({
       gold: 31,
-      character: {
-        achievements: [
-          {
-            achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
-            progress: 1,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      achievements: [
+        {
+          achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
+          progress: 1,
+          rewardClaimed: true,
+        },
+      ],
     });
     saveSession.destroy();
 
@@ -662,15 +662,13 @@ describe('createSaveSession', () => {
     });
     await expect(repository.load()).resolves.toMatchObject({
       gold: 31,
-      character: {
-        achievements: [
-          {
-            achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
-            progress: 1,
-            rewardClaimed: true,
-          },
-        ],
-      },
+      achievements: [
+        {
+          achievementId: FIRST_SALE_ACHIEVEMENT.achievementId,
+          progress: 1,
+          rewardClaimed: true,
+        },
+      ],
     });
     reloaded.destroy();
   });

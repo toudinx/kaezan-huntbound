@@ -1,6 +1,8 @@
 import {
   createEmptyEquipment,
   createEmptyGameSave,
+  DEFAULT_KNIGHT_VOCATION_KEY,
+  DEFAULT_VOCATION_KEYS,
   type GameSave,
   SAVE_SCHEMA_VERSION,
   type SaveDraft,
@@ -56,13 +58,15 @@ describe('SaveRepository', () => {
 
     await expect(repository.load()).resolves.toMatchObject({
       schemaVersion: SAVE_SCHEMA_VERSION,
-      character: {
+      characters: DEFAULT_VOCATION_KEYS.map((vocationKey) => ({
+        vocationKey,
         experience: 0,
         equipment: createEmptyEquipment(),
         collection: [],
-        bestiary: [],
-        achievements: [],
-      },
+      })),
+      activeVocationKey: DEFAULT_KNIGHT_VOCATION_KEY,
+      bestiary: [],
+      achievements: [],
       stash,
       gold: 0,
       nextHuntBuff: 'none',
@@ -255,7 +259,7 @@ describe('SaveRepository', () => {
     );
 
     await expect(repository.export()).resolves.toBe(
-      '{"character":{"achievements":[],"bestiary":[],"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0},"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":8,"session":null,"stash":[]}\n',
+      '{"achievements":[],"activeVocationKey":"vocation:tibia:knight","bestiary":[],"characters":[{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0,"vocationKey":"vocation:tibia:knight"},{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0,"vocationKey":"vocation:tibia:paladin"},{"collection":[],"equipment":{"armor":null,"boots":null,"helmet":null,"legs":null,"shield":null,"weapon":null},"experience":0,"vocationKey":"vocation:tibia:sorcerer"}],"completedRuns":4,"gold":0,"nextHuntBuff":"none","schemaVersion":9,"session":null,"stash":[]}\n',
     );
   });
 

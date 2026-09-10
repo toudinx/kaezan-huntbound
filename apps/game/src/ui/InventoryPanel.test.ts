@@ -92,6 +92,16 @@ function findByTestId(root: TestElement, testId: string): TestElement {
   throw new Error(`Missing ${testId}`);
 }
 
+/**
+ * The bag and the stash are a row per entry, so the label lives on the children
+ * and not on the container the test id sits on.
+ */
+function entriesOf(root: TestElement, testId: string): string {
+  return findByTestId(root, testId)
+    .children.map((child) => child.textContent)
+    .join(' | ');
+}
+
 function source(initial: TestInventoryState) {
   let current = initial;
   const listeners = new Set<(state: TestInventoryState) => void>();
@@ -143,10 +153,10 @@ describe('InventoryPanel', () => {
       source: inventorySource,
     });
 
-    expect(findByTestId(root, 'save-run-bag').textContent).toBe(
-      'gold-coin × 12 | zombie-dust × 1',
+    expect(entriesOf(root, 'save-run-bag')).toBe(
+      'Gold Coin × 12 | Zombie Dust × 1',
     );
-    expect(findByTestId(root, 'save-stash').textContent).toBe('arrow × 4');
+    expect(entriesOf(root, 'save-stash')).toBe('Arrow × 4');
     expect(
       findByTestId(root, 'save-run-bag-empty').getAttribute('data-visible'),
     ).toBe('false');
@@ -172,13 +182,9 @@ describe('InventoryPanel', () => {
       }),
     );
 
-    expect(findByTestId(root, 'save-run-bag').textContent).toBe(
-      'gold-coin × 15',
-    );
-    expect(findByTestId(root, 'save-stash').textContent).toBe('arrow × 4');
-    expect(findByTestId(root, 'save-run-bag').textContent).not.toContain(
-      'zombie-dust',
-    );
+    expect(entriesOf(root, 'save-run-bag')).toBe('Gold Coin × 15');
+    expect(entriesOf(root, 'save-stash')).toBe('Arrow × 4');
+    expect(entriesOf(root, 'save-run-bag')).not.toContain('Zombie Dust');
 
     panel.destroy();
   });

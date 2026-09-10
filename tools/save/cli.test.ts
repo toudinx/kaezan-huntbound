@@ -234,10 +234,15 @@ describe('save cli verify and check-hashes', () => {
   });
 
   /**
-   * The fixture carries the shape a save had before the first migration step,
-   * so declaring a version on it is a lie: the ladder skips the steps that
-   * discard the indexed spawn slots and create the character, and what comes
-   * out no longer parses. A real v4 save carries the v4 shape and migrates.
+   * The committed fixture carries the shape a save had before the first
+   * migration step, so declaring a version on it is a lie: the ladder skips
+   * the step that discards the indexed spawn slots, and what comes out no
+   * longer parses. A real v4 save carries the v4 shape and migrates.
+   *
+   * The document has to be that fixture and not the empty `legacy.json` this
+   * suite generates: since the 8 to 9 step fills a missing character from the
+   * vocation defaults, an empty document survives the lie and only diverges
+   * from its golden. The indexed spawn slots are what no later step repairs.
    */
   it('exits 2 when the legacy document declares a schema version', async () => {
     expect(sharedFixture).toBeDefined();
@@ -245,8 +250,8 @@ describe('save cli verify and check-hashes', () => {
       return;
     }
     const root = await copyGenerated(sharedFixture);
-    const original = await readFile(join(root, 'legacy.json'), 'utf8');
-    const document = JSON.parse(original) as Record<string, unknown>;
+    const committed = await readFile(join(committedDir, 'legacy.json'), 'utf8');
+    const document = JSON.parse(committed) as Record<string, unknown>;
     expect(document.schemaVersion).toBeUndefined();
     document.schemaVersion = 4;
     await writeFile(
@@ -285,9 +290,11 @@ describe('save cli verify and check-hashes', () => {
     const match = /`([0-9a-f]{64})`/.exec(original);
     expect(match?.[1]).toBeDefined();
     const digest = match?.[1] ?? '';
+    const flipped = `${digest.slice(0, -1)}${digest.endsWith('0') ? '1' : '0'}`;
+    expect(flipped).not.toBe(digest);
     await writeFile(
       join(root, 'hashes.md'),
-      original.replace(digest, `${digest.slice(0, -1)}0`),
+      original.replace(digest, flipped),
       'utf8',
     );
 

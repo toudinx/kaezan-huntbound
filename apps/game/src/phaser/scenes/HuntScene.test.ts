@@ -339,7 +339,7 @@ function snapshot(input: {
       {
         entityId: 1 as EntityId,
         blueprintId: 'player',
-        position: input.position ?? position(0, 0),
+        position: input.position ?? position(1, 1),
         facing: 's',
         readyAtTick: tick,
         transitionGuard: null,
@@ -470,23 +470,26 @@ const hunt: HuntDefinition = {
     regionId: 'region:scene-aura' as HuntDefinition['region']['regionId'],
     regionRevision: 1,
     origin: { x: 0, y: 0 },
-    width: 2,
-    height: 1,
+    // Four by three is the smallest rectangle with an interior: the region's
+    // outermost ring is out of play, so a 2x1 map composes no ground at all
+    // and nothing -- floor, actor or bar -- is ever drawn on it.
+    width: 4,
+    height: 3,
     palette: [100],
     floors: [
       {
         z: 8,
-        ground: [0, 0],
+        ground: new Array(12).fill(0),
         objectsBelow: [],
         objectsAbove: [],
-        collision: [0, 0],
+        collision: new Array(12).fill(0),
       },
       {
         z: 9,
-        ground: [0, 0],
+        ground: new Array(12).fill(0),
         objectsBelow: [],
         objectsAbove: [],
-        collision: [0, 0],
+        collision: new Array(12).fill(0),
       },
     ],
   },
@@ -524,7 +527,7 @@ const hunt: HuntDefinition = {
       immunities: [],
     },
   ],
-  playerStart: position(0, 0),
+  playerStart: position(1, 1),
   playerBlueprintId: 'player',
 };
 
@@ -582,7 +585,7 @@ function createHarness(initialSnapshot: SimulationSnapshot) {
       type: 'actor/spawned',
       entityId: 1 as EntityId,
       blueprintId: 'player',
-      position: initialSnapshot.actors[0]?.position ?? position(0, 0),
+      position: initialSnapshot.actors[0]?.position ?? position(1, 1),
       facing: 's',
     }),
   ]);
@@ -688,7 +691,7 @@ const combatHunt: HuntDefinition = {
   spawns: {
     groups: [
       {
-        center: position(1, 0),
+        center: position(2, 1),
         radius: 1,
         slots: [
           {
@@ -698,10 +701,10 @@ const combatHunt: HuntDefinition = {
             offsetY: 0,
             offsetZ: 0,
             respawnTicks: 100,
-            source: position(1, 0),
+            source: position(2, 1),
           },
         ],
-        sourceCenter: position(1, 0),
+        sourceCenter: position(2, 1),
       },
     ],
     maxLiveActors: 2,
@@ -734,7 +737,7 @@ function combatSnapshot(input: {
         ...player,
         entityId: 2 as EntityId,
         blueprintId: 'rotworm',
-        position: position(1, 0),
+        position: position(2, 1),
         health: input.rotwormHealth,
       },
     ],
@@ -748,14 +751,14 @@ function createCombatHarness(initialSnapshot: SimulationSnapshot) {
       type: 'actor/spawned',
       entityId: 1 as EntityId,
       blueprintId: 'player',
-      position: position(0, 0),
+      position: position(1, 1),
       facing: 's',
     }),
     event(initialSnapshot.tick, {
       type: 'actor/spawned',
       entityId: 2 as EntityId,
       blueprintId: 'rotworm',
-      position: position(1, 0),
+      position: position(2, 1),
       facing: 's',
     }),
   ]);
@@ -836,9 +839,9 @@ describe('HuntScene creature health bars', () => {
 
     // The sprite is 64px tall and hangs from the bottom-right of its tile, so
     // measuring from the cell would put the bar a whole tile higher.
-    expect(sprite).toEqual({ x: 64, y: 32 });
-    expect(bar.x).toBe(48);
-    expect(bar.y).toBe(32 - 32 - 2);
+    expect(sprite).toEqual({ x: 96, y: 64 });
+    expect(bar.x).toBe(96 - 16);
+    expect(bar.y).toBe(64 - 32 - 2);
     expect(bar.visible).toBe(true);
   });
 

@@ -82,6 +82,16 @@ class TestDocument {
   }
 }
 
+/**
+ * The bag and the stash are a row per entry, so the label lives on the children
+ * and not on the container the test id sits on.
+ */
+function entriesOf(root: TestElement, testId: string): string {
+  return findByTestId(root, testId)
+    .children.map((child) => child.textContent)
+    .join(' | ');
+}
+
 function findByTestId(element: TestElement, testId: string): TestElement {
   const visit = (current: TestElement): TestElement | undefined => {
     if (current.getAttribute('data-testid') === testId) {
@@ -230,9 +240,9 @@ describe('AppShell', () => {
 
     bridge.publish(snapshot('ready'));
 
-    expect(findByTestId(root, 'shell-status').textContent).toBe(
-      'Shell ready: ready message',
-    );
+    // Once the renderer is up the header carries the game's name, not a
+    // status line: there is nothing left to report.
+    expect(findByTestId(root, 'shell-status').textContent).toBe('Huntbound');
     expect(
       findByTestId(root, 'app-shell').getAttribute('data-shell-ready'),
     ).toBe('true');
@@ -345,8 +355,8 @@ describe('AppShell', () => {
 
     const shell = mountShell(root, bridge, { save: { source: saveSource } });
 
-    expect(findByTestId(root, 'save-run-bag').textContent).toBe('meat × 2');
-    expect(findByTestId(root, 'save-stash').textContent).toBe('arrow × 8');
+    expect(entriesOf(root, 'save-run-bag')).toBe('Meat × 2');
+    expect(entriesOf(root, 'save-stash')).toBe('Arrow × 8');
     expect(findByTestId(root, 'save-completed-runs').textContent).toBe(
       'Completed runs: 3',
     );
