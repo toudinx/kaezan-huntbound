@@ -497,6 +497,7 @@ export function facetPayloadHash(
               armor: entity.armor,
               slotType: entity.slotType,
               weaponType: entity.weaponType,
+              rangeTiles: entity.rangeTiles,
             }
           : {};
       case 'progression':

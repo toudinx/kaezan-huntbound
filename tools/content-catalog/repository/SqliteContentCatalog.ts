@@ -439,6 +439,7 @@ export class SqliteContentCatalog
           readonly armor: number | null;
           readonly slot_type: string | null;
           readonly weapon_type: string | null;
+          readonly range_tiles: number | null;
         };
         return {
           guid: row.entity_guid,
@@ -461,6 +462,9 @@ export class SqliteContentCatalog
           ...(item.weapon_type === null
             ? {}
             : { weaponType: item.weapon_type }),
+          ...(item.range_tiles === null
+            ? {}
+            : { rangeTiles: item.range_tiles }),
         };
       });
 
@@ -847,8 +851,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO items
-           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type, range_tiles)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
@@ -863,6 +867,7 @@ export class SqliteContentCatalog
           item.armor ?? null,
           item.slotType ?? null,
           item.weaponType ?? null,
+          item.rangeTiles ?? null,
         );
     }
     for (const creature of bundle.creatures) {
@@ -993,8 +998,8 @@ export class SqliteContentCatalog
       this.database
         .prepare(
           `INSERT INTO items
-           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           (slice_key, entity_guid, stackable, max_stack_size, weight, sell_price, attack, defense, armor, slot_type, weapon_type, range_tiles)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(slice_key, entity_guid) DO NOTHING`,
         )
         .run(
@@ -1009,6 +1014,7 @@ export class SqliteContentCatalog
           item.armor ?? null,
           item.slotType ?? null,
           item.weaponType ?? null,
+          item.rangeTiles ?? null,
         );
     }
     for (const spell of bundle.spells) {
