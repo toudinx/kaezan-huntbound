@@ -36,8 +36,11 @@ describe('huntSessionCoverage', () => {
     expect(coverage.largestPlayerStep).toBe(1);
   });
 
-  it('spawns the whole creature table', () => {
-    expect(coverage.spawnedActors).toBeGreaterThanOrEqual(12);
+  it('spawns the whole creature table but the seat the cap holds back', () => {
+    // Ten seats and `maxLiveActors` of ten: the player holds one of the live
+    // slots, so nine rotworms are seated and the tenth is deferred for the
+    // whole run. That deferral is the cap coverage this fixture exists for.
+    expect(coverage.spawnedActors).toBe(10);
   });
 });
 

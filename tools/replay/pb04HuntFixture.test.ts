@@ -105,10 +105,13 @@ describe('PB-04 hunt replay fixture', () => {
       scenarioRevision: 2,
     });
     expect(scenario.value.floors).toHaveLength(2);
-    expect(scenario.value.transitions).toHaveLength(8);
+    // Eight stairs down and the eight climbs back up they gained, and ten
+    // seats: the two that sat on the region's border ring went out of play
+    // with it.
+    expect(scenario.value.transitions).toHaveLength(16);
     expect(
       scenario.value.spawnGroups.flatMap((group) => group.slots),
-    ).toHaveLength(12);
+    ).toHaveLength(10);
     expect(scenario.value.initialActors[0]?.blueprintId).toBe('player');
   });
 

@@ -6,16 +6,23 @@ Generated from `hunt:tibia:venore-rotworm-cave`, scenario revision `2`, seed
 
 | Artifact | SHA-256 |
 |---|---|
-| `scenario.json` | `2b08575f7723e578ee6a7c7fa74d7e21723f3b99aa88e2dbc842bb1c7e9b477b` |
-| `commands.jsonl` | `cbf3bca53a7e49f49ed34734c657b627d5b561fb82a76be887aa2a1eea3c1217` |
-| `snapshot.golden.json` | `94f3198dd66f0066e01e560738959d52d56979288a3d59b78d6ac209497146a8` |
-| `events.golden.jsonl` | `e487a2c52668671172869b3157f4734c374faeb2c36634f2b65f978793f9f2d4` |
+| `scenario.json` | `4e898d3d1a29f16cc6005563067e29f6f21552d5a2ff613448205fd605d3f698` |
+| `commands.jsonl` | `ebf92677598e793d19c8f06991f961a0388924a1d102e7313c046404ed8b3090` |
+| `snapshot.golden.json` | `d8a0932c7dcc526fa766bac80734c9d53d91a125550a05d11e8abfe32a6e6f2e` |
+| `events.golden.jsonl` | `16711d4b9c9c23634653e3483ee54d0ae27e961e66869e3a47bd9cc60e079aab` |
 
-The frozen session runs for `600` ticks and emits `1635` events. Its player-only
+The frozen session runs for `600` ticks and emits `1569` events. Its player-only
 route covers `17` accepted moves, one directed floor transition, terrain and
 occupied blocking, the boot-time `spawn/deferred` cap path, and one rejected
-unknown-entity command. The step at tick `40` walks deliberately into an
+unknown-entity command. The step at tick `210` walks deliberately into an
 occupied cell, which is what proves the `occupied` refusal.
+
+Ten seats and `maxLiveActors` of ten is what keeps the cap path alive: the
+player holds one of the ten live slots, so nine rotworms are seated and the
+tenth is deferred and reported for all `600` ticks. The scenario carried twelve
+seats and a cap of twelve until the region's border ring went out of play and
+took the seats at `(9, 0, 9)` and `(0, 16, 9)` with it; the cap came down with
+them so the margin of one survived.
 
 After the initial rejected command and the first movement at tick `0`, commands
 are spaced twenty ticks apart: twice the player's ten-tick step cooldown, so
