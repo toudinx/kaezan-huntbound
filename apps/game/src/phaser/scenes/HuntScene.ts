@@ -83,6 +83,7 @@ import {
   createHuntPresentation,
   type HuntActorDrawCommand,
   type HuntDrawLayer,
+  type HuntDrawWindow,
   type HuntPresentation,
 } from '../../hunt/HuntPresentation';
 import {
@@ -113,6 +114,8 @@ import { createTickInputGate } from '../../input/TickInputGate';
 import { canvasViewportBox } from '../ViewportBox';
 
 export const HUNT_TILE_SIZE = 32;
+
+const DRAW_WINDOW_PADDING_TILES = 1;
 
 /**
  * Under everything. `tileDepth` starts at 0 for the ground of the first cell,
@@ -225,6 +228,7 @@ export class HuntScene extends Phaser.Scene {
   private readonly worldEdgeCells = new Set<number>();
   private readonly drawnGroundCells = new Set<number>();
   private cameraBounds: CameraBounds | undefined;
+  private renderedDrawWindow: HuntDrawWindow | undefined;
   private readonly decorationObjects = new Map<
     number,
     Phaser.GameObjects.Sprite | Phaser.GameObjects.Text
@@ -364,7 +368,6 @@ export class HuntScene extends Phaser.Scene {
     this.cameras.main.roundPixels = false;
 
     this.renderFloor();
-    this.followPlayer(this.options.driver.alpha);
 
     this.unsubscribeEvents = this.options.bridge.subscribeEvents((events) => {
       const presentation = this.presentation;
@@ -486,6 +489,7 @@ export class HuntScene extends Phaser.Scene {
       this.worldEdge = undefined;
       this.worldEdgeCells.clear();
       this.drawnGroundCells.clear();
+      this.renderedDrawWindow = undefined;
       this.combatDecorations.reset();
       this.combatImpulses.reset();
       this.combatNumberColors.clear();
@@ -750,6 +754,7 @@ export class HuntScene extends Phaser.Scene {
     this.applyCameraFraming();
     this.cameraController = this.makeCameraController();
     this.followPlayer(this.options.driver.alpha);
+    this.renderFloorIfDrawWindowChanged();
     this.publishReady();
   };
 
@@ -799,6 +804,7 @@ export class HuntScene extends Phaser.Scene {
       marker.destroy();
     }
     this.fallbackActorMarkers.clear();
+    this.renderedDrawWindow = undefined;
     this.destroyCreatureHealthBars();
   }
 
@@ -939,7 +945,10 @@ export class HuntScene extends Phaser.Scene {
     this.destroySprites();
     this.drawnGroundCells.clear();
     this.syncCameraBounds();
-    for (const command of presentation.drawCommands()) {
+    this.followPlayer(this.options.driver.alpha);
+    const drawWindow = this.visibleDrawWindow();
+    this.renderedDrawWindow = drawWindow;
+    for (const command of presentation.drawCommands(drawWindow)) {
       const asset = this.assetByKey.get(command.key);
       if (!asset) {
         if (command.kind === 'actor') this.createFallbackActorMarker(command);
@@ -972,6 +981,22 @@ export class HuntScene extends Phaser.Scene {
     }
     this.renderWorldEdge();
     this.syncTargetHighlight();
+  }
+
+  private renderFloorIfDrawWindowChanged(): void {
+    const next = this.visibleDrawWindow();
+    const current = this.renderedDrawWindow;
+    if (
+      current !== undefined &&
+      current.minX === next.minX &&
+      current.minY === next.minY &&
+      current.maxX === next.maxX &&
+      current.maxY === next.maxY
+    ) {
+      return;
+    }
+
+    this.renderFloor();
   }
 
   private cellIndex(x: number, y: number): number {
@@ -1099,15 +1124,15 @@ export class HuntScene extends Phaser.Scene {
   }
 
   /**
-   * Adds the sprites for actors that just spawned and drops the ones that just
-   * died, leaving the floor untouched.
+   * Keeps sprites for actors inside the current draw window and drops the ones
+   * outside it, leaving the presentation roster and floor data untouched.
    */
   private syncActorRoster(): void {
     const presentation = this.presentation;
     if (!presentation) return;
 
     const live = new Set<EntityId>();
-    for (const command of presentation.drawCommands()) {
+    for (const command of presentation.drawCommands(this.renderedDrawWindow)) {
       if (command.kind !== 'actor') continue;
       live.add(command.entityId);
       if (
@@ -1167,10 +1192,11 @@ export class HuntScene extends Phaser.Scene {
     });
   }
 
-  private syncActorSprites(alpha: number): void {
+  private syncActorSprites(alpha: number, allowFloorRebuild = true): void {
     const presentation = this.presentation;
     if (!presentation) return;
 
+    this.syncActorRoster();
     const visible = new Set<EntityId>();
     const currentRenderTick = this.advanceClock(alpha);
     const renderTimeMs = currentRenderTick * TICK_DURATION_MS;
@@ -1255,6 +1281,21 @@ export class HuntScene extends Phaser.Scene {
     this.syncCreatureHealthBars();
     this.syncTargetHighlight(renderTimeMs);
     this.followPlayer(alpha);
+
+    if (allowFloorRebuild) {
+      const current = this.renderedDrawWindow;
+      const next = this.visibleDrawWindow();
+      if (
+        current === undefined ||
+        current.minX !== next.minX ||
+        current.minY !== next.minY ||
+        current.maxX !== next.maxX ||
+        current.maxY !== next.maxY
+      ) {
+        this.renderFloor();
+        this.syncActorSprites(alpha, false);
+      }
+    }
   }
 
   /**
@@ -2017,6 +2058,25 @@ export class HuntScene extends Phaser.Scene {
       zoom,
       bounds: framedBounds,
     });
+  }
+
+  /**
+   * Converts the camera's world-pixel view into an inclusive cell window.
+   *
+   * One tile of padding keeps a large creature and an actor crossing a cell
+   * boundary alive while the camera window moves to the next column or row.
+   * The presentation clamps the window to the region before reading it.
+   */
+  private visibleDrawWindow(): HuntDrawWindow {
+    const rect = this.visibleWorldRect();
+    return {
+      minX: Math.floor(rect.left / this.tileSize) - DRAW_WINDOW_PADDING_TILES,
+      minY: Math.floor(rect.top / this.tileSize) - DRAW_WINDOW_PADDING_TILES,
+      maxX:
+        Math.ceil(rect.right / this.tileSize) - 1 + DRAW_WINDOW_PADDING_TILES,
+      maxY:
+        Math.ceil(rect.bottom / this.tileSize) - 1 + DRAW_WINDOW_PADDING_TILES,
+    };
   }
 
   /** What the camera is showing right now, in world pixels. */

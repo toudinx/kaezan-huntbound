@@ -10846,7 +10846,7 @@
       "item:tibia:shamanic-hood"
     ],
     "budget": {
-      "maxEntries": 640,
+      "maxEntries": 1024,
       "maxBytes": 6291456
     }
   }

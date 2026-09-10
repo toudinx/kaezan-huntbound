@@ -109,7 +109,7 @@ convertido artificialmente em aceite de gameplay.
 | PB-08 | Knight e cockpit preservados; avisos históricos não são nova fila. |
 | PB-09, não implementado | Retirado da fila e absorvido pelo PB-13. |
 | PB-11, não implementado | Absorvido pelo PB-13-03/04. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
-| PB-10-14/15, mapas pendentes | PB-15-02 (render) e PB-15-03 (caixas); corrigir antes só se impedirem a hunt de referência. |
+| PB-10-14/15, mapas pendentes | **Fechadas no `origin` entre 31/08 e 06/09**, integradas aqui em 2026-09-09: as cinco caixas curadas completas, spawn inalcançável descartado, start escolhido por alcançabilidade dirigida e a borda da região bloqueada. Sobram as cards `PB-10-15-FIX-01` (fixture PB-04) e `PB-10-15-FIX-02` (start). O que restava para PB-15-02/03 encolheu para render. |
 | PB-12, não implementado | PB-15-01/05; proposta de sync deve ser reconciliada com progressão real. Diretório removido em 2026-09-07; o conteúdo está no histórico do Git. |
 | Antiga previsão PB-13 a PB-16 (outfits/gacha/helper/QA) | Cosméticos fora do V0 desde 2026-09-09; helper no PB-13-09; performance somente diante de problema medido. |
 | PB-17, pendência de feedback | Ícones, mochila e minimapa integrados preservados. A **PB-17-05, o log de combate, não tinha sido absorvida** — a PB-13-09 entregou o feed do *helper*, não dano/cura/leech/regen/loot/morte/recusa. Virou **PB-14-07** em 2026-09-09. |

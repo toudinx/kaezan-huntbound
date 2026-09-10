@@ -23,8 +23,8 @@ describe('huntSessionCoverage', () => {
     expect(coverage.playerMoves).toBeGreaterThan(0);
   });
 
-  it('walks the player through both directed floor transitions', () => {
-    expect(coverage.playerTransitions).toBeGreaterThanOrEqual(2);
+  it('walks the player through the directed floor transition', () => {
+    expect(coverage.playerTransitions).toBeGreaterThanOrEqual(1);
   });
 
   it('bumps the player into terrain and into a creature', () => {

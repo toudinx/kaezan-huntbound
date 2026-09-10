@@ -6,7 +6,6 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
-  "layout": "../../layouts/hunts/hero-cave.json",
   "recommendedLevel": 130,
   "soloVocation": "vocation:tibia:knight",
   "band": 5,

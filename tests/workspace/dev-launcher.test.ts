@@ -52,7 +52,13 @@ describe('dev launcher', () => {
             'corepack pnpm --filter @huntbound/game exec vite --mode personal',
         },
       ],
-      environment,
+      // `716ff0a` made the personal dev profile tolerate a missing pack entry
+      // instead of refusing to boot, and the launcher passes that tolerance to
+      // the packer through the environment.
+      environment: {
+        ...environment,
+        HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS: '1',
+      },
     });
   });
 
@@ -73,7 +79,13 @@ describe('dev launcher', () => {
             'corepack pnpm --filter @huntbound/game exec vite --mode personal',
         },
       ],
-      environment,
+      // `716ff0a` made the personal dev profile tolerate a missing pack entry
+      // instead of refusing to boot, and the launcher passes that tolerance to
+      // the packer through the environment.
+      environment: {
+        ...environment,
+        HUNTBOUND_DEV_ALLOW_PERSONAL_ASSET_FALLBACKS: '1',
+      },
     });
   });
 

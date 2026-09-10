@@ -14,9 +14,35 @@
 inteira e as cinco hunts estão na `main`. O que resta é a correção de mapa (13 a 15): a hunt deixa de
 ser um recorte e passa a ocupar a caixa curada, que é onde o circuito está.
 
-**Última atualização:** 2026-08-31 — 01 a 12 fechadas. Acrescentadas 13 a 15, a correção de mapa: as
-hunts são jogadas num recorte de 24×24/32×32 enquanto as caixas curadas pela PB-10-02 têm 65×68 a
-71×71, e é o recorte que mata o circuito. Próxima elegível: **PB-10-13**.
+**Última atualização:** 2026-09-01 — 13 a 15 fechadas e integradas; a máquina do catálogo e as
+cinco caixas curadas estão na `main`. A validação de fechamento achou dois vermelhos que os gates das
+tasks não cobriam: a fixture do PB-04 ficou obsoleta contra o `hunt.json` novo (**PB-10-15-FIX-01**) e
+o config órfão do packer voltou a esconder vermelho (**B25**, agora a `PB-17-FIX-01`). O **B27** foi aberto como
+densidade da rotworm, reclassificado como defeito de `playerStart` e **fechado** pela
+PB-10-15-FIX-02; a FIX-01 fechou em seguida. **O PB-10 está inteiro.** Próxima elegível:
+**PB-17-FIX-01**, e depois a PB-17-05.
+
+**Atualização de 2026-09-09 — a `PB-10-15-FIX-01` reabriu, e o culpado é o próprio commit de ponta.**
+No merge das duas máquinas o guard `expectScenarioMatchesHunt`
+(`tests/e2e/support/huntSession.ts:143`) voltou a disparar e `corepack pnpm test` reprova. Não é o
+merge: o `c2b1244`, último commit desta fila, passou a bloquear o anel de borda da região e a
+descartar spawn assentado nele, e **não regenerou a fixture do PB-04**. Escapou porque o gate de
+fechamento de playbook é `build`, não `test`.
+
+A divergência é pequena e inteiramente aditiva: floor 8 vai de 5454 para 5480 células bloqueadas,
+floor 9 de 5383 para 5413 (as 56 são o anel externo), as transições vão de 8 para 16 (as 8 novas são
+as voltas para cima do `139f41d`, nenhuma removida), e dois slots de rotworm assentados na borda do
+andar 9 — `(9,0,9)` e `(0,16,9)` — deixam de existir. O `playerStart` **não** se move.
+
+**Regenerar o golden foi tentado e revertido**, exatamente pela razão que a card já antecipava. Com
+os dois spawns a menos o total cai abaixo de `maxLiveActors` e o caminho de cap deixa de ser
+exercido: o log vai de **1635 para 411 eventos**, e somem os `spawn/capped` e `spawn/deferred` que o
+`hashes.md` declara como cobertura congelada da sessão. Conforme a própria card — *"se o log parou de
+provar o que o PB-04 provava, o conserto é o log, não o golden"* — o que falta é **reautorar o
+`commands.jsonl`** para exercer a mesma cobertura no mapa novo, e só então regenerar. Isso é a task,
+não o merge.
+
+Enquanto isso, `corepack pnpm test` tem **um** vermelho, este, e nenhum outro.
 
 **Base:** pipeline multi-hunt, índice gerado, tela de hunting places no boot e IA que conjura. Nada
 em `apps/game` nem no `package.json` cita uma hunt por nome. Acrescentar hunt é: espécie no catálogo,
@@ -42,8 +68,15 @@ Alocação e justificativa vivem no `README.md`, seção "Modelo e effort por ta
 | PB-10-11 | done | `main` | frontier `xhigh` | Grok 4.6 `xhigh` | `08cbe85` | hipótese do catálogo derrubada; fallback de ficha removido; relógio da cena resincronizado no create |
 | PB-10-12 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d6743ee` | `corpseItemId` no catálogo; registry, packs e decoração por espécie; content/assets/architecture/test/typecheck/build verdes |
 | PB-10-13 | done | `main` | frontier `xhigh` | Codex GPT-5 `xhigh` | `76e1050` | Orc na caixa real 65×68×3; 33/68 spawns; 6 transições, 2 dropped; primeiro paint z6: 5.427 comandos / 5.115 sprites resolvidos; map-extractor, content, architecture e format verdes; pack derivado 541>512 fica fora do escopo |
-| PB-10-14 | pending | `main` | econômico `xhigh` | — | — | — |
-| PB-10-15 | pending | `main` | econômico `xhigh` | — | — | — |
+| PB-10-13-FIX-01 | done | `main` | frontier `xhigh` | Claude Opus 5 | `695ea59` | start do jogador por conectividade: componente com mais grupos → andar com mais grupos → célula de menor caminhada. Orc sai de (64,14,z6), lasca de 21 células com 1 grupo, para (37,40,z7): 2.620 células, 19/33 grupos, 6/6 transições. As quatro hunts com receita regeneram byte a byte; map-extractor (139), content, architecture e format verdes |
+| PB-10-13-FIX-02 | done | `main` | frontier `xhigh` | Claude Opus 5 | `c2efb02` | pack da caixa inteira: selection derivada da região real (357→541 chaves), teto de entradas 512→1024 com `maxBytes` como guarda de memória (523 mídias / 2,6 MB contra 6 MiB), 119 ids adicionados ao export privado e export re-rodado. 1.235 de 14.376 comandos de desenho sem sprite → 0. `huntArtifacts.test.ts` (7 vermelhos na `main`, contagens anteriores aos 9 ícones de spell) verde; asset-packer (61), `assets:check` e format verdes |
+| PB-10-13-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | `6d6bb64` | escadas de volta: `type="ladder"` entra na tabela de flags (schema 2, 17 ids) e vira transição `moveUpstairs` (um andar acima, um tile ao sul). Orc vai de 6 para 12 transições; z6 sai de 0 para 815 células alcançáveis do start. `expectedDroppedTransitions` 2→3 pela escada de (27,57,z6) para z5, fora dos andares congelados. As quatro com receita reextraem byte a byte; map-extractor (141), tile-flags (81), content, architecture e format verdes |
+| PB-10-13-FIX-04 | done | `main` | frontier `xhigh` | Claude Opus 5 | `cc43143` | spawn inalcançável sai na extração, pela regra do próprio kernel (célula do slot; raio do grupo quando ela é bloqueada). Orc vai de 33 grupos/68 slots para 21/46, todos dentro do circuito e agora todos cabendo em `maxLiveActors: 64`. `expectedSpawnGroups: 33` fica: descreve o XML, não a hunt. As quatro com receita reextraem byte a byte; map-extractor (141), content, architecture e format verdes |
+| PB-10-14 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `d86801c` | janela de células na apresentação; rebuild por avanço da janela da câmera; atores fora dela continuam no roster |
+| PB-10-15 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8496b68` | quatro caixas sem receita, extrações completas e artefatos regenerados; Rotworm 8 transições/2 slots alcançáveis; map-extractor 141, content/assets/architecture/typecheck/format verdes; export privado refeito e personal-check verde |
+| PB-10-15-FIX-01 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `8151c52` | PB-04 e PB-04-respawn alinhadas à caixa `64×96×2`; `hunt:check` e `corepack pnpm test` verdes |
+| PB-10-15-FIX-02 | done | `main` | econômico `xhigh` | Codex GPT-5 `xhigh` | `7797993` | start por alcance dirigido; Rotworm 255/1451 (17,6%) com 8/12 grupos/slots e Dragon 594/2376 (25,0%); critério de 25 % da card corrigido para "maximiza grupos alcançáveis" — a maior área alcançável da Rotworm, 503/1451, não tem um único spawn; map-extractor 142 e content verdes |
+| PB-10-15-FIX-03 | done | `main` | frontier `xhigh` | Claude Opus 5 | (este commit) | volta do buraco pelo rope spot: os 8 buracos da Rotworm caíam em z9 sem retorno porque a caixa não tem uma única escada — a volta ali é a corda sobre o `386`. O extractor emite a mesma geometria `moveUpstairs` da escada e a Rotworm vai de 8 para 16 transições, uma subida por buraco. `expectedDroppedTransitions` sobe onde o rope spot leva a um andar fora da caixa (Rotworm 3→7, Cyclopolis 4→6, Dragon 4→5); map-extractor (16 em transitions), content e format verdes |
 
 ## Bloqueios
 
@@ -125,6 +158,65 @@ hunt circular do Tibia não acontece — embora o respawn por slot (`respawnTick
 S7 do kernel) já a sustente. O extractor já tem o caminho `layout === undefined` que extrai a caixa
 inteira, deriva travessia de floorchange real e escolhe `playerStart`; quem o proíbe é
 `tools/map-extractor/cli.ts:313`.
+
+**B25 — aberto, não é da PB-10. Virou `PB-17-FIX-01`.** `tools/asset-packer/vitest.config.ts` não
+está em nenhum script: os 15 arquivos e 62 testes do packer não rodam em lugar nenhum, e
+`huntArtifacts.test.ts` acumula vermelho sem ninguém ver. Já mordeu três vezes — PB-17-01,
+PB-10-13-FIX-02 e agora a PB-10-15, que moveu rotworm 156→451, hero cave 118→270 e dragon lair
+226→368. Mesmo padrão em `tools/diagnostics/vitest.config.ts` e em `tools/map-extractor/tsconfig.json`.
+A card existe em `docs/playbooks/PB-17/tasks/PB-17-FIX-01-o-config-orfao.md`.
+
+**B27 — fechado pela PB-10-15-FIX-02 (`7797993`).** Aberto como "densidade da rotworm", reclassificado
+no mesmo dia como defeito de `playerStart`: ele caía num bolsão de 35 células, 2 % do andável, sem
+uma das 8 transições alcançável. A heurística da PB-10-13-FIX-01 escolhia "componente com mais
+grupos" sem termo de tamanho e sem respeitar a **direção** das transições. A correção monta um grafo
+de alcance dirigido por componente — buraco só desce — em `tools/map-extractor/topology.ts`. Rotworm
+vai de 35/1451 e 1 grupo/2 slots para **255/1451 e 8 grupos/12 slots**, com 4 das 8 transições
+utilizáveis; Dragon Lair de 485 para 594 e de 8 para 10 slots. Orc, Cyclopolis e Hero não se moveram:
+já estavam no melhor componente.
+
+**O teto é o mapa, não a heurística.** O maior conjunto alcançável da rotworm é 503/1451 e **não tem
+um único rotworm** no XML. 255 células com 8 dos 13 grupos é o ótimo real desta caixa, e os 25 % que
+a card pedia eram um número inventado na especificação — corrigido lá, não aqui.
+
+**B28 — aberto, observação, sem task.** Cyclopolis e Hero Cave alcançam **zero** transições a partir
+do start: a Hero não extraiu nenhuma em 71 × 71 × 3 e a única da Cyclopolis é inalcançável. As duas
+são jogáveis, mas de um andar só — o circuito multi-andar que as PB-10-13 a 15 existiam para criar só
+é real na Orc. Medir se isso é a caixa, o `floorchange` ou a escada é task própria, depois do B27.
+
+**B24 — fechado pela PB-10-13-FIX-03.** A caixa não tinha uma única transição de subida porque
+`floorchange` no Canary só desce — os 8 itens da caixa são buracos, 2 deles caindo em z9. A volta é a
+escada, que é `type="ladder"` em `items.xml` e sobe por ação (`ladder_up.lua`), não por estado de
+tile. A tabela de flags passou a carregá-la e o extractor emite a geometria do
+`Position:moveUpstairs`: um andar acima e um tile ao sul, porque o tile logo acima da escada é o
+buraco de onde o jogador caiu.
+
+**B28 — fechado pela PB-10-15-FIX-03.** Reportado no playtest: na Rotworm o jogador desce o buraco e
+não volta. A B24 tratou a escada, mas esta caixa não tem nenhuma — os 8 buracos `385` caem num `386`,
+o *dirt floor* que o `items.xml` descreve como "There is a hole in the ceiling" e que o
+`Tile:isRopeSpot` reconhece pelo **ground**. No Canary sobe-se dali com corda ou `exani tera`; a hunt
+não tem item nem magia, então o rope spot virou transição andada, igual à escada. `ropeSpots` do
+`data/global.lua` está transcrito em `tools/map-extractor/transitions.ts`.
+
+**B29 — aberto.** Reportado no mesmo playtest: quadrados chapados no meio da caverna. Não é o
+renderer, é a extração. `planCell` em `tools/map-extractor/region.ts` descarta **todos** os itens de
+um tile que não tem item com flag `ground` e devolve `blocking: true` — o tile existe no OTBM, só não
+tem chão sob a parede. A célula vira void, e o `HuntScene` pinta ali o `WORLD_EDGE_RIM_COLOR`
+(`0x3a281c`), que é o retângulo marrom que o usuário viu. Na Rotworm são 3 células internas: `(6,10)`
+e `(7,11)` em z9, ambas `dirt wall` 5649, e `(53,44)`, `swamp clay mountain` 16669 — as duas
+primeiras estão coladas no pouso do buraco de `(8,10)`, que é onde o print foi tirado. As demais
+células chapadas ficam na borda do recorte e são void de verdade.
+
+A correção é `planCell` preservar `below`/`above` quando não há ground, mantendo void e colisão. O
+raio é maior que o desta FIX: a paleta cresce, `region.json` e `hunt.json` de todas as hunts mudam, e
+as selections e packs de asset precisam dos sprites de parede novos. Task própria.
+
+**B26 — fechado pela PB-10-13-FIX-04.** Decisão do usuário em 2026-08-31: descartar. Os 22 slots do
+campo fora da muralha saem na extração; sobram 21 grupos e 46 slots, todos alcançáveis a partir do
+`playerStart` e todos cabendo no teto de 64. A muralha foi conferida item a item — é `stone wall`
+real nos 19 pontos onde o campo quase encosta na hunt, e a única porta da caixa guarda um armário de
+3 tiles. O forte de Tibia se entra por cima e a rampa não está no retângulo congelado; o campo é
+cenário.
 
 **B4 — fechado em 2026-08-30.** `git branch -a` traz só `main` e os remotos dela; as cinco branches
 antigas não existem mais.

@@ -113,17 +113,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Dragon-Lair",
       "maxLiveActors": 31,
-      "experiencePerHour": 868000,
+      "experiencePerHour": 280000,
       "creatures": [
         {
           "creatureKey": "creature:tibia:dragon",
           "displayName": "Dragon",
-          "slotCount": 31,
+          "slotCount": 10,
           "health": 1000,
           "experience": 700,
           "lookType": 34,
           "respawnTicks": 1800,
-          "experiencePerHour": 868000,
+          "experiencePerHour": 280000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -264,17 +264,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Hero-Cave",
       "maxLiveActors": 24,
-      "experiencePerHour": 1152000,
+      "experiencePerHour": 624000,
       "creatures": [
         {
           "creatureKey": "creature:tibia:hero",
           "displayName": "Hero",
-          "slotCount": 24,
+          "slotCount": 13,
           "health": 1400,
           "experience": 1200,
           "lookType": 73,
           "respawnTicks": 1800,
-          "experiencePerHour": 1152000,
+          "experiencePerHour": 624000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -445,17 +445,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Orc-Fortress",
       "maxLiveActors": 64,
-      "experiencePerHour": 150549,
+      "experiencePerHour": 119960,
       "creatures": [
         {
           "creatureKey": "creature:tibia:orc",
           "displayName": "Orc",
-          "slotCount": 13,
+          "slotCount": 9,
           "health": 70,
           "experience": 25,
           "lookType": 5,
           "respawnTicks": 1800,
-          "experiencePerHour": 12235,
+          "experiencePerHour": 9000,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -522,12 +522,12 @@
         {
           "creatureKey": "creature:tibia:orc-shaman",
           "displayName": "Orc Shaman",
-          "slotCount": 22,
+          "slotCount": 19,
           "health": 115,
           "experience": 110,
           "lookType": 6,
           "respawnTicks": 1800,
-          "experiencePerHour": 91105,
+          "experiencePerHour": 83600,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",
@@ -600,12 +600,12 @@
         {
           "creatureKey": "creature:tibia:orc-spearman",
           "displayName": "Orc Spearman",
-          "slotCount": 33,
+          "slotCount": 18,
           "health": 105,
           "experience": 38,
           "lookType": 50,
           "respawnTicks": 1800,
-          "experiencePerHour": 47209,
+          "experiencePerHour": 27360,
           "loot": [
             {
               "itemKey": "item:tibia:meat",
@@ -674,17 +674,17 @@
       "soloVocation": "vocation:tibia:knight",
       "sourceUrl": "https://tibiaroute.com/br/hunting-places/Venore-Rotworm-Cave",
       "maxLiveActors": 20,
-      "experiencePerHour": 32000,
+      "experiencePerHour": 19200,
       "creatures": [
         {
           "creatureKey": "creature:tibia:rotworm",
           "displayName": "Rotworm",
-          "slotCount": 20,
+          "slotCount": 12,
           "health": 65,
           "experience": 40,
           "lookType": 26,
           "respawnTicks": 1800,
-          "experiencePerHour": 32000,
+          "experiencePerHour": 19200,
           "loot": [
             {
               "itemKey": "item:tibia:gold-coin",

@@ -6,7 +6,6 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
-  "layout": "../../layouts/hunts/dragon-lair.json",
   "recommendedLevel": 70,
   "soloVocation": "vocation:tibia:knight",
   "band": 4,
@@ -37,7 +36,7 @@
   ],
   "expectedSpawnGroups": 26,
   "expectedSpawnSlots": 31,
-  "expectedDroppedTransitions": 0,
+  "expectedDroppedTransitions": 5,
   "budget": {
     "maxFloors": 3,
     "maxWidth": 96,

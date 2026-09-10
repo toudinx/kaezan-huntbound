@@ -41,10 +41,14 @@ export type FloorChangeCells = ReadonlyMap<
   ReadonlyMap<number, ReadonlySet<FloorChange>>
 >;
 
+/** `z` → local cell indices that carry a ladder. */
+export type LadderCells = ReadonlyMap<number, ReadonlySet<number>>;
+
 export interface MapRegionBuild {
   readonly region: MapRegion;
   readonly diagnostics: readonly ExtractionDiagnostic[];
   readonly floorChanges: FloorChangeCells;
+  readonly ladders: LadderCells;
 }
 
 export function indexTileFlags(
@@ -59,6 +63,7 @@ interface CellPlan {
   readonly above: readonly number[];
   readonly blocking: boolean;
   readonly floorChanges: ReadonlySet<FloorChange>;
+  readonly ladder: boolean;
 }
 
 /**
@@ -98,6 +103,7 @@ function planCell(
       above: [],
       blocking: true,
       floorChanges: new Set(),
+      ladder: false,
     };
   }
 
@@ -105,10 +111,12 @@ function planCell(
   const above: number[] = [];
   const floorChanges = new Set<FloorChange>();
   let blocking = false;
+  let ladder = false;
 
   resolved.forEach((entry, index) => {
     if (entry.blocking) blocking = true;
     if (entry.floorChange !== null) floorChanges.add(entry.floorChange);
+    if (entry.ladder) ladder = true;
     if (index === groundAt) return;
     (entry.top ? above : below).push(entry.serverId);
   });
@@ -119,6 +127,7 @@ function planCell(
     above,
     blocking,
     floorChanges,
+    ladder,
   };
 }
 
@@ -206,6 +215,7 @@ export function buildMapRegion(
 
   const floors: MapRegionFloor[] = [];
   const floorChanges = new Map<number, Map<number, ReadonlySet<FloorChange>>>();
+  const ladders = new Map<number, ReadonlySet<number>>();
 
   for (const z of floorsZ) {
     const floorPlans = plans.get(z) as Map<number, CellPlan>;
@@ -214,6 +224,7 @@ export function buildMapRegion(
     const objectsAbove: { i: number; stack: number[] }[] = [];
     const collision: number[] = [];
     const changes = new Map<number, ReadonlySet<FloorChange>>();
+    const ladderCells = new Set<number>();
 
     for (let index = 0; index < cellCount; index += 1) {
       const plan = floorPlans.get(index) as CellPlan;
@@ -228,10 +239,12 @@ export function buildMapRegion(
       if (plan.floorChanges.size > 0) {
         changes.set(index, plan.floorChanges);
       }
+      if (plan.ladder) ladderCells.add(index);
     }
 
     floors.push({ z, ground, objectsBelow, objectsAbove, collision });
     floorChanges.set(z, changes);
+    ladders.set(z, ladderCells);
   }
 
   return {
@@ -247,5 +260,6 @@ export function buildMapRegion(
     },
     diagnostics,
     floorChanges,
+    ladders,
   };
 }

@@ -29,6 +29,12 @@ export interface TileFlags {
   readonly avoid: boolean;
   readonly elevation: number;
   readonly floorChange: FloorChange | null;
+  /**
+   * `type="ladder"` in `items.xml`. Canary climbs it by action, not by
+   * floorchange, so it is a separate flag rather than a floorchange value —
+   * the engine's vocabulary has no `up`.
+   */
+  readonly ladder: boolean;
 }
 
 export interface TileFlagsTable {
@@ -39,7 +45,7 @@ export interface TileFlagsTable {
   readonly entries: readonly TileFlags[];
 }
 
-export const TILE_FLAGS_SCHEMA_VERSION = 1;
+export const TILE_FLAGS_SCHEMA_VERSION = 2;
 
 export function isFloorChange(value: string): value is FloorChange {
   return (FLOOR_CHANGE_VALUES as readonly string[]).includes(value);

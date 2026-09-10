@@ -287,6 +287,40 @@ describe('asset profile Vite guard', () => {
     }
   });
 
+  it('caches content-addressed media forever and revalidates manifests', async () => {
+    const root = await createProfileRoot('product', false);
+    try {
+      const middleware = await captureDevMiddleware(root, 'product');
+      const mediaResponse = createTestResponse();
+      await middleware(
+        {
+          url: '/assets/product/packs/pb-02-contract-coverage/media/431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460.png',
+          method: 'GET',
+        } as Connect.IncomingMessage,
+        mediaResponse as unknown as Parameters<Connect.NextHandleFunction>[1],
+        () => undefined,
+      );
+      const manifestResponse = createTestResponse();
+      await middleware(
+        {
+          url: '/assets/product/packs/pb-02-contract-coverage/pack.json',
+          method: 'GET',
+        } as Connect.IncomingMessage,
+        manifestResponse as unknown as Parameters<Connect.NextHandleFunction>[1],
+        () => undefined,
+      );
+
+      expect(mediaResponse.statusCode).toBe(200);
+      expect(mediaResponse.headers.get('cache-control')).toBe(
+        'public, max-age=31536000, immutable',
+      );
+      expect(manifestResponse.statusCode).toBe(200);
+      expect(manifestResponse.headers.get('cache-control')).toBe('no-cache');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('returns not found for inactive profile requests in the dev server', async () => {
     const publicRoot = await mkdtemp(join(tmpdir(), 'huntbound-vite-dev-'));
     const productRoot = join(publicRoot, 'assets', 'product');

@@ -103,7 +103,7 @@ describe('buildTileFlagsTable', () => {
   it('records the schema version and the source commit', () => {
     const table = buildTileFlagsTable(dat(100), itemsXml(), COMMIT);
 
-    expect(table.schemaVersion).toBe(1);
+    expect(table.schemaVersion).toBe(2);
     expect(table.sourceCommit).toBe(COMMIT);
   });
 
@@ -171,6 +171,7 @@ describe('encodeTileFlagsTable', () => {
       'elevation',
       'floorChange',
       'ground',
+      'ladder',
       'serverId',
       'top',
       'unmove',

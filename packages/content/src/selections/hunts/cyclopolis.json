@@ -6,7 +6,6 @@
     "map": "data-otservbr-global/world/otservbr.otbm",
     "spawns": "data-otservbr-global/world/otservbr-monster.xml"
   },
-  "layout": "../../layouts/hunts/cyclopolis.json",
   "recommendedLevel": 45,
   "soloVocation": "vocation:tibia:knight",
   "band": 3,
@@ -52,7 +51,7 @@
   ],
   "expectedSpawnGroups": 18,
   "expectedSpawnSlots": 19,
-  "expectedDroppedTransitions": 0,
+  "expectedDroppedTransitions": 6,
   "budget": {
     "maxFloors": 3,
     "maxWidth": 96,

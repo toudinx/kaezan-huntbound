@@ -1,6 +1,8 @@
 import type {
   HuntDefinition,
+  MapRegion,
   MapRegionFloor,
+  TransitionEntry,
 } from '../../packages/contracts/src/hunt/types.ts';
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
 import type { ExtractionDiagnostic } from './types.ts';
@@ -25,6 +27,12 @@ export interface HuntTopologyReport {
     readonly unreachable: readonly number[];
   }[];
   readonly diagnostics: readonly ExtractionDiagnostic[];
+}
+
+export interface WalkableComponentGraph {
+  readonly components: readonly (readonly GridPosition[])[];
+  readonly componentByKey: ReadonlyMap<string, number>;
+  readonly reachableComponents: readonly ReadonlySet<number>[];
 }
 
 function indexOf(position: GridPosition, width: number): number {
@@ -161,21 +169,162 @@ function pointWalkable(
   );
 }
 
-export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
-  const { width, height } = hunt.region;
-  const floorByZ = new Map(hunt.region.floors.map((floor) => [floor.z, floor]));
-  const rootsByZ = new Map<number, Set<number>>(
-    hunt.region.floors.map((floor) => [floor.z, new Set<number>()]),
-  );
-  const reachableByZ = new Map<number, Set<number>>(
-    hunt.region.floors.map((floor) => [floor.z, new Set<number>()]),
-  );
-  const startFloor = floorByZ.get(hunt.playerStart.z);
-  if (startFloor !== undefined) {
-    rootsByZ.get(hunt.playerStart.z)?.add(indexOf(hunt.playerStart, width));
+/**
+ * Every group of cells that can walk to each other, floors joined by the
+ * transitions the extraction derived.
+ *
+ * A raw OTBM box is not one place. The frozen Orc Fortress rectangle carries
+ * the fortress, the field outside its wall and a handful of ledges that share
+ * no path with either, so whoever has to choose a cell for the player needs to
+ * know which of them is the hunt. Cells come out in canonical `(z, y, x)` order
+ * inside each component, and the components in the order their first cell
+ * appears, so a caller can pick deterministically.
+ */
+export function walkableComponents(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+): readonly (readonly GridPosition[])[] {
+  const { width, height } = region;
+  const floorByZ = new Map(region.floors.map((floor) => [floor.z, floor]));
+  const key = (position: GridPosition): string =>
+    `${position.z}:${indexOf(position, width)}`;
+
+  const links = new Map<string, GridPosition[]>();
+  const link = (from: GridPosition, to: GridPosition): void => {
+    const existing = links.get(key(from));
+    if (existing === undefined) links.set(key(from), [to]);
+    else existing.push(to);
+  };
+  for (const transition of transitions) {
+    link(transition.from, transition.to);
+    link(transition.to, transition.from);
   }
 
-  const pendingFloors = [hunt.playerStart.z];
+  const visited = new Set<string>();
+  const components: GridPosition[][] = [];
+
+  for (const floor of region.floors) {
+    for (let index = 0; index < width * height; index += 1) {
+      const root: GridPosition = {
+        x: index % width,
+        y: Math.floor(index / width),
+        z: floor.z,
+      };
+      if (!pointWalkable(root, floorByZ, width, height)) continue;
+      if (visited.has(key(root))) continue;
+
+      visited.add(key(root));
+      const component: GridPosition[] = [];
+      const queue: GridPosition[] = [root];
+      while (queue.length > 0) {
+        const current = queue.shift() as GridPosition;
+        component.push(current);
+        const stepped = neighbors(
+          floorByZ.get(current.z),
+          indexOf(current, width),
+          width,
+          height,
+        ).map(
+          (next): GridPosition => ({
+            x: next % width,
+            y: Math.floor(next / width),
+            z: current.z,
+          }),
+        );
+        for (const next of [...stepped, ...(links.get(key(current)) ?? [])]) {
+          if (visited.has(key(next))) continue;
+          if (!pointWalkable(next, floorByZ, width, height)) continue;
+          visited.add(key(next));
+          queue.push(next);
+        }
+      }
+      components.push(
+        component.sort(
+          (left, right) =>
+            left.z - right.z || left.y - right.y || left.x - right.x,
+        ),
+      );
+    }
+  }
+
+  return components;
+}
+
+/**
+ * Builds the directed reachability graph used when a raw box needs a start.
+ *
+ * Plain walking makes each local component strongly connected; only extracted
+ * transitions can move the player from one component to another, and those
+ * edges keep their in-game direction. This is equivalent to `reachableCells`
+ * at component granularity without running a tile BFS for every candidate.
+ */
+export function buildWalkableComponentGraph(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+): WalkableComponentGraph {
+  const components = walkableComponents(region, []);
+  const componentByKey = new Map<string, number>();
+  const key = (position: GridPosition): string =>
+    `${position.z}:${indexOf(position, region.width)}`;
+
+  components.forEach((component, componentIndex) => {
+    component.forEach((position) => {
+      componentByKey.set(key(position), componentIndex);
+    });
+  });
+
+  const edges = components.map(() => new Set<number>());
+  transitions.forEach((transition) => {
+    if (transition.from.z === transition.to.z) return;
+    const from = componentByKey.get(key(transition.from));
+    const to = componentByKey.get(key(transition.to));
+    if (from === undefined || to === undefined || from === to) return;
+    edges[from]?.add(to);
+  });
+
+  const reachableComponents = components.map((_component, root) => {
+    const reachable = new Set<number>([root]);
+    const queue = [root];
+    while (queue.length > 0) {
+      const current = queue.shift() as number;
+      for (const next of edges[current] ?? []) {
+        if (reachable.has(next)) continue;
+        reachable.add(next);
+        queue.push(next);
+      }
+    }
+    return reachable;
+  });
+
+  return { components, componentByKey, reachableComponents };
+}
+
+/**
+ * Every cell the player can actually get to, floor by floor.
+ *
+ * Walking is symmetric but a transition is not: a hole drops one way, and only
+ * the ladder at the bottom makes the pair. So this follows `from` to `to` and
+ * never the reverse, which is what the kernel does when the player steps on the
+ * cell.
+ */
+export function reachableCells(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+  origin: GridPosition,
+): ReadonlyMap<number, ReadonlySet<number>> {
+  const { width, height } = region;
+  const floorByZ = new Map(region.floors.map((floor) => [floor.z, floor]));
+  const rootsByZ = new Map<number, Set<number>>(
+    region.floors.map((floor) => [floor.z, new Set<number>()]),
+  );
+  const reachableByZ = new Map<number, Set<number>>(
+    region.floors.map((floor) => [floor.z, new Set<number>()]),
+  );
+  if (floorByZ.get(origin.z) !== undefined) {
+    rootsByZ.get(origin.z)?.add(indexOf(origin, width));
+  }
+
+  const pendingFloors = [origin.z];
   const queuedFloors = new Set(pendingFloors);
   while (pendingFloors.length > 0) {
     const z = pendingFloors.shift() as number;
@@ -189,7 +338,7 @@ export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
     for (const index of reachable) previous.add(index);
     if (!changed && previous.size > 0) continue;
 
-    hunt.transitions.entries.forEach((transition) => {
+    transitions.forEach((transition) => {
       if (transition.from.z !== z) return;
       const fromIndex = indexOf(transition.from, width);
       if (!previous.has(fromIndex)) return;
@@ -205,6 +354,18 @@ export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
       }
     });
   }
+
+  return reachableByZ;
+}
+
+export function analyzeHuntTopology(hunt: HuntDefinition): HuntTopologyReport {
+  const { width, height } = hunt.region;
+  const floorByZ = new Map(hunt.region.floors.map((floor) => [floor.z, floor]));
+  const reachableByZ = reachableCells(
+    hunt.region,
+    hunt.transitions.entries,
+    hunt.playerStart,
+  );
 
   const floorReports = hunt.region.floors.map((floor) => {
     const { count, walkable } = components(floor, width, height);

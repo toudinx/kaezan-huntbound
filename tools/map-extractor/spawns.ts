@@ -330,7 +330,7 @@ export function buildSpawnTable(
       readonly y: number;
       readonly z: number;
     };
-    const slots = useSourceCenter
+    const seatedSlots = useSourceCenter
       ? mappedSlots.map(({ slot }) => slot)
       : mappedSlots.map(({ position, slot }) => ({
           ...slot,
@@ -338,10 +338,39 @@ export function buildSpawnTable(
           offsetY: position.y - targetCenter.y,
           offsetZ: position.z - targetCenter.z,
         }));
+    // Re-seating a group on its first slot moves the centre, so seats that sat
+    // inside the Canary radius can end up past it. The hunt contract rejects a
+    // slot outside its group radius, so the radius has to cover what it keeps.
+    const widestOffset = seatedSlots.reduce(
+      (widest, slot) =>
+        Math.max(widest, Math.abs(slot.offsetX), Math.abs(slot.offsetY)),
+      0,
+    );
+    const radius = Math.min(
+      Math.max(group.radius, widestOffset),
+      MAX_SPAWN_RADIUS,
+    );
+    const slots = seatedSlots.filter((slot) => {
+      if (
+        Math.abs(slot.offsetX) <= radius &&
+        Math.abs(slot.offsetY) <= radius
+      ) {
+        return true;
+      }
+      diagnostics.push(
+        diagnostic(
+          `spawns.groups[${groupIndex}]`,
+          'HUNT_SPAWN_DROPPED',
+          `${slot.creatureKey} sits past the maximum spawn radius of its re-seated group`,
+        ),
+      );
+      return false;
+    });
+    if (slots.length === 0) return;
     slotCount += slots.length;
     groups.push({
       center: targetCenter,
-      radius: group.radius,
+      radius,
       sourceCenter: {
         x: group.centerX,
         y: group.centerY,

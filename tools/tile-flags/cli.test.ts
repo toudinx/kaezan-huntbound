@@ -122,7 +122,7 @@ describe('tile-flags CLI', () => {
 
     const json = readFileSync(output, 'utf8');
     expect(json.endsWith('\n')).toBe(true);
-    expect(JSON.parse(json)).toMatchObject({ schemaVersion: 1 });
+    expect(JSON.parse(json)).toMatchObject({ schemaVersion: 2 });
     expect(readFileSync(sidecar, 'utf8')).toMatch(/^[0-9a-f]{64}\n$/);
   });
 

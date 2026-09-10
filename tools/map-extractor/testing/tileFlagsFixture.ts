@@ -15,6 +15,7 @@ export interface TileFlagsOverrides {
   readonly avoid?: boolean;
   readonly elevation?: number;
   readonly floorChange?: FloorChange | null;
+  readonly ladder?: boolean;
 }
 
 export function tileFlags(
@@ -32,6 +33,7 @@ export function tileFlags(
     avoid: overrides.avoid ?? false,
     elevation: overrides.elevation ?? 0,
     floorChange: overrides.floorChange ?? null,
+    ladder: overrides.ladder ?? false,
   };
 }
 

@@ -3,15 +3,23 @@ import { describe, expect, it } from 'vitest';
 import type { MapRegion } from '../../packages/contracts/src/hunt/types.ts';
 import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts';
 import type { FloorChange } from '../tile-flags/types.ts';
-import type { FloorChangeCells } from './region.ts';
+import type { FloorChangeCells, LadderCells } from './region.ts';
 import { buildTransitionTable } from './transitions.ts';
 
 const WIDTH = 5;
 const HEIGHT = 5;
 
+/** Canary's `ropeSpots[1]`: the dirt floor every hole item `385` lands on. */
+const ROPE_SPOT_GROUND_ID = 386;
+
 interface RegionOptions {
   readonly floors?: readonly number[];
   readonly collision?: readonly { readonly z: number; readonly i: number }[];
+  readonly ropeSpots?: readonly {
+    readonly z: number;
+    readonly x: number;
+    readonly y: number;
+  }[];
 }
 
 function region(options: RegionOptions = {}): MapRegion {
@@ -23,17 +31,23 @@ function region(options: RegionOptions = {}): MapRegion {
     origin: { x: 0, y: 0 },
     width: WIDTH,
     height: HEIGHT,
-    palette: [1],
-    floors: floors.map((z) => ({
-      z,
-      ground: Array.from({ length: WIDTH * HEIGHT }, () => 0),
-      objectsBelow: [],
-      objectsAbove: [],
-      collision: (options.collision ?? [])
-        .filter((entry) => entry.z === z)
-        .map((entry) => entry.i)
-        .sort((left, right) => left - right),
-    })),
+    palette: [1, ROPE_SPOT_GROUND_ID],
+    floors: floors.map((z) => {
+      const ground = Array.from({ length: WIDTH * HEIGHT }, () => 0);
+      for (const spot of options.ropeSpots ?? []) {
+        if (spot.z === z) ground[cell(spot.x, spot.y)] = 1;
+      }
+      return {
+        z,
+        ground,
+        objectsBelow: [],
+        objectsAbove: [],
+        collision: (options.collision ?? [])
+          .filter((entry) => entry.z === z)
+          .map((entry) => entry.i)
+          .sort((left, right) => left - right),
+      };
+    }),
   };
 }
 
@@ -58,7 +72,76 @@ function changes(
   return byFloor;
 }
 
+function ladders(
+  entries: readonly {
+    readonly z: number;
+    readonly x: number;
+    readonly y: number;
+  }[],
+): LadderCells {
+  const byFloor = new Map<number, Set<number>>();
+  for (const entry of entries) {
+    const floor = byFloor.get(entry.z) ?? new Set<number>();
+    floor.add(cell(entry.x, entry.y));
+    byFloor.set(entry.z, floor);
+  }
+  return byFloor;
+}
+
 describe('buildTransitionTable', () => {
+  it('climbs a ladder one floor up and one tile south', () => {
+    const built = buildTransitionTable(
+      region(),
+      changes([]),
+      ladders([{ z: 8, x: 2, y: 2 }]),
+    );
+
+    // South, not straight up: the tile above a ladder is usually the hole the
+    // player fell through, and Canary's `moveUpstairs` steps off it.
+    expect(built.table.entries).toEqual([
+      { from: { x: 2, y: 2, z: 8 }, to: { x: 2, y: 3, z: 7 } },
+    ]);
+    expect(built.table.dropped).toBe(0);
+  });
+
+  it('drops a ladder whose landing is blocked and keeps the floorchange', () => {
+    const built = buildTransitionTable(
+      region({ collision: [{ z: 7, i: 3 * 5 + 2 }] }),
+      changes([{ z: 7, x: 0, y: 0, values: ['down'] }]),
+      ladders([{ z: 8, x: 2, y: 2 }]),
+    );
+
+    expect(built.table.entries).toEqual([
+      { from: { x: 0, y: 0, z: 7 }, to: { x: 0, y: 0, z: 8 } },
+    ]);
+    expect(built.table.dropped).toBe(1);
+  });
+
+  it('climbs a rope spot back out of the hole that lands on it', () => {
+    // Canary needs a rope on the dirt floor `386`; the hunt has no rope, so the
+    // spot is walked. Without it the hole above is a one-way descent.
+    const built = buildTransitionTable(
+      region(),
+      changes([{ z: 7, x: 2, y: 1, values: ['down'] }]),
+      ladders([]),
+    );
+
+    expect(built.table.entries).toEqual([
+      { from: { x: 2, y: 1, z: 7 }, to: { x: 2, y: 1, z: 8 } },
+    ]);
+
+    const withSpot = buildTransitionTable(
+      region({ ropeSpots: [{ z: 8, x: 2, y: 1 }] }),
+      changes([{ z: 7, x: 2, y: 1, values: ['down'] }]),
+    );
+
+    expect(withSpot.table.entries).toEqual([
+      { from: { x: 2, y: 1, z: 7 }, to: { x: 2, y: 1, z: 8 } },
+      { from: { x: 2, y: 1, z: 8 }, to: { x: 2, y: 2, z: 7 } },
+    ]);
+    expect(withSpot.table.dropped).toBe(0);
+  });
+
   it('sends down to the same column one floor below', () => {
     const built = buildTransitionTable(
       region(),

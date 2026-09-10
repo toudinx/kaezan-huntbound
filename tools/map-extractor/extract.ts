@@ -3,6 +3,9 @@ import type {
   HuntDefinition,
   KernelBlueprint,
   MapRegion,
+  SpawnGroupDefinition,
+  SpawnTable,
+  TransitionEntry,
 } from '../../packages/contracts/src/hunt/types.ts';
 import { HUNT_SCHEMA_VERSION } from '../../packages/contracts/src/hunt/types.ts';
 import type { GridPosition } from '../../packages/contracts/src/simulation/types.ts';
@@ -12,7 +15,11 @@ import { applyHuntLayout, type HuntLayoutRecipe } from './layout.ts';
 import { readOtbmTiles } from './otbm.ts';
 import { buildMapRegion, indexTileFlags } from './region.ts';
 import { blueprintIdForCreature, buildSpawnTable } from './spawns.ts';
-import { analyzeHuntTopology } from './topology.ts';
+import {
+  analyzeHuntTopology,
+  buildWalkableComponentGraph,
+  reachableCells,
+} from './topology.ts';
 import { buildTransitionTable } from './transitions.ts';
 import type { ExtractionDiagnostic, ExtractionResult } from './types.ts';
 import { diagnostic, sortDiagnostics } from './types.ts';
@@ -80,57 +87,262 @@ function regionIdFor(huntKey: string): string {
 /**
  * Picks the player's starting cell.
  *
- * The rule is deterministic and keeps the start reachable from the hunt: the
- * walkable cell nearest to the densest spawn group's center on that group's
- * floor, excluding cells occupied by a spawn and breaking ties by `(y, x)`.
- * Without spawn groups it falls back to the first walkable cell in canonical
- * order.
+ * A layout recipe hands the start over; a raw OTBM box has to earn one. The box
+ * is many disconnected places at once — fortress, field, ledge — and distance
+ * to a spawn does not mean a path. Candidate components are therefore ranked
+ * by the groups and slots reachable through directed transitions, then by the
+ * reachable area. The start is the cell with the shortest total walk to the
+ * groups on its local component; ties break on canonical `(y, x)` order.
  */
-function pickPlayerStart(
-  region: MapRegion,
-  anchor: GridPosition | undefined,
-  spawnPositions: ReadonlySet<string>,
-): GridPosition | undefined {
-  const floors =
-    anchor === undefined
-      ? region.floors
-      : [
-          ...region.floors.filter((floor) => floor.z === anchor.z),
-          ...region.floors.filter((floor) => floor.z !== anchor.z),
-        ];
-
-  for (const floor of floors) {
-    const blocked = new Set(floor.collision);
-    let best: GridPosition | undefined;
-    let bestDistance = Number.POSITIVE_INFINITY;
-
-    for (let index = 0; index < floor.ground.length; index += 1) {
-      if (blocked.has(index)) continue;
-      const candidate: GridPosition = {
-        x: index % region.width,
-        y: Math.floor(index / region.width),
-        z: floor.z,
-      };
-      if (spawnPositions.has(positionKey(candidate))) continue;
-      if (anchor === undefined) return candidate;
-      const distance = Math.max(
-        Math.abs(candidate.x - anchor.x),
-        Math.abs(candidate.y - anchor.y),
-      );
-      if (distance < bestDistance) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    }
-
-    if (best !== undefined) return best;
-  }
-
-  return undefined;
+interface ReachableSpawnSummary {
+  readonly groups: readonly SpawnGroupDefinition[];
+  readonly slots: number;
 }
 
-function positionKey(position: GridPosition): string {
-  return `${position.x}:${position.y}:${position.z}`;
+interface StartCandidate {
+  readonly cells: readonly GridPosition[];
+  readonly localGroups: readonly SpawnGroupDefinition[];
+  readonly reachableGroups: readonly SpawnGroupDefinition[];
+  readonly reachableSlots: number;
+  readonly reachableCellCount: number;
+}
+
+function componentAt(
+  position: GridPosition,
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+): number | undefined {
+  if (
+    position.x < 0 ||
+    position.y < 0 ||
+    position.x >= region.width ||
+    position.y >= region.height
+  ) {
+    return undefined;
+  }
+  return componentByKey.get(
+    `${position.z}:${position.y * region.width + position.x}`,
+  );
+}
+
+function slotIsReachable(
+  group: SpawnGroupDefinition,
+  slot: SpawnGroupDefinition['slots'][number],
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+  reachableComponents: ReadonlySet<number>,
+): boolean {
+  const seat = {
+    x: group.center.x + slot.offsetX,
+    y: group.center.y + slot.offsetY,
+    z: group.center.z + slot.offsetZ,
+  };
+  const seatComponent = componentAt(seat, region, componentByKey);
+  if (seatComponent !== undefined)
+    return reachableComponents.has(seatComponent);
+
+  for (
+    let y = group.center.y - group.radius;
+    y <= group.center.y + group.radius;
+    y += 1
+  ) {
+    for (
+      let x = group.center.x - group.radius;
+      x <= group.center.x + group.radius;
+      x += 1
+    ) {
+      const radiusComponent = componentAt(
+        { x, y, z: group.center.z },
+        region,
+        componentByKey,
+      );
+      if (
+        radiusComponent !== undefined &&
+        reachableComponents.has(radiusComponent)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function reachableSpawns(
+  groups: readonly SpawnGroupDefinition[],
+  region: MapRegion,
+  componentByKey: ReadonlyMap<string, number>,
+  reachableComponents: ReadonlySet<number>,
+): ReachableSpawnSummary {
+  const reachableGroups: SpawnGroupDefinition[] = [];
+  let slots = 0;
+  for (const group of groups) {
+    const slotsForGroup = group.slots.filter((slot) =>
+      slotIsReachable(group, slot, region, componentByKey, reachableComponents),
+    );
+    if (slotsForGroup.length === 0) continue;
+    reachableGroups.push({ ...group, slots: slotsForGroup });
+    slots += slotsForGroup.length;
+  }
+  return { groups: reachableGroups, slots };
+}
+
+function pickPlayerStart(
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+  groups: readonly SpawnGroupDefinition[],
+): GridPosition | undefined {
+  const graph = buildWalkableComponentGraph(region, transitions);
+  if (graph.components.length === 0) return undefined;
+
+  const candidates: StartCandidate[] = graph.components.map(
+    (cells, componentIndex) => {
+      const reachableComponentIds =
+        graph.reachableComponents[componentIndex] ?? new Set([componentIndex]);
+      const reachable = reachableSpawns(
+        groups,
+        region,
+        graph.componentByKey,
+        reachableComponentIds,
+      );
+      const localGroups = groups.filter(
+        (group) =>
+          componentAt(group.center, region, graph.componentByKey) ===
+          componentIndex,
+      );
+      return {
+        cells,
+        localGroups,
+        reachableGroups: reachable.groups,
+        reachableSlots: reachable.slots,
+        reachableCellCount: [...reachableComponentIds].reduce(
+          (total, id) => total + (graph.components[id]?.length ?? 0),
+          0,
+        ),
+      };
+    },
+  );
+
+  const isBetter = (
+    candidate: StartCandidate,
+    best: StartCandidate,
+  ): boolean => {
+    if (candidate.reachableGroups.length !== best.reachableGroups.length) {
+      return candidate.reachableGroups.length > best.reachableGroups.length;
+    }
+    if (candidate.reachableSlots !== best.reachableSlots) {
+      return candidate.reachableSlots > best.reachableSlots;
+    }
+    if (candidate.reachableCellCount !== best.reachableCellCount) {
+      return candidate.reachableCellCount > best.reachableCellCount;
+    }
+    if (candidate.localGroups.length !== best.localGroups.length) {
+      return candidate.localGroups.length > best.localGroups.length;
+    }
+    return candidate.cells.length > best.cells.length;
+  };
+
+  const best = candidates.reduce((current, candidate) =>
+    isBetter(candidate, current) ? candidate : current,
+  );
+  const groupsForWalk =
+    best.localGroups.length > 0 ? best.localGroups : best.reachableGroups;
+  const walkCost = (cell: GridPosition): number =>
+    groupsForWalk.reduce(
+      (total, group) =>
+        total +
+        Math.max(
+          Math.abs(cell.x - group.center.x),
+          Math.abs(cell.y - group.center.y),
+        ),
+      0,
+    );
+
+  return best.cells.reduce((current, candidate) =>
+    walkCost(candidate) < walkCost(current) ? candidate : current,
+  );
+}
+
+/**
+ * Drops the spawn groups the player cannot walk to.
+ *
+ * A raw box is cut out of a living map, so it carries seats the hunt has no
+ * path to — the Orc Fortress rectangle holds the field outside its wall, and
+ * the ramp up the mountain is not inside the cut. Those creatures are not
+ * scenery: `S7` counts `maxLiveActors` over every live actor, so seats nobody
+ * can reach hold the cap down and starve the seats inside the hunt.
+ *
+ * A seat survives if the player can stand where the creature will. When the
+ * seat's own cell is blocked the kernel draws from the group radius instead,
+ * so that pool decides for it.
+ */
+function keepReachableSpawns(
+  table: SpawnTable,
+  region: MapRegion,
+  transitions: readonly TransitionEntry[],
+  playerStart: GridPosition,
+): {
+  readonly table: SpawnTable;
+  readonly diagnostics: readonly ExtractionDiagnostic[];
+} {
+  const reachable = reachableCells(region, transitions, playerStart);
+  const isReachable = (position: GridPosition): boolean =>
+    reachable.get(position.z)?.has(position.y * region.width + position.x) ===
+    true;
+  const isWalkable = (position: GridPosition): boolean => {
+    const floor = region.floors.find((entry) => entry.z === position.z);
+    if (floor === undefined) return false;
+    if (
+      position.x < 0 ||
+      position.y < 0 ||
+      position.x >= region.width ||
+      position.y >= region.height
+    ) {
+      return false;
+    }
+    return !floor.collision.includes(position.y * region.width + position.x);
+  };
+
+  const diagnostics: ExtractionDiagnostic[] = [];
+  const groups = table.groups.flatMap((group, groupIndex) => {
+    const radiusReachable = (): boolean => {
+      for (
+        let y = group.center.y - group.radius;
+        y <= group.center.y + group.radius;
+        y += 1
+      ) {
+        for (
+          let x = group.center.x - group.radius;
+          x <= group.center.x + group.radius;
+          x += 1
+        ) {
+          if (isReachable({ x, y, z: group.center.z })) return true;
+        }
+      }
+      return false;
+    };
+
+    const slots = group.slots.filter((slot) => {
+      const seat = {
+        x: group.center.x + slot.offsetX,
+        y: group.center.y + slot.offsetY,
+        z: group.center.z + slot.offsetZ,
+      };
+      return isWalkable(seat) ? isReachable(seat) : radiusReachable();
+    });
+
+    if (slots.length === group.slots.length) return [{ ...group, slots }];
+
+    diagnostics.push(
+      diagnostic(
+        `spawns.groups[${groupIndex}]`,
+        'HUNT_SPAWN_DROPPED',
+        `${group.slots.length - slots.length} of ${group.slots.length} seats at (${group.center.x}, ${group.center.y}, ${group.center.z}) are unreachable from the player start`,
+      ),
+    );
+    return slots.length === 0 ? [] : [{ ...group, slots }];
+  });
+
+  return { table: { ...table, groups }, diagnostics };
 }
 
 function budgetDiagnostics(region: MapRegion): readonly ExtractionDiagnostic[] {
@@ -211,7 +423,7 @@ export function extractHunt(
   );
   const transitions =
     layout === undefined
-      ? buildTransitionTable(built.region, built.floorChanges)
+      ? buildTransitionTable(built.region, built.floorChanges, built.ladders)
       : {
           table: { entries: layout.transitions, dropped: 0 },
           diagnostics: [],
@@ -235,33 +447,30 @@ export function extractHunt(
     ),
   ].sort((left, right) => left.blueprintId.localeCompare(right.blueprintId));
 
-  let densestSpawnGroup = spawns.table.groups[0];
-  for (const group of spawns.table.groups) {
-    if (
-      densestSpawnGroup === undefined ||
-      group.slots.length > densestSpawnGroup.slots.length
-    ) {
-      densestSpawnGroup = group;
-    }
-  }
-  const spawnPositions = new Set(
-    spawns.table.groups.flatMap((group) =>
-      group.slots.map((slot) =>
-        positionKey({
-          x: group.center.x + slot.offsetX,
-          y: group.center.y + slot.offsetY,
-          z: group.center.z + slot.offsetZ,
-        }),
-      ),
-    ),
-  );
   const playerStart =
     layout?.playerStart ??
-    pickPlayerStart(built.region, densestSpawnGroup?.center, spawnPositions);
+    pickPlayerStart(
+      built.region,
+      transitions.table.entries,
+      spawns.table.groups,
+    );
+  // Only a raw box carries seats with no path to them: a layout recipe places
+  // every group by hand inside the cut it authored.
+  const reachableSpawns =
+    layout === undefined && playerStart !== undefined
+      ? keepReachableSpawns(
+          spawns.table,
+          built.region,
+          transitions.table.entries,
+          playerStart,
+        )
+      : { table: spawns.table, diagnostics: [] };
+
   const diagnostics: ExtractionDiagnostic[] = [
     ...built.diagnostics,
     ...transitions.diagnostics,
     ...spawns.diagnostics,
+    ...reachableSpawns.diagnostics,
     ...budgetDiagnostics(built.region),
   ];
 
@@ -281,7 +490,7 @@ export function extractHunt(
     huntRevision: HUNT_REVISION,
     region: built.region,
     transitions: transitions.table,
-    spawns: spawns.table,
+    spawns: reachableSpawns.table,
     blueprints,
     playerStart: playerStart ?? {
       x: 0,

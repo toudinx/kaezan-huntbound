@@ -43,13 +43,19 @@ leech, regen, loot, morte nem recusa de comando. `combat/leeched`, `combat/regen
 de leitura das três vocações. A card original permanece em `tasks/PB-17-05-o-log-de-combate.md` como
 proveniência; não executar por esta fila.
 
-**B19 — fechado em 2026-09-09, sem task.** Achado durante a PB-17-04.
+**B19 — fechado em 2026-09-09, sem task; reaberto e refechado pelo merge do mesmo dia.** Achado durante a PB-17-04.
 `tools/asset-packer/vitest.config.ts` já **é** invocado pelo script `test` (`package.json:18`) e o
 PB-13 fechou em 2026-09-08 com a suíte inteira verde. O relato histórico: ele ficou fora do script,
 então `huntArtifacts.test.ts` esteve vermelho desde a PB-17-01 sem ninguém ver — as contagens fixas
 (147/109/217) não somaram os nove ícones de magia, e `sourceLock.files.every(byteLength === 68)`
-deixou de valer para os recortes de `spell`. A `PB-17-FIX-01` prevista nunca foi aberta porque o
-conserto veio junto com outro diff.
+deixou de valer para os recortes de `spell`. A `PB-17-FIX-01` prevista nunca foi aberta aqui porque o
+conserto veio junto com outro diff — mas **a outra máquina abriu a card**, e ela chegou no merge de
+2026-09-09 como `tasks/PB-17-FIX-01-o-config-orfao.md`. As duas metades do B19 são complementares e
+só juntas viram vermelho: este lado ligou o config ao script `test`, o outro lado expandiu as cinco
+caixas para as curadas completas, e o merge revelou as seis contagens obsoletas de
+`huntArtifacts.test.ts` (rotworm 156→451, hero cave 118→270, dragon lair 226→368) que nenhuma das
+duas árvores conseguia ver sozinha. Corrigidas no próprio commit de merge; a card fica como
+proveniência e não é executável.
 
 **B13 — desbloqueado pelo usuário em 2026-08-25, é a PB-17-01.** Sexta categoria de asset (`spell`)
 autorizada, com identidade `clientId` e suporte no packer. O índice das nove magias está medido em

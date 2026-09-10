@@ -12,6 +12,7 @@ import type {
 import {
   buildFloorDrawCommands,
   createHuntPresentation,
+  type HuntDrawWindow,
   type PresentationActor,
 } from './HuntPresentation';
 
@@ -21,20 +22,20 @@ function syntheticRegion(): MapRegion {
     regionId: 'region:test:synthetic' as MapRegion['regionId'],
     regionRevision: 1,
     origin: { x: 0, y: 0 },
-    width: 2,
-    height: 2,
+    width: 4,
+    height: 4,
     palette: [0, 101, 102, 103, 104],
     floors: [
       {
         z: 7,
-        ground: [1, 2, 1, 0],
-        objectsBelow: [{ i: 0, stack: [2] }],
-        objectsAbove: [{ i: 2, stack: [4] }],
+        ground: [0, 0, 0, 0, 0, 1, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        objectsBelow: [{ i: 5, stack: [2] }],
+        objectsAbove: [{ i: 9, stack: [4] }],
         collision: [],
       },
       {
         z: 8,
-        ground: [1, 1, 1, 1],
+        ground: [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
         objectsBelow: [],
         objectsAbove: [],
         collision: [],
@@ -74,7 +75,7 @@ function event(
 describe('HuntPresentation', () => {
   it('orders ground, objects below, actors, and objects above', () => {
     const commands = buildFloorDrawCommands(syntheticRegion(), 7, [
-      actor(1, 'player', { x: 1, y: 0, z: 7 }),
+      actor(1, 'player', { x: 2, y: 1, z: 7 }),
     ]);
 
     expect(commands.map((command) => command.layer)).toEqual([
@@ -92,8 +93,33 @@ describe('HuntPresentation', () => {
         .every((command) => command.key.startsWith('tile:tibia:')),
     ).toBe(true);
     expect(
-      commands.find((command) => command.x === 1 && command.y === 1),
+      commands.find((command) => command.x === 2 && command.y === 2),
     ).toMatchObject({ layer: 'ground', sourceZ: 8 });
+  });
+
+  it('limits floor commands to the camera window', () => {
+    const window: HuntDrawWindow = {
+      minX: 2,
+      minY: 1,
+      maxX: 2,
+      maxY: 1,
+    };
+    const commands = buildFloorDrawCommands(
+      syntheticRegion(),
+      7,
+      [
+        actor(1, 'player', { x: 2, y: 1, z: 7 }),
+        actor(2, 'rotworm', { x: 1, y: 1, z: 7 }),
+      ],
+      window,
+    );
+
+    expect(
+      commands.map(({ kind, layer, x, y }) => ({ kind, layer, x, y })),
+    ).toEqual([
+      { kind: 'tile', layer: 'ground', x: 2, y: 1 },
+      { kind: 'actor', layer: 'actors', x: 2, y: 1 },
+    ]);
   });
 
   it('replaces the active floor and handles actor lifecycle events', () => {
@@ -113,42 +139,42 @@ describe('HuntPresentation', () => {
         type: 'actor/spawned',
         entityId: 1 as EntityId,
         blueprintId: 'player',
-        position: { x: 1, y: 0, z: 7 },
+        position: { x: 2, y: 1, z: 7 },
         facing: 's',
       }),
       event(2, {
         type: 'actor/spawned',
         entityId: 2 as EntityId,
         blueprintId: 'rotworm',
-        position: { x: 0, y: 0, z: 7 },
+        position: { x: 1, y: 1, z: 7 },
         facing: 's',
       }),
       event(3, {
         type: 'actor/transitioned',
         entityId: 1 as EntityId,
-        from: { x: 1, y: 0, z: 7 },
-        to: { x: 1, y: 0, z: 8 },
+        from: { x: 2, y: 1, z: 7 },
+        to: { x: 2, y: 1, z: 8 },
       }),
       event(4, {
         type: 'actor/transitioned',
         entityId: 2 as EntityId,
-        from: { x: 0, y: 0, z: 7 },
-        to: { x: 0, y: 0, z: 8 },
+        from: { x: 1, y: 1, z: 7 },
+        to: { x: 1, y: 1, z: 8 },
       }),
     ]);
 
     expect(presentation.floor()).toBe(8);
     expect(presentation.actors()).toHaveLength(2);
     expect(presentation.actors()[0]?.target).toEqual({
-      x: 1,
-      y: 0,
+      x: 2,
+      y: 1,
       z: 8,
     });
     expect(presentation.actors()[1]).toMatchObject({
       entityId: 2,
-      position: { x: 0, y: 0, z: 8 },
-      previous: { x: 0, y: 0, z: 8 },
-      target: { x: 0, y: 0, z: 8 },
+      position: { x: 1, y: 1, z: 8 },
+      previous: { x: 1, y: 1, z: 8 },
+      target: { x: 1, y: 1, z: 8 },
     });
     expect(presentation.actors()[1]?.motion).toBeUndefined();
     expect(
@@ -162,15 +188,15 @@ describe('HuntPresentation', () => {
       event(5, {
         type: 'actor/moved',
         entityId: 2 as EntityId,
-        from: { x: 0, y: 0, z: 8 },
-        to: { x: 1, y: 0, z: 8 },
+        from: { x: 1, y: 1, z: 8 },
+        to: { x: 2, y: 1, z: 8 },
         facing: 'e',
       }),
     ]);
 
     expect(presentation.actors()[1]?.target).toEqual({
-      x: 1,
-      y: 0,
+      x: 2,
+      y: 1,
       z: 8,
     });
     expect(diagnostics).toEqual([]);
@@ -191,21 +217,21 @@ describe('HuntPresentation', () => {
         type: 'actor/spawned',
         entityId: 1 as EntityId,
         blueprintId: 'player',
-        position: { x: 1, y: 0, z: 7 },
+        position: { x: 2, y: 1, z: 7 },
         facing: 's',
       }),
       event(2, {
         type: 'actor/spawned',
         entityId: 2 as EntityId,
         blueprintId: 'rotworm',
-        position: { x: 0, y: 0, z: 7 },
+        position: { x: 1, y: 1, z: 7 },
         facing: 's',
       }),
       event(3, {
         type: 'actor/transitioned',
         entityId: 2 as EntityId,
-        from: { x: 0, y: 0, z: 7 },
-        to: { x: 0, y: 0, z: 8 },
+        from: { x: 1, y: 1, z: 7 },
+        to: { x: 1, y: 1, z: 8 },
       }),
     ]);
 
@@ -230,40 +256,40 @@ describe('HuntPresentation', () => {
         type: 'actor/spawned',
         entityId: 1 as EntityId,
         blueprintId: 'player',
-        position: { x: 0, y: 0, z: 7 },
+        position: { x: 1, y: 1, z: 7 },
         facing: 's',
       }),
       event(2, {
         type: 'actor/moved',
         entityId: 1 as EntityId,
-        from: { x: 0, y: 0, z: 7 },
-        to: { x: 1, y: 0, z: 7 },
+        from: { x: 1, y: 1, z: 7 },
+        to: { x: 2, y: 1, z: 7 },
         facing: 'e',
       }),
     ]);
 
     const moved = presentation.actors()[0];
-    expect(moved?.previous).toEqual({ x: 0, y: 0, z: 7 });
-    expect(moved?.target).toEqual({ x: 1, y: 0, z: 7 });
+    expect(moved?.previous).toEqual({ x: 1, y: 1, z: 7 });
+    expect(moved?.target).toEqual({ x: 2, y: 1, z: 7 });
     expect(moved?.facing).toBe('e' satisfies Direction);
 
     presentation.handle([
       event(3, {
         type: 'actor/move-blocked',
         entityId: 1 as EntityId,
-        attempted: { x: 1, y: 1, z: 7 },
+        attempted: { x: 2, y: 2, z: 7 },
         reason: 'terrain',
       }),
     ]);
 
     expect(presentation.actors()[0]?.target).toEqual({
-      x: 1,
-      y: 0,
+      x: 2,
+      y: 1,
       z: 7,
     });
     expect(presentation.actors()[0]?.previous).toEqual({
-      x: 0,
-      y: 0,
+      x: 1,
+      y: 1,
       z: 7,
     });
   });
@@ -282,14 +308,14 @@ describe('HuntPresentation', () => {
         type: 'actor/spawned',
         entityId: 1 as EntityId,
         blueprintId: 'player',
-        position: { x: 0, y: 0, z: 7 },
+        position: { x: 1, y: 1, z: 7 },
         facing: 's',
       }),
       event(2, {
         type: 'actor/moved',
         entityId: 1 as EntityId,
-        from: { x: 0, y: 0, z: 7 },
-        to: { x: 1, y: 0, z: 7 },
+        from: { x: 1, y: 1, z: 7 },
+        to: { x: 2, y: 1, z: 7 },
         facing: 'e',
       }),
     ]);

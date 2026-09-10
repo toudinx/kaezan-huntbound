@@ -62,7 +62,9 @@ export async function checkHuntPack(input: {
     selectionResult.data.hunt,
     region,
     resolvedEntries,
-    { extraKeys: huntPackExtraKeys(pipelineEntry.assetSelection) },
+    {
+      extraKeys: huntPackExtraKeys(pipelineEntry.assetSelection, region),
+    },
   );
   if (diagnostics.length > 0) {
     throw new Error(JSON.stringify(diagnostics));

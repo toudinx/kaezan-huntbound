@@ -153,6 +153,39 @@ describe('hunt selection generation', () => {
     expect(JSON.stringify(manifest)).not.toContain('.png');
   });
 
+  it('keeps map tile identities unique when map objects reuse pack clientIds', () => {
+    const mapRegion = {
+      ...region(),
+      palette: [0, 2889, 3031, 3582, 3264],
+    };
+    const hunt = deriveHuntPackSelection(mapRegion, metadata);
+    const manifest = createHuntAssetSelection({
+      hunt,
+      group,
+      consumer,
+    });
+
+    expect(hunt.keys).toEqual(
+      expect.arrayContaining([
+        'tile:tibia:2889',
+        'tile:tibia:3031',
+        'tile:tibia:3582',
+        'tile:tibia:3264',
+      ]),
+    );
+    expect(hunt.keys).not.toContain('item:tibia:small-splash');
+    expect(hunt.keys).not.toContain('item:tibia:gold-coin');
+    expect(hunt.keys).not.toContain('item:tibia:ham');
+    expect(hunt.keys).not.toContain('item:tibia:sword');
+    expect(
+      new Set(
+        manifest.entries.map(
+          ({ sourceIdentity }) => `${sourceIdentity.kind}:${sourceIdentity.id}`,
+        ),
+      ),
+    ).toHaveLength(manifest.entries.length);
+  });
+
   it('maps combat keys to their frozen source identities', () => {
     const manifest = createHuntAssetSelection({
       hunt: deriveHuntPackSelection(region(), metadata),

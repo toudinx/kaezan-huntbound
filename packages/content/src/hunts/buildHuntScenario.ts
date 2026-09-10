@@ -10,6 +10,8 @@ import {
   type GridPosition,
   type HuntDefinition,
   type HuntDiagnostic,
+  huntRegionBorderCells,
+  isHuntRegionBorderCell,
   type KernelScenario,
   type LootTableDefinition,
   type ScenarioConditionDefinition,
@@ -191,6 +193,30 @@ function playerStartForScenario(hunt: HuntDefinition): GridPosition {
   return best ?? hunt.playerStart;
 }
 
+/**
+ * Terrain collision plus the region border ring.
+ *
+ * The extraction window cuts the Canary map mid-floor, so the outer cells hold
+ * ground that leads nowhere. The kernel already refuses to step out of the
+ * rectangle; blocking the ring moves that refusal one cell in, onto a cell the
+ * presentation paints as rock, so the hunt stops looking like it has an exit
+ * there.
+ */
+function blockedTilesOf(
+  region: HuntDefinition['region'],
+  collision: readonly number[],
+): readonly (readonly [number, number])[] {
+  const cells = new Set<number>(collision);
+  for (const index of huntRegionBorderCells(region)) cells.add(index);
+
+  return [...cells]
+    .sort((left, right) => left - right)
+    .map(
+      (index) =>
+        [index % region.width, Math.floor(index / region.width)] as const,
+    );
+}
+
 function scenarioGeometry(
   hunt: HuntDefinition,
   playerStart: GridPosition,
@@ -206,29 +232,38 @@ function scenarioGeometry(
     height: hunt.region.height,
     floors: hunt.region.floors.map((floor) => ({
       z: floor.z,
-      blockedTiles: floor.collision.map(
-        (index) =>
-          [
-            index % hunt.region.width,
-            Math.floor(index / hunt.region.width),
-          ] as const,
-      ),
+      blockedTiles: blockedTilesOf(hunt.region, floor.collision),
     })),
     transitions: hunt.transitions.entries.map(({ from, to }) => ({ from, to })),
-    spawnGroups: hunt.spawns.groups.map((group) => ({
-      center: group.center,
-      radius: group.radius,
-      slots: group.slots.map((slot) => ({
-        blueprintId: slot.blueprintId,
-        position: {
-          x: group.center.x + slot.offsetX,
-          y: group.center.y + slot.offsetY,
-          z: group.center.z + slot.offsetZ,
-        },
-        respawnTicks: slot.respawnTicks,
-        slotId: formatSpawnSlotId(slot.source, group.sourceCenter),
-      })),
-    })),
+    spawnGroups: hunt.spawns.groups
+      .map((group) => ({
+        center: group.center,
+        radius: group.radius,
+        slots: group.slots
+          .map((slot) => ({
+            blueprintId: slot.blueprintId,
+            position: {
+              x: group.center.x + slot.offsetX,
+              y: group.center.y + slot.offsetY,
+              z: group.center.z + slot.offsetZ,
+            },
+            respawnTicks: slot.respawnTicks,
+            slotId: formatSpawnSlotId(slot.source, group.sourceCenter),
+          }))
+          // A seat on the border ring is now blocked terrain, which the kernel
+          // contract refuses outright, and the floor composes no ground under
+          // it either: the creature would have been invisible on a cell nobody
+          // can reach. Extraction seats a handful of these per hunt.
+          .filter(
+            (slot) =>
+              !isHuntRegionBorderCell(
+                hunt.region,
+                slot.position.x,
+                slot.position.y,
+              ),
+          ),
+      }))
+      .filter((group) => group.slots.length > 0),
     maxLiveActors: hunt.spawns.maxLiveActors,
     initialActors: [
       {

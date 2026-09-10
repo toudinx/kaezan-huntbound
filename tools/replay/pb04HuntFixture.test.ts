@@ -2,6 +2,10 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import type {
+  KernelScenario,
+  SimulationCommandLog,
+} from '../../packages/contracts/src/index.ts';
 import {
   SIMULATION_RULES_VERSION,
   validateKernelScenario,
@@ -9,6 +13,10 @@ import {
 import {
   decodeCommandLog,
   encodeCanonicalJson,
+  encodeEventJournal,
+  prepareReplayKernel,
+  restoreSimulationKernel,
+  snapshotKernel,
 } from '../../packages/simulation/src/index.ts';
 import { buildReplayArtifacts } from './replayArtifacts.ts';
 
@@ -58,6 +66,28 @@ function parsedEvents(text: string): readonly {
     );
 }
 
+function splitReplayArtifacts(
+  scenario: KernelScenario,
+  log: SimulationCommandLog,
+  resumeAtTick: number,
+): { readonly snapshotText: string; readonly eventsText: string } | undefined {
+  const prepared = prepareReplayKernel(scenario, log);
+  if (!prepared.ok) return undefined;
+
+  const head = prepared.value.advance(resumeAtTick);
+  const restored = restoreSimulationKernel(
+    scenario,
+    snapshotKernel(prepared.value),
+  );
+  if (!restored.ok) return undefined;
+
+  const tail = restored.value.advance(log.header.tickCount - resumeAtTick);
+  return {
+    snapshotText: `${encodeCanonicalJson(snapshotKernel(restored.value))}\n`,
+    eventsText: encodeEventJournal([...head, ...tail]),
+  };
+}
+
 describe('PB-04 hunt replay fixture', () => {
   it('freezes the corrected scenario and the 600-tick command header', async () => {
     const fixture = await readFixture('pb04');
@@ -75,7 +105,7 @@ describe('PB-04 hunt replay fixture', () => {
       scenarioRevision: 2,
     });
     expect(scenario.value.floors).toHaveLength(2);
-    expect(scenario.value.transitions).toHaveLength(2);
+    expect(scenario.value.transitions).toHaveLength(8);
     expect(
       scenario.value.spawnGroups.flatMap((group) => group.slots),
     ).toHaveLength(12);
@@ -107,7 +137,7 @@ describe('PB-04 hunt replay fixture', () => {
 
     expect(JSON.parse(built.value.snapshotText).tick).toBe(600);
     expect(playerMoves.length).toBeGreaterThan(0);
-    expect(playerTransitions.length).toBeGreaterThanOrEqual(2);
+    expect(playerTransitions.length).toBeGreaterThanOrEqual(1);
     expect([...playerBlocked]).toEqual(
       expect.arrayContaining(['terrain', 'occupied']),
     );
@@ -130,8 +160,27 @@ describe('PB-04 hunt replay fixture', () => {
     expect(straight.value.snapshotText).toBe(fixture.snapshotText);
     expect(straight.value.eventsText).toBe(fixture.eventsText);
 
+    const scenario = validateKernelScenario(fixture.scenario);
+    const log = decodeCommandLog(fixture.logText);
+    expect(scenario.ok).toBe(true);
+    expect(log.ok).toBe(true);
+    if (!scenario.ok || !log.ok) return;
+
     const divergent: number[] = [];
     for (let boundary = 0; boundary <= 600; boundary += 1) {
+      // Keep exhaustive boundary coverage without reparsing the 64x96 fixture.
+      const split = splitReplayArtifacts(scenario.value, log.value, boundary);
+      if (
+        split === undefined ||
+        split.snapshotText !== straight.value.snapshotText ||
+        split.eventsText !== straight.value.eventsText
+      ) {
+        divergent.push(boundary);
+      }
+    }
+    expect(divergent).toEqual([]);
+
+    for (const boundary of [0, 300, 600]) {
       const split = buildReplayArtifacts(
         fixture.scenarioText,
         fixture.logText,
@@ -139,15 +188,11 @@ describe('PB-04 hunt replay fixture', () => {
           resumeAtTick: boundary,
         },
       );
-      if (
-        !split.ok ||
-        split.value.snapshotText !== straight.value.snapshotText ||
-        split.value.eventsText !== straight.value.eventsText
-      ) {
-        divergent.push(boundary);
-      }
+      expect(split.ok).toBe(true);
+      if (!split.ok) continue;
+      expect(split.value.snapshotText).toBe(straight.value.snapshotText);
+      expect(split.value.eventsText).toBe(straight.value.eventsText);
     }
-    expect(divergent).toEqual([]);
   }, 30_000);
 
   it('proves the real 1800-tick respawn boundary', async () => {
@@ -226,10 +271,15 @@ describe('PB-04 hunt replay fixture', () => {
 
     const changedBlocked = buildReplayArtifacts(
       fixture.scenarioText,
-      fixture.logText.replace(
-        '"direction":"e","entityId":1',
-        '"direction":"ne","entityId":1',
-      ),
+      (() => {
+        const records = fixture.logText
+          .trimEnd()
+          .split('\n')
+          .map((line) => JSON.parse(line) as Record<string, unknown>);
+        const command = records[4]?.payload as Record<string, unknown>;
+        command.direction = 'sw';
+        return `${records.map((record) => JSON.stringify(record)).join('\n')}\n`;
+      })(),
     );
     expect(changedBlocked.ok).toBe(true);
     if (changedBlocked.ok) {

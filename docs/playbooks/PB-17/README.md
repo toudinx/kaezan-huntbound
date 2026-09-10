@@ -100,6 +100,7 @@ chat, em sequência.
 | PB-17-03 | econômico | `xhigh` | idem, com cuidado de não entrar no PB-11 |
 | PB-17-04 | **frontier** | `xhigh` | cor de chão real exige ler a paleta da região e decidir a derivação |
 | PB-17-05 | **frontier** | `xhigh` | desenha uma superfície que não existe e escolhe o que **não** entra nela |
+| PB-17-FIX-01 | econômico | `xhigh` | ligar config a script e derivar contagem; a única decisão é o `byteLength` da fixture de magia |
 | PB-17-FIX-02 | econômico | `xhigh` | defeito e causa já localizados; o custo é recorte, não decisão |
 
 ## Definition of Done do playbook
